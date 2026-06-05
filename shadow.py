@@ -28,6 +28,20 @@ from bist_alpha.signals import lot_multiplier
 ACCOUNTS = {"A": "A", "B": "B", "F": "F"}  # mode'lar
 
 
+def _attach_dynamic_universe(feed, data):
+    """Stratejinin canlı feed'in seçtiği dinamik evreni kullanmasını sağlar."""
+    universe = feed.dynamic_universe(data)
+    data['_dynamic_universe'] = universe
+    data['_dynamic_universe_method'] = (
+        'likidite_fiyat_x_hacim'
+        if data.get('_source') in ('yahoo', 'borsapy')
+        else 'piyasa_degeri'
+    )
+    print(f"[shadow] Kaynak: {data.get('_source', config.DATA_SOURCE)}")
+    print(f"[shadow] Dinamik evren: {len(universe)}")
+    return data
+
+
 def step(data, signals, date=None, slippage=None):
     """Tüm hesaplar için bir shadow adımı."""
     prices = data['prices']
@@ -70,6 +84,7 @@ def status():
     """3 hesabın güncel durumunu göster."""
     feed = datafeed.get_feed()
     data = feed.get_latest()
+    data = _attach_dynamic_universe(feed, data)
     prices = data['prices']
     date = prices.index[-1]
     prices_today = {t: prices.loc[date, t] for t in prices.columns
@@ -95,6 +110,7 @@ def main():
         return
     feed = datafeed.get_feed()
     data = feed.get_latest()
+    data = _attach_dynamic_universe(feed, data)
     signals = sig_mod.compute_signals(data)
     r = step(data, signals)
     print(json.dumps(r, ensure_ascii=False, indent=2))
