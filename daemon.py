@@ -71,8 +71,15 @@ def run_cycle(label="manuel"):
     # 4) Sinyaller + rapor (eksik #2, #4) — korumalı
     def _report():
         signals = sig_mod.compute_signals(data)
+        held_positions = {}
+        try:
+            from bist_alpha import portfolio as pf
+            held_positions = pf.load(config.MODE, state_dir=config.STATE_DIR).get("positions", {})
+        except Exception:
+            held_positions = {}
         report = reporter.generate_report(data, signals, mode=config.MODE,
-                                           deniz_bulletin=bulletin)
+                                           deniz_bulletin=bulletin,
+                                           held_positions=held_positions)
         text = reporter.format_text(report)
         print(text)
         # 5) Bildirim (eksik #2)

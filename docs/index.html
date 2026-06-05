@@ -209,6 +209,17 @@ function detailText(item) {
   return parts.join(' | ');
 }
 
+function priceText(item) {
+  const parts = [];
+  if (item.mevcut_fiyat != null) parts.push('Fiyat ' + item.mevcut_fiyat);
+  if (item.giris_fiyati != null) parts.push('Giris ' + item.giris_fiyati);
+  if (item.hedef_1 != null) parts.push('Hedef ' + item.hedef_1 + (item.hedef_2 != null ? '/' + item.hedef_2 : ''));
+  if (item.stop != null) parts.push('Stop ' + item.stop);
+  if (item.risk_pct != null) parts.push('Risk %' + item.risk_pct);
+  if (item.potansiyel_pct != null) parts.push('Pot %' + item.potansiyel_pct);
+  return parts.join(' | ');
+}
+
 function renderTop(items) {
   if (!items || !items.length) {
     el('topList').innerHTML = '<div class="error">Top 10 verisi henuz yok.</div>';
@@ -220,6 +231,7 @@ function renderTop(items) {
       <div>
         <div class="ticker">${esc(item.ticker)}</div>
         <div class="meta">${esc(detailText(item))}</div>
+        <div class="meta">${esc(priceText(item))}</div>
       </div>
       <div class="m252">%${esc(item.m252 ?? '-')}</div>
       <div class="action ${actionClass(item.action)}">${esc(item.action || '-')}</div>
