@@ -42,6 +42,7 @@ jobs:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
           ALLOW_FILE_FALLBACK: "0"
+          YAHOO_BATCH_SIZE: "120"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
@@ -61,8 +62,9 @@ jobs:
           from pathlib import Path
           d = json.loads(Path("docs/state/dashboard.json").read_text(encoding="utf-8"))
           assert d.get("source") == "yahoo", f"Dinamik kaynak bekleniyordu, gelen: {d.get('source')}"
+          assert d.get("source_pool_count", 0) >= d.get("price_count", 0), (d.get("source_pool_count"), d.get("price_count"))
           assert d.get("dynamic_universe_count", 0) >= 50, d.get("dynamic_universe_count")
-          print(f"OK dinamik kaynak: {d['source']} | hisse: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
+          print(f"OK dinamik kaynak: {d['source']} | BIST havuzu: {d.get('source_pool_count')} | canlı veri: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
           PY
 
       - name: Portfoy state commit (kalicilik)

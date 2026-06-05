@@ -109,28 +109,32 @@ class YahooFeed(DataFeed):
         import yfinance as yf
         import pandas as pd
         import numpy as np
-        from .universe import yahoo_symbols, BIST_TICKERS
+        from .universe import all_bist_tickers, universe_meta, yahoo_symbols
 
         self._configure_cache(yf)
-        symbols = yahoo_symbols()
-        # Toplu indir (tek istek, hızlı)
-        raw = yf.download(symbols, period=self.period, interval="1d",
-                          group_by="ticker", auto_adjust=False,
-                          progress=False, threads=True)
+        tickers = all_bist_tickers()
+        symbols = yahoo_symbols(tickers)
 
         prices, mins, maxs, aofs, volumes = {}, {}, {}, {}, {}
-        for sym, tic in zip(symbols, BIST_TICKERS):
-            try:
-                sub = raw[sym]
-                if sub.empty or sub['Close'].dropna().empty:
+        batch_size = int(os.environ.get("YAHOO_BATCH_SIZE", "80"))
+        for start in range(0, len(symbols), batch_size):
+            batch_symbols = symbols[start:start + batch_size]
+            batch_tickers = tickers[start:start + batch_size]
+            raw = yf.download(batch_symbols, period=self.period, interval="1d",
+                              group_by="ticker", auto_adjust=False,
+                              progress=False, threads=True)
+            for sym, tic in zip(batch_symbols, batch_tickers):
+                try:
+                    sub = raw[sym] if isinstance(raw.columns, pd.MultiIndex) else raw
+                    if sub.empty or sub['Close'].dropna().empty:
+                        continue
+                    prices[tic] = sub['Close']
+                    mins[tic] = sub['Low']
+                    maxs[tic] = sub['High']
+                    aofs[tic] = (sub['High'] + sub['Low'] + sub['Close']) / 3  # AOF yakınsama
+                    volumes[tic] = sub['Volume']
+                except (KeyError, TypeError):
                     continue
-                prices[tic] = sub['Close']
-                mins[tic] = sub['Low']
-                maxs[tic] = sub['High']
-                aofs[tic] = (sub['High'] + sub['Low'] + sub['Close']) / 3  # AOF yakınsama
-                volumes[tic] = sub['Volume']
-            except (KeyError, TypeError):
-                continue
 
         prices = pd.DataFrame(prices).sort_index()
         if prices.empty:
@@ -158,6 +162,9 @@ class YahooFeed(DataFeed):
             'mcaps': mcaps,
             'bist': bist,
             '_source': 'yahoo',
+            '_source_pool_count': len(tickers),
+            '_source_pool_method': universe_meta().get("method"),
+            '_source_pool_fallback': universe_meta().get("fallback"),
         }
 
     def dynamic_universe(self, data, date=None, size=None):
@@ -199,7 +206,8 @@ class BorsaPyFeed(DataFeed):
     def get_latest(self):
         import borsapy
         import pandas as pd
-        from .universe import BIST_TICKERS
+        from .universe import all_bist_tickers, universe_meta
+        tickers = all_bist_tickers()
 
         # Opsiyonel TradingView auth (config/ENV'den)
         tv_user = getattr(config, "TV_USERNAME", None)
@@ -211,10 +219,10 @@ class BorsaPyFeed(DataFeed):
                 pass
 
         # Toplu snapshot indir (cron-dostu, WebSocket değil)
-        raw = borsapy.download(BIST_TICKERS, period=self.period, interval="1d")
+        raw = borsapy.download(tickers, period=self.period, interval="1d")
 
         prices, mins, maxs, aofs, volumes = {}, {}, {}, {}, {}
-        for tic in BIST_TICKERS:
+        for tic in tickers:
             try:
                 # borsapy.download çoklu hisse için MultiIndex kolon döndürür
                 if isinstance(raw.columns, pd.MultiIndex):
@@ -251,6 +259,9 @@ class BorsaPyFeed(DataFeed):
             'mcaps': pd.DataFrame(prices),  # mcap yok → universe sıralama proxy (birim-bağımsız)
             'bist': bist,
             '_source': 'borsapy',
+            '_source_pool_count': len(tickers),
+            '_source_pool_method': universe_meta().get("method"),
+            '_source_pool_fallback': universe_meta().get("fallback"),
         }
 
     def dynamic_universe(self, data, date=None, size=None):

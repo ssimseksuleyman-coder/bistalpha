@@ -155,6 +155,9 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "mode": mode,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": data.get("_source"),
+        "source_pool_count": data.get("_source_pool_count"),
+        "source_pool_method": data.get("_source_pool_method"),
+        "source_pool_fallback": data.get("_source_pool_fallback"),
         "last_data_date": str(prices.index[-1].date()) if hasattr(prices.index[-1], "date") else str(prices.index[-1]),
         "price_count": int(prices.shape[1]),
         "dynamic_universe_count": len(data.get("_dynamic_universe", [])) if data.get("_dynamic_universe") else None,
@@ -171,7 +174,12 @@ def format_text(report):
     L.append(f"📊 BIST ALPHA v1.2 — {report['date']} (mod {report['mode']})")
     L.append(f"Üretim: {report['generated_at']}")
     if report.get("source"):
-        L.append(f"Kaynak: {report['source']} | son veri: {report.get('last_data_date')} | hisse: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')}")
+        pool = report.get("source_pool_count")
+        pool_method = report.get("source_pool_method")
+        pool_note = f" | BIST havuzu: {pool}" if pool else ""
+        if pool_method:
+            pool_note += f" ({pool_method})"
+        L.append(f"Kaynak: {report['source']}{pool_note} | canlı veri: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')} | son veri: {report.get('last_data_date')}")
     if report.get("market_score_deniz") is not None:
         L.append(f"Deniz market puanı: {report['market_score_deniz']}")
     L.append("")

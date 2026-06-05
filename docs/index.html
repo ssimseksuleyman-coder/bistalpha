@@ -164,7 +164,8 @@
             <div class="stat"><div class="stat-value" id="statTop">-</div><div class="stat-label">Oneri</div></div>
             <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F pozisyon</div></div>
             <div class="stat"><div class="stat-value" id="statSource">-</div><div class="stat-label">Kaynak</div></div>
-            <div class="stat"><div class="stat-value" id="statCount">-</div><div class="stat-label">Hisse</div></div>
+            <div class="stat"><div class="stat-value" id="statPool">-</div><div class="stat-label">BIST havuzu</div></div>
+            <div class="stat"><div class="stat-value" id="statCount">-</div><div class="stat-label">Canli veri</div></div>
             <div class="stat"><div class="stat-value" id="statUniverse">-</div><div class="stat-label">Dinamik evren</div></div>
             <div class="stat"><div class="stat-value" id="statLastData">-</div><div class="stat-label">Son veri</div></div>
           </div>
@@ -281,6 +282,10 @@ async function loadDashboard() {
     el('statTop').textContent = (data.top10 || []).length;
     el('statPos').textContent = ['A','B','F'].map(k => accounts[k]?.n_positions ?? '-').join('/');
     el('statSource').textContent = data.source || '-';
+    el('statPool').textContent = data.source_pool_count || '-';
+    if (data.source_pool_method) {
+      el('statPool').title = data.source_pool_method + (data.source_pool_fallback ? ' (yedek)' : '');
+    }
     el('statCount').textContent = data.price_count || '-';
     el('statUniverse').textContent = data.dynamic_universe_count || '-';
     el('statLastData').textContent = data.last_data_date || '-';
