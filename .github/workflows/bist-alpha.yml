@@ -1,0 +1,62 @@
+# 7/24 OTONOM — Bilgisayar KAPALI iken GitHub bulutunda çalışır. Ücretsiz.
+# Bu dosya DOĞRU konumda (.github/workflows/) — repo'ya push edince otomatik aktif.
+#
+# Secrets (repo Settings > Secrets > Actions): SMTP_HOST, SMTP_USER, SMTP_PASS,
+#   MAIL_TO, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (+ Deniz: IMAP_*, DENIZ_SENDER)
+# TZ: 09:45 TR=06:45 UTC | 14:30 TR=11:30 UTC | 18:30 TR=15:30 UTC
+
+name: BIST Alpha 7-24 Canli
+
+on:
+  schedule:
+    - cron: '45 6 * * 1-5'
+    - cron: '30 11 * * 1-5'
+    - cron: '30 15 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bist-alpha
+  cancel-in-progress: false
+
+jobs:
+  rapor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+
+      - name: State klasorlerini hazirla
+        run: mkdir -p portfolios deniz_snapshots logs
+
+      - name: Shadow + rapor (canli veri)
+        env:
+          TZ: Europe/Istanbul
+          DATA_SOURCE: yahoo
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DENIZ_SOURCE: email
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
+        run: |
+          python3 shadow.py || true
+          python3 daemon.py --once otomatik || true
+
+      - name: Portfoy state commit (kalicilik)
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f portfolios/ deniz_snapshots/ docs/state/ 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "state $(date +%F_%H%M)"
+          git push || echo "push atlandi (degisiklik yok)"

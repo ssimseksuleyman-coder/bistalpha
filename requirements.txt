@@ -1,0 +1,9 @@
+pandas>=1.5
+numpy>=1.23
+openpyxl>=3.0
+requests>=2.28
+yfinance>=0.2
+# Opsiyonel canlı veri kaynakları (DATA_SOURCE'a göre):
+#   yahoo   -> yfinance (yukarıda, ücretsiz, key yok)
+#   borsapy -> TradingView destekli BIST verisi (resmi değil, ToS riski)
+borsapy>=0.10

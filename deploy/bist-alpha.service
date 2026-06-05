@@ -1,0 +1,35 @@
+# systemd servis dosyası — her zaman açık Linux sunucu (VPS) için.
+# daemon'u arka planda çalıştırır, çökerse otomatik yeniden başlatır,
+# sunucu yeniden başlasa bile otomatik açılır.
+#
+# KURULUM:
+#   1. Bu dosyayı düzenle: WorkingDirectory ve ExecStart yollarını ayarla
+#   2. sudo cp deploy/bist-alpha.service /etc/systemd/system/
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable bist-alpha     # açılışta otomatik başla
+#   5. sudo systemctl start bist-alpha      # şimdi başlat
+#   6. systemctl status bist-alpha          # durum
+#   7. journalctl -u bist-alpha -f          # canlı log
+#
+# TIMEZONE: Sunucu saat dilimini İstanbul yap:
+#   sudo timedatectl set-timezone Europe/Istanbul
+# Böylece scheduler 09:45/14:30/18:30'u Türkiye saatiyle çalıştırır.
+
+[Unit]
+Description=BIST Alpha v1.2 Otonom Servis
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bistalpha
+WorkingDirectory=/opt/bist_alpha_system
+ExecStart=/usr/bin/python3 /opt/bist_alpha_system/daemon.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/var/log/bist-alpha.log
+StandardError=append:/var/log/bist-alpha.log
+Environment=TZ=Europe/Istanbul
+
+[Install]
+WantedBy=multi-user.target

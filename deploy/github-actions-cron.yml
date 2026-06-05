@@ -1,0 +1,65 @@
+# GitHub Actions — ÜCRETSİZ 7/24, BİLGİSAYAR KAPALI, CANLI VERİ.
+# Surface Pro 5 kapalı olsa bile GitHub bulutunda çalışır. Sıfır maliyet.
+#
+# Bu dosyayı .github/workflows/bist-alpha.yml olarak koy.
+#
+# CANLI VERİ: yfinance (Yahoo Finance, ücretsiz, key yok) — DATA_SOURCE=yahoo
+# STATE: portföyler her çalışmadan sonra repo'ya commit edilir (kalıcı)
+#
+# TIMEZONE: GitHub cron UTC. Türkiye=UTC+3.
+#   09:45 TR=06:45 UTC | 14:30 TR=11:30 UTC | 18:30 TR=15:30 UTC
+#
+# KURULUM:
+#   1. Kodu private GitHub repo'ya koy
+#   2. Settings > Secrets > Actions: SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_TO,
+#      TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (+ Deniz: IMAP_HOST/USER/PASS/DENIZ_SENDER)
+#   3. Push et — otomatik 7/24 çalışır
+
+name: BIST Alpha 7/24 Canli
+
+on:
+  schedule:
+    - cron: '45 6 * * 1-5'    # 09:45 TR
+    - cron: '30 11 * * 1-5'   # 14:30 TR
+    - cron: '30 15 * * 1-5'   # 18:30 TR
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rapor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+
+      - name: Shadow adimi + rapor (canli veri)
+        env:
+          TZ: Europe/Istanbul
+          DATA_SOURCE: yahoo
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DENIZ_SOURCE: email
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
+        run: |
+          python3 shadow.py || true
+          python3 daemon.py --once otomatik
+
+      - name: Portfoy state commit (kalicilik)
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@bist-alpha"
+          git add portfolios/ deniz_snapshots/ 2>/dev/null || true
+          git commit -m "state $(date +%F_%H%M)" || echo "degisiklik yok"
+          git push || echo "push atlandi"

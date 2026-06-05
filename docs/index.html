@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIST Alpha — Dashboard</title>
+<style>
+  :root{--bg:#fafaf7;--card:#fff;--ink:#1a1a1a;--mute:#6b6b6b;--line:#e5e5e0;
+        --ok:#0f6e56;--bad:#a32d2d;--warn:#92722a;--accent:#173404}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:14px/1.5 -apple-system,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:12px;max-width:900px;margin:0 auto}
+  h1{font-size:18px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--mute);font-size:12px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  .card h2{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .badge{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--mute)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--bg);border-radius:8px;padding:10px;text-align:center}
+  .stat .v{font-size:18px;font-weight:700;color:var(--accent)}
+  .stat .l{font-size:11px;color:var(--mute);margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--mute);font-weight:500;padding:6px 4px;border-bottom:1px solid var(--line);font-size:11px}
+  td{padding:7px 4px;border-bottom:.5px solid var(--line)}
+  tr:last-child td{border-bottom:none}
+  .ticker{font-weight:600}
+  .act{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px}
+  .act-AL{background:#dcecd1;color:var(--ok)}
+  .act-SAT{background:#f5d6d6;color:var(--bad)}
+  .act-BEKLE{background:#f5e9bd;color:var(--warn)}
+  .act-FIRSAT{background:#d6e4f5;color:#1a4a8a}
+  .visa{color:#92722a}
+  .flag{font-size:10.5px;color:var(--mute);margin-top:2px;display:block}
+  .err{color:var(--bad);font-size:12px}
+  .loading{text-align:center;color:var(--mute);padding:20px;font-size:13px}
+  @media (min-width:600px){body{padding:20px}}
+</style>
+</head>
+<body>
+
+<h1>📊 BIST Alpha</h1>
+<div class="sub" id="ts">yükleniyor...</div>
+
+<div id="root">
+  <div class="loading">⏳ Veri yükleniyor — son çalıştırma bekleniyor</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+async function load(){
+  try{
+    const r = await fetch('state/dashboard.json?ts=' + Date.now());
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  }catch(e){
+    $('root').innerHTML = '<div class="card"><div class="err">⚠️ Dashboard JSON okunamadı: ' + esc(e.message) + '</div>' +
+      '<div class="sub">İlk Actions çalıştırmasını bekle (cron sonrası state/dashboard.json üretilir).</div></div>';
+    return null;
+  }
+}
+
+function topRow(p){
+  const flags = [];
+  if(p.yan_kaynak){
+    const s = p.yan_kaynak;
+    if(s.deniz_skor != null) flags.push('Deniz:' + s.deniz_skor);
+    if(s.yabancı) flags.push(s.yabancı);
+    if(s.bilanço) flags.push('bilanço:' + s.bilanço);
+    if(s.hacim) flags.push(s.hacim);
+    if(s.fx_risk) flags.push('FX-risk');
+    if(s.sezonsal) flags.push(s.sezonsal);
+    if(s.sektör_uyarı) flags.push('⚠' + s.sektör_uyarı);
+  }
+  return `<tr>
+    <td>${p.rank}</td>
+    <td><span class="ticker">${esc(p.ticker)}</span> ${p.visa ? '<span class="visa">🎫</span>' : ''}
+        ${flags.length ? '<span class="flag">' + esc(flags.join(' | ')) + '</span>' : ''}</td>
+    <td>${esc(p.sector)}</td>
+    <td style="text-align:right">${p.m252 != null ? '%' + p.m252 : '—'}</td>
+    <td><span class="act act-${esc(p.action)}">${esc(p.action)}</span></td>
+    <td style="font-size:11px;color:var(--mute)">${esc(p.sm_signal)}</td>
+  </tr>`;
+}
+
+function accCard(name, a){
+  if(a.error) return `<div class="card"><h2>Hesap ${name}</h2><div class="err">${esc(a.error)}</div></div>`;
+  const posRows = (a.positions || []).map(p =>
+    `<tr><td class="ticker">${esc(p.ticker)}</td><td style="text-align:right">${p.entry}</td><td style="text-align:right;color:var(--mute)">${p.peak}</td></tr>`
+  ).join('');
+  return `<div class="card">
+    <h2>Hesap ${name} <span class="badge">${a.n_positions} pozisyon</span></h2>
+    ${posRows ? '<table><thead><tr><th>Hisse</th><th style="text-align:right">Giriş</th><th style="text-align:right">Zirve</th></tr></thead><tbody>' + posRows + '</tbody></table>' : '<div class="sub">Henüz pozisyon yok</div>'}
+  </div>`;
+}
+
+(async () => {
+  const d = await load();
+  if(!d) return;
+  $('ts').textContent = `${d.date || ''} • ${d.label || ''} • çalışma: ${d.timestamp || ''}`;
+  const dz = d.deniz_regime ? `Deniz: ${d.deniz_regime}` : '';
+  const topHTML = (d.top10 || []).map(topRow).join('');
+  const accs = d.accounts || {};
+  let html = '';
+  html += `<div class="card">
+    <h2>Genel <span class="badge">${esc(d.mode || '?')} modu</span></h2>
+    <div class="grid3">
+      <div class="stat"><div class="v">${(d.top10||[]).length}</div><div class="l">öneri</div></div>
+      <div class="stat"><div class="v">${accs.A?.n_positions ?? '—'}/${accs.B?.n_positions ?? '—'}/${accs.F?.n_positions ?? '—'}</div><div class="l">A/B/F poz</div></div>
+      <div class="stat"><div class="v" style="font-size:13px">${esc(dz) || '—'}</div><div class="l">rejim</div></div>
+    </div>
+  </div>`;
+  if(topHTML){
+    html += `<div class="card">
+      <h2>TOP 10 Öneri</h2>
+      <table><thead><tr><th>#</th><th>Hisse</th><th>Sektör</th><th style="text-align:right">M252</th><th>Eylem</th><th>Sinyal</th></tr></thead>
+      <tbody>${topHTML}</tbody></table>
+    </div>`;
+  }
+  for(const k of ['A','B','F']){
+    if(accs[k]) html += accCard(k, accs[k]);
+  }
+  $('root').innerHTML = html;
+})();
+</script>
+</body>
+</html>
