@@ -19,7 +19,7 @@ from . import portfolio as pf
 from .levels import pivot_levels
 from .sectors import get_sector
 from .signals import signal_for
-from .strategy import select, score
+from .strategy import last_n_return, select, score
 
 
 def _action(in_portfolio, is_pick, sig, stopped):
@@ -85,6 +85,15 @@ def _price_plan(data, ticker, date, held_positions=None):
     }
 
 
+def _momentum_snapshot(data, ticker, date):
+    m5 = last_n_return(data, date, ticker, 5)
+    m21 = last_n_return(data, date, ticker, 21)
+    return {
+        "m5": round(float(m5), 1) if m5 is not None else None,
+        "m21": round(float(m21), 1) if m21 is not None else None,
+    }
+
+
 def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
                     held_positions=None, stopped_tickers=None):
     """
@@ -114,6 +123,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
             "sm_signal": sig, "action": act,
             "visa": t in exceptions,
         }
+        row.update(_momentum_snapshot(data, t, date))
         row.update(_price_plan(data, t, date, held_positions=held_positions))
         if deniz_bulletin:
             from .deniz import sector_regime_flag
@@ -135,7 +145,8 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
             sig = signal_for(signals, date, t)
             if sig == "GÜÇLÜ_BİRİKİM" and t in m252.index and m252[t] > config.DUAL_THRESHOLD:
                 firsatlar.append({"ticker": t, "sector": get_sector(t),
-                                  "m252": round(float(m252[t]), 1), "sm_signal": sig})
+                                  "m252": round(float(m252[t]), 1), "sm_signal": sig,
+                                  **_momentum_snapshot(data, t, date)})
             if len(firsatlar) >= 5:
                 break
 
@@ -171,6 +182,7 @@ def format_text(report):
         emoji = {"AL": "🟢", "SAT": "🔴", "BEKLE": "🟡", "FIRSAT": "⭐"}.get(r["action"], "")
         L.append(f" {r['rank']:2d}. {emoji} {r['ticker']:7s} {r['action']:6s} "
                  f"M252:%{r['m252']}  {r['sm_signal']}{v}{dz}")
+        L.append(f"        1H:%{r.get('m5')} | 1A:%{r.get('m21')} | 1Y:%{r.get('m252')}")
         L.append(f"        Fiyat:{r.get('mevcut_fiyat')} | Giriş:{r.get('giris_fiyati')} | "
                  f"Hedef:{r.get('hedef_1')}/{r.get('hedef_2')} | Stop:{r.get('stop')} | "
                  f"Risk:%{r.get('risk_pct')} | Pot:%{r.get('potansiyel_pct')}")
@@ -191,7 +203,7 @@ def format_text(report):
         L.append("")
         L.append("⭐ FIRSAT (izleme — pick değil ama güçlü birikim):")
         for f in report["firsatlar"]:
-            L.append(f"   {f['ticker']:7s} {f['sector']:7s} M252:%{f['m252']}")
+            L.append(f"   {f['ticker']:7s} {f['sector']:7s} 1H:%{f.get('m5')} 1A:%{f.get('m21')} M252:%{f['m252']}")
     L.append("")
     L.append("⚠️ Tek rejim (boğa) verisinde kalibre. Yatırım tavsiyesi değildir.")
     return "\n".join(L)

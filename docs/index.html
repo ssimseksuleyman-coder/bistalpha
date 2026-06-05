@@ -98,7 +98,8 @@
   }
   .ticker { font-size: 15px; font-weight: 750; }
   .meta { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
-  .m252 { text-align: right; font-weight: 700; }
+  .momentum { text-align: right; font-weight: 700; font-size: 12px; line-height: 1.35; }
+  .momentum span { display: block; white-space: nowrap; }
   .action { justify-self: end; border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 700; }
   .action.AL { color: var(--green); background: #ddf0e7; }
   .action.BEKLE { color: var(--yellow); background: #fbefcf; }
@@ -220,6 +221,14 @@ function priceText(item) {
   return parts.join(' | ');
 }
 
+function momentumText(item) {
+  return [
+    ['1H', item.m5],
+    ['1A', item.m21],
+    ['1Y', item.m252],
+  ].map(([label, value]) => `<span>${label} %${esc(value ?? '-')}</span>`).join('');
+}
+
 function renderTop(items) {
   if (!items || !items.length) {
     el('topList').innerHTML = '<div class="error">Top 10 verisi henuz yok.</div>';
@@ -233,7 +242,7 @@ function renderTop(items) {
         <div class="meta">${esc(detailText(item))}</div>
         <div class="meta">${esc(priceText(item))}</div>
       </div>
-      <div class="m252">%${esc(item.m252 ?? '-')}</div>
+      <div class="momentum">${momentumText(item)}</div>
       <div class="action ${actionClass(item.action)}">${esc(item.action || '-')}</div>
     </div>
   `).join('');

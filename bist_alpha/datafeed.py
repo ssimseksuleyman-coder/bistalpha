@@ -11,6 +11,7 @@ sabit liste YOK. Yeni halka arzlar otomatik girer, küçülenler düşer.
 """
 import pandas as pd
 import os
+import tempfile
 from abc import ABC, abstractmethod
 from . import config
 
@@ -96,12 +97,21 @@ class YahooFeed(DataFeed):
     def __init__(self, period="2y"):
         self.period = period
 
+    def _configure_cache(self, yf):
+        cache_dir = os.environ.get("YFINANCE_CACHE_DIR")
+        if not cache_dir:
+            cache_dir = os.path.join(tempfile.gettempdir(), "bistalpha_yfinance_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        if hasattr(yf, "set_tz_cache_location"):
+            yf.set_tz_cache_location(cache_dir)
+
     def get_latest(self):
         import yfinance as yf
         import pandas as pd
         import numpy as np
         from .universe import yahoo_symbols, BIST_TICKERS
 
+        self._configure_cache(yf)
         symbols = yahoo_symbols()
         # Toplu indir (tek istek, hızlı)
         raw = yf.download(symbols, period=self.period, interval="1d",
