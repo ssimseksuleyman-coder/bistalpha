@@ -37,6 +37,7 @@ def safe_feed():
     source = getattr(config, "DATA_SOURCE", "file")
     if source == "file":
         return datafeed.FileFeed().get_latest()
+    allow_fallback = getattr(config, "ALLOW_FILE_FALLBACK", False)
     try:
         feed = datafeed.get_feed()
         data = with_retry(feed.get_latest, retries=3, delay=10,
@@ -45,8 +46,15 @@ def safe_feed():
             raise ValueError("Veri yetersiz/boş")
         return data
     except Exception as e:
+        if not allow_fallback:
+            raise RuntimeError(
+                f"{source} canlı veri alınamadı; Excel yedeğine düşülmedi "
+                "(ALLOW_FILE_FALLBACK=0)."
+            ) from e
         print(f"[selfheal] {source} çöktü ({e}) → gömülü Excel yedeğine düşülüyor")
-        return datafeed.FileFeed().get_latest()
+        data = datafeed.FileFeed().get_latest()
+        data['_source'] = f'file_fallback_from_{source}'
+        return data
 
 
 def validate_and_repair_state(account, state_dir="portfolios"):

@@ -93,11 +93,14 @@ def select(data, signals, date, mode=None):
     if s is None:
         return [], {}, []
 
-    mcaps = data['mcaps']
-    mc = mcaps.loc[date].dropna() if date in mcaps.index else pd.Series(dtype=float)
-    if len(mc) < 50:
-        return [], {}, []
-    universe = set(mc.nlargest(config.UNIVERSE_SIZE).index.tolist())
+    if data.get('_dynamic_universe'):
+        universe = set(data['_dynamic_universe'])
+    else:
+        mcaps = data['mcaps']
+        mc = mcaps.loc[date].dropna() if date in mcaps.index else pd.Series(dtype=float)
+        if len(mc) < 50:
+            return [], {}, []
+        universe = set(mc.nlargest(config.UNIVERSE_SIZE).index.tolist())
     s = s[s.index.isin(universe)]
     valid_dual = m252[m252 > config.DUAL_THRESHOLD].index.tolist()
     s = s[s.index.isin(valid_dual)]

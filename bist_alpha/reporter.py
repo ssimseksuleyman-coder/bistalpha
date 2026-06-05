@@ -90,6 +90,11 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "date": str(date.date()) if hasattr(date, "date") else str(date),
         "mode": mode,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "source": data.get("_source"),
+        "last_data_date": str(prices.index[-1].date()) if hasattr(prices.index[-1], "date") else str(prices.index[-1]),
+        "price_count": int(prices.shape[1]),
+        "dynamic_universe_count": len(data.get("_dynamic_universe", [])) if data.get("_dynamic_universe") else None,
+        "dynamic_universe_method": data.get("_dynamic_universe_method"),
         "top10": rows,
         "firsatlar": firsatlar,
         "market_score_deniz": deniz_bulletin.get("market_score") if deniz_bulletin else None,
@@ -101,6 +106,8 @@ def format_text(report):
     L = []
     L.append(f"📊 BIST ALPHA v1.2 — {report['date']} (mod {report['mode']})")
     L.append(f"Üretim: {report['generated_at']}")
+    if report.get("source"):
+        L.append(f"Kaynak: {report['source']} | son veri: {report.get('last_data_date')} | hisse: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')}")
     if report.get("market_score_deniz") is not None:
         L.append(f"Deniz market puanı: {report['market_score_deniz']}")
     L.append("")

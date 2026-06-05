@@ -57,6 +57,9 @@ def run_cycle(label="manuel"):
     data = selfheal.safe_feed()
     feed = datafeed.get_feed()
     universe = feed.dynamic_universe(data)
+    data['_dynamic_universe'] = universe
+    data['_dynamic_universe_method'] = 'likidite_fiyat_x_hacim' if data.get('_source') in ('yahoo', 'borsapy') else 'piyasa_degeri'
+    print(f"[daemon] Kaynak: {data.get('_source', config.DATA_SOURCE)}")
     print(f"[daemon] Veri: {data['prices'].shape[1]} hisse, dinamik evren: {len(universe)}")
 
     # 3) Bakım (eksik #6) — veri sağlık + temp/log temizliği
@@ -76,13 +79,13 @@ def run_cycle(label="manuel"):
         subject = f"📊 BIST Alpha {report['date']} ({label})"
         notifier.notify_all(subject, text)
         # 6) Web dashboard JSON (GitHub Pages için docs/state/)
-        _write_dashboard_state(report, label)
+        _write_dashboard_state(report, label, data=data, universe=universe)
         return report
 
     return selfheal.guarded(_report, notify_fn=notifier.notify_all, label="rapor")
 
 
-def _write_dashboard_state(report, label):
+def _write_dashboard_state(report, label, data=None, universe=None):
     """docs/state/ altına dashboard JSON'u yaz."""
     import json
     import os
@@ -94,6 +97,11 @@ def _write_dashboard_state(report, label):
         "label": label,
         "date": report.get("date"),
         "mode": report.get("mode"),
+        "source": report.get("source") or (data or {}).get("_source"),
+        "last_data_date": report.get("last_data_date"),
+        "price_count": report.get("price_count"),
+        "dynamic_universe_count": len(universe) if universe is not None else report.get("dynamic_universe_count"),
+        "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "deniz_regime": report.get("deniz_regime"),
         "top10": report.get("top10", []),
         "accounts": {},

@@ -53,7 +53,9 @@ class FileFeed(DataFeed):
 
     def get_latest(self):
         from . import data as data_mod
-        return data_mod.load_data(path=self.path)
+        data = data_mod.load_data(path=self.path)
+        data['_source'] = 'file'
+        return data
 
 
 class APIFeed(DataFeed):
@@ -145,6 +147,7 @@ class YahooFeed(DataFeed):
             'volumes': pd.DataFrame(volumes).sort_index(),
             'mcaps': mcaps,
             'bist': bist,
+            '_source': 'yahoo',
         }
 
     def dynamic_universe(self, data, date=None, size=None):
@@ -237,6 +240,7 @@ class BorsaPyFeed(DataFeed):
             'volumes': pd.DataFrame(volumes).sort_index(),
             'mcaps': pd.DataFrame(prices),  # mcap yok → universe sıralama proxy (birim-bağımsız)
             'bist': bist,
+            '_source': 'borsapy',
         }
 
     def dynamic_universe(self, data, date=None, size=None):
