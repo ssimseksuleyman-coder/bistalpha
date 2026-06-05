@@ -35,22 +35,25 @@ def send_email(subject, body, to=None):
 
 
 def send_telegram(text):
-    """Telegram bot ile mesaj gönderir. config'de TELEGRAM_* tanımlı olmalı."""
+    """Telegram bot ile mesaj gonderir. TELEGRAM_* eksikse veya API reddederse net log basar."""
     token = getattr(config, "TELEGRAM_TOKEN", None)
     chat_id = getattr(config, "TELEGRAM_CHAT_ID", None)
     if not token or not chat_id:
-        print("[notifier] Telegram yapılandırılmamış — atlandı")
+        print("[notifier] Telegram yapilandirilmamis - atlandi")
         return False
     try:
         import requests
         url = f"https://api.telegram.org/bot{token}/sendMessage"
-        # Telegram mesaj limiti 4096 karakter
-        for chunk in [text[i:i+4000] for i in range(0, len(text), 4000)]:
-            requests.post(url, data={"chat_id": chat_id, "text": chunk}, timeout=10)
-        print("[notifier] Telegram gönderildi")
+        chunks = [text[i:i+4000] for i in range(0, len(text), 4000)] or [""]
+        for idx, chunk in enumerate(chunks, start=1):
+            resp = requests.post(url, data={"chat_id": chat_id, "text": chunk}, timeout=10)
+            if not resp.ok:
+                print(f"[notifier] Telegram API hatasi ({resp.status_code}) parca {idx}/{len(chunks)}: {resp.text[:500]}")
+                return False
+        print(f"[notifier] Telegram gonderildi ({len(chunks)} parca)")
         return True
     except Exception as e:
-        print(f"[notifier] Telegram hatası: {e}")
+        print(f"[notifier] Telegram hatasi: {e}")
         return False
 
 
@@ -59,3 +62,4 @@ def notify_all(subject, body):
     e = send_email(subject, body)
     t = send_telegram(f"{subject}\n\n{body}")
     return {"email": e, "telegram": t}
+
