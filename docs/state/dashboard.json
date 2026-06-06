@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-05T23:04:31",
-  "label": "otomatik",
+  "timestamp": "2026-06-06T10:20:30",
+  "label": "canli",
   "date": "2026-06-05",
   "mode": "F",
   "source": "yahoo",
@@ -31,6 +31,7 @@
       "stop": 126.22,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.0,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 66.0
       }
@@ -52,7 +53,8 @@
       "hedef_2": 1450.0,
       "stop": 1191.7,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.7
+      "potansiyel_pct": 1.7,
+      "deniz_regime": "normal"
     },
     {
       "rank": 3,
@@ -71,7 +73,8 @@
       "hedef_2": 1562.0,
       "stop": 1269.9,
       "risk_pct": 15.0,
-      "potansiyel_pct": 2.3
+      "potansiyel_pct": 2.3,
+      "deniz_regime": "normal"
     },
     {
       "rank": 4,
@@ -90,7 +93,8 @@
       "hedef_2": 119.87,
       "stop": 99.62,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.1
+      "potansiyel_pct": 1.1,
+      "deniz_regime": "normal"
     },
     {
       "rank": 5,
@@ -110,6 +114,7 @@
       "stop": 1976.25,
       "risk_pct": 15.0,
       "potansiyel_pct": 1.4,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 28.5,
         "hacim": "tarihsel_min_DİKKAT"
@@ -132,7 +137,8 @@
       "hedef_2": 12.99,
       "stop": 10.19,
       "risk_pct": 15.0,
-      "potansiyel_pct": 4.2
+      "potansiyel_pct": 4.2,
+      "deniz_regime": "normal"
     },
     {
       "rank": 7,
@@ -151,7 +157,8 @@
       "hedef_2": 87.88,
       "stop": 72.04,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.9
+      "potansiyel_pct": 1.9,
+      "deniz_regime": "normal"
     },
     {
       "rank": 8,
@@ -171,6 +178,7 @@
       "stop": 75.39,
       "risk_pct": 15.0,
       "potansiyel_pct": 4.1,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 41.0
       }
@@ -193,6 +201,7 @@
       "stop": 36.63,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.5,
+      "deniz_regime": "güçlü",
       "yan_kaynak": {
         "deniz_skor": 91.0,
         "fx_risk": "negatif_FX_pozisyon (-11mn)",
@@ -216,27 +225,835 @@
       "hedef_2": 205.43,
       "stop": 170.09,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.3
+      "potansiyel_pct": 1.3,
+      "deniz_regime": "normal"
     }
   ],
   "accounts": {
     "A": {
-      "n_positions": 0,
-      "cash": 1.0,
-      "positions": [],
-      "history": []
+      "n_positions": 10,
+      "cash": 0.006,
+      "value": 1.0,
+      "positions": [
+        {
+          "ticker": "KTLEV",
+          "entry": 148.5,
+          "peak": 148.5,
+          "current": 148.5,
+          "stop": 126.22,
+          "pnl_pct": 0.0,
+          "shares": 0.000669
+        },
+        {
+          "ticker": "ODINE",
+          "entry": 1402.0,
+          "peak": 1402.0,
+          "current": 1402.0,
+          "stop": 1191.7,
+          "pnl_pct": 0.0,
+          "shares": 7.1e-05
+        },
+        {
+          "ticker": "OZATD",
+          "entry": 1494.0,
+          "peak": 1494.0,
+          "current": 1494.0,
+          "stop": 1269.9,
+          "pnl_pct": 0.0,
+          "shares": 6.7e-05
+        },
+        {
+          "ticker": "IEYHO",
+          "entry": 117.2,
+          "peak": 117.2,
+          "current": 117.2,
+          "stop": 99.62,
+          "pnl_pct": 0.0,
+          "shares": 0.000848
+        },
+        {
+          "ticker": "DSTKF",
+          "entry": 2325.0,
+          "peak": 2325.0,
+          "current": 2325.0,
+          "stop": 1976.25,
+          "pnl_pct": 0.0,
+          "shares": 4.3e-05
+        },
+        {
+          "ticker": "PEKGY",
+          "entry": 11.99,
+          "peak": 11.99,
+          "current": 11.99,
+          "stop": 10.19,
+          "pnl_pct": 0.0,
+          "shares": 0.00829
+        },
+        {
+          "ticker": "ANELE",
+          "entry": 84.75,
+          "peak": 84.75,
+          "current": 84.75,
+          "stop": 72.04,
+          "pnl_pct": 0.0,
+          "shares": 0.001173
+        },
+        {
+          "ticker": "EUPWR",
+          "entry": 88.7,
+          "peak": 88.7,
+          "current": 88.7,
+          "stop": 75.39,
+          "pnl_pct": 0.0,
+          "shares": 0.001121
+        },
+        {
+          "ticker": "CVKMD",
+          "entry": 43.1,
+          "peak": 43.1,
+          "current": 43.1,
+          "stop": 36.63,
+          "pnl_pct": 0.0,
+          "shares": 0.002306
+        },
+        {
+          "ticker": "TERA",
+          "entry": 200.1,
+          "peak": 200.1,
+          "current": 200.1,
+          "stop": 170.09,
+          "pnl_pct": 0.0,
+          "shares": 0.000497
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-06-05",
+          "event": "initial_entry",
+          "total": 1.0,
+          "n_pos": 10,
+          "trades": [
+            {
+              "type": "BUY",
+              "ticker": "KTLEV",
+              "price": 148.5,
+              "shares": 0.000669,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ODINE",
+              "price": 1402.0,
+              "shares": 7.1e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "OZATD",
+              "price": 1494.0,
+              "shares": 6.7e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "IEYHO",
+              "price": 117.2,
+              "shares": 0.000848,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "DSTKF",
+              "price": 2325.0,
+              "shares": 4.3e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "PEKGY",
+              "price": 11.99,
+              "shares": 0.00829,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ANELE",
+              "price": 84.75,
+              "shares": 0.001173,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "EUPWR",
+              "price": 88.7,
+              "shares": 0.001121,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "CVKMD",
+              "price": 43.1,
+              "shares": 0.002306,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "TERA",
+              "price": 200.1,
+              "shares": 0.000497,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            }
+          ]
+        }
+      ],
+      "last_event": {
+        "date": "2026-06-05",
+        "event": "initial_entry",
+        "total": 1.0,
+        "n_pos": 10,
+        "trades": [
+          {
+            "type": "BUY",
+            "ticker": "KTLEV",
+            "price": 148.5,
+            "shares": 0.000669,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ODINE",
+            "price": 1402.0,
+            "shares": 7.1e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "OZATD",
+            "price": 1494.0,
+            "shares": 6.7e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "IEYHO",
+            "price": 117.2,
+            "shares": 0.000848,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "DSTKF",
+            "price": 2325.0,
+            "shares": 4.3e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "PEKGY",
+            "price": 11.99,
+            "shares": 0.00829,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ANELE",
+            "price": 84.75,
+            "shares": 0.001173,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "EUPWR",
+            "price": 88.7,
+            "shares": 0.001121,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "CVKMD",
+            "price": 43.1,
+            "shares": 0.002306,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "TERA",
+            "price": 200.1,
+            "shares": 0.000497,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          }
+        ]
+      }
     },
     "B": {
-      "n_positions": 0,
-      "cash": 1.0,
-      "positions": [],
-      "history": []
+      "n_positions": 10,
+      "cash": 0.006,
+      "value": 1.0,
+      "positions": [
+        {
+          "ticker": "KTLEV",
+          "entry": 148.5,
+          "peak": 148.5,
+          "current": 148.5,
+          "stop": 126.22,
+          "pnl_pct": 0.0,
+          "shares": 0.00069
+        },
+        {
+          "ticker": "ODINE",
+          "entry": 1402.0,
+          "peak": 1402.0,
+          "current": 1402.0,
+          "stop": 1191.7,
+          "pnl_pct": 0.0,
+          "shares": 7.3e-05
+        },
+        {
+          "ticker": "OZATD",
+          "entry": 1494.0,
+          "peak": 1494.0,
+          "current": 1494.0,
+          "stop": 1269.9,
+          "pnl_pct": 0.0,
+          "shares": 6.9e-05
+        },
+        {
+          "ticker": "IEYHO",
+          "entry": 117.2,
+          "peak": 117.2,
+          "current": 117.2,
+          "stop": 99.62,
+          "pnl_pct": 0.0,
+          "shares": 0.000874
+        },
+        {
+          "ticker": "DSTKF",
+          "entry": 2325.0,
+          "peak": 2325.0,
+          "current": 2325.0,
+          "stop": 1976.25,
+          "pnl_pct": 0.0,
+          "shares": 6.6e-05
+        },
+        {
+          "ticker": "PEKGY",
+          "entry": 11.99,
+          "peak": 11.99,
+          "current": 11.99,
+          "stop": 10.19,
+          "pnl_pct": 0.0,
+          "shares": 0.005128
+        },
+        {
+          "ticker": "ANELE",
+          "entry": 84.75,
+          "peak": 84.75,
+          "current": 84.75,
+          "stop": 72.04,
+          "pnl_pct": 0.0,
+          "shares": 0.001209
+        },
+        {
+          "ticker": "EUPWR",
+          "entry": 88.7,
+          "peak": 88.7,
+          "current": 88.7,
+          "stop": 75.39,
+          "pnl_pct": 0.0,
+          "shares": 0.001155
+        },
+        {
+          "ticker": "CVKMD",
+          "entry": 43.1,
+          "peak": 43.1,
+          "current": 43.1,
+          "stop": 36.63,
+          "pnl_pct": 0.0,
+          "shares": 0.001427
+        },
+        {
+          "ticker": "TERA",
+          "entry": 200.1,
+          "peak": 200.1,
+          "current": 200.1,
+          "stop": 170.09,
+          "pnl_pct": 0.0,
+          "shares": 0.000512
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-06-05",
+          "event": "initial_entry",
+          "total": 1.0,
+          "n_pos": 10,
+          "trades": [
+            {
+              "type": "BUY",
+              "ticker": "KTLEV",
+              "price": 148.5,
+              "shares": 0.00069,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ODINE",
+              "price": 1402.0,
+              "shares": 7.3e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "OZATD",
+              "price": 1494.0,
+              "shares": 6.9e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "IEYHO",
+              "price": 117.2,
+              "shares": 0.000874,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "DSTKF",
+              "price": 2325.0,
+              "shares": 6.6e-05,
+              "weight": 1.5,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "PEKGY",
+              "price": 11.99,
+              "shares": 0.005128,
+              "weight": 0.6,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ANELE",
+              "price": 84.75,
+              "shares": 0.001209,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "EUPWR",
+              "price": 88.7,
+              "shares": 0.001155,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "CVKMD",
+              "price": 43.1,
+              "shares": 0.001427,
+              "weight": 0.6,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "TERA",
+              "price": 200.1,
+              "shares": 0.000512,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            }
+          ]
+        }
+      ],
+      "last_event": {
+        "date": "2026-06-05",
+        "event": "initial_entry",
+        "total": 1.0,
+        "n_pos": 10,
+        "trades": [
+          {
+            "type": "BUY",
+            "ticker": "KTLEV",
+            "price": 148.5,
+            "shares": 0.00069,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ODINE",
+            "price": 1402.0,
+            "shares": 7.3e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "OZATD",
+            "price": 1494.0,
+            "shares": 6.9e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "IEYHO",
+            "price": 117.2,
+            "shares": 0.000874,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "DSTKF",
+            "price": 2325.0,
+            "shares": 6.6e-05,
+            "weight": 1.5,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "PEKGY",
+            "price": 11.99,
+            "shares": 0.005128,
+            "weight": 0.6,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ANELE",
+            "price": 84.75,
+            "shares": 0.001209,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "EUPWR",
+            "price": 88.7,
+            "shares": 0.001155,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "CVKMD",
+            "price": 43.1,
+            "shares": 0.001427,
+            "weight": 0.6,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "TERA",
+            "price": 200.1,
+            "shares": 0.000512,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          }
+        ]
+      }
     },
     "F": {
-      "n_positions": 0,
-      "cash": 1.0,
-      "positions": [],
-      "history": []
+      "n_positions": 10,
+      "cash": 0.006,
+      "value": 1.0,
+      "positions": [
+        {
+          "ticker": "KTLEV",
+          "entry": 148.5,
+          "peak": 148.5,
+          "current": 148.5,
+          "stop": 126.22,
+          "pnl_pct": 0.0,
+          "shares": 0.00069
+        },
+        {
+          "ticker": "ODINE",
+          "entry": 1402.0,
+          "peak": 1402.0,
+          "current": 1402.0,
+          "stop": 1191.7,
+          "pnl_pct": 0.0,
+          "shares": 7.3e-05
+        },
+        {
+          "ticker": "OZATD",
+          "entry": 1494.0,
+          "peak": 1494.0,
+          "current": 1494.0,
+          "stop": 1269.9,
+          "pnl_pct": 0.0,
+          "shares": 6.9e-05
+        },
+        {
+          "ticker": "IEYHO",
+          "entry": 117.2,
+          "peak": 117.2,
+          "current": 117.2,
+          "stop": 99.62,
+          "pnl_pct": 0.0,
+          "shares": 0.000874
+        },
+        {
+          "ticker": "DSTKF",
+          "entry": 2325.0,
+          "peak": 2325.0,
+          "current": 2325.0,
+          "stop": 1976.25,
+          "pnl_pct": 0.0,
+          "shares": 6.6e-05
+        },
+        {
+          "ticker": "PEKGY",
+          "entry": 11.99,
+          "peak": 11.99,
+          "current": 11.99,
+          "stop": 10.19,
+          "pnl_pct": 0.0,
+          "shares": 0.005128
+        },
+        {
+          "ticker": "ANELE",
+          "entry": 84.75,
+          "peak": 84.75,
+          "current": 84.75,
+          "stop": 72.04,
+          "pnl_pct": 0.0,
+          "shares": 0.001209
+        },
+        {
+          "ticker": "EUPWR",
+          "entry": 88.7,
+          "peak": 88.7,
+          "current": 88.7,
+          "stop": 75.39,
+          "pnl_pct": 0.0,
+          "shares": 0.001155
+        },
+        {
+          "ticker": "CVKMD",
+          "entry": 43.1,
+          "peak": 43.1,
+          "current": 43.1,
+          "stop": 36.63,
+          "pnl_pct": 0.0,
+          "shares": 0.001427
+        },
+        {
+          "ticker": "TERA",
+          "entry": 200.1,
+          "peak": 200.1,
+          "current": 200.1,
+          "stop": 170.09,
+          "pnl_pct": 0.0,
+          "shares": 0.000512
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-06-05",
+          "event": "initial_entry",
+          "total": 1.0,
+          "n_pos": 10,
+          "trades": [
+            {
+              "type": "BUY",
+              "ticker": "KTLEV",
+              "price": 148.5,
+              "shares": 0.00069,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ODINE",
+              "price": 1402.0,
+              "shares": 7.3e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "OZATD",
+              "price": 1494.0,
+              "shares": 6.9e-05,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "IEYHO",
+              "price": 117.2,
+              "shares": 0.000874,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "DSTKF",
+              "price": 2325.0,
+              "shares": 6.6e-05,
+              "weight": 1.5,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "PEKGY",
+              "price": 11.99,
+              "shares": 0.005128,
+              "weight": 0.6,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "ANELE",
+              "price": 84.75,
+              "shares": 0.001209,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "EUPWR",
+              "price": 88.7,
+              "shares": 0.001155,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "CVKMD",
+              "price": 43.1,
+              "shares": 0.001427,
+              "weight": 0.6,
+              "reason": "initial_entry"
+            },
+            {
+              "type": "BUY",
+              "ticker": "TERA",
+              "price": 200.1,
+              "shares": 0.000512,
+              "weight": 1.0,
+              "reason": "initial_entry"
+            }
+          ]
+        }
+      ],
+      "last_event": {
+        "date": "2026-06-05",
+        "event": "initial_entry",
+        "total": 1.0,
+        "n_pos": 10,
+        "trades": [
+          {
+            "type": "BUY",
+            "ticker": "KTLEV",
+            "price": 148.5,
+            "shares": 0.00069,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ODINE",
+            "price": 1402.0,
+            "shares": 7.3e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "OZATD",
+            "price": 1494.0,
+            "shares": 6.9e-05,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "IEYHO",
+            "price": 117.2,
+            "shares": 0.000874,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "DSTKF",
+            "price": 2325.0,
+            "shares": 6.6e-05,
+            "weight": 1.5,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "PEKGY",
+            "price": 11.99,
+            "shares": 0.005128,
+            "weight": 0.6,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "ANELE",
+            "price": 84.75,
+            "shares": 0.001209,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "EUPWR",
+            "price": 88.7,
+            "shares": 0.001155,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "CVKMD",
+            "price": 43.1,
+            "shares": 0.001427,
+            "weight": 0.6,
+            "reason": "initial_entry"
+          },
+          {
+            "type": "BUY",
+            "ticker": "TERA",
+            "price": 200.1,
+            "shares": 0.000512,
+            "weight": 1.0,
+            "reason": "initial_entry"
+          }
+        ]
+      }
     }
   }
 }

@@ -115,6 +115,10 @@
   }
   .account-title { display: flex; justify-content: space-between; gap: 10px; font-weight: 750; }
   .position { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; color: var(--muted); font-size: 12px; }
+  .position strong, .trade strong { color: var(--text); }
+  .trade { display: flex; justify-content: space-between; gap: 12px; padding-top: 6px; color: var(--muted); font-size: 11px; }
+  .profit { color: var(--green); font-weight: 750; }
+  .loss { color: var(--red); font-weight: 750; }
   .empty { color: var(--muted); padding-top: 8px; font-size: 12px; }
   .notice { margin-top: 14px; padding: 12px 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; background: #fffdf7; }
   .error { color: var(--red); padding: 14px 16px; }
@@ -256,11 +260,21 @@ function renderAccounts(accounts) {
     if (!acc) return `<div class="account"><div class="account-title">Hesap ${name}<span>-</span></div><div class="empty">Veri yok</div></div>`;
     if (acc.error) return `<div class="account"><div class="account-title">Hesap ${name}<span>Hata</span></div><div class="empty">${esc(acc.error)}</div></div>`;
     const positions = acc.positions || [];
+    const lastTrades = (acc.last_event?.trades || []).slice(-4);
+    const perfClass = value => Number(value) >= 0 ? 'profit' : 'loss';
     return `<div class="account">
       <div class="account-title"><span>Hesap ${name}</span><span>${esc(acc.n_positions ?? positions.length)} pozisyon</span></div>
+      <div class="meta">Deger ${esc(acc.value ?? '-')} | Nakit ${esc(acc.cash ?? '-')}</div>
       ${positions.length ? positions.slice(0, 8).map(p => `
-        <div class="position"><strong>${esc(p.ticker)}</strong><span>Giris ${esc(p.entry)} | Zirve ${esc(p.peak)}</span></div>
+        <div class="position">
+          <strong>${esc(p.ticker)}</strong>
+          <span>Giris ${esc(p.entry)} | Gun ${esc(p.current)} | Stop ${esc(p.stop)} | <b class="${perfClass(p.pnl_pct)}">%${esc(p.pnl_pct ?? '-')}</b></span>
+        </div>
       `).join('') : '<div class="empty">Henuz pozisyon yok</div>'}
+      ${lastTrades.length ? `<div class="meta">Son islem: ${esc(acc.last_event?.event || '-')} ${esc(acc.last_event?.date || '')}</div>` : ''}
+      ${lastTrades.map(t => `
+        <div class="trade"><strong>${esc(t.type)} ${esc(t.ticker)}</strong><span>${esc(t.price)} ${t.pnl_pct != null ? '| P/L %' + esc(t.pnl_pct) : ''}</span></div>
+      `).join('')}
     </div>`;
   }).join('');
 }

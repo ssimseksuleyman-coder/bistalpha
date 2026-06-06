@@ -53,14 +53,19 @@ def step(data, signals, date=None, slippage=None):
 
     rebal_dates = __import__('bist_alpha.backtest', fromlist=['_rebal_dates'])._rebal_dates(prices)
     is_rebal = date in rebal_dates
+    trade_date = str(date.date()) if hasattr(date, "date") else str(date)
 
     results = {}
     for acc, mode in ACCOUNTS.items():
         state = pf.load(acc, state_dir=config.STATE_DIR)
         # 1) Stop kontrol
         sells = pf.check_stops(state, prices_today)
+        stop_trades = pf.close_positions(state, sells, prices_today,
+                                         slippage=slippage, trade_date=trade_date)
         # 2) Rebalance
-        if is_rebal:
+        initial_entry = not state.get("positions") and not state.get("history")
+        should_rebalance = is_rebal or initial_entry
+        if should_rebalance:
             picks, sig_map, exc = strat_mod.select(data, signals, date, mode=mode)
             if mode in ("B", "F"):
                 weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
@@ -69,12 +74,18 @@ def step(data, signals, date=None, slippage=None):
             scale = strat_mod.regime_scale(data, date)
             if scale != 1.0:
                 weights = {t: w * scale for t, w in weights.items()}
-            pf.rebalance(state, weights, prices_today, slippage=slippage)
+            reason = "initial_entry" if initial_entry else "rebalance"
+            pf.rebalance(state, weights, prices_today, slippage=slippage,
+                         trade_date=trade_date, reason=reason)
         pf.save(state, state_dir=config.STATE_DIR)
         results[acc] = {
             "value": round(pf.current_value(state, prices_today), 4),
             "n_pos": len(state["positions"]),
             "sells": sells,
+            "stop_trades": stop_trades,
+            "rebalance": should_rebalance,
+            "initial_entry": initial_entry,
+            "last_event": state.get("history", [])[-1] if state.get("history") else None,
         }
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
             "rebalance": is_rebal, "accounts": results}

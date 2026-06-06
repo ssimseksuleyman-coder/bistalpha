@@ -76,7 +76,44 @@ def check_stops(state, prices_today):
     return sells
 
 
-def rebalance(state, picks_with_weights, prices_today, slippage=0.0):
+def _trade_date(trade_date=None):
+    return trade_date or datetime.now().strftime("%Y-%m-%d")
+
+
+def close_positions(state, sells, prices_today, slippage=0.0, trade_date=None):
+    """Stop sinyallerini uygular: pozisyonu kapatır, nakde döner ve işlem kaydı tutar."""
+    friction = config.COMMISSION / 2 + slippage
+    trades = []
+    for item in sells:
+        tic = item.get("ticker")
+        pos = state.get("positions", {}).get(tic)
+        if not pos:
+            continue
+        price = prices_today.get(tic, item.get("price", pos["entry"]))
+        proceeds = pos["shares"] * price * (1 - friction)
+        state["cash"] += proceeds
+        pnl_pct = (price / pos["entry"] - 1) * 100
+        trades.append({
+            "type": "SELL",
+            "ticker": tic,
+            "price": round(price, 2),
+            "shares": round(pos["shares"], 6),
+            "reason": item.get("reason", "stop"),
+            "pnl_pct": round(pnl_pct, 2),
+        })
+        del state["positions"][tic]
+    if trades:
+        state.setdefault("history", []).append({
+            "date": _trade_date(trade_date),
+            "event": "stop",
+            "total": round(current_value(state, prices_today), 4),
+            "n_pos": len(state.get("positions", {})),
+            "trades": trades,
+        })
+    return trades
+
+
+def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=None, reason="rebalance"):
     """
     Portföyü yeni pick'lere göre günceller (sat + weighted al).
     picks_with_weights: {ticker: lot_weight}
@@ -84,6 +121,7 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0):
     Pozisyon state'i KALICI olarak günceller.
     """
     friction = config.COMMISSION / 2 + slippage
+    trades = []
     # Toplam değer
     total = state["cash"]
     for tic, pos in state["positions"].items():
@@ -93,6 +131,14 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0):
     for tic, pos in list(state["positions"].items()):
         p = prices_today.get(tic, pos['entry'])
         state["cash"] += pos['shares'] * p * (1 - friction)
+        trades.append({
+            "type": "SELL",
+            "ticker": tic,
+            "price": round(p, 2),
+            "shares": round(pos["shares"], 6),
+            "reason": reason,
+            "pnl_pct": round((p / pos["entry"] - 1) * 100, 2),
+        })
     state["positions"] = {}
     # Weighted al
     tw = sum(picks_with_weights.values())
@@ -103,8 +149,19 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0):
                 alloc = total * (w / tw) * (1 - friction)
                 state["positions"][tic] = {"entry": ep, "peak": ep, "shares": alloc / ep}
                 state["cash"] -= alloc
-    state["history"].append({"date": datetime.now().strftime("%Y-%m-%d"),
-                             "total": round(total, 4), "n_pos": len(state["positions"])})
+                trades.append({
+                    "type": "BUY",
+                    "ticker": tic,
+                    "price": round(ep, 2),
+                    "shares": round(alloc / ep, 6),
+                    "weight": round(w, 4),
+                    "reason": reason,
+                })
+    state["history"].append({"date": _trade_date(trade_date),
+                             "event": reason,
+                             "total": round(current_value(state, prices_today), 4),
+                             "n_pos": len(state["positions"]),
+                             "trades": trades})
     return state
 
 

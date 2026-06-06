@@ -99,6 +99,16 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     from bist_alpha import portfolio as pf
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
+    prices_today = {}
+    if data is not None and data.get("prices") is not None:
+        try:
+            pd = __import__("pandas")
+            prices = data["prices"]
+            last = prices.index[-1]
+            prices_today = {t: prices.loc[last, t] for t in prices.columns
+                            if not pd.isna(prices.loc[last, t])}
+        except Exception:
+            prices_today = {}
     state = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "label": label,
@@ -119,13 +129,26 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     for acc in ["A", "B", "F"]:
         try:
             s = pf.load(acc, state_dir="portfolios")
+            positions = []
+            for t, p in s.get("positions", {}).items():
+                cur = prices_today.get(t, p["entry"])
+                stop = pf.stop_level(p)
+                positions.append({
+                    "ticker": t,
+                    "entry": round(p["entry"], 2),
+                    "peak": round(p["peak"], 2),
+                    "current": round(cur, 2),
+                    "stop": round(stop, 2),
+                    "pnl_pct": round((cur / p["entry"] - 1) * 100, 2),
+                    "shares": round(p.get("shares", 0), 6),
+                })
             state["accounts"][acc] = {
                 "n_positions": len(s.get("positions", {})),
                 "cash": round(s.get("cash", 0), 4),
-                "positions": [{"ticker": t, "entry": round(p["entry"], 2),
-                               "peak": round(p["peak"], 2)}
-                              for t, p in s.get("positions", {}).items()],
+                "value": round(pf.current_value(s, prices_today), 4),
+                "positions": positions,
                 "history": s.get("history", [])[-10:],
+                "last_event": s.get("history", [])[-1] if s.get("history") else None,
             }
         except Exception:
             state["accounts"][acc] = {"error": "yüklenemedi"}
