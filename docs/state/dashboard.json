@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-06-06T22:30:52",
-  "label": "otomatik",
+  "timestamp": "2026-06-07T00:08:13",
+  "label": "canli",
   "date": "2026-06-05",
   "mode": "F",
   "source": "yahoo",
   "source_pool_count": 607,
-  "source_pool_method": "tradingview_bist_scanner_cache",
+  "source_pool_method": "tradingview_bist_scanner",
   "source_pool_fallback": false,
   "last_data_date": "2026-06-05",
   "price_count": 605,
@@ -31,6 +31,7 @@
       "stop": 126.22,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.0,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 66.0
       }
@@ -52,7 +53,8 @@
       "hedef_2": 1450.0,
       "stop": 1191.7,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.7
+      "potansiyel_pct": 1.7,
+      "deniz_regime": "normal"
     },
     {
       "rank": 3,
@@ -71,7 +73,8 @@
       "hedef_2": 1562.0,
       "stop": 1269.9,
       "risk_pct": 15.0,
-      "potansiyel_pct": 2.3
+      "potansiyel_pct": 2.3,
+      "deniz_regime": "normal"
     },
     {
       "rank": 4,
@@ -90,7 +93,8 @@
       "hedef_2": 119.87,
       "stop": 99.62,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.1
+      "potansiyel_pct": 1.1,
+      "deniz_regime": "normal"
     },
     {
       "rank": 5,
@@ -110,6 +114,7 @@
       "stop": 1976.25,
       "risk_pct": 15.0,
       "potansiyel_pct": 1.4,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 28.5,
         "hacim": "tarihsel_min_DİKKAT"
@@ -132,7 +137,8 @@
       "hedef_2": 12.99,
       "stop": 10.19,
       "risk_pct": 15.0,
-      "potansiyel_pct": 4.2
+      "potansiyel_pct": 4.2,
+      "deniz_regime": "normal"
     },
     {
       "rank": 7,
@@ -151,7 +157,8 @@
       "hedef_2": 87.88,
       "stop": 72.04,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.9
+      "potansiyel_pct": 1.9,
+      "deniz_regime": "normal"
     },
     {
       "rank": 8,
@@ -171,6 +178,7 @@
       "stop": 75.39,
       "risk_pct": 15.0,
       "potansiyel_pct": 4.1,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 41.0
       }
@@ -193,6 +201,7 @@
       "stop": 36.63,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.5,
+      "deniz_regime": "güçlü",
       "yan_kaynak": {
         "deniz_skor": 91.0,
         "fx_risk": "negatif_FX_pozisyon (-11mn)",
@@ -216,7 +225,8 @@
       "hedef_2": 205.43,
       "stop": 170.09,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.3
+      "potansiyel_pct": 1.3,
+      "deniz_regime": "normal"
     }
   ],
   "accounts": {
@@ -1045,5 +1055,190 @@
         ]
       }
     }
+  },
+  "forward_test": {
+    "updated_at": "2026-06-07T00:20:28",
+    "days_tracked": 1,
+    "latest_date": "2026-06-05",
+    "latest_avg_return_pct": 0.0,
+    "latest_hit_rate_pct": 0.0,
+    "latest_age_trading_days": 0,
+    "tracked_count": 10,
+    "recent": [
+      {
+        "date": "2026-06-05",
+        "generated_at": null,
+        "mode": "F",
+        "source": "yahoo",
+        "last_data_date": "2026-06-05",
+        "items": [
+          {
+            "rank": 1,
+            "ticker": "KTLEV",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XUTEK",
+            "entry_price": 148.5,
+            "m5": 17.7,
+            "m21": 28.8,
+            "m252": 1906.8,
+            "target_1": 152.97,
+            "target_2": 157.43,
+            "stop": 126.22,
+            "current_price": 148.5,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 2,
+            "ticker": "ODINE",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XUTEK",
+            "entry_price": 1402.0,
+            "m5": 10.9,
+            "m21": 17.8,
+            "m252": 1747.2,
+            "target_1": 1426.0,
+            "target_2": 1450.0,
+            "stop": 1191.7,
+            "current_price": 1402.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 3,
+            "ticker": "OZATD",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XU100",
+            "entry_price": 1494.0,
+            "m5": 9.2,
+            "m21": 173.6,
+            "m252": 971.7,
+            "target_1": 1528.0,
+            "target_2": 1562.0,
+            "stop": 1269.9,
+            "current_price": 1494.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 4,
+            "ticker": "IEYHO",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XHOLD",
+            "entry_price": 117.2,
+            "m5": 0.0,
+            "m21": 16.4,
+            "m252": 708.3,
+            "target_1": 118.53,
+            "target_2": 119.87,
+            "stop": 99.62,
+            "current_price": 117.2,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 5,
+            "ticker": "DSTKF",
+            "action": "AL",
+            "signal": "GÜÇLÜ_BİRİKİM",
+            "sector": "XFINK",
+            "entry_price": 2325.0,
+            "m5": 10.5,
+            "m21": -16.2,
+            "m252": 707.3,
+            "target_1": 2357.0,
+            "target_2": 2389.0,
+            "stop": 1976.25,
+            "current_price": 2325.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 6,
+            "ticker": "PEKGY",
+            "action": "BEKLE",
+            "signal": "Üst_fitil_dağıtım",
+            "sector": "XGMYO",
+            "entry_price": 11.99,
+            "m5": -10.5,
+            "m21": -29.5,
+            "m252": 541.2,
+            "target_1": 12.49,
+            "target_2": 12.99,
+            "stop": 10.19,
+            "current_price": 11.99,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 7,
+            "ticker": "ANELE",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XU100",
+            "entry_price": 84.75,
+            "m5": -10.9,
+            "m21": 37.9,
+            "m252": 418.3,
+            "target_1": 86.32,
+            "target_2": 87.88,
+            "stop": 72.04,
+            "current_price": 84.75,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 8,
+            "ticker": "EUPWR",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XELKT",
+            "entry_price": 88.7,
+            "m5": 16.6,
+            "m21": 49.1,
+            "m252": 237.3,
+            "target_1": 92.37,
+            "target_2": 96.03,
+            "stop": 75.39,
+            "current_price": 88.7,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 9,
+            "ticker": "CVKMD",
+            "action": "BEKLE",
+            "signal": "Üst_fitil_dağıtım",
+            "sector": "XMADN",
+            "entry_price": 43.1,
+            "m5": -8.8,
+            "m21": 15.8,
+            "m252": 256.2,
+            "target_1": 44.59,
+            "target_2": 46.07,
+            "stop": 36.63,
+            "current_price": 43.1,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 10,
+            "ticker": "TERA",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XUMAL",
+            "entry_price": 200.1,
+            "m5": -4.8,
+            "m21": -18.7,
+            "m252": 246.7,
+            "target_1": 202.77,
+            "target_2": 205.43,
+            "stop": 170.09,
+            "current_price": 200.1,
+            "return_pct": 0.0
+          }
+        ],
+        "as_of": "2026-06-05",
+        "age_trading_days": 0,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0,
+        "tracked_count": 10
+      }
+    ]
   }
 }

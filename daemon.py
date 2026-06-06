@@ -134,6 +134,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     import json
     import os
     from bist_alpha import portfolio as pf
+    from bist_alpha import forward_test
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -163,6 +164,10 @@ def _write_dashboard_state(report, label, data=None, universe=None):
         "top10": report.get("top10", []),
         "accounts": {},
     }
+    try:
+        state["forward_test"] = forward_test.update(report, data=data)
+    except Exception as e:
+        state["forward_test"] = {"error": str(e)}
     for acc in ["A", "B", "F"]:
         try:
             s = pf.load(acc, state_dir="portfolios")

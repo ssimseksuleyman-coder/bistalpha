@@ -105,7 +105,10 @@ def select(data, signals, date, mode=None):
     valid_dual = m252[m252 > config.DUAL_THRESHOLD].index.tolist()
     s = s[s.index.isin(valid_dual)]
 
-    ranked = s.sort_values(ascending=False)
+    ranked = (s.rename("score").to_frame()
+              .assign(ticker=lambda df: df.index.astype(str))
+              .sort_values(["score", "ticker"],
+                           ascending=[False, True], kind="mergesort")["score"])
     selected, sektor_sayisi, sig_map, exceptions = [], {}, {}, []
 
     # Day 30 Bulgu 1 — geç giriş filtresi (VARSAYILAN KAPALI)

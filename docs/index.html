@@ -117,6 +117,12 @@
   .position { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; color: var(--muted); font-size: 12px; }
   .position strong, .trade strong { color: var(--text); }
   .trade { display: flex; justify-content: space-between; gap: 12px; padding-top: 6px; color: var(--muted); font-size: 11px; }
+  .forward { padding: 14px 16px; }
+  .forward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .forward-box { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--soft); }
+  .forward-value { font-size: 18px; font-weight: 750; line-height: 1; }
+  .forward-label { color: var(--muted); font-size: 11px; margin-top: 6px; }
+  .forward-row { display: flex; justify-content: space-between; gap: 10px; padding-top: 10px; color: var(--muted); font-size: 12px; }
   .profit { color: var(--green); font-weight: 750; }
   .loss { color: var(--red); font-weight: 750; }
   .empty { color: var(--muted); padding-top: 8px; font-size: 12px; }
@@ -173,6 +179,14 @@
             <div class="stat"><div class="stat-value" id="statUniverse">-</div><div class="stat-label">Dinamik evren</div></div>
             <div class="stat"><div class="stat-value" id="statLastData">-</div><div class="stat-label">Son veri</div></div>
           </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <h2>30 Gun Ileri Test</h2>
+            <span class="stamp" id="forwardStamp"></span>
+          </div>
+          <div class="forward" id="forwardTest"></div>
         </div>
 
         <div class="card" style="margin-top:14px">
@@ -279,6 +293,35 @@ function renderAccounts(accounts) {
   }).join('');
 }
 
+function renderForward(info) {
+  if (!info) {
+    el('forwardTest').innerHTML = '<div class="empty">Ileri test verisi henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('forwardTest').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const recent = (info.recent || []).slice(-1)[0];
+  const topRows = (recent?.items || []).slice(0, 5).map(item => {
+    const cls = Number(item.return_pct) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(item.ticker)}</strong>
+      <span>Giris ${esc(item.entry_price ?? '-')} | Son ${esc(item.current_price ?? '-')} | <b class="${cls}">%${esc(item.return_pct ?? '-')}</b></span>
+    </div>`;
+  }).join('');
+  el('forwardStamp').textContent = info.latest_date || '';
+  el('forwardTest').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.days_tracked ?? '-')}</div><div class="forward-label">kayit gunu</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(info.latest_avg_return_pct ?? '-')}</div><div class="forward-label">son Top 10 ort.</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(info.latest_hit_rate_pct ?? '-')}</div><div class="forward-label">arti oran</div></div>
+    </div>
+    <div class="meta" style="padding-top:10px">Yas: ${esc(info.latest_age_trading_days ?? 0)} islem gunu | Izlenen: ${esc(info.tracked_count ?? '-')}</div>
+    ${topRows || '<div class="empty">Hisse detayi yok</div>'}
+  `;
+}
+
 async function loadDashboard() {
   el('status').textContent = 'Guncelleniyor';
   try {
@@ -287,6 +330,7 @@ async function loadDashboard() {
     const data = await response.json();
     const accounts = data.accounts || {};
     renderTop(data.top10 || []);
+    renderForward(data.forward_test);
     renderAccounts(accounts);
     el('subtitle').textContent = `${data.label || 'otomatik'} calisma | ${fmtTime(data.timestamp)}`;
     el('topStamp').textContent = data.date || '';

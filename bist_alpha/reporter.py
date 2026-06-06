@@ -138,7 +138,11 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
     # FIRSAT listesi: pick olmayan ama GÜÇLÜ BİRİKİM + yüksek momentum
     firsatlar = []
     if s is not None:
-        top_scored = s.sort_values(ascending=False).head(30).index
+        top_scored = (s.rename("score").to_frame()
+                      .assign(ticker=lambda df: df.index.astype(str))
+                      .sort_values(["score", "ticker"],
+                                   ascending=[False, True], kind="mergesort")
+                      .head(30).index)
         for t in top_scored:
             if t in picks:
                 continue
