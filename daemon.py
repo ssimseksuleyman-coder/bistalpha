@@ -32,7 +32,16 @@ from bist_alpha import selfheal
 
 
 def _prices_today(data):
-    prices_today = _prices_today(data)
+    prices_today = {}
+    if data is not None and data.get("prices") is not None:
+        try:
+            pd = __import__("pandas")
+            prices = data["prices"]
+            last = prices.index[-1]
+            prices_today = {t: float(prices.loc[last, t]) for t in prices.columns
+                            if not pd.isna(prices.loc[last, t])}
+        except Exception:
+            prices_today = {}
     return prices_today
 
 
@@ -44,7 +53,7 @@ def _shadow_summary(data):
     for acc in ["A", "B", "F"]:
         try:
             s = pf.load(acc, state_dir=config.STATE_DIR)
-            value = pf.current_value(s, prices_today)
+            value = float(pf.current_value(s, prices_today))
             last_event = s.get("history", [])[-1] if s.get("history") else None
             accounts[acc] = {
                 "value": round(value, 4),
