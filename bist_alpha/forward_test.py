@@ -28,7 +28,8 @@ def _default_path() -> Path:
 def _round(value, digits=2):
     if value is None or pd.isna(value):
         return None
-    return round(float(value), digits)
+    rounded = round(float(value), digits)
+    return 0.0 if rounded == 0 else rounded
 
 
 def _last_price_map(data):
