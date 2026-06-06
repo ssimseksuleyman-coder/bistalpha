@@ -216,7 +216,9 @@ def main():
         return
 
     if args.once:
-        run_cycle(args.once)
+        result = run_cycle(args.once)
+        if result is None:
+            raise SystemExit(1)
     else:
         scheduler.run_loop(run_cycle)
 
