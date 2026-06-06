@@ -20,6 +20,7 @@ import json
 from datetime import datetime
 
 from bist_alpha import config, datafeed
+from bist_alpha import notifier
 from bist_alpha import signals as sig_mod
 from bist_alpha import strategy as strat_mod
 from bist_alpha import portfolio as pf
@@ -42,6 +43,25 @@ def _attach_dynamic_universe(feed, data):
     return data
 
 
+def _format_trade_notice(result):
+    """Sadece gerçekleşen shadow işlemleri için kısa bildirim metni üretir."""
+    lines = []
+    for acc, info in result.get("accounts", {}).items():
+        event = info.get("last_event") or {}
+        trades = info.get("new_trades") or []
+        if not trades:
+            continue
+        lines.append(f"Hesap {acc} | {event.get('event', 'islem')} | değer {info.get('value')} | pozisyon {info.get('n_pos')}")
+        for tr in trades[:12]:
+            extra = f" | P/L %{tr['pnl_pct']}" if tr.get("pnl_pct") is not None else ""
+            lines.append(f"  {tr.get('type')} {tr.get('ticker')} @ {tr.get('price')}{extra}")
+        if len(trades) > 12:
+            lines.append(f"  ... {len(trades) - 12} işlem daha")
+    if not lines:
+        return None
+    return f"Tarih: {result.get('date')}\n\n" + "\n".join(lines)
+
+
 def step(data, signals, date=None, slippage=None):
     """Tüm hesaplar için bir shadow adımı."""
     prices = data['prices']
@@ -62,6 +82,7 @@ def step(data, signals, date=None, slippage=None):
         sells = pf.check_stops(state, prices_today)
         stop_trades = pf.close_positions(state, sells, prices_today,
                                          slippage=slippage, trade_date=trade_date)
+        new_trades = list(stop_trades)
         # 2) Rebalance
         initial_entry = not state.get("positions") and not state.get("history")
         should_rebalance = is_rebal or initial_entry
@@ -77,6 +98,7 @@ def step(data, signals, date=None, slippage=None):
             reason = "initial_entry" if initial_entry else "rebalance"
             pf.rebalance(state, weights, prices_today, slippage=slippage,
                          trade_date=trade_date, reason=reason)
+            new_trades.extend((state.get("history", [])[-1] or {}).get("trades", []))
         pf.save(state, state_dir=config.STATE_DIR)
         results[acc] = {
             "value": round(pf.current_value(state, prices_today), 4),
@@ -85,6 +107,7 @@ def step(data, signals, date=None, slippage=None):
             "stop_trades": stop_trades,
             "rebalance": should_rebalance,
             "initial_entry": initial_entry,
+            "new_trades": new_trades,
             "last_event": state.get("history", [])[-1] if state.get("history") else None,
         }
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
@@ -125,6 +148,9 @@ def main():
     signals = sig_mod.compute_signals(data)
     r = step(data, signals)
     print(json.dumps(r, ensure_ascii=False, indent=2))
+    notice = _format_trade_notice(r)
+    if notice:
+        notifier.notify_all("📌 BIST Alpha Shadow İşlem", notice)
 
 
 if __name__ == "__main__":

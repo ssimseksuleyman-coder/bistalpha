@@ -31,6 +31,33 @@ from bist_alpha import scheduler
 from bist_alpha import selfheal
 
 
+def _prices_today(data):
+    prices_today = _prices_today(data)
+    return prices_today
+
+
+def _shadow_summary(data):
+    """A/B/F shadow performansını rapor ve dashboard için özetler."""
+    from bist_alpha import portfolio as pf
+    prices_today = _prices_today(data)
+    accounts = {}
+    for acc in ["A", "B", "F"]:
+        try:
+            s = pf.load(acc, state_dir=config.STATE_DIR)
+            value = pf.current_value(s, prices_today)
+            last_event = s.get("history", [])[-1] if s.get("history") else None
+            accounts[acc] = {
+                "value": round(value, 4),
+                "return_pct": round((value - 1) * 100, 2),
+                "n_positions": len(s.get("positions", {})),
+                "cash": round(s.get("cash", 0), 4),
+                "last_event": last_event,
+            }
+        except Exception as e:
+            accounts[acc] = {"error": str(e)}
+    return accounts
+
+
 def _telegram_ingest():
     """Telegram'a gönderilen dosyaları indir (Deniz/endeks/fiyat)."""
     from bist_alpha import telegram_ingest
@@ -80,6 +107,7 @@ def run_cycle(label="manuel"):
         report = reporter.generate_report(data, signals, mode=config.MODE,
                                            deniz_bulletin=bulletin,
                                            held_positions=held_positions)
+        report["shadow_accounts"] = _shadow_summary(data)
         text = reporter.format_text(report)
         print(text)
         # 5) Bildirim (eksik #2)

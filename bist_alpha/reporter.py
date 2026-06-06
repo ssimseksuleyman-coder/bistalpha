@@ -212,6 +212,19 @@ def format_text(report):
         L.append("⭐ FIRSAT (izleme — pick değil ama güçlü birikim):")
         for f in report["firsatlar"]:
             L.append(f"   {f['ticker']:7s} {f['sector']:7s} 1H:%{f.get('m5')} 1A:%{f.get('m21')} M252:%{f['m252']}")
+    if report.get("shadow_accounts"):
+        L.append("")
+        L.append("📈 SHADOW PERFORMANS:")
+        for acc in ["A", "B", "F"]:
+            info = report["shadow_accounts"].get(acc, {})
+            if info.get("error"):
+                L.append(f"   {acc}: hata — {info['error']}")
+                continue
+            event = info.get("last_event") or {}
+            event_txt = event.get("event", "islem yok")
+            trade_count = len(event.get("trades") or [])
+            L.append(f"   {acc}: değer {info.get('value')} | getiri %{info.get('return_pct')} | "
+                     f"pozisyon {info.get('n_positions')} | son: {event_txt} ({trade_count} işlem)")
     L.append("")
     L.append("⚠️ Tek rejim (boğa) verisinde kalibre. Yatırım tavsiyesi değildir.")
     return "\n".join(L)
