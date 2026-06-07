@@ -81,15 +81,21 @@ def _candidate_frame(data, date, universe):
     return df
 
 
-def _universe(data):
+def _universe(data, date=None):
     if data.get("_dynamic_universe"):
         return set(data["_dynamic_universe"])
+    mcaps = data.get("mcaps")
+    if date is not None and mcaps is not None and not mcaps.empty and date in mcaps.index:
+        mc = mcaps.loc[date].dropna()
+        if len(mc) >= config.UNIVERSE_SIZE:
+            return set(mc.nlargest(config.UNIVERSE_SIZE).index.tolist())
     prices = data.get("prices")
     return set(prices.columns) if prices is not None else set()
 
 
 def _radar_universe(data, date):
     size = getattr(config, "RADAR_UNIVERSE_SIZE", config.UNIVERSE_SIZE)
+    base = _universe(data, date)
     prices = data.get("prices")
     volumes = data.get("volumes")
     if prices is not None and not prices.empty and volumes is not None and not volumes.empty:
@@ -100,8 +106,8 @@ def _radar_universe(data, date):
             turnover = (p_window * v_window).mean().dropna()
             turnover = turnover[turnover > 0]
             if not turnover.empty:
-                return set(turnover.nlargest(size).index.tolist())
-    base = _universe(data)
+                # Radar daha genis bakar, ama islem evrenindeki hisseleri dislamaz.
+                return base | set(turnover.nlargest(size).index.tolist())
     return set(sorted(base)[:size])
 
 
@@ -170,7 +176,7 @@ def _risk_tags(data, date, ticker, values, sig, sector_counts, top10):
 
 def _row(data, signals, date, ticker, values, kind, reason, score):
     sig = signal_for(signals, date, ticker)
-    trade_universe = _universe(data)
+    trade_universe = _universe(data, date)
     return {
         "ticker": ticker,
         "kind": kind,
@@ -198,7 +204,7 @@ def build_watchlists(data, signals, report, date=None, limit=8):
         return {"transformation": [], "quiet_accumulation": [], "peak_risks": []}
     date = date or prices.index[-1]
     top10 = {r.get("ticker") for r in report.get("top10", [])}
-    trade_universe = _universe(data)
+    trade_universe = _universe(data, date)
     radar_universe = _radar_universe(data, date)
     sector_counts = _top_sector_counts(report)
     df = _candidate_frame(data, date, radar_universe)

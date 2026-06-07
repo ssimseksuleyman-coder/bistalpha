@@ -90,6 +90,27 @@ def _snapshot_from_report(report):
     }
 
 
+def _merge_same_day_snapshot(existing, current):
+    """
+    Gunde birden fazla kosu olabilir. Ilk giris fiyati forward-test'in
+    referansidir; sonraki kosular sadece metadata ve izlenecek listeyi tazeler.
+    """
+    if not existing:
+        return current
+    old_items = {item.get("ticker"): item for item in existing.get("items", [])}
+    merged_items = []
+    for item in current.get("items", []):
+        old = old_items.get(item.get("ticker"))
+        if old and old.get("entry_price"):
+            item = {**item, "entry_price": old.get("entry_price")}
+        merged_items.append(item)
+    merged = {**current, "items": merged_items}
+    merged["first_generated_at"] = existing.get("first_generated_at") or existing.get("generated_at")
+    merged["generated_at"] = existing.get("generated_at") or current.get("generated_at")
+    merged["last_generated_at"] = current.get("generated_at")
+    return merged
+
+
 def _refresh_snapshot(snapshot, latest_prices, prices, last_date):
     returns = []
     winners = 0
@@ -125,6 +146,8 @@ def update(report, data=None, path=None, max_snapshots=MAX_SNAPSHOTS):
     current = _snapshot_from_report(report)
     current_date = current.get("date")
 
+    existing_today = next((s for s in snapshots if s.get("date") == current_date), None)
+    current = _merge_same_day_snapshot(existing_today, current)
     snapshots = [s for s in snapshots if s.get("date") != current_date]
     snapshots.append(current)
     snapshots = snapshots[-max_snapshots:]

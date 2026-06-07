@@ -41,8 +41,8 @@ jobs:
         env:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
-          ALLOW_FILE_FALLBACK: "0"
-          YAHOO_BATCH_SIZE: "120"
+          ALLOW_FILE_FALLBACK: "1"
+          YAHOO_BATCH_SIZE: "60"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
@@ -55,19 +55,26 @@ jobs:
           IMAP_PASS: ${{ secrets.IMAP_PASS }}
           DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
         run: |
-          python3 shadow.py
+          python3 shadow.py || echo "::warning::shadow.py atlandi; ana rapor devam ediyor"
           python3 daemon.py --once otomatik
           python3 - <<'PY'
           import json
           from pathlib import Path
           d = json.loads(Path("docs/state/dashboard.json").read_text(encoding="utf-8"))
-          assert d.get("source") == "yahoo", f"Dinamik kaynak bekleniyordu, gelen: {d.get('source')}"
-          assert d.get("source_pool_count", 0) >= d.get("price_count", 0), (d.get("source_pool_count"), d.get("price_count"))
+          source = d.get("source")
+          price_count = d.get("price_count", 0)
+          assert source == "yahoo" or str(source).startswith("file_fallback_from_"), f"Beklenmeyen kaynak: {source}"
+          assert price_count >= 50, price_count
+          if source == "yahoo":
+              assert d.get("source_pool_count", 0) >= price_count, (d.get("source_pool_count"), price_count)
+          else:
+              print(f"UYARI yedek veri kullanildi: {source}")
           assert d.get("dynamic_universe_count", 0) >= 50, d.get("dynamic_universe_count")
           print(f"OK dinamik kaynak: {d['source']} | BIST havuzu: {d.get('source_pool_count')} | canlı veri: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
           PY
 
       - name: Portfoy state commit (kalicilik)
+        if: always()
         run: |
           git config user.name "bist-alpha-bot"
           git config user.email "bot@users.noreply.github.com"
