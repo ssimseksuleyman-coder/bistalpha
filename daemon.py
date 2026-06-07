@@ -141,6 +141,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     from bist_alpha import portfolio as pf
     from bist_alpha import forward_test
     from bist_alpha import missed_log
+    from bist_alpha import performance_ledger
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -180,6 +181,11 @@ def _write_dashboard_state(report, label, data=None, universe=None):
             data, report.get("watchlists", {}), report)
     except Exception as e:
         state["missed_opportunities"] = {"error": str(e)}
+    try:
+        state["performance_ledger"] = performance_ledger.update(
+            report, data, watchlists=report.get("watchlists", {}))
+    except Exception as e:
+        state["performance_ledger"] = {"error": str(e)}
     for acc in ["A", "B", "F"]:
         try:
             s = pf.load(acc, state_dir="portfolios")

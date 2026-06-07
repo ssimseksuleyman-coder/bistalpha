@@ -210,6 +210,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Performans Defteri</h2>
+            <span class="stamp" id="ledgerStamp"></span>
+          </div>
+          <div class="forward" id="performanceLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>Shadow Hesaplar</h2>
           </div>
           <div class="accounts" id="accounts"></div>
@@ -402,6 +410,46 @@ function renderForward(info) {
   `;
 }
 
+function metricText(row) {
+  if (row.role === 'risk') {
+    const cls = Number(row.net_saved_pct) >= 0 ? 'profit' : 'loss';
+    return `<b class="${cls}">net saved %${esc(row.net_saved_pct ?? '-')}</b> | saved ${esc(row.saved_events ?? 0)} / false ${esc(row.false_alarm_events ?? 0)}`;
+  }
+  if (row.role === 'discovery') {
+    const cls = Number(row.net_discovery_pct) >= 0 ? 'profit' : 'loss';
+    return `<b class="${cls}">net kesif %${esc(row.net_discovery_pct ?? '-')}</b> | hit ${esc(row.hit_events ?? 0)} / false ${esc(row.false_positive_events ?? 0)}`;
+  }
+  const cls = Number(row.avg_return_pct) >= 0 ? 'profit' : 'loss';
+  return `<b class="${cls}">ort %${esc(row.avg_return_pct ?? '-')}</b> | arti %${esc(row.hit_rate_pct ?? '-')}`;
+}
+
+function renderPerformanceLedger(info) {
+  if (!info) {
+    el('performanceLedger').innerHTML = '<div class="empty">Performans defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('performanceLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const rows = (info.by_layer_regime || []).slice(-8);
+  el('ledgerStamp').textContent = `${info.latest_regime || '-'} | ${info.tracked_days ?? 0}g`;
+  el('performanceLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_days ?? '-')}</div><div class="forward-label">kayit gunu</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.latest_events ?? '-')}</div><div class="forward-label">son olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.latest_regime || '-')}</div><div class="forward-label">rejim</div></div>
+    </div>
+    ${rows.length ? rows.map(row => `
+      <div class="forward-row">
+        <strong>${esc(row.label || row.layer)} <span class="meta">(${esc(row.regime)} / ${esc(row.role)})</span></strong>
+        <span>${metricText(row)}</span>
+      </div>
+    `).join('') : '<div class="empty">Olcum icin yeterli olay yok</div>'}
+    <div class="meta" style="padding-top:10px">Risk katmani getiriyle degil saved-loss eksi firsat maliyetiyle olculur.</div>
+  `;
+}
+
 async function loadDashboard() {
   el('status').textContent = 'Guncelleniyor';
   try {
@@ -412,6 +460,7 @@ async function loadDashboard() {
     renderTop(data.top10 || []);
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
+    renderPerformanceLedger(data.performance_ledger);
     renderAccounts(accounts);
     el('subtitle').textContent = `${data.label || 'otomatik'} calisma | ${fmtTime(data.timestamp)}`;
     el('topStamp').textContent = data.date || '';
