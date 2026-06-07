@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-07T16:23:51",
+  "timestamp": "2026-06-07T20:34:57",
   "label": "otomatik",
   "date": "2026-06-05",
   "mode": "F",
@@ -1778,7 +1778,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-07T16:23:51",
+    "updated_at": "2026-06-07T20:34:57",
     "days_tracked": 1,
     "latest_date": "2026-06-05",
     "latest_avg_return_pct": 0.0,
@@ -1955,7 +1955,7 @@
           }
         ],
         "first_generated_at": "2026-06-07 14:10",
-        "last_generated_at": "2026-06-07 16:23",
+        "last_generated_at": "2026-06-07 20:34",
         "as_of": "2026-06-05",
         "age_trading_days": 0,
         "avg_return_pct": 0.0,
@@ -1965,11 +1965,76 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-07T16:23:51",
+    "updated_at": "2026-06-07T20:34:57",
     "tracked_days": 1,
     "current_candidates": 10,
     "hot_missed_count": 0,
     "regime_signal": "normal",
     "recent_hot": []
+  },
+  "performance_ledger": {
+    "updated_at": "2026-06-07T20:34:57",
+    "tracked_days": 1,
+    "latest_date": "2026-06-05",
+    "latest_regime": "mixed",
+    "latest_events": 28,
+    "by_layer_regime": [
+      {
+        "layer": "quiet_accumulation",
+        "label": "Sessiz Birikim",
+        "role": "discovery",
+        "regime": "mixed",
+        "n": 2,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0,
+        "captured_alpha_pct": 0.0,
+        "false_positive_loss_pct": 0.0,
+        "net_discovery_pct": 0.0,
+        "hit_events": 0,
+        "false_positive_events": 0
+      },
+      {
+        "layer": "transformation",
+        "label": "Donusum Radari",
+        "role": "discovery",
+        "regime": "mixed",
+        "n": 8,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0,
+        "captured_alpha_pct": 0.0,
+        "false_positive_loss_pct": 0.0,
+        "net_discovery_pct": 0.0,
+        "hit_events": 0,
+        "false_positive_events": 0
+      },
+      {
+        "layer": "F_top10",
+        "label": "F Top10",
+        "role": "return",
+        "regime": "mixed",
+        "n": 10,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0
+      },
+      {
+        "layer": "peak_risks",
+        "label": "Tepe Riski",
+        "role": "risk",
+        "regime": "mixed",
+        "n": 8,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0,
+        "saved_loss_pct": 0.0,
+        "opportunity_cost_pct": 0.0,
+        "net_saved_pct": 0.0,
+        "saved_events": 0,
+        "false_alarm_events": 0
+      }
+    ],
+    "role_notes": {
+      "return": "Getiri katmanlari forward getiri ve hit-rate ile olculur.",
+      "discovery": "Kesif katmanlari yakalanan alpha eksi false-positive kaybi ile olculur.",
+      "risk": "Risk katmanlari saved-loss eksi firsat maliyeti ile olculur."
+    }
   }
 }
