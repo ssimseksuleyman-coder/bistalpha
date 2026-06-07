@@ -12,6 +12,7 @@ RS_GUN_5 = 5            # Kısa vade relative strength
 DUAL_THRESHOLD = 25     # M252 > %25 giriş eşiği
 SEKTOR_CAP = 2          # Sektör başına max hisse (KORU — değiştirme)
 UNIVERSE_SIZE = 100     # En büyük N market cap = evren
+RADAR_UNIVERSE_SIZE = 150  # Sadece izleme/öğrenme radarı; işlem evrenini değiştirmez
 
 # ---- Skor ağırlıkları ----
 W_M252 = 0.5

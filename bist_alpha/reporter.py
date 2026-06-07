@@ -94,6 +94,41 @@ def _momentum_snapshot(data, ticker, date):
     }
 
 
+def _watch_signal(item):
+    return item.get("display_signal") or item.get("sm_signal") or "-"
+
+
+def _display_signal(sig):
+    if sig == "Üst_fitil_dağıtım":
+        return "Üst_fitil_UYARI"
+    return sig
+
+
+def _watch_tags(item, max_tags=3):
+    tags = item.get("tags") or []
+    labels = []
+    seen = set()
+    for tag in tags:
+        if isinstance(tag, dict):
+            label = tag.get("label")
+        else:
+            label = str(tag)
+        if label and label not in seen:
+            labels.append(label)
+            seen.add(label)
+    return " | ".join(labels[:max_tags])
+
+
+def _quarantine_text(item):
+    status = item.get("quarantine_status")
+    days = item.get("watch_days")
+    if not status or days is None:
+        return ""
+    if status == "karantina":
+        return f" | karantina:{days}/3"
+    return f" | teyit:{days}g"
+
+
 def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
                     held_positions=None, stopped_tickers=None):
     """
@@ -121,6 +156,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
             "skor": round(float(s[t]), 1) if t in s.index else None,
             "m252": round(float(m252[t]), 1) if t in m252.index else None,
             "sm_signal": sig, "action": act,
+            "display_signal": _display_signal(sig),
             "visa": t in exceptions,
         }
         row.update(_momentum_snapshot(data, t, date))
@@ -193,7 +229,7 @@ def format_text(report):
         dz = f" [{r['deniz_regime']}]" if r.get("deniz_regime") else ""
         emoji = {"AL": "🟢", "SAT": "🔴", "BEKLE": "🟡", "FIRSAT": "⭐"}.get(r["action"], "")
         L.append(f" {r['rank']:2d}. {emoji} {r['ticker']:7s} {r['action']:6s} "
-                 f"M252:%{r['m252']}  {r['sm_signal']}{v}{dz}")
+                 f"M252:%{r['m252']}  {r.get('display_signal') or r['sm_signal']}{v}{dz}")
         L.append(f"        1H:%{r.get('m5')} | 1A:%{r.get('m21')} | 1Y:%{r.get('m252')}")
         L.append(f"        Fiyat:{r.get('mevcut_fiyat')} | Giriş:{r.get('giris_fiyati')} | "
                  f"Hedef:{r.get('hedef_1')}/{r.get('hedef_2')} | Stop:{r.get('stop')} | "
@@ -222,13 +258,24 @@ def format_text(report):
             L.append("")
             L.append("DONUSUM RADARI (Top 10 degil, guc yeni geciyor):")
             for w in watch["transformation"][:5]:
+                tags = _watch_tags(w)
+                tag_txt = f" | {tags}" if tags else ""
                 L.append(f"   {w['ticker']:7s} 1Y-rank:{w['rank_1y']} -> 1A:{w['rank_1a']} / 1H:{w['rank_1h']} "
-                         f"1A:%{w['m21']} 1H:%{w['m5']} {w['sm_signal']}")
+                         f"1A:%{w['m21']} 1H:%{w['m5']} {_watch_signal(w)}{_quarantine_text(w)}{tag_txt}")
         if watch.get("quiet_accumulation"):
             L.append("")
             L.append("SESSIZ BIRIKIM (islem degil, izleme):")
             for w in watch["quiet_accumulation"][:5]:
-                L.append(f"   {w['ticker']:7s} hacim:{w.get('volume_ratio')}x 1A:%{w['m21']} 1H:%{w['m5']} {w['sm_signal']}")
+                tags = _watch_tags(w)
+                tag_txt = f" | {tags}" if tags else ""
+                L.append(f"   {w['ticker']:7s} hacim:{w.get('volume_ratio')}x 1A:%{w['m21']} 1H:%{w['m5']} {_watch_signal(w)}{_quarantine_text(w)}{tag_txt}")
+        if watch.get("peak_risks"):
+            L.append("")
+            L.append("TEPE RISKI / NEDEN DISARIDA (islem degil, aciklama):")
+            for w in watch["peak_risks"][:5]:
+                tags = _watch_tags(w, max_tags=4)
+                L.append(f"   {w['ticker']:7s} 1Y:%{w['m252']} 1A:%{w['m21']} 1H:%{w['m5']} "
+                         f"{_watch_signal(w)} | {tags}")
     if report.get("shadow_accounts"):
         L.append("")
         L.append("📈 SHADOW PERFORMANS:")

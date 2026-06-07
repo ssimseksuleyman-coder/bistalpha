@@ -4,6 +4,7 @@ Discovery radar and missed-opportunity ledger.
 The primary F engine stays untouched. This module adds additive watchlists:
 - transformation radar: stocks whose recent rank is rising fast
 - quiet accumulation: accumulation signals before they become 1Y leaders
+- peak/explain-skip: leaders that are consciously avoided or need caution
 - missed ledger: candidates that were outside Top 10 and later moved
 """
 from __future__ import annotations
@@ -87,8 +88,89 @@ def _universe(data):
     return set(prices.columns) if prices is not None else set()
 
 
+def _radar_universe(data, date):
+    size = getattr(config, "RADAR_UNIVERSE_SIZE", config.UNIVERSE_SIZE)
+    prices = data.get("prices")
+    volumes = data.get("volumes")
+    if prices is not None and not prices.empty and volumes is not None and not volumes.empty:
+        idx = prices.index.searchsorted(date)
+        if idx >= 0:
+            p_window = prices.iloc[max(0, idx - 19):idx + 1]
+            v_window = volumes.reindex(p_window.index).reindex(columns=p_window.columns)
+            turnover = (p_window * v_window).mean().dropna()
+            turnover = turnover[turnover > 0]
+            if not turnover.empty:
+                return set(turnover.nlargest(size).index.tolist())
+    base = _universe(data)
+    return set(sorted(base)[:size])
+
+
+def _range_profile(data, date, ticker):
+    prices = data.get("prices")
+    if prices is None or ticker not in prices.columns:
+        return {}
+    idx = prices.index.searchsorted(date)
+    if idx < 0 or idx >= len(prices.index):
+        return {}
+    current = prices.iloc[idx][ticker]
+    window = prices.iloc[max(0, idx - config.MOM_GUN + 1):idx + 1][ticker].dropna()
+    if pd.isna(current) or current <= 0 or window.empty:
+        return {}
+    high = window.max()
+    low = window.min()
+    out = {"range_high": _round(high), "range_low": _round(low)}
+    if high and high > 0:
+        out["from_high_pct"] = _round((float(current) / float(high) - 1) * 100, 1)
+    if low and low > 0:
+        out["from_low_pct"] = _round((float(current) / float(low) - 1) * 100, 1)
+    return out
+
+
+def _display_signal(sig):
+    if sig == "Üst_fitil_dağıtım":
+        return "Üst_fitil_UYARI"
+    return sig
+
+
+def _tag(label, severity="info", note=None):
+    out = {"label": label, "severity": severity}
+    if note:
+        out["note"] = note
+    return out
+
+
+def _top_sector_counts(report):
+    counts = {}
+    for row in report.get("top10", []):
+        sector = row.get("sector") or get_sector(row.get("ticker"))
+        counts[sector] = counts.get(sector, 0) + 1
+    return counts
+
+
+def _risk_tags(data, date, ticker, values, sig, sector_counts, top10):
+    tags = []
+    sector = get_sector(ticker)
+    profile = _range_profile(data, date, ticker)
+    if profile.get("from_high_pct") is not None and profile["from_high_pct"] >= -2:
+        tags.append(_tag("zirveye_yakin", "warn", "52 haftalik tepeye cok yakin"))
+    if values["rank_1y"] <= 30 and values["rank_1h"] >= values["rank_1y"] + 15:
+        tags.append(_tag("ivme_yavasliyor", "warn", "1Y liderligi var ama 1H sirasi geri"))
+    if sig == "DAĞITIM":
+        tags.append(_tag("dagitim_bilgi", "warn", "eleme degil; tepe/yorulma etiketi"))
+    if sig == "Üst_fitil_dağıtım":
+        tags.append(_tag("ust_fitil_uyari", "warn", "ust fitil var; adini dagitim gibi okuma"))
+    if ticker not in top10 and sector_counts.get(sector, 0) >= config.SEKTOR_CAP:
+        tags.append(_tag("sektor_cap_dolu", "info", "Top10 icinde sektor kotasi dolu"))
+    if values["m21"] >= 25 and values["m5"] < 0:
+        tags.append(_tag("aylik_pump_soguyor", "warn", "1A guclu ama 1H negatif"))
+    if values["m21"] <= 0 and values["m5"] < 0:
+        tags.append(_tag("duseni_tutma_riski", "warn", "kisa ve orta vade guc yok"))
+    return tags, profile
+
+
 def _row(data, signals, date, ticker, values, kind, reason, score):
     sig = signal_for(signals, date, ticker)
+    trade_universe = _universe(data)
     return {
         "ticker": ticker,
         "kind": kind,
@@ -105,44 +187,78 @@ def _row(data, signals, date, ticker, values, kind, reason, score):
         "acceleration": int(values["acceleration"]),
         "volume_ratio": _volume_ratio(data, date, ticker),
         "sm_signal": sig,
+        "display_signal": _display_signal(sig),
+        "radar_only": ticker not in trade_universe,
     }
 
 
 def build_watchlists(data, signals, report, date=None, limit=8):
     prices = data.get("prices")
     if prices is None or prices.empty:
-        return {"transformation": [], "quiet_accumulation": []}
+        return {"transformation": [], "quiet_accumulation": [], "peak_risks": []}
     date = date or prices.index[-1]
     top10 = {r.get("ticker") for r in report.get("top10", [])}
-    df = _candidate_frame(data, date, _universe(data))
+    trade_universe = _universe(data)
+    radar_universe = _radar_universe(data, date)
+    sector_counts = _top_sector_counts(report)
+    df = _candidate_frame(data, date, radar_universe)
     if df.empty:
-        return {"transformation": [], "quiet_accumulation": []}
+        return {"transformation": [], "quiet_accumulation": [], "peak_risks": []}
 
     transform = []
     quiet = []
+    peak_risks = []
     for ticker, values in df.iterrows():
         if ticker in top10:
             continue
         sig = signal_for(signals, date, ticker)
         sm_bonus = {"GÜÇLÜ_BİRİKİM": 18, "Birikim": 10, "Nötr": 2}.get(sig, 0)
+        tags, profile = _risk_tags(data, date, ticker, values, sig, sector_counts, top10)
 
         if (values["m21"] >= 8 and values["m5"] >= 0 and
                 values["acceleration"] >= 25 and
                 (values["rank_1a"] <= 45 or values["rank_1h"] <= 45)):
             score = values["acceleration"] + max(0, 60 - values["rank_1a"]) + max(0, 50 - values["rank_1h"]) + sm_bonus
-            transform.append(_row(data, signals, date, ticker, values, "donusum",
-                                  "1Y orta/zayif, 1A-1H hizlaniyor", score))
+            item = _row(data, signals, date, ticker, values, "donusum",
+                        "1Y orta/zayif, 1A-1H hizlaniyor", score)
+            item.update(profile)
+            item["tags"] = list(tags)
+            transform.append(item)
 
         vr = _volume_ratio(data, date, ticker)
         if (sig in ("GÜÇLÜ_BİRİKİM", "Birikim") and vr is not None and vr >= 1.15 and
                 -10 <= values["m21"] <= 35 and -5 <= values["m5"] <= 18):
             score = (vr * 20) + sm_bonus + max(0, values["m21"]) + max(0, values["acceleration"] / 2)
-            quiet.append(_row(data, signals, date, ticker, values, "sessiz_birikim",
-                              "birikim + hacim artisi, henuz Top 10 degil", score))
+            item = _row(data, signals, date, ticker, values, "sessiz_birikim",
+                        "birikim + hacim artisi, henuz Top 10 degil", score)
+            item.update(profile)
+            item["tags"] = list(tags)
+            quiet.append(item)
+
+        risk_labels = {t["label"] for t in tags}
+        if (risk_labels.intersection({"zirveye_yakin", "ivme_yavasliyor", "dagitim_bilgi", "ust_fitil_uyari", "aylik_pump_soguyor"}) and
+                (values["rank_1y"] <= 40 or values["m252"] >= 80 or values["rank_1a"] <= 30)):
+            score = max(0, 70 - values["rank_1y"]) + max(0, values["m252"] / 5) + len(risk_labels) * 8
+            item = _row(data, signals, date, ticker, values, "tepe_riski",
+                        "guc var ama alim icin risk etiketi tasiyor", score)
+            item.update(profile)
+            item["tags"] = list(tags)
+            peak_risks.append(item)
 
     transform = sorted(transform, key=lambda x: (-x["score"], x["ticker"]))[:limit]
     quiet = sorted(quiet, key=lambda x: (-x["score"], x["ticker"]))[:limit]
-    return {"transformation": transform, "quiet_accumulation": quiet}
+    peak_risks = sorted(peak_risks, key=lambda x: (-x["score"], x["ticker"]))[:limit]
+    date_s = _date_text(date)
+    transform = _apply_quarantine(transform, "transformation", date_s)
+    quiet = _apply_quarantine(quiet, "quiet_accumulation", date_s)
+    return {
+        "transformation": transform,
+        "quiet_accumulation": quiet,
+        "peak_risks": peak_risks,
+        "radar_universe_count": len(radar_universe),
+        "trade_universe_count": len(trade_universe),
+        "radar_note": "Top10/F motoru 100 evrenle kalir; radar 150 hisseyi izleme amacli tarar.",
+    }
 
 
 def _load_ledger(path):
@@ -152,6 +268,38 @@ def _load_ledger(path):
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return {"snapshots": []}
+
+
+def _prior_watch_days(snapshots, ticker, list_name, date_s):
+    days = 0
+    for snap in reversed(snapshots or []):
+        if snap.get("date") == date_s:
+            continue
+        tickers = {
+            item.get("ticker")
+            for item in snap.get("items", [])
+            if item.get("kind") == list_name
+        }
+        if ticker not in tickers:
+            break
+        days += 1
+    return days
+
+
+def _apply_quarantine(items, list_name, date_s):
+    ledger = _load_ledger(_ledger_path())
+    snapshots = ledger.get("snapshots", [])
+    for item in items:
+        watch_days = _prior_watch_days(snapshots, item.get("ticker"), list_name, date_s) + 1
+        item["watch_days"] = watch_days
+        if watch_days < 3:
+            item["quarantine_status"] = "karantina"
+            item.setdefault("tags", []).append(
+                _tag("karantina_1_3_gun", "info", "yeni radar adayi; teyit bekliyor")
+            )
+        else:
+            item["quarantine_status"] = "teyitli_izleme"
+    return items
 
 
 def _refresh_snapshots(snapshots, data, as_of):
@@ -187,6 +335,8 @@ def update_missed_ledger(data, watchlists, report, date=None, max_snapshots=90):
 
     current_items = []
     for kind, items in watchlists.items():
+        if not isinstance(items, list) or kind == "peak_risks":
+            continue
         for item in items:
             copied = dict(item)
             copied["kind"] = kind
