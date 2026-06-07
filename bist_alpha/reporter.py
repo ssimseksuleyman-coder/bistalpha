@@ -99,7 +99,7 @@ def _watch_signal(item):
 
 
 def _display_signal(sig):
-    if sig == "Üst_fitil_dağıtım":
+    if sig in ("Üst_fitil_dağıtım", "Üst_fitil_UYARI"):
         return "Üst_fitil_UYARI"
     return sig
 

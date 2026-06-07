@@ -52,7 +52,8 @@ LOT_MULTIPLIERS = {
     "GÜÇLÜ_BİRİKİM": 1.5,
     "Birikim": 1.0,
     "Nötr": 0.6,
-    "Üst_fitil_dağıtım": 0.6,
+    "Üst_fitil_UYARI": 0.6,
+    "Üst_fitil_dağıtım": 0.6,  # geriye dönük state/backtest uyumluluğu
     "DAĞITIM": 1.0,        # ELEME YOK — 1.0 = tam ağırlık. DAĞITIM paradoksu:
                            # %75 win verdi; M252 filtresi kötüleri zaten ayıkladı.
                            # Elemek %234 alpha kaybettirir, o yüzden tutuluyor.

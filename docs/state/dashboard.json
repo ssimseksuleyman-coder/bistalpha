@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-07T12:53:06",
-  "label": "otomatik",
+  "timestamp": "2026-06-07T13:57:04",
+  "label": "canli",
   "date": "2026-06-05",
   "mode": "F",
   "source": "yahoo",
@@ -8,7 +8,7 @@
   "source_pool_method": "tradingview_bist_scanner_cache",
   "source_pool_fallback": false,
   "last_data_date": "2026-06-05",
-  "price_count": 605,
+  "price_count": 600,
   "dynamic_universe_count": 100,
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "deniz_regime": null,
@@ -32,6 +32,7 @@
       "stop": 126.22,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.0,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 66.0
       }
@@ -54,7 +55,8 @@
       "hedef_2": 1450.0,
       "stop": 1191.7,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.7
+      "potansiyel_pct": 1.7,
+      "deniz_regime": "normal"
     },
     {
       "rank": 3,
@@ -74,7 +76,8 @@
       "hedef_2": 1562.0,
       "stop": 1269.9,
       "risk_pct": 15.0,
-      "potansiyel_pct": 2.3
+      "potansiyel_pct": 2.3,
+      "deniz_regime": "normal"
     },
     {
       "rank": 4,
@@ -94,7 +97,8 @@
       "hedef_2": 119.87,
       "stop": 99.62,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.1
+      "potansiyel_pct": 1.1,
+      "deniz_regime": "normal"
     },
     {
       "rank": 5,
@@ -115,6 +119,7 @@
       "stop": 1976.25,
       "risk_pct": 15.0,
       "potansiyel_pct": 1.4,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 28.5,
         "hacim": "tarihsel_min_DİKKAT"
@@ -126,7 +131,7 @@
       "sector": "XGMYO",
       "skor": 263.3,
       "m252": 541.2,
-      "sm_signal": "Üst_fitil_dağıtım",
+      "sm_signal": "Üst_fitil_UYARI",
       "action": "BEKLE",
       "display_signal": "Üst_fitil_UYARI",
       "visa": false,
@@ -138,7 +143,8 @@
       "hedef_2": 12.99,
       "stop": 10.19,
       "risk_pct": 15.0,
-      "potansiyel_pct": 4.2
+      "potansiyel_pct": 4.2,
+      "deniz_regime": "normal"
     },
     {
       "rank": 7,
@@ -158,7 +164,8 @@
       "hedef_2": 87.88,
       "stop": 72.04,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.9
+      "potansiyel_pct": 1.9,
+      "deniz_regime": "normal"
     },
     {
       "rank": 8,
@@ -179,6 +186,7 @@
       "stop": 75.39,
       "risk_pct": 15.0,
       "potansiyel_pct": 4.1,
+      "deniz_regime": "normal",
       "yan_kaynak": {
         "deniz_skor": 41.0
       }
@@ -189,7 +197,7 @@
       "sector": "XMADN",
       "skor": 135.5,
       "m252": 256.2,
-      "sm_signal": "Üst_fitil_dağıtım",
+      "sm_signal": "Üst_fitil_UYARI",
       "action": "BEKLE",
       "display_signal": "Üst_fitil_UYARI",
       "visa": false,
@@ -202,6 +210,7 @@
       "stop": 36.63,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.5,
+      "deniz_regime": "güçlü",
       "yan_kaynak": {
         "deniz_skor": 91.0,
         "fx_risk": "negatif_FX_pozisyon (-11mn)",
@@ -226,7 +235,8 @@
       "hedef_2": 205.43,
       "stop": 170.09,
       "risk_pct": 15.0,
-      "potansiyel_pct": 1.3
+      "potansiyel_pct": 1.3,
+      "deniz_regime": "normal"
     }
   ],
   "watchlists": {
@@ -278,15 +288,15 @@
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XKMYA",
-        "score": 167.0,
+        "score": 169.0,
         "price": 4.24,
         "m5": 12.5,
         "m21": 9.3,
         "m252": -31.7,
-        "rank_1y": 121,
-        "rank_1a": 46,
+        "rank_1y": 122,
+        "rank_1a": 45,
         "rank_1h": 14,
-        "acceleration": 107,
+        "acceleration": 108,
         "volume_ratio": 1.98,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
@@ -352,15 +362,15 @@
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XUTEK",
-        "score": 161.0,
+        "score": 163.0,
         "price": 12.8,
         "m5": 13.0,
         "m21": 10.2,
         "m252": -31.4,
-        "rank_1y": 120,
-        "rank_1a": 43,
+        "rank_1y": 121,
+        "rank_1a": 42,
         "rank_1h": 13,
-        "acceleration": 107,
+        "acceleration": 108,
         "volume_ratio": 0.82,
         "sm_signal": "DAĞITIM",
         "display_signal": "DAĞITIM",
@@ -375,6 +385,43 @@
             "severity": "warn",
             "note": "eleme degil; tepe/yorulma etiketi"
           },
+          {
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
+          },
+          {
+            "label": "karantina_1_3_gun",
+            "severity": "info",
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "KCAER",
+        "kind": "donusum",
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+        "sector": "XU100",
+        "score": 153.0,
+        "price": 14.13,
+        "m5": 8.6,
+        "m21": 23.8,
+        "m252": 2.4,
+        "rank_1y": 111,
+        "rank_1a": 30,
+        "rank_1h": 20,
+        "acceleration": 91,
+        "volume_ratio": 1.08,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
+        "radar_only": true,
+        "range_high": 16.1,
+        "range_low": 10.04,
+        "from_high_pct": -12.2,
+        "from_low_pct": 40.7,
+        "tags": [
           {
             "label": "sektor_cap_dolu",
             "severity": "info",
@@ -427,54 +474,17 @@
         "quarantine_status": "karantina"
       },
       {
-        "ticker": "KCAER",
-        "kind": "donusum",
-        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-        "sector": "XU100",
-        "score": 151.0,
-        "price": 14.13,
-        "m5": 8.6,
-        "m21": 23.8,
-        "m252": 2.4,
-        "rank_1y": 110,
-        "rank_1a": 31,
-        "rank_1h": 20,
-        "acceleration": 90,
-        "volume_ratio": 1.08,
-        "sm_signal": "Nötr",
-        "display_signal": "Nötr",
-        "radar_only": true,
-        "range_high": 16.1,
-        "range_low": 10.04,
-        "from_high_pct": -12.2,
-        "from_low_pct": 40.7,
-        "tags": [
-          {
-            "label": "sektor_cap_dolu",
-            "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
-          },
-          {
-            "label": "karantina_1_3_gun",
-            "severity": "info",
-            "note": "yeni radar adayi; teyit bekliyor"
-          }
-        ],
-        "watch_days": 1,
-        "quarantine_status": "karantina"
-      },
-      {
         "ticker": "CGCAM",
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XU100",
-        "score": 126.0,
+        "score": 127.0,
         "price": 52.55,
         "m5": 28.3,
         "m21": 27.6,
         "m252": 91.0,
         "rank_1y": 41,
-        "rank_1a": 29,
+        "rank_1a": 28,
         "rank_1h": 3,
         "acceleration": 38,
         "volume_ratio": 2.37,
@@ -554,15 +564,15 @@
         "kind": "sessiz_birikim",
         "reason": "birikim + hacim artisi, henuz Top 10 degil",
         "sector": "XKMYA",
-        "score": 112.4,
+        "score": 112.9,
         "price": 4.24,
         "m5": 12.5,
         "m21": 9.3,
         "m252": -31.7,
-        "rank_1y": 121,
-        "rank_1a": 46,
+        "rank_1y": 122,
+        "rank_1a": 45,
         "rank_1h": 14,
-        "acceleration": 107,
+        "acceleration": 108,
         "volume_ratio": 1.98,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
@@ -586,15 +596,15 @@
         "kind": "sessiz_birikim",
         "reason": "birikim + hacim artisi, henuz Top 10 degil",
         "sector": "XU100",
-        "score": 94.2,
+        "score": 95.2,
         "price": 39.02,
         "m5": 3.1,
         "m21": 18.5,
         "m252": -15.5,
-        "rank_1y": 119,
-        "rank_1a": 38,
+        "rank_1y": 120,
+        "rank_1a": 37,
         "rank_1h": 47,
-        "acceleration": 81,
+        "acceleration": 83,
         "volume_ratio": 1.26,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
@@ -631,11 +641,11 @@
         "m21": 1.5,
         "m252": 3410.7,
         "rank_1y": 1,
-        "rank_1a": 62,
+        "rank_1a": 61,
         "rank_1h": 114,
-        "acceleration": -61,
+        "acceleration": -60,
         "volume_ratio": 1.21,
-        "sm_signal": "Üst_fitil_dağıtım",
+        "sm_signal": "Üst_fitil_UYARI",
         "display_signal": "Üst_fitil_UYARI",
         "radar_only": true,
         "range_high": 13.16,
@@ -750,7 +760,7 @@
         "rank_1h": 103,
         "acceleration": -64,
         "volume_ratio": 0.56,
-        "sm_signal": "Üst_fitil_dağıtım",
+        "sm_signal": "Üst_fitil_UYARI",
         "display_signal": "Üst_fitil_UYARI",
         "radar_only": true,
         "range_high": 14.83,
@@ -791,11 +801,11 @@
         "m21": 9.5,
         "m252": 372.4,
         "rank_1y": 12,
-        "rank_1a": 45,
+        "rank_1a": 44,
         "rank_1h": 36,
         "acceleration": -24,
         "volume_ratio": 0.94,
-        "sm_signal": "Üst_fitil_dağıtım",
+        "sm_signal": "Üst_fitil_UYARI",
         "display_signal": "Üst_fitil_UYARI",
         "radar_only": false,
         "range_high": 30.16,
@@ -866,11 +876,11 @@
         "m21": 37.5,
         "m252": 281.5,
         "rank_1y": 14,
-        "rank_1a": 22,
+        "rank_1a": 21,
         "rank_1h": 125,
-        "acceleration": -8,
+        "acceleration": -7,
         "volume_ratio": 1.38,
-        "sm_signal": "Üst_fitil_dağıtım",
+        "sm_signal": "Üst_fitil_UYARI",
         "display_signal": "Üst_fitil_UYARI",
         "radar_only": false,
         "range_high": 162.0,
@@ -1778,7 +1788,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-07T12:53:06",
+    "updated_at": "2026-06-07T13:57:04",
     "days_tracked": 1,
     "latest_date": "2026-06-05",
     "latest_avg_return_pct": 0.0,
@@ -1788,7 +1798,7 @@
     "recent": [
       {
         "date": "2026-06-05",
-        "generated_at": "2026-06-07 12:53",
+        "generated_at": "2026-06-07 13:57",
         "mode": "F",
         "source": "yahoo",
         "last_data_date": "2026-06-05",
@@ -1877,7 +1887,7 @@
             "rank": 6,
             "ticker": "PEKGY",
             "action": "BEKLE",
-            "signal": "Üst_fitil_dağıtım",
+            "signal": "Üst_fitil_UYARI",
             "sector": "XGMYO",
             "entry_price": 11.99,
             "m5": -10.5,
@@ -1925,7 +1935,7 @@
             "rank": 9,
             "ticker": "CVKMD",
             "action": "BEKLE",
-            "signal": "Üst_fitil_dağıtım",
+            "signal": "Üst_fitil_UYARI",
             "sector": "XMADN",
             "entry_price": 43.1,
             "m5": -8.8,
@@ -1963,7 +1973,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-07T12:53:06",
+    "updated_at": "2026-06-07T13:57:04",
     "tracked_days": 1,
     "current_candidates": 10,
     "hot_missed_count": 0,

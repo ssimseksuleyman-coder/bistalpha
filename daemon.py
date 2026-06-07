@@ -140,7 +140,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     import os
     from bist_alpha import portfolio as pf
     from bist_alpha import forward_test
-    from bist_alpha import radar
+    from bist_alpha import missed_log
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -176,7 +176,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     except Exception as e:
         state["forward_test"] = {"error": str(e)}
     try:
-        state["missed_opportunities"] = radar.update_missed_ledger(
+        state["missed_opportunities"] = missed_log.update(
             data, report.get("watchlists", {}), report)
     except Exception as e:
         state["missed_opportunities"] = {"error": str(e)}

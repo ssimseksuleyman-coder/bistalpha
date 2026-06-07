@@ -99,7 +99,7 @@ def classify(cpr, acc, uw):
     if cpr < config.CPR_DAGITIM or acc < config.ACC_DAGITIM:
         return "DAĞITIM"
     if uw >= config.WICK_DAGITIM:
-        return "Üst_fitil_dağıtım"
+        return "Üst_fitil_UYARI"
     return "Nötr"
 
 

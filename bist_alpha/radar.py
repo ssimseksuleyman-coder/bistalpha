@@ -127,7 +127,7 @@ def _range_profile(data, date, ticker):
 
 
 def _display_signal(sig):
-    if sig == "Üst_fitil_dağıtım":
+    if sig in ("Üst_fitil_dağıtım", "Üst_fitil_UYARI"):
         return "Üst_fitil_UYARI"
     return sig
 
@@ -157,7 +157,7 @@ def _risk_tags(data, date, ticker, values, sig, sector_counts, top10):
         tags.append(_tag("ivme_yavasliyor", "warn", "1Y liderligi var ama 1H sirasi geri"))
     if sig == "DAĞITIM":
         tags.append(_tag("dagitim_bilgi", "warn", "eleme degil; tepe/yorulma etiketi"))
-    if sig == "Üst_fitil_dağıtım":
+    if sig in ("Üst_fitil_dağıtım", "Üst_fitil_UYARI"):
         tags.append(_tag("ust_fitil_uyari", "warn", "ust fitil var; adini dagitim gibi okuma"))
     if ticker not in top10 and sector_counts.get(sector, 0) >= config.SEKTOR_CAP:
         tags.append(_tag("sektor_cap_dolu", "info", "Top10 icinde sektor kotasi dolu"))
