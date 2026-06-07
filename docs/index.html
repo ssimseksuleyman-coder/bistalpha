@@ -433,12 +433,21 @@ function renderPerformanceLedger(info) {
     return;
   }
   const rows = (info.by_layer_regime || []).slice(-8);
+  const shadow = info.shadow_comparison || {};
+  const fAvg = shadow.F_shadow?.avg_return_pct;
+  const oAvg = shadow.O_shadow?.avg_return_pct;
+  const edge = shadow.O_edge_vs_F_pct;
+  const edgeClass = edge == null || Number(edge) >= 0 ? 'profit' : 'loss';
   el('ledgerStamp').textContent = `${info.latest_regime || '-'} | ${info.tracked_days ?? 0}g`;
   el('performanceLedger').innerHTML = `
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.tracked_days ?? '-')}</div><div class="forward-label">kayit gunu</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.latest_events ?? '-')}</div><div class="forward-label">son olay</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.latest_regime || '-')}</div><div class="forward-label">rejim</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>O vs F Shadow</strong>
+      <span>F %${esc(fAvg ?? '-')} | O %${esc(oAvg ?? '-')} | <b class="${edgeClass}">fark %${esc(edge ?? '-')}</b></span>
     </div>
     ${rows.length ? rows.map(row => `
       <div class="forward-row">

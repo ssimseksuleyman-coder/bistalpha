@@ -13,6 +13,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import config
+from . import portfolio as pf
+
 
 MAX_SNAPSHOTS = 90
 RISK_DOWN_THRESHOLD = -3.0
@@ -26,6 +29,21 @@ LAYER_META = {
         "role": "return",
         "label": "F Top10",
         "metric": "forward_return_hit_rate",
+    },
+    "F_shadow": {
+        "role": "return",
+        "label": "F Shadow",
+        "metric": "forward_return_hit_rate",
+    },
+    "O_shadow": {
+        "role": "return",
+        "label": "OMEGA Shadow",
+        "metric": "forward_return_hit_rate",
+    },
+    "O_minus_F": {
+        "role": "discovery",
+        "label": "OMEGA Fark",
+        "metric": "captured_alpha_false_positive",
     },
     "transformation": {
         "role": "discovery",
@@ -170,6 +188,42 @@ def _events_from_report(report, watchlists, date_s):
     return events
 
 
+def _events_from_shadow(state_dir, date_s):
+    events = []
+    states = {}
+    for account in ("F", "O"):
+        try:
+            states[account] = pf.load(account, state_dir=state_dir)
+        except Exception:
+            states[account] = {"positions": {}}
+
+    f_tickers = set((states.get("F") or {}).get("positions", {}).keys())
+    for account, layer in (("F", "F_shadow"), ("O", "O_shadow")):
+        positions = (states.get(account) or {}).get("positions", {})
+        for ticker, pos in sorted(positions.items()):
+            entry = pos.get("entry")
+            if not entry:
+                continue
+            source = {
+                "reason": f"{account} shadow portfoy",
+                "display_signal": account,
+            }
+            event = _event(layer, ticker, entry, date_s, source)
+            event["account"] = account
+            event["shares"] = _round(pos.get("shares"), 6)
+            events.append(event)
+
+            if account == "O" and ticker not in f_tickers:
+                diff_event = _event("O_minus_F", ticker, entry, date_s, {
+                    "reason": "O aldi, F almadi",
+                    "display_signal": "O-F",
+                })
+                diff_event["account"] = "O"
+                diff_event["shares"] = _round(pos.get("shares"), 6)
+                events.append(diff_event)
+    return events
+
+
 def _merge_same_day(existing, current):
     if not existing:
         return current
@@ -305,6 +359,7 @@ def _summary(snapshots):
         "latest_regime": (latest.get("regime") or {}).get("name"),
         "latest_events": len(latest.get("events", [])),
         "by_layer_regime": aggregate,
+        "shadow_comparison": _shadow_comparison(snapshots),
         "role_notes": {
             "return": "Getiri katmanlari forward getiri ve hit-rate ile olculur.",
             "discovery": "Kesif katmanlari yakalanan alpha eksi false-positive kaybi ile olculur.",
@@ -313,7 +368,33 @@ def _summary(snapshots):
     }
 
 
-def update(report, data, watchlists=None, path=None, max_snapshots=MAX_SNAPSHOTS):
+def _shadow_comparison(snapshots):
+    layers = {layer: [] for layer in ("F_shadow", "O_shadow", "O_minus_F")}
+    for snap in snapshots:
+        for event in snap.get("events", []):
+            layer = event.get("layer")
+            ret = event.get("return_pct")
+            if layer in layers and ret is not None:
+                layers[layer].append(float(ret))
+
+    out = {}
+    for layer, returns in layers.items():
+        if returns:
+            out[layer] = {
+                "n": len(returns),
+                "avg_return_pct": _round(sum(returns) / len(returns)),
+                "hit_rate_pct": _round(sum(1 for r in returns if r > 0) / len(returns) * 100, 1),
+            }
+        else:
+            out[layer] = {"n": 0, "avg_return_pct": None, "hit_rate_pct": None}
+    f_avg = out["F_shadow"].get("avg_return_pct")
+    o_avg = out["O_shadow"].get("avg_return_pct")
+    out["O_edge_vs_F_pct"] = _round(o_avg - f_avg) if o_avg is not None and f_avg is not None else None
+    return out
+
+
+def update(report, data, watchlists=None, path=None, max_snapshots=MAX_SNAPSHOTS,
+           shadow_state_dir=None):
     """Update the role-aware ledger and return dashboard-ready summary."""
     prices = data.get("prices") if data else None
     if prices is None or prices.empty:
@@ -330,7 +411,10 @@ def update(report, data, watchlists=None, path=None, max_snapshots=MAX_SNAPSHOTS
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "regime": _market_regime(data, date),
         "source": report.get("source") or data.get("_source"),
-        "events": _events_from_report(report, watchlists or report.get("watchlists", {}), date_s),
+        "events": (
+            _events_from_report(report, watchlists or report.get("watchlists", {}), date_s) +
+            _events_from_shadow(shadow_state_dir or config.STATE_DIR, date_s)
+        ),
     }
     existing = next((s for s in snapshots if s.get("date") == date_s), None)
     current = _merge_same_day(existing, current)
