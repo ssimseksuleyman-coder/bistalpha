@@ -117,6 +117,14 @@
   .position { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; color: var(--muted); font-size: 12px; }
   .position strong, .trade strong { color: var(--text); }
   .trade { display: flex; justify-content: space-between; gap: 12px; padding-top: 6px; color: var(--muted); font-size: 11px; }
+  .watch { padding: 12px 16px 14px; display: grid; gap: 12px; }
+  .watch-section { border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+  .watch-section:last-child { border-bottom: 0; padding-bottom: 0; }
+  .watch-title { display: flex; justify-content: space-between; gap: 10px; font-weight: 750; }
+  .watch-item { display: grid; grid-template-columns: 86px 1fr auto; gap: 10px; align-items: center; padding-top: 8px; color: var(--muted); font-size: 12px; }
+  .watch-item strong { color: var(--ink); }
+  .badge { border-radius: 6px; padding: 3px 7px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 700; }
+  .badge.warn { color: var(--yellow); background: #fbefcf; }
   .forward { padding: 14px 16px; }
   .forward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .forward-box { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--soft); }
@@ -154,12 +162,22 @@
     </header>
 
     <section class="grid">
+      <div>
       <div class="card">
         <div class="card-head">
           <h2>Top 10 Sinyal</h2>
           <span class="stamp" id="topStamp"></span>
         </div>
         <div class="list" id="topList"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-head">
+          <h2>Radar ve Ogrenme</h2>
+          <span class="stamp" id="radarStamp"></span>
+        </div>
+        <div class="watch" id="watchlists"></div>
+      </div>
       </div>
 
       <aside>
@@ -267,6 +285,44 @@ function renderTop(items) {
   `).join('');
 }
 
+function renderWatchItems(items, emptyText) {
+  if (!items || !items.length) return `<div class="empty">${esc(emptyText)}</div>`;
+  return items.slice(0, 5).map(item => `
+    <div class="watch-item">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.reason || item.sm_signal || '')}<br>
+        1Y ${esc(item.rank_1y ?? '-')} -> 1A ${esc(item.rank_1a ?? '-')} / 1H ${esc(item.rank_1h ?? '-')}
+        | 1A %${esc(item.m21 ?? '-')} | 1H %${esc(item.m5 ?? '-')}
+      </span>
+      <span class="badge">${esc(item.volume_ratio != null ? item.volume_ratio + 'x' : item.sm_signal || '-')}</span>
+    </div>
+  `).join('');
+}
+
+function renderWatchlists(watch, missed) {
+  if (!watch || watch.error) {
+    el('watchlists').innerHTML = `<div class="empty">${esc(watch?.error || 'Radar verisi henuz yok')}</div>`;
+    return;
+  }
+  const signal = missed?.regime_signal || 'normal';
+  const hot = missed?.hot_missed_count ?? 0;
+  el('radarStamp').textContent = signal === 'normal' ? 'normal' : 'rotasyon riski';
+  el('watchlists').innerHTML = `
+    <div class="watch-section">
+      <div class="watch-title"><span>Donusum Radari</span><span class="badge">izleme</span></div>
+      ${renderWatchItems(watch.transformation, 'Yeni donusum adayi yok')}
+    </div>
+    <div class="watch-section">
+      <div class="watch-title"><span>Sessiz Birikim</span><span class="badge">izleme</span></div>
+      ${renderWatchItems(watch.quiet_accumulation, 'Sessiz birikim adayi yok')}
+    </div>
+    <div class="watch-section">
+      <div class="watch-title"><span>Kacirilanlar Defteri</span><span class="badge ${signal === 'normal' ? '' : 'warn'}">${esc(signal)}</span></div>
+      <div class="meta">Takip gunu: ${esc(missed?.tracked_days ?? '-')} | Aday: ${esc(missed?.current_candidates ?? '-')} | Sicak kacirilan: ${esc(hot)}</div>
+    </div>
+  `;
+}
+
 function renderAccounts(accounts) {
   const names = ['A', 'B', 'F'];
   el('accounts').innerHTML = names.map(name => {
@@ -330,6 +386,7 @@ async function loadDashboard() {
     const data = await response.json();
     const accounts = data.accounts || {};
     renderTop(data.top10 || []);
+    renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderAccounts(accounts);
     el('subtitle').textContent = `${data.label || 'otomatik'} calisma | ${fmtTime(data.timestamp)}`;

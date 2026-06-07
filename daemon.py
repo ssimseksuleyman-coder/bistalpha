@@ -117,6 +117,11 @@ def run_cycle(label="manuel"):
                                            deniz_bulletin=bulletin,
                                            held_positions=held_positions)
         report["shadow_accounts"] = _shadow_summary(data)
+        try:
+            from bist_alpha import radar
+            report["watchlists"] = radar.build_watchlists(data, signals, report)
+        except Exception as e:
+            report["watchlists"] = {"error": str(e)}
         text = reporter.format_text(report)
         print(text)
         # 5) Bildirim (eksik #2)
@@ -135,6 +140,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
     import os
     from bist_alpha import portfolio as pf
     from bist_alpha import forward_test
+    from bist_alpha import radar
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -162,12 +168,18 @@ def _write_dashboard_state(report, label, data=None, universe=None):
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "deniz_regime": report.get("deniz_regime"),
         "top10": report.get("top10", []),
+        "watchlists": report.get("watchlists", {}),
         "accounts": {},
     }
     try:
         state["forward_test"] = forward_test.update(report, data=data)
     except Exception as e:
         state["forward_test"] = {"error": str(e)}
+    try:
+        state["missed_opportunities"] = radar.update_missed_ledger(
+            data, report.get("watchlists", {}), report)
+    except Exception as e:
+        state["missed_opportunities"] = {"error": str(e)}
     for acc in ["A", "B", "F"]:
         try:
             s = pf.load(acc, state_dir="portfolios")

@@ -216,6 +216,19 @@ def format_text(report):
         L.append("⭐ FIRSAT (izleme — pick değil ama güçlü birikim):")
         for f in report["firsatlar"]:
             L.append(f"   {f['ticker']:7s} {f['sector']:7s} 1H:%{f.get('m5')} 1A:%{f.get('m21')} M252:%{f['m252']}")
+    watch = report.get("watchlists") or {}
+    if watch and not watch.get("error"):
+        if watch.get("transformation"):
+            L.append("")
+            L.append("DONUSUM RADARI (Top 10 degil, guc yeni geciyor):")
+            for w in watch["transformation"][:5]:
+                L.append(f"   {w['ticker']:7s} 1Y-rank:{w['rank_1y']} -> 1A:{w['rank_1a']} / 1H:{w['rank_1h']} "
+                         f"1A:%{w['m21']} 1H:%{w['m5']} {w['sm_signal']}")
+        if watch.get("quiet_accumulation"):
+            L.append("")
+            L.append("SESSIZ BIRIKIM (islem degil, izleme):")
+            for w in watch["quiet_accumulation"][:5]:
+                L.append(f"   {w['ticker']:7s} hacim:{w.get('volume_ratio')}x 1A:%{w['m21']} 1H:%{w['m5']} {w['sm_signal']}")
     if report.get("shadow_accounts"):
         L.append("")
         L.append("📈 SHADOW PERFORMANS:")
