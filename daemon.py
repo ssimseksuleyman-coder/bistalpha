@@ -50,7 +50,7 @@ def _shadow_summary(data):
     from bist_alpha import portfolio as pf
     prices_today = _prices_today(data)
     accounts = {}
-    for acc in ["A", "B", "F"]:
+    for acc in ["A", "B", "F", "O"]:
         try:
             s = pf.load(acc, state_dir=config.STATE_DIR)
             value = float(pf.current_value(s, prices_today))
@@ -186,7 +186,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
             report, data, watchlists=report.get("watchlists", {}))
     except Exception as e:
         state["performance_ledger"] = {"error": str(e)}
-    for acc in ["A", "B", "F"]:
+    for acc in ["A", "B", "F", "O"]:
         try:
             s = pf.load(acc, state_dir="portfolios")
             positions = []

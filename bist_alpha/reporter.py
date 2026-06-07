@@ -279,7 +279,7 @@ def format_text(report):
     if report.get("shadow_accounts"):
         L.append("")
         L.append("📈 SHADOW PERFORMANS:")
-        for acc in ["A", "B", "F"]:
+        for acc in ["A", "B", "F", "O"]:
             info = report["shadow_accounts"].get(acc, {})
             if info.get("error"):
                 L.append(f"   {acc}: hata — {info['error']}")

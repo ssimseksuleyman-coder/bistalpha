@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Shadow mode runner — A/B/F paralel hesaplar, KALICI portföylerle.
+Shadow mode runner — A/B/F/O paralel hesaplar, KALICI portföylerle.
 
 Her çağrıda (günlük/rebalance):
   1. Her hesabın kalıcı portföyünü yükle
@@ -11,7 +11,7 @@ Her çağrıda (günlük/rebalance):
 
 Kullanım:
   python shadow.py                  # bugünün shadow adımı
-  python shadow.py --status         # 3 hesabın güncel durumu
+  python shadow.py --status         # hesapların güncel durumu
 """
 import argparse
 import sys
@@ -23,10 +23,11 @@ from bist_alpha import config, datafeed
 from bist_alpha import notifier
 from bist_alpha import signals as sig_mod
 from bist_alpha import strategy as strat_mod
+from bist_alpha import omega as omega_mod
 from bist_alpha import portfolio as pf
 from bist_alpha.signals import lot_multiplier
 
-ACCOUNTS = {"A": "A", "B": "B", "F": "F"}  # mode'lar
+ACCOUNTS = {"A": "A", "B": "B", "F": "F", "O": "O"}  # mode'lar
 
 
 def _attach_dynamic_universe(feed, data):
@@ -87,11 +88,15 @@ def step(data, signals, date=None, slippage=None):
         initial_entry = not state.get("positions") and not state.get("history")
         should_rebalance = is_rebal or initial_entry
         if should_rebalance:
-            picks, sig_map, exc = strat_mod.select(data, signals, date, mode=mode)
-            if mode in ("B", "F"):
-                weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
+            if mode == "O":
+                picks, sig_map, exc = omega_mod.select(data, signals, date)
+                weights = omega_mod.weights(picks, sig_map)
             else:
-                weights = {t: 1.0 for t in picks}
+                picks, sig_map, exc = strat_mod.select(data, signals, date, mode=mode)
+                if mode in ("B", "F"):
+                    weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
+                else:
+                    weights = {t: 1.0 for t in picks}
             scale = strat_mod.regime_scale(data, date)
             if scale != 1.0:
                 weights = {t: w * scale for t, w in weights.items()}
@@ -115,7 +120,7 @@ def step(data, signals, date=None, slippage=None):
 
 
 def status():
-    """3 hesabın güncel durumunu göster."""
+    """Hesapların güncel durumunu göster."""
     feed = datafeed.get_feed()
     data = feed.get_latest()
     data = _attach_dynamic_universe(feed, data)
@@ -136,7 +141,7 @@ def status():
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Shadow mode A/B/F runner")
+    ap = argparse.ArgumentParser(description="Shadow mode A/B/F/O runner")
     ap.add_argument("--status", action="store_true")
     args = ap.parse_args()
     if args.status:

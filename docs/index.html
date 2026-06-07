@@ -191,7 +191,7 @@
             <div class="stat"><div class="stat-value" id="statDate">-</div><div class="stat-label">Tarih</div></div>
             <div class="stat"><div class="stat-value" id="statMode">-</div><div class="stat-label">Mod</div></div>
             <div class="stat"><div class="stat-value" id="statTop">-</div><div class="stat-label">Oneri</div></div>
-            <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F pozisyon</div></div>
+            <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F/O pozisyon</div></div>
             <div class="stat"><div class="stat-value" id="statSource">-</div><div class="stat-label">Kaynak</div></div>
             <div class="stat"><div class="stat-value" id="statPool">-</div><div class="stat-label">BIST havuzu</div></div>
             <div class="stat"><div class="stat-value" id="statCount">-</div><div class="stat-label">Canli veri</div></div>
@@ -356,7 +356,7 @@ function renderWatchlists(watch, missed) {
 }
 
 function renderAccounts(accounts) {
-  const names = ['A', 'B', 'F'];
+  const names = ['A', 'B', 'F', 'O'];
   el('accounts').innerHTML = names.map(name => {
     const acc = accounts?.[name];
     if (!acc) return `<div class="account"><div class="account-title">Hesap ${name}<span>-</span></div><div class="empty">Veri yok</div></div>`;
@@ -468,7 +468,7 @@ async function loadDashboard() {
     el('statDate').textContent = data.date || '-';
     el('statMode').textContent = data.mode || '-';
     el('statTop').textContent = (data.top10 || []).length;
-    el('statPos').textContent = ['A','B','F'].map(k => accounts[k]?.n_positions ?? '-').join('/');
+    el('statPos').textContent = ['A','B','F','O'].map(k => accounts[k]?.n_positions ?? '-').join('/');
     el('statSource').textContent = data.source || '-';
     el('statPool').textContent = data.source_pool_count || '-';
     if (data.source_pool_method) {
