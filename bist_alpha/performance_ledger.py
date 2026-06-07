@@ -41,9 +41,9 @@ LAYER_META = {
         "metric": "forward_return_hit_rate",
     },
     "O_minus_F": {
-        "role": "discovery",
-        "label": "OMEGA Fark",
-        "metric": "captured_alpha_false_positive",
+        "role": "swap",
+        "label": "OMEGA Swap",
+        "metric": "two_leg_divergence_edge",
     },
     "transformation": {
         "role": "discovery",
@@ -197,7 +197,10 @@ def _events_from_shadow(state_dir, date_s):
         except Exception:
             states[account] = {"positions": {}}
 
-    f_tickers = set((states.get("F") or {}).get("positions", {}).keys())
+    f_positions = (states.get("F") or {}).get("positions", {})
+    o_positions = (states.get("O") or {}).get("positions", {})
+    f_tickers = set(f_positions.keys())
+    o_tickers = set(o_positions.keys())
     for account, layer in (("F", "F_shadow"), ("O", "O_shadow")):
         positions = (states.get(account) or {}).get("positions", {})
         for ticker, pos in sorted(positions.items()):
@@ -219,18 +222,32 @@ def _events_from_shadow(state_dir, date_s):
                     "display_signal": "O-F",
                 })
                 diff_event["account"] = "O"
+                diff_event["leg"] = "o_only"
                 diff_event["shares"] = _round(pos.get("shares"), 6)
                 events.append(diff_event)
+    for ticker in sorted(f_tickers - o_tickers):
+        pos = f_positions.get(ticker) or {}
+        entry = pos.get("entry")
+        if not entry:
+            continue
+        diff_event = _event("O_minus_F", ticker, entry, date_s, {
+            "reason": "F aldi, O disarida birakti",
+            "display_signal": "F-only",
+        })
+        diff_event["account"] = "F"
+        diff_event["leg"] = "f_only"
+        diff_event["shares"] = _round(pos.get("shares"), 6)
+        events.append(diff_event)
     return events
 
 
 def _merge_same_day(existing, current):
     if not existing:
         return current
-    old_events = {(e.get("layer"), e.get("ticker")): e for e in existing.get("events", [])}
+    old_events = {(e.get("layer"), e.get("ticker"), e.get("leg")): e for e in existing.get("events", [])}
     merged_events = []
     for event in current.get("events", []):
-        old = old_events.get((event.get("layer"), event.get("ticker")))
+        old = old_events.get((event.get("layer"), event.get("ticker"), event.get("leg")))
         if old and old.get("entry_price"):
             event = {**event, "entry_price": old.get("entry_price")}
         merged_events.append(event)
@@ -283,6 +300,8 @@ def _aggregate(snapshots):
     for snap in snapshots:
         regime = (snap.get("regime") or {}).get("name", "unknown")
         for event in snap.get("events", []):
+            if event.get("layer") == "O_minus_F":
+                continue
             ret = event.get("return_pct")
             if ret is None:
                 continue
@@ -390,7 +409,72 @@ def _shadow_comparison(snapshots):
     f_avg = out["F_shadow"].get("avg_return_pct")
     o_avg = out["O_shadow"].get("avg_return_pct")
     out["O_edge_vs_F_pct"] = _round(o_avg - f_avg) if o_avg is not None and f_avg is not None else None
+    out["divergence"] = _divergence_summary(snapshots)
     return out
+
+
+def _avg(values):
+    values = [float(v) for v in values if v is not None]
+    return sum(values) / len(values) if values else None
+
+
+def _divergence_summary(snapshots):
+    periods = []
+    for snap in snapshots:
+        f_returns = {}
+        o_returns = {}
+        for event in snap.get("events", []):
+            if event.get("layer") == "O_minus_F":
+                continue
+            ret = event.get("return_pct")
+            if ret is None:
+                continue
+            ticker = event.get("ticker")
+            if event.get("layer") == "F_shadow":
+                f_returns[ticker] = float(ret)
+            elif event.get("layer") == "O_shadow":
+                o_returns[ticker] = float(ret)
+        if not f_returns and not o_returns:
+            continue
+        f_set = set(f_returns)
+        o_set = set(o_returns)
+        union = f_set | o_set
+        common = f_set & o_set
+        o_only = sorted(o_set - f_set)
+        f_only = sorted(f_set - o_set)
+        o_avg = _avg(o_returns[t] for t in o_only)
+        f_avg = _avg(f_returns[t] for t in f_only)
+        edge = (o_avg - f_avg) if o_avg is not None and f_avg is not None else None
+        periods.append({
+            "date": snap.get("date"),
+            "regime": (snap.get("regime") or {}).get("name"),
+            "overlap_pct": _round(len(common) / len(union) * 100, 1) if union else None,
+            "swap_n": min(len(o_only), len(f_only)),
+            "o_only_count": len(o_only),
+            "f_only_count": len(f_only),
+            "o_only_avg_return_pct": _round(o_avg),
+            "f_only_avg_return_pct": _round(f_avg),
+            "divergence_edge_pct": _round(edge),
+            "swap_hit": bool(edge > 0) if edge is not None else None,
+            "o_only": [{"ticker": t, "return_pct": _round(o_returns[t])} for t in o_only],
+            "f_only": [{"ticker": t, "return_pct": _round(f_returns[t])} for t in f_only],
+        })
+
+    scored = [p for p in periods if p.get("divergence_edge_pct") is not None]
+    edges = [p["divergence_edge_pct"] for p in scored]
+    o_avgs = [p["o_only_avg_return_pct"] for p in scored]
+    f_avgs = [p["f_only_avg_return_pct"] for p in scored]
+    overlap = [p["overlap_pct"] for p in periods if p.get("overlap_pct") is not None]
+    return {
+        "samples": len(scored),
+        "avg_overlap_pct": _round(_avg(overlap), 1),
+        "avg_swap_n": _round(_avg(p.get("swap_n") for p in periods), 1),
+        "o_only_avg_return_pct": _round(_avg(o_avgs)),
+        "f_only_avg_return_pct": _round(_avg(f_avgs)),
+        "divergence_edge_pct": _round(_avg(edges)),
+        "swap_hit_rate_pct": _round(sum(1 for p in scored if p.get("swap_hit")) / len(scored) * 100, 1) if scored else None,
+        "latest": periods[-1] if periods else None,
+    }
 
 
 def update(report, data, watchlists=None, path=None, max_snapshots=MAX_SNAPSHOTS,

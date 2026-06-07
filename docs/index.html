@@ -437,7 +437,12 @@ function renderPerformanceLedger(info) {
   const fAvg = shadow.F_shadow?.avg_return_pct;
   const oAvg = shadow.O_shadow?.avg_return_pct;
   const edge = shadow.O_edge_vs_F_pct;
+  const div = shadow.divergence || {};
+  const latestSwap = div.latest || {};
+  const oOnly = (latestSwap.o_only || []).map(x => `${x.ticker} %${x.return_pct}`).join(', ') || '-';
+  const fOnly = (latestSwap.f_only || []).map(x => `${x.ticker} %${x.return_pct}`).join(', ') || '-';
   const edgeClass = edge == null || Number(edge) >= 0 ? 'profit' : 'loss';
+  const divClass = div.divergence_edge_pct == null || Number(div.divergence_edge_pct) >= 0 ? 'profit' : 'loss';
   el('ledgerStamp').textContent = `${info.latest_regime || '-'} | ${info.tracked_days ?? 0}g`;
   el('performanceLedger').innerHTML = `
     <div class="forward-grid">
@@ -448,6 +453,17 @@ function renderPerformanceLedger(info) {
     <div class="forward-row">
       <strong>O vs F Shadow</strong>
       <span>F %${esc(fAvg ?? '-')} | O %${esc(oAvg ?? '-')} | <b class="${edgeClass}">fark %${esc(edge ?? '-')}</b></span>
+    </div>
+    <div class="forward-row">
+      <strong>O-F Swap</strong>
+      <span>ortak %${esc(div.avg_overlap_pct ?? '-')} | swap ${esc(div.avg_swap_n ?? '-')} | <b class="${divClass}">edge %${esc(div.divergence_edge_pct ?? '-')}</b></span>
+    </div>
+    <div class="meta" style="padding-top:4px">
+      O-only %${esc(div.o_only_avg_return_pct ?? '-')} / F-only %${esc(div.f_only_avg_return_pct ?? '-')}
+      | swap isabet %${esc(div.swap_hit_rate_pct ?? '-')} | ornek ${esc(div.samples ?? 0)}
+    </div>
+    <div class="meta" style="padding-top:4px">
+      Son swap: O ekledi ${esc(oOnly)} | O disarida birakti ${esc(fOnly)}
     </div>
     ${rows.length ? rows.map(row => `
       <div class="forward-row">
