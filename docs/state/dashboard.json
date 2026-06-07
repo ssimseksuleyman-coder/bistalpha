@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-07T22:17:32",
+  "timestamp": "2026-06-07T23:39:04",
   "label": "otomatik",
   "date": "2026-06-05",
   "mode": "F",
@@ -2053,7 +2053,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-07T22:17:32",
+    "updated_at": "2026-06-07T23:39:04",
     "days_tracked": 1,
     "latest_date": "2026-06-05",
     "latest_avg_return_pct": 0.0,
@@ -2230,7 +2230,7 @@
           }
         ],
         "first_generated_at": "2026-06-07 14:10",
-        "last_generated_at": "2026-06-07 22:17",
+        "last_generated_at": "2026-06-07 23:39",
         "as_of": "2026-06-05",
         "age_trading_days": 0,
         "avg_return_pct": 0.0,
@@ -2240,7 +2240,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-07T22:17:32",
+    "updated_at": "2026-06-07T23:39:04",
     "tracked_days": 1,
     "current_candidates": 10,
     "hot_missed_count": 0,
@@ -2248,11 +2248,11 @@
     "recent_hot": []
   },
   "performance_ledger": {
-    "updated_at": "2026-06-07T22:17:32",
+    "updated_at": "2026-06-07T23:39:04",
     "tracked_days": 1,
     "latest_date": "2026-06-05",
     "latest_regime": "mixed",
-    "latest_events": 28,
+    "latest_events": 48,
     "by_layer_regime": [
       {
         "layer": "quiet_accumulation",
@@ -2283,8 +2283,26 @@
         "false_positive_events": 0
       },
       {
+        "layer": "F_shadow",
+        "label": "F Shadow",
+        "role": "return",
+        "regime": "mixed",
+        "n": 10,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0
+      },
+      {
         "layer": "F_top10",
         "label": "F Top10",
+        "role": "return",
+        "regime": "mixed",
+        "n": 10,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0
+      },
+      {
+        "layer": "O_shadow",
+        "label": "OMEGA Shadow",
         "role": "return",
         "regime": "mixed",
         "n": 10,
@@ -2306,6 +2324,24 @@
         "false_alarm_events": 0
       }
     ],
+    "shadow_comparison": {
+      "F_shadow": {
+        "n": 10,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0
+      },
+      "O_shadow": {
+        "n": 10,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0
+      },
+      "O_minus_F": {
+        "n": 0,
+        "avg_return_pct": null,
+        "hit_rate_pct": null
+      },
+      "O_edge_vs_F_pct": 0.0
+    },
     "role_notes": {
       "return": "Getiri katmanlari forward getiri ve hit-rate ile olculur.",
       "discovery": "Kesif katmanlari yakalanan alpha eksi false-positive kaybi ile olculur.",
