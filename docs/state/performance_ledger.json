@@ -1,9 +1,9 @@
 {
   "summary": {
-    "updated_at": "2026-06-15T19:29:05",
+    "updated_at": "2026-06-15T22:12:15",
     "tracked_days": 7,
     "latest_date": "2026-06-15",
-    "latest_regime": "bull",
+    "latest_regime": "unknown",
     "latest_events": 52,
     "by_layer_regime": [
       {
@@ -24,20 +24,6 @@
         "layer": "quiet_accumulation",
         "label": "Sessiz Birikim",
         "role": "discovery",
-        "regime": "bull",
-        "n": 8,
-        "avg_return_pct": -0.36,
-        "hit_rate_pct": 12.5,
-        "captured_alpha_pct": 0.1,
-        "false_positive_loss_pct": 2.98,
-        "net_discovery_pct": -2.88,
-        "hit_events": 0,
-        "false_positive_events": 0
-      },
-      {
-        "layer": "quiet_accumulation",
-        "label": "Sessiz Birikim",
-        "role": "discovery",
         "regime": "mixed",
         "n": 12,
         "avg_return_pct": 3.32,
@@ -47,6 +33,20 @@
         "net_discovery_pct": 39.84,
         "hit_events": 4,
         "false_positive_events": 3
+      },
+      {
+        "layer": "quiet_accumulation",
+        "label": "Sessiz Birikim",
+        "role": "discovery",
+        "regime": "unknown",
+        "n": 8,
+        "avg_return_pct": -0.36,
+        "hit_rate_pct": 12.5,
+        "captured_alpha_pct": 0.1,
+        "false_positive_loss_pct": 2.98,
+        "net_discovery_pct": -2.88,
+        "hit_events": 0,
+        "false_positive_events": 0
       },
       {
         "layer": "transformation",
@@ -66,20 +66,6 @@
         "layer": "transformation",
         "label": "Donusum Radari",
         "role": "discovery",
-        "regime": "bull",
-        "n": 8,
-        "avg_return_pct": 0.1,
-        "hit_rate_pct": 37.5,
-        "captured_alpha_pct": 4.42,
-        "false_positive_loss_pct": 3.64,
-        "net_discovery_pct": 0.78,
-        "hit_events": 0,
-        "false_positive_events": 0
-      },
-      {
-        "layer": "transformation",
-        "label": "Donusum Radari",
-        "role": "discovery",
         "regime": "mixed",
         "n": 24,
         "avg_return_pct": -1.52,
@@ -89,6 +75,20 @@
         "net_discovery_pct": -36.43,
         "hit_events": 6,
         "false_positive_events": 9
+      },
+      {
+        "layer": "transformation",
+        "label": "Donusum Radari",
+        "role": "discovery",
+        "regime": "unknown",
+        "n": 8,
+        "avg_return_pct": 0.1,
+        "hit_rate_pct": 37.5,
+        "captured_alpha_pct": 4.42,
+        "false_positive_loss_pct": 3.64,
+        "net_discovery_pct": 0.78,
+        "hit_events": 0,
+        "false_positive_events": 0
       },
       {
         "layer": "F_shadow",
@@ -103,19 +103,19 @@
         "layer": "F_shadow",
         "label": "F Shadow",
         "role": "return",
-        "regime": "bull",
-        "n": 9,
-        "avg_return_pct": 14.59,
-        "hit_rate_pct": 100.0
+        "regime": "mixed",
+        "n": 40,
+        "avg_return_pct": 12.91,
+        "hit_rate_pct": 90.0
       },
       {
         "layer": "F_shadow",
         "label": "F Shadow",
         "role": "return",
-        "regime": "mixed",
-        "n": 40,
-        "avg_return_pct": 12.91,
-        "hit_rate_pct": 90.0
+        "regime": "unknown",
+        "n": 9,
+        "avg_return_pct": 14.59,
+        "hit_rate_pct": 100.0
       },
       {
         "layer": "F_top10",
@@ -130,19 +130,19 @@
         "layer": "F_top10",
         "label": "F Top10",
         "role": "return",
-        "regime": "bull",
-        "n": 10,
-        "avg_return_pct": 1.71,
-        "hit_rate_pct": 60.0
+        "regime": "mixed",
+        "n": 31,
+        "avg_return_pct": 9.6,
+        "hit_rate_pct": 87.1
       },
       {
         "layer": "F_top10",
         "label": "F Top10",
         "role": "return",
-        "regime": "mixed",
-        "n": 31,
-        "avg_return_pct": 9.6,
-        "hit_rate_pct": 87.1
+        "regime": "unknown",
+        "n": 10,
+        "avg_return_pct": 1.71,
+        "hit_rate_pct": 60.0
       },
       {
         "layer": "O_shadow",
@@ -157,19 +157,19 @@
         "layer": "O_shadow",
         "label": "OMEGA Shadow",
         "role": "return",
-        "regime": "bull",
-        "n": 9,
-        "avg_return_pct": 14.59,
-        "hit_rate_pct": 100.0
+        "regime": "mixed",
+        "n": 40,
+        "avg_return_pct": 12.91,
+        "hit_rate_pct": 90.0
       },
       {
         "layer": "O_shadow",
         "label": "OMEGA Shadow",
         "role": "return",
-        "regime": "mixed",
-        "n": 40,
-        "avg_return_pct": 12.91,
-        "hit_rate_pct": 90.0
+        "regime": "unknown",
+        "n": 9,
+        "avg_return_pct": 14.59,
+        "hit_rate_pct": 100.0
       },
       {
         "layer": "peak_risks",
@@ -189,20 +189,6 @@
         "layer": "peak_risks",
         "label": "Tepe Riski",
         "role": "risk",
-        "regime": "bull",
-        "n": 8,
-        "avg_return_pct": -1.42,
-        "hit_rate_pct": 25.0,
-        "saved_loss_pct": 16.29,
-        "opportunity_cost_pct": 4.95,
-        "net_saved_pct": 11.34,
-        "saved_events": 1,
-        "false_alarm_events": 1
-      },
-      {
-        "layer": "peak_risks",
-        "label": "Tepe Riski",
-        "role": "risk",
         "regime": "mixed",
         "n": 25,
         "avg_return_pct": 0.84,
@@ -212,6 +198,20 @@
         "net_saved_pct": -20.9,
         "saved_events": 6,
         "false_alarm_events": 11
+      },
+      {
+        "layer": "peak_risks",
+        "label": "Tepe Riski",
+        "role": "risk",
+        "regime": "unknown",
+        "n": 8,
+        "avg_return_pct": -1.42,
+        "hit_rate_pct": 25.0,
+        "saved_loss_pct": 16.29,
+        "opportunity_cost_pct": 4.95,
+        "net_saved_pct": 11.34,
+        "saved_events": 1,
+        "false_alarm_events": 1
       }
     ],
     "shadow_comparison": {
@@ -241,7 +241,7 @@
         "swap_hit_rate_pct": null,
         "latest": {
           "date": "2026-06-15",
-          "regime": "bull",
+          "regime": "unknown",
           "overlap_pct": 100.0,
           "swap_n": 0,
           "o_only_count": 0,
@@ -5287,9 +5287,9 @@
       "date": "2026-06-15",
       "generated_at": "2026-06-15T15:55:14",
       "regime": {
-        "name": "bull",
-        "xu5": 4.2,
-        "xu21": -4.5
+        "name": "unknown",
+        "xu5": null,
+        "xu21": null
       },
       "source": "yahoo",
       "events": [
@@ -6228,7 +6228,7 @@
           "verdict": "hit"
         }
       ],
-      "last_generated_at": "2026-06-15T19:29:05"
+      "last_generated_at": "2026-06-15T22:12:15"
     }
   ]
 }
