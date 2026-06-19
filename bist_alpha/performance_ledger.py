@@ -15,6 +15,7 @@ import pandas as pd
 
 from . import config
 from . import portfolio as pf
+from . import regime
 
 
 MAX_SNAPSHOTS = 90
@@ -109,31 +110,6 @@ def _last_date(data):
     if prices is None or prices.empty:
         return None
     return prices.index[-1]
-
-
-def _market_regime(data, date):
-    bist = data.get("bist") if data else None
-    if bist is None or len(bist) < 22:
-        return {"name": "unknown", "xu5": None, "xu21": None}
-    idx = bist.index.searchsorted(pd.Timestamp(date))
-    if idx < 21 or idx >= len(bist):
-        return {"name": "unknown", "xu5": None, "xu21": None}
-    now = bist.iloc[idx]
-    p5 = bist.iloc[idx - 5]
-    p21 = bist.iloc[idx - 21]
-    if pd.isna(now) or pd.isna(p5) or pd.isna(p21) or p5 <= 0 or p21 <= 0:
-        return {"name": "unknown", "xu5": None, "xu21": None}
-    xu5 = (now / p5 - 1) * 100
-    xu21 = (now / p21 - 1) * 100
-    if xu5 <= -3 or xu21 <= -8:
-        name = "bear"
-    elif abs(xu5) < 1 and abs(xu21) < 4:
-        name = "sideways"
-    elif xu5 >= 3 or xu21 >= 8:
-        name = "bull"
-    else:
-        name = "mixed"
-    return {"name": name, "xu5": _round(xu5, 1), "xu21": _round(xu21, 1)}
 
 
 def _tag_labels(item):
@@ -493,7 +469,7 @@ def update(report, data, watchlists=None, path=None, max_snapshots=MAX_SNAPSHOTS
     current = {
         "date": date_s,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "regime": _market_regime(data, date),
+        "regime": report.get("market_regime") or regime.classify(data, date),
         "source": report.get("source") or data.get("_source"),
         "events": (
             _events_from_report(report, watchlists or report.get("watchlists", {}), date_s) +

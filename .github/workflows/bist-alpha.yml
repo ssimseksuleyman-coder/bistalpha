@@ -55,7 +55,6 @@ jobs:
           IMAP_PASS: ${{ secrets.IMAP_PASS }}
           DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
         run: |
-          python3 shadow.py || echo "::warning::shadow.py atlandi; ana rapor devam ediyor"
           python3 daemon.py --once otomatik
           python3 - <<'PY'
           import json

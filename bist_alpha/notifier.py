@@ -23,7 +23,7 @@ def send_email(subject, body, to=None):
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain", "utf-8"))
     try:
-        with smtplib.SMTP(host, getattr(config, "SMTP_PORT", 587)) as srv:
+        with smtplib.SMTP(host, getattr(config, "SMTP_PORT", 587), timeout=10) as srv:
             srv.starttls()
             srv.login(config.SMTP_USER, config.SMTP_PASS)
             srv.send_message(msg)
@@ -59,7 +59,8 @@ def send_telegram(text):
 
 def notify_all(subject, body):
     """Hem e-posta hem Telegram'a gönderir (yapılandırılmış olanlar)."""
-    e = send_email(subject, body)
+    # Telegram is the time-sensitive channel; do not make it wait for SMTP.
     t = send_telegram(f"{subject}\n\n{body}")
+    e = send_email(subject, body)
     return {"email": e, "telegram": t}
 

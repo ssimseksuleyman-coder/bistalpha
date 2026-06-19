@@ -20,6 +20,7 @@ from .levels import pivot_levels
 from .sectors import get_sector
 from .signals import signal_for
 from .strategy import last_n_return, select, score
+from . import regime
 
 
 def _action(in_portfolio, is_pick, sig, stopped):
@@ -190,6 +191,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
             if len(firsatlar) >= 5:
                 break
 
+    market_regime = regime.classify(data, date)
     return {
         "date": str(date.date()) if hasattr(date, "date") else str(date),
         "mode": mode,
@@ -202,6 +204,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "price_count": int(prices.shape[1]),
         "dynamic_universe_count": len(data.get("_dynamic_universe", [])) if data.get("_dynamic_universe") else None,
         "dynamic_universe_method": data.get("_dynamic_universe_method"),
+        "market_regime": market_regime,
         "top10": rows,
         "firsatlar": firsatlar,
         "market_score_deniz": deniz_bulletin.get("market_score") if deniz_bulletin else None,

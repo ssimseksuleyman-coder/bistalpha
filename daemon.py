@@ -107,6 +107,15 @@ def run_cycle(label="manuel"):
     # 4) Sinyaller + rapor (eksik #2, #4) — korumalı
     def _report():
         signals = sig_mod.compute_signals(data)
+        shadow_result = None
+        try:
+            import shadow
+            shadow_result = shadow.step(data, signals)
+            trade_notice = shadow._format_trade_notice(shadow_result)
+            if trade_notice:
+                notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
+        except Exception as e:
+            print(f"[daemon] Shadow atlandi: {e}")
         held_positions = {}
         try:
             from bist_alpha import portfolio as pf
@@ -116,6 +125,7 @@ def run_cycle(label="manuel"):
         report = reporter.generate_report(data, signals, mode=config.MODE,
                                            deniz_bulletin=bulletin,
                                            held_positions=held_positions)
+        report["shadow_cycle"] = shadow_result
         report["shadow_accounts"] = _shadow_summary(data)
         try:
             from bist_alpha import radar
@@ -167,9 +177,12 @@ def _write_dashboard_state(report, label, data=None, universe=None):
         "price_count": report.get("price_count"),
         "dynamic_universe_count": len(universe) if universe is not None else report.get("dynamic_universe_count"),
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
-        "deniz_regime": report.get("deniz_regime"),
+        "market_regime": report.get("market_regime"),
+        # Legacy field kept in sync for older dashboard/state consumers.
+        "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),
         "watchlists": report.get("watchlists", {}),
+        "shadow_cycle": report.get("shadow_cycle"),
         "accounts": {},
     }
     try:
