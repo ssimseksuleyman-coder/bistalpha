@@ -178,6 +178,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
         "dynamic_universe_count": len(universe) if universe is not None else report.get("dynamic_universe_count"),
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "market_regime": report.get("market_regime"),
+        "deniz_bulletin": report.get("deniz_bulletin"),
         # Legacy field kept in sync for older dashboard/state consumers.
         "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),

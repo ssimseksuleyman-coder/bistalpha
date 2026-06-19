@@ -11,9 +11,32 @@ Adapter deseni — kullanıcı kaynağına göre seçer:
 import os
 import glob
 import re
+import unicodedata
+from datetime import datetime, timedelta
+from email.header import decode_header, make_header
 from abc import ABC, abstractmethod
 from . import config
 from . import deniz
+
+
+def _normalized_name(value):
+    value = unicodedata.normalize("NFKD", value or "")
+    return "".join(ch for ch in value if not unicodedata.combining(ch)).lower()
+
+
+def _is_bulletin_file(filename):
+    normalized = _normalized_name(filename)
+    if not normalized.endswith((".xlsx", ".xls")):
+        return False
+    return (
+        ("teknik" in normalized and "takip" in normalized)
+        or ("bist" in normalized and "bulten" in normalized)
+    )
+
+
+def _filename_date(filename):
+    match = re.search(r'(\d{2})[_.\-\s](\d{2})[_.\-\s](\d{4})', filename)
+    return (match.group(3), match.group(2), match.group(1)) if match else ("0", "0", "0")
 
 
 class DenizFetcher(ABC):
@@ -35,13 +58,15 @@ class FolderFetcher(DenizFetcher):
         if not os.path.isdir(self.folder):
             print(f"[deniz_fetcher] Klasör yok: {self.folder}")
             return None
-        files = glob.glob(os.path.join(self.folder, "*Teknik_Takip*.xlsx"))
+        files = [
+            path for path in glob.glob(os.path.join(self.folder, "*"))
+            if os.path.isfile(path) and _is_bulletin_file(os.path.basename(path))
+        ]
         if not files:
             return None
         # Dosya adındaki tarihe göre en yeni
         def file_date(f):
-            m = re.search(r'(\d{2})_(\d{2})_(\d{4})', os.path.basename(f))
-            return (m.group(3), m.group(2), m.group(1)) if m else ("0", "0", "0")
+            return _filename_date(os.path.basename(f))
         return sorted(files, key=file_date)[-1]
 
 
@@ -57,6 +82,34 @@ class EmailFetcher(DenizFetcher):
     def __init__(self, save_dir="deniz_inbox"):
         self.save_dir = save_dir
 
+    @staticmethod
+    def _decode_filename(value):
+        if not value:
+            return ""
+        try:
+            return str(make_header(decode_header(value)))
+        except Exception:
+            return str(value)
+
+    @staticmethod
+    def _normalized(value):
+        return _normalized_name(value)
+
+    @classmethod
+    def _is_bulletin_attachment(cls, filename):
+        return _is_bulletin_file(filename)
+
+    @staticmethod
+    def _search_ids(mailbox, sender):
+        since = (datetime.now() - timedelta(days=21)).strftime("%d-%b-%Y")
+        criteria = ["SINCE", since]
+        if sender:
+            criteria.extend(["FROM", f'"{sender}"'])
+        typ, ids = mailbox.search(None, *criteria)
+        if typ == "OK" and ids and ids[0]:
+            return ids[0].split()
+        return []
+
     def fetch_latest(self):
         host = getattr(config, "IMAP_HOST", None)
         user = getattr(config, "IMAP_USER", None)
@@ -70,25 +123,29 @@ class EmailFetcher(DenizFetcher):
         sender = getattr(config, "DENIZ_SENDER", "")
         os.makedirs(self.save_dir, exist_ok=True)
         try:
-            M = imaplib.IMAP4_SSL(host)
+            M = imaplib.IMAP4_SSL(host, timeout=15)
             M.login(user, pw)
             M.select("INBOX")
             # Deniz göndericiden, ekli, son e-postalar
-            crit = f'(FROM "{sender}")' if sender else '(ALL)'
-            typ, ids = M.search(None, crit)
-            id_list = ids[0].split()
+            id_list = self._search_ids(M, sender)
+            if not id_list and sender:
+                print("[deniz_fetcher] Gönderici eşleşmedi; ek adına göre aranıyor")
+                id_list = self._search_ids(M, "")
             if not id_list:
                 M.logout()
                 return None
             # En yeni e-postadan başla
             saved_path = None
-            for eid in reversed(id_list[-10:]):
+            for eid in reversed(id_list[-100:]):
                 typ, msg_data = M.fetch(eid, "(RFC822)")
+                if typ != "OK" or not msg_data or not isinstance(msg_data[0], tuple):
+                    continue
                 msg = email.message_from_bytes(msg_data[0][1])
                 for part in msg.walk():
-                    fn = part.get_filename()
-                    if fn and "Teknik_Takip" in fn and fn.endswith(".xlsx"):
-                        path = os.path.join(self.save_dir, fn)
+                    fn = self._decode_filename(part.get_filename())
+                    if self._is_bulletin_attachment(fn):
+                        safe_name = os.path.basename(fn).replace("\x00", "").strip()
+                        path = os.path.join(self.save_dir, safe_name)
                         with open(path, "wb") as f:
                             f.write(part.get_payload(decode=True))
                         saved_path = path
@@ -102,10 +159,22 @@ class EmailFetcher(DenizFetcher):
             return None
 
 
+class FallbackFetcher(DenizFetcher):
+    def __init__(self, fetchers):
+        self.fetchers = fetchers
+
+    def fetch_latest(self):
+        for fetcher in self.fetchers:
+            path = fetcher.fetch_latest()
+            if path:
+                return path
+        return None
+
+
 def get_fetcher():
     src = getattr(config, "DENIZ_SOURCE", "folder")
     if src == "email":
-        return EmailFetcher()
+        return FallbackFetcher([EmailFetcher(), FolderFetcher()])
     return FolderFetcher()
 
 
@@ -121,6 +190,8 @@ def auto_update(snapshot_dir="deniz_snapshots"):
         print("[deniz_fetcher] Yeni bülten bulunamadı")
         return None
     bulletin = deniz.parse_bulletin(path)
+    bulletin["source_file"] = os.path.basename(path)
+    bulletin["fetched_at"] = datetime.now().isoformat(timespec="seconds")
     deniz.save_snapshot(bulletin, out_dir=snapshot_dir)
     print(f"[deniz_fetcher] Bülten güncellendi: {bulletin['date']} "
           f"({len(bulletin['sector_scores'])} sektör)")

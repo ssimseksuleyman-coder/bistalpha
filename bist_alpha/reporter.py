@@ -192,6 +192,8 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
                 break
 
     market_regime = regime.classify(data, date)
+    from . import deniz
+    deniz_status = deniz.bulletin_status(deniz_bulletin, as_of=date)
     return {
         "date": str(date.date()) if hasattr(date, "date") else str(date),
         "mode": mode,
@@ -205,6 +207,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "dynamic_universe_count": len(data.get("_dynamic_universe", [])) if data.get("_dynamic_universe") else None,
         "dynamic_universe_method": data.get("_dynamic_universe_method"),
         "market_regime": market_regime,
+        "deniz_bulletin": deniz_status,
         "top10": rows,
         "firsatlar": firsatlar,
         "market_score_deniz": deniz_bulletin.get("market_score") if deniz_bulletin else None,
@@ -225,6 +228,15 @@ def format_text(report):
         L.append(f"Kaynak: {report['source']}{pool_note} | canlı veri: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')} | son veri: {report.get('last_data_date')}")
     if report.get("market_score_deniz") is not None:
         L.append(f"Deniz market puanı: {report['market_score_deniz']}")
+    deniz_info = report.get("deniz_bulletin") or {}
+    if deniz_info.get("available"):
+        freshness = "guncel" if deniz_info.get("fresh") else "ESKI"
+        L.append(
+            f"Deniz bulten: {deniz_info.get('date')} | {freshness} | "
+            f"yas:{deniz_info.get('age_days')} gun"
+        )
+    else:
+        L.append("Deniz bulten: YOK (IMAP/klasor kontrol edilmeli)")
     L.append("")
     L.append("TOP 10:")
     for r in report["top10"]:

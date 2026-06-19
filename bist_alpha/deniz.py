@@ -18,6 +18,7 @@ import pandas as pd
 import re
 import os
 import json
+from datetime import date as date_type, datetime
 
 
 def parse_bulletin(path):
@@ -30,7 +31,7 @@ def parse_bulletin(path):
     }
     """
     # Tarih (dosya adından, ör ..._14_05_2026_...)
-    m = re.search(r'(\d{2})_(\d{2})_(\d{4})', os.path.basename(path))
+    m = re.search(r'(\d{2})[_.\-\s](\d{2})[_.\-\s](\d{4})', os.path.basename(path))
     date = f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else "unknown"
 
     sector_scores = {}
@@ -77,6 +78,43 @@ def save_snapshot(bulletin, out_dir="deniz_snapshots"):
 
 
 # ---- YAN KAYNAK KULLANIM FONKSİYONLARI ----
+
+def bulletin_status(bulletin, as_of=None, max_age_days=4):
+    """Dashboard ve bildirim için bülten tazeliğini açıkça raporla."""
+    if not bulletin:
+        return {
+            "available": False,
+            "date": None,
+            "age_days": None,
+            "fresh": False,
+            "status": "missing",
+            "market_score": None,
+        }
+    raw_date = bulletin.get("date")
+    try:
+        bulletin_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        if as_of is None:
+            reference = date_type.today()
+        elif hasattr(as_of, "date"):
+            reference = as_of.date()
+        else:
+            reference = datetime.strptime(str(as_of)[:10], "%Y-%m-%d").date()
+        age_days = max(0, (reference - bulletin_date).days)
+    except Exception:
+        age_days = None
+    fresh = age_days is not None and age_days <= max_age_days
+    return {
+        "available": True,
+        "date": raw_date,
+        "age_days": age_days,
+        "fresh": fresh,
+        "status": "fresh" if fresh else "stale",
+        "market_score": bulletin.get("market_score"),
+        "sector_count": len(bulletin.get("sector_scores", {})),
+        "source_file": bulletin.get("source_file"),
+        "fetched_at": bulletin.get("fetched_at"),
+    }
+
 
 def sector_regime_flag(bulletin, sector_code, weak_threshold=40):
     """
