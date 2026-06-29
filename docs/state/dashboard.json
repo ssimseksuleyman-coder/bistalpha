@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-26T20:13:52",
-  "label": "otomatik",
+  "timestamp": "2026-06-29T09:45:05",
+  "label": "push",
   "date": "2026-06-26",
   "mode": "F",
   "source": "yahoo",
@@ -8,7 +8,7 @@
   "source_pool_method": "tradingview_bist_scanner",
   "source_pool_fallback": false,
   "last_data_date": "2026-06-26",
-  "price_count": 605,
+  "price_count": 604,
   "dynamic_universe_count": 100,
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "market_regime": {
@@ -25,7 +25,8 @@
     "market_score": 63.0,
     "sector_count": 31,
     "source_file": "1778951856512_Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_14_05_2026_13830__1_.xlsx",
-    "fetched_at": "2026-06-26T20:12:56"
+    "fetched_at": "2026-06-29T09:44:34",
+    "loaded_from_snapshot": false
   },
   "deniz_regime": "bear",
   "top10": [
@@ -297,7 +298,7 @@
         "rank_1a": 6,
         "rank_1h": 15,
         "acceleration": 115,
-        "volume_ratio": 1.3,
+        "volume_ratio": 1.33,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": false,
@@ -692,7 +693,7 @@
         "m252": 501.9,
         "rank_1y": 10,
         "rank_1a": 42,
-        "rank_1h": 85,
+        "rank_1h": 84,
         "acceleration": -32,
         "volume_ratio": 0.72,
         "sm_signal": "Üst_fitil_UYARI",
@@ -847,8 +848,8 @@
         "m252": 202.9,
         "rank_1y": 19,
         "rank_1a": 104,
-        "rank_1h": 57,
-        "acceleration": -38,
+        "rank_1h": 56,
+        "acceleration": -37,
         "volume_ratio": 0.67,
         "sm_signal": "Üst_fitil_UYARI",
         "display_signal": "Üst_fitil_UYARI",
@@ -892,8 +893,8 @@
         "m252": 192.3,
         "rank_1y": 20,
         "rank_1a": 101,
-        "rank_1h": 87,
-        "acceleration": -67,
+        "rank_1h": 86,
+        "acceleration": -66,
         "volume_ratio": 0.9,
         "sm_signal": "DAĞITIM",
         "display_signal": "DAĞITIM",
@@ -1963,7 +1964,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-26T20:13:52",
+    "updated_at": "2026-06-29T09:45:05",
     "days_tracked": 16,
     "latest_date": "2026-06-26",
     "latest_avg_return_pct": 0.4,
@@ -3196,7 +3197,7 @@
           }
         ],
         "first_generated_at": "2026-06-26 13:02",
-        "last_generated_at": "2026-06-26 20:13",
+        "last_generated_at": "2026-06-29 09:45",
         "as_of": "2026-06-26",
         "age_trading_days": 0,
         "avg_return_pct": 0.4,
@@ -3206,7 +3207,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-26T20:13:52",
+    "updated_at": "2026-06-29T09:45:05",
     "tracked_days": 16,
     "current_candidates": 11,
     "hot_missed_count": 12,
@@ -3285,7 +3286,7 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-06-26T20:13:52",
+    "updated_at": "2026-06-29T09:45:05",
     "tracked_days": 16,
     "latest_date": "2026-06-26",
     "latest_regime": "bear",
@@ -3394,14 +3395,14 @@
         "label": "Donusum Radari",
         "role": "discovery",
         "regime": "mixed",
-        "n": 32,
-        "avg_return_pct": -3.33,
-        "hit_rate_pct": 34.4,
+        "n": 30,
+        "avg_return_pct": -2.52,
+        "hit_rate_pct": 36.7,
         "captured_alpha_pct": 136.66,
-        "false_positive_loss_pct": 243.27,
-        "net_discovery_pct": -106.61,
+        "false_positive_loss_pct": 212.19,
+        "net_discovery_pct": -75.53,
         "hit_events": 6,
-        "false_positive_events": 19
+        "false_positive_events": 17
       },
       {
         "layer": "transformation",
