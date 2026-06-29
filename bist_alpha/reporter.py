@@ -144,6 +144,9 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         date = prices.index[-1]
     held = held_positions or set()
     stopped = stopped_tickers or set()
+    from . import deniz
+    deniz_status = deniz.bulletin_status(deniz_bulletin, as_of=date)
+    deniz_usable = deniz_bulletin if deniz_status.get("fresh") else None
 
     picks, sig_map, exceptions = select(data, signals, date, mode=mode)
     s, m252 = score(data, date)
@@ -162,9 +165,9 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         }
         row.update(_momentum_snapshot(data, t, date))
         row.update(_price_plan(data, t, date, held_positions=held_positions))
-        if deniz_bulletin:
+        if deniz_usable:
             from .deniz import sector_regime_flag
-            row["deniz_regime"] = sector_regime_flag(deniz_bulletin, get_sector(t))
+            row["deniz_regime"] = sector_regime_flag(deniz_usable, get_sector(t))
         # Yan kaynak overlay (OMEGA istihbaratı — bayrak/etiket)
         from . import sidesource
         ss = sidesource.annotate_ticker(t, get_sector(t))
@@ -192,8 +195,6 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
                 break
 
     market_regime = regime.classify(data, date)
-    from . import deniz
-    deniz_status = deniz.bulletin_status(deniz_bulletin, as_of=date)
     return {
         "date": str(date.date()) if hasattr(date, "date") else str(date),
         "mode": mode,
@@ -210,7 +211,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "deniz_bulletin": deniz_status,
         "top10": rows,
         "firsatlar": firsatlar,
-        "market_score_deniz": deniz_bulletin.get("market_score") if deniz_bulletin else None,
+        "market_score_deniz": deniz_usable.get("market_score") if deniz_usable else None,
     }
 
 
@@ -226,8 +227,6 @@ def format_text(report):
         if pool_method:
             pool_note += f" ({pool_method})"
         L.append(f"Kaynak: {report['source']}{pool_note} | canlı veri: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')} | son veri: {report.get('last_data_date')}")
-    if report.get("market_score_deniz") is not None:
-        L.append(f"Deniz market puanı: {report['market_score_deniz']}")
     deniz_info = report.get("deniz_bulletin") or {}
     if deniz_info.get("available"):
         freshness = "guncel" if deniz_info.get("fresh") else "ESKI"
@@ -236,6 +235,10 @@ def format_text(report):
             f"Deniz bulten: {deniz_info.get('date')} | {freshness} | "
             f"yas:{deniz_info.get('age_days')} gun{source_note}"
         )
+        if deniz_info.get("fresh") and report.get("market_score_deniz") is not None:
+            L.append(f"Deniz market puanı: {report['market_score_deniz']}")
+        elif not deniz_info.get("fresh"):
+            L.append("Deniz puani/sector etiketi rapora katilmadi (bulten eski).")
     else:
         L.append("Deniz bulten: YOK (IMAP/klasor kontrol edilmeli)")
     L.append("")

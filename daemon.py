@@ -81,6 +81,10 @@ def _operation_health(report, label, data, health, notify_status):
     email_ok = notify_status.get("email") if isinstance(notify_status, dict) else None
     if telegram_ok is False:
         core_status = "amber" if core_status == "green" else core_status
+    if deniz_info.get("available") is False:
+        core_status = "amber" if core_status == "green" else core_status
+    elif deniz_info.get("available") and not deniz_info.get("fresh", False):
+        core_status = "red"
 
     return {
         "label": label,

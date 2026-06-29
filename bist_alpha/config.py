@@ -100,6 +100,7 @@ IMAP_HOST = _env("IMAP_HOST")
 IMAP_USER = _env("IMAP_USER")
 IMAP_PASS = _env("IMAP_PASS")
 DENIZ_SENDER = _env("DENIZ_SENDER")
+DENIZ_MAX_AGE_DAYS = int(_env("DENIZ_MAX_AGE_DAYS", "3"))  # Cuma bulteni Pazartesiye kadar kabul
 
 # ---- Bakım (eksik #6) ----
 SNAPSHOT_KEEP_DAYS = 90

@@ -103,8 +103,13 @@ def load_latest_snapshot(snapshot_dir="deniz_snapshots"):
         return None
 
 
-def bulletin_status(bulletin, as_of=None, max_age_days=4):
+def bulletin_status(bulletin, as_of=None, max_age_days=None):
     """Dashboard ve bildirim için bülten tazeliğini açıkça raporla."""
+    if max_age_days is None:
+        try:
+            max_age_days = int(os.environ.get("DENIZ_MAX_AGE_DAYS", "3"))
+        except Exception:
+            max_age_days = 3
     if not bulletin:
         return {
             "available": False,
