@@ -123,6 +123,12 @@
   .watch-title { display: flex; justify-content: space-between; gap: 10px; font-weight: 750; }
   .watch-item { display: grid; grid-template-columns: 86px 1fr auto; gap: 10px; align-items: center; padding-top: 8px; color: var(--muted); font-size: 12px; }
   .watch-item strong { color: var(--ink); }
+  .decision { padding: 12px 16px 14px; display: grid; gap: 10px; }
+  .decision-card { border: 1px solid var(--line); border-radius: 8px; background: #fbfcfa; padding: 12px; }
+  .decision-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 750; }
+  .decision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .why { border: 1px solid var(--line); border-radius: 8px; background: var(--soft); padding: 9px; color: var(--muted); font-size: 12px; }
+  .why strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 4px; }
   .badge { border-radius: 6px; padding: 3px 7px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 700; }
   .badge.warn { color: var(--yellow); background: #fbefcf; }
   .badge.risk { color: var(--red); background: #f7dddd; }
@@ -146,6 +152,7 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .row { grid-template-columns: 30px 1fr 74px; }
     .action { grid-column: 2 / 4; justify-self: start; margin-top: -3px; }
+    .decision-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -171,6 +178,14 @@
           <span class="stamp" id="topStamp"></span>
         </div>
         <div class="list" id="topList"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-head">
+          <h2>Hisse Bazli Karar Kartlari</h2>
+          <span class="stamp">gerekce</span>
+        </div>
+        <div class="decision" id="decisionCards"></div>
       </div>
 
       <div class="card" style="margin-top:14px">
@@ -358,6 +373,119 @@ function renderWatchlists(watch, missed) {
   `;
 }
 
+function accountTickers(accounts, name) {
+  return new Set((accounts?.[name]?.positions || []).map(p => p.ticker));
+}
+
+function tagText(item) {
+  const labels = (item.tags || []).map(t => typeof t === 'string' ? t : t.label).filter(Boolean);
+  return [...new Set(labels)].slice(0, 4).join(' | ');
+}
+
+function fReason(item) {
+  const bits = [];
+  bits.push('F Top10 sirasi #' + (item.rank ?? '-'));
+  if (item.skor != null) bits.push('skor ' + item.skor);
+  if (item.m252 != null) bits.push('1Y momentum %' + item.m252);
+  if (item.m21 != null || item.m5 != null) bits.push('1A %' + (item.m21 ?? '-') + ' / 1H %' + (item.m5 ?? '-'));
+  if (item.display_signal || item.sm_signal) bits.push('SM: ' + (item.display_signal || item.sm_signal));
+  if (item.visa) bits.push('sektor cap vizesi');
+  return bits.join(' | ');
+}
+
+function riskReason(item) {
+  const bits = [];
+  if (item.risk_pct != null) bits.push('risk %' + item.risk_pct);
+  if (item.potansiyel_pct != null) bits.push('hedef pot. %' + item.potansiyel_pct);
+  if (item.stop != null) bits.push('stop ' + item.stop);
+  if (item.hedef_1 != null) bits.push('hedef ' + item.hedef_1);
+  const side = item.yan_kaynak || {};
+  if (side.fx_risk) bits.push('FX risk');
+  if (item.deniz_regime) bits.push('Deniz sektor: ' + item.deniz_regime);
+  return bits.join(' | ') || 'risk alani hesaplanmadi';
+}
+
+function radarReason(item, listName) {
+  const prefix = listName === 'transformation'
+    ? 'Donusum: 1Y sirasi gerideyken 1A/1H hizlaniyor'
+    : listName === 'quiet_accumulation'
+      ? 'Sessiz birikim: hacim + birikim sinyali, henuz Top10 degil'
+      : 'Tepe riski: guc var ama alim icin risk etiketi tasiyor';
+  const tags = tagText(item);
+  const parts = [prefix, item.reason, tags].filter(Boolean);
+  if (item.radar_only) parts.push('sadece radar evreninde');
+  if (item.quarantine_status) parts.push(item.quarantine_status + ' ' + (item.watch_days || '-') + 'g');
+  return parts.join(' | ');
+}
+
+function latestSwapReason(data, ticker) {
+  const latest = data.performance_ledger?.shadow_comparison?.divergence?.latest || {};
+  const oOnly = latest.o_only || [];
+  const fOnly = latest.f_only || [];
+  if (oOnly.some(x => x.ticker === ticker)) return 'O-only: O izliyor/aldi, F tarafinda yok. Edge defterde olculuyor.';
+  if (fOnly.some(x => x.ticker === ticker)) return 'F-only: F aldi, O disarida birakti. Edge defterde olculuyor.';
+  if (Number(latest.overlap_pct) === 100) return 'O ve F bu rejimde dogal olarak ortusuyor; zorla fark yaratilmaz.';
+  return 'O-F farki yok ya da henuz olcum yok.';
+}
+
+function renderDecisionCards(data) {
+  const top = (data.top10 || []).slice(0, 6);
+  const watch = data.watchlists || {};
+  const accounts = data.accounts || {};
+  const fSet = accountTickers(accounts, 'F');
+  const oSet = accountTickers(accounts, 'O');
+  const cards = [];
+
+  for (const item of top) {
+    const inF = fSet.has(item.ticker);
+    const inO = oSet.has(item.ticker);
+    cards.push({
+      ticker: item.ticker,
+      badge: item.action || 'F',
+      title: 'F neden aldi?',
+      f: fReason(item),
+      o: inO ? 'O shadow portfoyunde de var.' : (inF ? 'F shadowda var; O tarafinda yok.' : latestSwapReason(data, item.ticker)),
+      radar: 'Top10 icinde; radar degil, islem motoru adayi.',
+      risk: riskReason(item),
+    });
+  }
+
+  for (const listName of ['transformation', 'quiet_accumulation', 'peak_risks']) {
+    for (const item of (watch[listName] || []).slice(0, 2)) {
+      if (cards.some(c => c.ticker === item.ticker)) continue;
+      cards.push({
+        ticker: item.ticker,
+        badge: listName === 'peak_risks' ? 'risk' : 'izleme',
+        title: listName === 'peak_risks' ? 'F neden almadi / risk?' : 'Radar neden izliyor?',
+        f: 'F Top10 disinda. Bu liste islem acmaz; sadece izler ve deftere yazar.',
+        o: latestSwapReason(data, item.ticker),
+        radar: radarReason(item, listName),
+        risk: tagText(item) || (item.from_high_pct != null ? 'tepe ' + item.from_high_pct + '%' : 'belirgin risk etiketi yok'),
+      });
+    }
+  }
+
+  const shown = cards.slice(0, 10);
+  if (!shown.length) {
+    el('decisionCards').innerHTML = '<div class="empty">Karar karti icin veri yok.</div>';
+    return;
+  }
+  el('decisionCards').innerHTML = shown.map(card => `
+    <div class="decision-card">
+      <div class="decision-title">
+        <span>${esc(card.ticker)} <span class="meta">${esc(card.title)}</span></span>
+        <span class="badge ${card.badge === 'risk' ? 'risk' : card.badge === 'izleme' ? 'warn' : ''}">${esc(card.badge)}</span>
+      </div>
+      <div class="decision-grid">
+        <div class="why"><strong>F gerekcesi</strong>${esc(card.f)}</div>
+        <div class="why"><strong>O durumu</strong>${esc(card.o)}</div>
+        <div class="why"><strong>Radar / izleme</strong>${esc(card.radar)}</div>
+        <div class="why"><strong>Risk etiketi</strong>${esc(card.risk)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderAccounts(accounts) {
   const names = ['A', 'B', 'F', 'O'];
   el('accounts').innerHTML = names.map(name => {
@@ -489,6 +617,7 @@ async function loadDashboard() {
     const data = await response.json();
     const accounts = data.accounts || {};
     renderTop(data.top10 || []);
+    renderDecisionCards(data);
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderPerformanceLedger(data.performance_ledger);
