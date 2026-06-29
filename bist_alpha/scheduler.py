@@ -15,7 +15,7 @@ from datetime import datetime
 SCHEDULE = [
     (9, 45, "acilis"),    # açılış sonrası ilk sinyal
     (14, 30, "gunici"),   # gün içi güncelleme
-    (18, 30, "kapanis"),  # kapanış raporu + ertesi gün hazırlık
+    (18, 40, "kapanis"),  # kapanis raporu + ertesi gun hazirlik
 ]
 
 

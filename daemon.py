@@ -88,6 +88,14 @@ def run_cycle(label="manuel"):
     bulletin = selfheal.guarded(
         lambda: deniz_fetcher.auto_update(),
         notify_fn=notifier.notify_all, label="Deniz çekme")
+    if not bulletin:
+        try:
+            from bist_alpha import deniz
+            bulletin = deniz.load_latest_snapshot()
+            if bulletin:
+                print(f"[daemon] Deniz yeni bulten yok; son snapshot kullaniliyor: {bulletin.get('date')}")
+        except Exception as e:
+            print(f"[daemon] Deniz snapshot fallback atlandi: {e}")
 
     # 2) Dinamik veri (eksik #1) — self-heal: çökerse gömülü yedeğe düş
     data = selfheal.safe_feed()

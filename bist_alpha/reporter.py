@@ -231,9 +231,10 @@ def format_text(report):
     deniz_info = report.get("deniz_bulletin") or {}
     if deniz_info.get("available"):
         freshness = "guncel" if deniz_info.get("fresh") else "ESKI"
+        source_note = " | kaynak:snapshot" if deniz_info.get("loaded_from_snapshot") else ""
         L.append(
             f"Deniz bulten: {deniz_info.get('date')} | {freshness} | "
-            f"yas:{deniz_info.get('age_days')} gun"
+            f"yas:{deniz_info.get('age_days')} gun{source_note}"
         )
     else:
         L.append("Deniz bulten: YOK (IMAP/klasor kontrol edilmeli)")

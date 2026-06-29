@@ -3,7 +3,9 @@
 #
 # Secrets (repo Settings > Secrets > Actions): SMTP_HOST, SMTP_USER, SMTP_PASS,
 #   MAIL_TO, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (+ Deniz: IMAP_*, DENIZ_SENDER)
-# TZ: 09:45 TR=06:45 UTC | 14:30 TR=11:30 UTC | 18:30 TR=15:30 UTC
+# TZ hedefleri: 09:45 TR=06:45 UTC | 14:30 TR=11:30 UTC | 18:40 TR=15:40 UTC
+# GitHub cron dakikasi garanti degildir; retry pencereleri raporu yakalar,
+# scripts/report_gate.py ayni slotun iki kez gonderilmesini engeller.
 
 name: BIST Alpha 7-24 Canli
 
@@ -12,9 +14,12 @@ on:
     branches:
       - main
   schedule:
-    - cron: '45 6 * * 1-5'
-    - cron: '30 11 * * 1-5'
-    - cron: '30 15 * * 1-5'
+    - cron: '45,50,55 6 * * 1-5'
+    - cron: '0,5,10,15,20,25,30 7 * * 1-5'
+    - cron: '30,35,40,45,50,55 11 * * 1-5'
+    - cron: '0,5,10,15,20 12 * * 1-5'
+    - cron: '40,45,50,55 15 * * 1-5'
+    - cron: '0,5,10,15,20,25,30 16 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -29,15 +34,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Planli tetik kapisi
+        id: gate
+        env:
+          TZ: Europe/Istanbul
+        run: python3 scripts/report_gate.py check
+
       - uses: actions/setup-python@v5
+        if: steps.gate.outputs.run == 'true'
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
+        if: steps.gate.outputs.run == 'true'
 
       - name: State klasorlerini hazirla
+        if: steps.gate.outputs.run == 'true'
         run: mkdir -p portfolios deniz_snapshots logs
 
       - name: Shadow + rapor (canli veri)
+        if: steps.gate.outputs.run == 'true'
         env:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
@@ -55,7 +70,7 @@ jobs:
           IMAP_PASS: ${{ secrets.IMAP_PASS }}
           DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
         run: |
-          python3 daemon.py --once otomatik
+          python3 daemon.py --once "${{ steps.gate.outputs.label }}"
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -71,9 +86,10 @@ jobs:
           assert d.get("dynamic_universe_count", 0) >= 50, d.get("dynamic_universe_count")
           print(f"OK dinamik kaynak: {d['source']} | BIST havuzu: {d.get('source_pool_count')} | canlı veri: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
           PY
+          python3 scripts/report_gate.py mark "${{ steps.gate.outputs.label }}"
 
       - name: Portfoy state commit (kalicilik)
-        if: always()
+        if: always() && steps.gate.outputs.run == 'true'
         run: |
           git config user.name "bist-alpha-bot"
           git config user.email "bot@users.noreply.github.com"

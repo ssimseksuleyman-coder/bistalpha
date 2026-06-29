@@ -18,6 +18,7 @@ import pandas as pd
 import re
 import os
 import json
+import glob
 from datetime import date as date_type, datetime
 
 
@@ -79,6 +80,29 @@ def save_snapshot(bulletin, out_dir="deniz_snapshots"):
 
 # ---- YAN KAYNAK KULLANIM FONKSİYONLARI ----
 
+def load_latest_snapshot(snapshot_dir="deniz_snapshots"):
+    """En son kaydedilmis Deniz snapshot'ini yukle; yoksa None."""
+    files = glob.glob(os.path.join(snapshot_dir, "deniz_*.json"))
+    if not files:
+        return None
+
+    def sort_key(path):
+        base = os.path.basename(path)
+        m = re.search(r"deniz_(\d{4})_(\d{2})_(\d{2})", base)
+        return m.groups() if m else ("0", "0", "0")
+
+    latest = sorted(files, key=sort_key)[-1]
+    try:
+        with open(latest, encoding="utf-8") as f:
+            data = json.load(f)
+        data.setdefault("source_file", os.path.basename(latest))
+        data["loaded_from_snapshot"] = True
+        return data
+    except Exception as e:
+        print(f"[deniz] Son snapshot okunamadi: {e}")
+        return None
+
+
 def bulletin_status(bulletin, as_of=None, max_age_days=4):
     """Dashboard ve bildirim için bülten tazeliğini açıkça raporla."""
     if not bulletin:
@@ -113,6 +137,7 @@ def bulletin_status(bulletin, as_of=None, max_age_days=4):
         "sector_count": len(bulletin.get("sector_scores", {})),
         "source_file": bulletin.get("source_file"),
         "fetched_at": bulletin.get("fetched_at"),
+        "loaded_from_snapshot": bulletin.get("loaded_from_snapshot", False),
     }
 
 
