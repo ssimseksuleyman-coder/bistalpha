@@ -62,6 +62,10 @@ def _operation_health(report, label, data, health, notify_status):
     if pool and price_count is not None:
         missing = max(0, int(pool) - int(price_count))
         missing_pct = round(missing / int(pool) * 100, 2) if int(pool) else None
+    missing_list = sorted((data or {}).get("_missing_symbols") or [])
+    if missing_list:
+        missing = len(missing_list)
+        missing_pct = round(missing / int(pool) * 100, 2) if pool and int(pool) else missing_pct
     fallback = bool(report.get("source_pool_fallback") or (data or {}).get("_source_pool_fallback"))
     source = report.get("source") or (data or {}).get("_source")
     if isinstance(source, str) and source.startswith("file_fallback_from_"):
@@ -104,6 +108,7 @@ def _operation_health(report, label, data, health, notify_status):
         "source_pool_count": pool,
         "missing_symbols": missing,
         "missing_symbol_pct": missing_pct,
+        "missing_symbol_list": missing_list,
         "last_data_date": report.get("last_data_date"),
         "deniz_bulletin": deniz_info,
         "data_health": health or {},
@@ -267,6 +272,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "source_pool_fallback": report.get("source_pool_fallback") if report.get("source_pool_fallback") is not None else (data or {}).get("_source_pool_fallback"),
         "last_data_date": report.get("last_data_date"),
         "price_count": report.get("price_count"),
+        "missing_symbol_list": sorted((data or {}).get("_missing_symbols") or []),
         "dynamic_universe_count": len(universe) if universe is not None else report.get("dynamic_universe_count"),
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "market_regime": report.get("market_regime"),

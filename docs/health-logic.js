@@ -124,12 +124,15 @@
       missing = Math.max(0, pool - priceCount);
       missingPct = missing / pool * 100;
     }
+    const missingList = Array.isArray(h.missing_symbol_list)
+      ? h.missing_symbol_list
+      : (Array.isArray(d.missing_symbol_list) ? d.missing_symbol_list : []);
     out.push(metric(
       "missing", true, "Eksik semboller", "<%1 iyi, %1-5 uyari, >%5 sorun",
       missing == null ? "-" : missing,
       missingPct == null ? "" : "%" + missingPct.toFixed(2),
       missingPct == null ? "n" : missingPct < CONFIG.missing.greenPct ? "g" : missingPct <= CONFIG.missing.amberPct ? "a" : "r",
-      missingPct == null ? "hesaplanamadi" : "eksik oran %" + missingPct.toFixed(2)
+      missingList.length ? "eksik: " + missingList.join(", ") : (missingPct == null ? "hesaplanamadi" : "eksik oran %" + missingPct.toFixed(2))
     ));
 
     const fallback = Boolean(h.fallback || d.source_pool_fallback || String(h.source || d.source || "").startsWith("file_fallback_from_"));

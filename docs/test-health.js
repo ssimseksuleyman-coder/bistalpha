@@ -42,11 +42,13 @@ console.log("\n[2] Cekirdek taze + Deniz backend stale -> SARI");
     source_pool_fallback: false,
     timestamp: "2026-06-29T08:00:00",
     deniz_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
+    missing_symbol_list: ["ALTIN", "DMLKT"],
   };
   const r = evaluate(d, MON_PM);
   check("verdict", r.verdict, "a");
   check("coreWorst", r.coreWorst, "g");
   check("deniz", r.metrics.find(m => m.key === "deniz").status, "r");
+  check("missing reason", r.metrics.find(m => m.key === "missing").reason, "eksik: ALTIN, DMLKT");
 }
 
 console.log("\n[2b] Backend operasyon kirmizi -> KIRMIZI");

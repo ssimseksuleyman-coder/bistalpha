@@ -640,6 +640,9 @@ async function loadDashboard() {
       el('statPool').title = data.source_pool_method + (data.source_pool_fallback ? ' (yedek)' : '');
     }
     el('statCount').textContent = data.price_count || '-';
+    if (data.missing_symbol_list && data.missing_symbol_list.length) {
+      el('statCount').title = 'Eksik: ' + data.missing_symbol_list.join(', ');
+    }
     el('statUniverse').textContent = data.dynamic_universe_count || '-';
     el('statLastData').textContent = data.last_data_date || '-';
     el('status').textContent = 'Canli';

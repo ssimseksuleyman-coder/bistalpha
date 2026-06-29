@@ -137,6 +137,7 @@ class YahooFeed(DataFeed):
                     continue
 
         prices = pd.DataFrame(prices).sort_index()
+        missing_symbols = sorted(set(tickers) - set(prices.columns.astype(str)))
         if prices.empty:
             raise ValueError("YahooFeed bos veri dondurdu; semboller/rate-limit/cache sorunu olabilir")
         # XU100 endeksi (Yahoo: XU100.IS)
@@ -163,6 +164,7 @@ class YahooFeed(DataFeed):
             'bist': bist,
             '_source': 'yahoo',
             '_source_pool_count': len(tickers),
+            '_missing_symbols': missing_symbols,
             '_source_pool_method': universe_meta().get("method"),
             '_source_pool_fallback': universe_meta().get("fallback"),
         }
@@ -242,6 +244,7 @@ class BorsaPyFeed(DataFeed):
                 continue
 
         prices = pd.DataFrame(prices).sort_index()
+        missing_symbols = sorted(set(tickers) - set(prices.columns.astype(str)))
         # XU100 endeksi
         try:
             idx_raw = borsapy.index("XU100", period=self.period, interval="1d") \
@@ -260,6 +263,7 @@ class BorsaPyFeed(DataFeed):
             'bist': bist,
             '_source': 'borsapy',
             '_source_pool_count': len(tickers),
+            '_missing_symbols': missing_symbols,
             '_source_pool_method': universe_meta().get("method"),
             '_source_pool_fallback': universe_meta().get("fallback"),
         }
