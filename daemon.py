@@ -18,7 +18,7 @@ Akış (her tetiklemede):
 """
 import argparse
 import sys
-from datetime import datetime
+from datetime import datetime, time
 
 from bist_alpha import config
 from bist_alpha import datafeed
@@ -29,6 +29,83 @@ from bist_alpha import deniz_fetcher
 from bist_alpha import maintenance
 from bist_alpha import scheduler
 from bist_alpha import selfheal
+
+
+SLOT_TARGETS = {
+    "acilis": time(9, 45),
+    "gunici": time(14, 30),
+    "kapanis": time(18, 40),
+}
+
+
+def _report_delay(label, now=None):
+    """Planli rapor icin hedef saat ve gecikme dakikasini hesapla."""
+    now = now or datetime.now()
+    target_time = SLOT_TARGETS.get(label)
+    if not target_time:
+        return {"target_time": None, "delay_minutes": None}
+    target = datetime.combine(now.date(), target_time)
+    return {
+        "target_time": target_time.strftime("%H:%M"),
+        "delay_minutes": max(0, int((now - target).total_seconds() // 60)),
+    }
+
+
+def _operation_health(report, label, data, health, notify_status):
+    """Dashboard icin operasyon ve veri guvenilirligi ozetini uretir."""
+    delay = _report_delay(label)
+    deniz_info = report.get("deniz_bulletin") or {}
+    pool = report.get("source_pool_count") or (data or {}).get("_source_pool_count")
+    price_count = report.get("price_count")
+    missing = None
+    missing_pct = None
+    if pool and price_count is not None:
+        missing = max(0, int(pool) - int(price_count))
+        missing_pct = round(missing / int(pool) * 100, 2) if int(pool) else None
+    fallback = bool(report.get("source_pool_fallback") or (data or {}).get("_source_pool_fallback"))
+    source = report.get("source") or (data or {}).get("_source")
+    if isinstance(source, str) and source.startswith("file_fallback_from_"):
+        fallback = True
+
+    core_status = "green"
+    delay_minutes = delay["delay_minutes"]
+    if health and not health.get("healthy", True):
+        core_status = "red"
+    elif delay_minutes is not None and delay_minutes > 35:
+        core_status = "red"
+    elif (delay_minutes is not None and delay_minutes > 10) or fallback or (
+            missing_pct is not None and missing_pct > 5):
+        core_status = "amber"
+
+    telegram_ok = notify_status.get("telegram") if isinstance(notify_status, dict) else None
+    email_ok = notify_status.get("email") if isinstance(notify_status, dict) else None
+    if telegram_ok is False:
+        core_status = "amber" if core_status == "green" else core_status
+
+    return {
+        "label": label,
+        "target_time": delay["target_time"],
+        "delay_minutes": delay["delay_minutes"],
+        "telegram": {
+            "sent": telegram_ok,
+            "status": "sent" if telegram_ok is True else "failed" if telegram_ok is False else "unknown",
+        },
+        "email": {
+            "sent": email_ok,
+            "status": "sent" if email_ok is True else "failed" if email_ok is False else "unknown",
+        },
+        "source": source,
+        "fallback": fallback,
+        "price_count": price_count,
+        "source_pool_count": pool,
+        "missing_symbols": missing,
+        "missing_symbol_pct": missing_pct,
+        "last_data_date": report.get("last_data_date"),
+        "deniz_bulletin": deniz_info,
+        "data_health": health or {},
+        "verdict": core_status,
+        "updated_at": datetime.now().isoformat(timespec="seconds"),
+    }
 
 
 def _prices_today(data):
@@ -144,15 +221,18 @@ def run_cycle(label="manuel"):
         print(text)
         # 5) Bildirim (eksik #2)
         subject = f"📊 BIST Alpha {report['date']} ({label})"
-        notifier.notify_all(subject, text)
+        notify_status = notifier.notify_all(subject, text)
         # 6) Web dashboard JSON (GitHub Pages için docs/state/)
-        _write_dashboard_state(report, label, data=data, universe=universe)
+        _write_dashboard_state(
+            report, label, data=data, universe=universe,
+            health=health, notify_status=notify_status)
         return report
 
     return selfheal.guarded(_report, notify_fn=notifier.notify_all, label="rapor")
 
 
-def _write_dashboard_state(report, label, data=None, universe=None):
+def _write_dashboard_state(report, label, data=None, universe=None,
+                           health=None, notify_status=None):
     """docs/state/ altına dashboard JSON'u yaz."""
     import json
     import os
@@ -192,6 +272,7 @@ def _write_dashboard_state(report, label, data=None, universe=None):
         "top10": report.get("top10", []),
         "watchlists": report.get("watchlists", {}),
         "shadow_cycle": report.get("shadow_cycle"),
+        "operation_health": _operation_health(report, label, data, health, notify_status or {}),
         "accounts": {},
     }
     try:

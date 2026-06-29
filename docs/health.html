@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operasyon Sagligi - BIST Alpha</title>
+<style>
+  :root {
+    --bg:#0b0f14; --panel:#121821; --line:#1f2832; --txt:#e6edf3; --dim:#8b97a4;
+    --green:#3fb950; --amber:#d6a532; --red:#f0533a; --na:#5a6673;
+    --mono:ui-monospace, "Cascadia Mono", Menlo, monospace;
+    --sans:Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background:var(--bg); color:var(--txt); font-family:var(--sans);
+    line-height:1.4; padding:clamp(14px,4vw,32px); max-width:860px; margin:0 auto;
+  }
+  header { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:18px; }
+  h1 { font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); }
+  .sub { font-size:12px; color:var(--na); margin-top:5px; }
+  .link { color:var(--dim); text-decoration:none; border:1px solid var(--line); border-radius:7px; padding:7px 10px; font:12px var(--mono); }
+  .gate { display:flex; align-items:center; gap:16px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:18px; }
+  .beacon { width:46px; height:46px; border-radius:50%; flex:none; position:relative; }
+  .beacon:after { content:""; position:absolute; inset:0; border-radius:50%; animation:pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 currentColor; opacity:.5} 100%{box-shadow:0 0 0 16px currentColor; opacity:0} }
+  @media(prefers-reduced-motion:reduce){ .beacon:after{ animation:none; } }
+  .verdict { font:700 22px var(--mono); letter-spacing:.04em; }
+  .note { color:var(--dim); margin-top:3px; font-size:13px; }
+  .grid { display:grid; grid-template-columns:1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .row { display:grid; grid-template-columns:12px 1fr auto; gap:13px; align-items:start; background:var(--panel); padding:13px 16px; }
+  .dot { width:10px; height:10px; border-radius:50%; margin-top:4px; }
+  .label { font-size:13px; font-weight:650; }
+  .label small { display:block; color:var(--na); font-size:11px; margin-top:2px; font-weight:400; }
+  .reason { display:block; color:var(--dim); font:11px var(--mono); margin-top:4px; }
+  .value { font:14px var(--mono); text-align:right; white-space:nowrap; }
+  .value small { display:block; color:var(--na); font-size:10.5px; text-transform:uppercase; margin-top:2px; }
+  .foot { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px; color:var(--na); font:11.5px var(--mono); }
+  button { font:inherit; color:var(--dim); background:none; border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button:hover, .link:hover { border-color:var(--dim); }
+  .legend { display:flex; gap:14px; color:var(--na); font-size:11px; margin-top:10px; flex-wrap:wrap; }
+  .legend span { display:inline-flex; align-items:center; gap:5px; }
+  .legend i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .err { background:var(--panel); border:1px solid var(--red); border-radius:10px; padding:18px; color:var(--red); font:13px var(--mono); }
+  .g{color:var(--green)} .a{color:var(--amber)} .r{color:var(--red)} .n{color:var(--na)}
+  .bg-g{background:var(--green)} .bg-a{background:var(--amber)} .bg-r{background:var(--red)} .bg-n{background:var(--na)}
+  @media (max-width:620px){ .row{ grid-template-columns:12px 1fr; } .value{ grid-column:2; text-align:left; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Operasyon Saglik Paneli</h1>
+    <div class="sub">Veri, rapor SLA, Telegram ve Deniz tazeligi. Sadece okur; F motoruna dokunmaz.</div>
+  </div>
+  <a class="link" href="./">Dashboard</a>
+</header>
+<div id="app"><div class="sub">Yukleniyor...</div></div>
+<div class="legend">
+  <span><i class="bg-g"></i> Saglikli</span>
+  <span><i class="bg-a"></i> Uyari</span>
+  <span><i class="bg-r"></i> Sorun</span>
+  <span><i class="bg-n"></i> Takip edilmiyor</span>
+</div>
+
+<script>
+const SOURCES = ["state/dashboard.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/dashboard.json"];
+const BG = {g:"bg-g", a:"bg-a", r:"bg-r", n:"bg-n"};
+const CLS = {g:"g", a:"a", r:"r", n:"n"};
+const COL = {g:"var(--green)", a:"var(--amber)", r:"var(--red)", n:"var(--na)"};
+const VTXT = {g:"YESIL", a:"SARI", r:"KIRMIZI", n:"N/A"};
+const RANK = {g:0, a:1, r:2, n:-1};
+
+function esc(value) {
+  return String(value == null ? "" : value).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+
+function dateOnly(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : null;
+}
+
+function timestampMs(value) {
+  if (!value) return null;
+  const s = String(value);
+  const t = Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? s : s + "+03:00");
+  return Number.isFinite(t) ? t : null;
+}
+
+function tradingDaysBetween(fromMs, toMs) {
+  if (fromMs == null || toMs == null) return null;
+  const day = 86400000;
+  const fromD = Math.floor(fromMs / day) * day;
+  const toD = Math.floor(toMs / day) * day;
+  if (toD <= fromD) return 0;
+  let count = 0;
+  for (let t = fromD + day; t <= toD; t += day) {
+    const wd = new Date(t).getUTCDay();
+    if (wd !== 0 && wd !== 6) count++;
+  }
+  return count;
+}
+
+function worse(a, b) {
+  return RANK[b] > RANK[a] ? b : a;
+}
+
+function metric(key, core, label, hint, value, sub, status, reason) {
+  return {key, core, label, hint, value, sub, status, reason};
+}
+
+function evaluate(data, nowMs) {
+  const h = data.operation_health || {};
+  const deniz = h.deniz_bulletin || data.deniz_bulletin || {};
+  const out = [];
+
+  const lastData = h.last_data_date || data.last_data_date || data.date;
+  const dataAge = tradingDaysBetween(dateOnly(lastData), nowMs);
+  out.push(metric(
+    "last_data", true, "Son veri tarihi", "<=1 islem gunu taze",
+    lastData || "-", dataAge == null ? "gecersiz" : dataAge + " islem gunu",
+    dataAge == null ? "r" : dataAge <= 1 ? "g" : dataAge <= 2 ? "a" : "r",
+    dataAge == null ? "tarih okunamadi" : "veri yasi " + dataAge + " islem gunu"
+  ));
+
+  const pool = Number(h.source_pool_count ?? data.source_pool_count);
+  const priceCount = Number(h.price_count ?? data.price_count);
+  const coverage = pool > 0 && priceCount >= 0 ? priceCount / pool : null;
+  out.push(metric(
+    "coverage", true, "Fiyat kapsama", "fiyat_count / kaynak_havuzu",
+    coverage == null ? "-" : priceCount + "/" + pool,
+    coverage == null ? "" : "%" + (coverage * 100).toFixed(1),
+    coverage == null ? "r" : coverage >= .98 ? "g" : coverage >= .95 ? "a" : "r",
+    coverage == null ? "price_count/source_pool_count eksik" : "kapsama %" + (coverage * 100).toFixed(1)
+  ));
+
+  const missingPct = h.missing_symbol_pct;
+  out.push(metric(
+    "missing", true, "Eksik semboller", "<%1 iyi, %1-5 uyari, >%5 sorun",
+    h.missing_symbols ?? "-",
+    missingPct == null ? "" : "%" + Number(missingPct).toFixed(2),
+    missingPct == null ? "n" : missingPct < 1 ? "g" : missingPct <= 5 ? "a" : "r",
+    missingPct == null ? "hesaplanamadi" : "eksik oran %" + Number(missingPct).toFixed(2)
+  ));
+
+  const fallback = Boolean(h.fallback || data.source_pool_fallback || String(data.source || "").startsWith("file_fallback_from_"));
+  const source = h.source || data.source;
+  out.push(metric(
+    "source", true, "Veri kaynagi / fallback", "birincil kaynak mi, yedek mi",
+    source || "-", fallback ? "FALLBACK" : "birincil",
+    source ? (fallback ? "a" : "g") : "n",
+    source ? (fallback ? "yedek kaynaga dusmus" : "birincil kaynak: " + source) : "kaynak yok"
+  ));
+
+  const ts = timestampMs(data.timestamp);
+  const reportAge = tradingDaysBetween(ts, nowMs);
+  out.push(metric(
+    "report_age", true, "Rapor tazeligi", "cron ve dashboard canli mi",
+    data.timestamp ? String(data.timestamp).replace("T", " ") : "-",
+    reportAge == null ? "" : reportAge + " islem gunu",
+    reportAge == null ? "n" : reportAge === 0 ? "g" : reportAge === 1 ? "a" : "r",
+    reportAge == null ? "timestamp okunamadi" : "rapor yasi " + reportAge + " islem gunu"
+  ));
+
+  const delay = h.delay_minutes;
+  out.push(metric(
+    "sla", true, "Rapor SLA", "hedef saat ve gecikme dakikasi",
+    h.target_time || "-",
+    delay == null ? "plansiz" : delay + " dk gecikme",
+    delay == null ? "n" : delay <= 10 ? "g" : delay <= 35 ? "a" : "r",
+    delay == null ? "manuel/push calismasi" : "hedefe gore " + delay + " dakika"
+  ));
+
+  const tg = h.telegram || {};
+  out.push(metric(
+    "telegram", true, "Telegram durumu", "rapor mesaji kullaniciya ulasti mi",
+    tg.status || "-",
+    tg.sent === true ? "gonderildi" : tg.sent === false ? "hata" : "bilinmiyor",
+    tg.sent === true ? "g" : tg.sent === false ? "r" : "n",
+    tg.sent === true ? "Telegram API basarili" : tg.sent === false ? "Telegram API hata dondurdu" : "sonuc kaydi yok"
+  ));
+
+  const dzAge = deniz.age_days;
+  out.push(metric(
+    "deniz", false, "Deniz bulteni", "yardimci kaynak; F kararini override etmez",
+    deniz.date || (deniz.available === false ? "yok" : "-"),
+    dzAge == null ? (deniz.status || "") : dzAge + " gun | " + (deniz.status || ""),
+    deniz.available === false ? "r" : dzAge == null ? "n" : dzAge <= 1 ? "g" : dzAge <= 3 ? "a" : "r",
+    deniz.available === false ? "bulten yok" : dzAge == null ? "yas okunamadi" : "bulten yasi " + dzAge + " gun"
+  ));
+
+  const issues = (h.data_health && h.data_health.data_issues) || [];
+  out.push(metric(
+    "health", true, "Bakim saglik kontrolu", "NaN, donmus fiyat, eski veri uyarilari",
+    issues.length,
+    issues.length ? issues.slice(0, 2).join(" | ") : "sorun yok",
+    issues.length ? "r" : "g",
+    issues.length ? "bakim " + issues.length + " sorun buldu" : "bakim temiz"
+  ));
+
+  out.push(metric(
+    "gap", false, "Fiyat/hacim bosluk orani", "seri ici eksik bar orani",
+    "N/A", "backend metrigi eklenecek", "n",
+    "dashboard.json henuz bu metrigi uretmiyor"
+  ));
+
+  const coreWorst = out.filter(x => x.core && x.status !== "n").reduce((w, x) => worse(w, x.status), "g");
+  const auxWorst = out.filter(x => !x.core && x.status !== "n").reduce((w, x) => worse(w, x.status), "g");
+  let verdict = coreWorst;
+  let note = "Cekirdek operasyon saglikli; sinyal raporu okunabilir.";
+  if (coreWorst === "r") note = "Cekirdek veri/operasyon sorunlu; sinyale temkinli yaklas.";
+  else if (coreWorst === "a") note = "Cekirdek katmanda uyari var; raporu kontrol ederek kullan.";
+  else if (auxWorst === "r" || auxWorst === "a") {
+    verdict = "a";
+    note = "Fiyat verisi saglikli; yardimci kaynaklarda uyari var.";
+  }
+  return {metrics: out, verdict, note};
+}
+
+async function load() {
+  let data = null, lastErr = null;
+  for (const url of SOURCES) {
+    try {
+      const r = await fetch(url + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      data = await r.json();
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!data) {
+    document.getElementById("app").innerHTML = '<div class="err">dashboard.json okunamadi: ' + esc(lastErr) + '</div>';
+    return;
+  }
+  const result = evaluate(data, Date.now());
+  let html = '<div class="gate"><div class="beacon ' + BG[result.verdict] + '" style="color:' + COL[result.verdict] + '"></div><div><div class="verdict ' + CLS[result.verdict] + '">OPERASYON: ' + VTXT[result.verdict] + '</div><div class="note">' + esc(result.note) + '</div></div></div><div class="grid">';
+  for (const m of result.metrics) {
+    html += '<div class="row"><span class="dot ' + BG[m.status] + '"></span><span class="label">' + esc(m.label) + '<small>' + esc(m.hint) + '</small><span class="reason">-> ' + esc(m.reason) + '</span></span><span class="value ' + CLS[m.status] + '">' + esc(m.value) + (m.sub ? '<small>' + esc(m.sub) + '</small>' : '') + '</span></div>';
+  }
+  html += '</div><div class="foot"><span>rapor: ' + esc(String(data.timestamp || "-").replace("T", " ")) + ' | label: ' + esc(data.label || "-") + '</span><span>panel: <span id="refTime"></span> <button id="refresh" type="button">yenile</button></span></div>';
+  document.getElementById("app").innerHTML = html;
+  document.getElementById("refTime").textContent = new Date().toLocaleTimeString("tr-TR");
+  document.getElementById("refresh").onclick = load;
+}
+
+load();
+setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>
