@@ -190,7 +190,22 @@ def universe_meta():
 
 BIST_TICKERS = FALLBACK_BIST_TICKERS
 
+SYMBOL_DISPLAY_ALIASES = {
+    # TradingView/BIST havuzu bazi yeni/ozel sembolleri kisaltarak dondurebiliyor.
+    "ALTIN": "ALTINS1",
+    "DMLKT": "DMLKTG",
+}
+
+YAHOO_SYMBOL_ALIASES = {
+    # Sadece Yahoo'da gercekten veri donduren farkli semboller buraya eklenir.
+}
+
 
 def yahoo_symbols(tickers=None):
     """Yahoo Finance sembolleri (BIST = .IS suffix)."""
-    return [t + ".IS" for t in (tickers or all_bist_tickers())]
+    return [YAHOO_SYMBOL_ALIASES.get(t, t + ".IS") for t in (tickers or all_bist_tickers())]
+
+
+def display_symbol(symbol):
+    """Kullaniciya gosterilecek nihai BIST sembol adi."""
+    return SYMBOL_DISPLAY_ALIASES.get(symbol, symbol)

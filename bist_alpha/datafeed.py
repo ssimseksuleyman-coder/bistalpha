@@ -109,7 +109,7 @@ class YahooFeed(DataFeed):
         import yfinance as yf
         import pandas as pd
         import numpy as np
-        from .universe import all_bist_tickers, universe_meta, yahoo_symbols
+        from .universe import all_bist_tickers, universe_meta, yahoo_symbols, display_symbol
 
         self._configure_cache(yf)
         tickers = all_bist_tickers()
@@ -137,7 +137,7 @@ class YahooFeed(DataFeed):
                     continue
 
         prices = pd.DataFrame(prices).sort_index()
-        missing_symbols = sorted(set(tickers) - set(prices.columns.astype(str)))
+        missing_symbols = sorted(display_symbol(t) for t in (set(tickers) - set(prices.columns.astype(str))))
         if prices.empty:
             raise ValueError("YahooFeed bos veri dondurdu; semboller/rate-limit/cache sorunu olabilir")
         # XU100 endeksi (Yahoo: XU100.IS)
@@ -208,7 +208,7 @@ class BorsaPyFeed(DataFeed):
     def get_latest(self):
         import borsapy
         import pandas as pd
-        from .universe import all_bist_tickers, universe_meta
+        from .universe import all_bist_tickers, universe_meta, display_symbol
         tickers = all_bist_tickers()
 
         # Opsiyonel TradingView auth (config/ENV'den)
@@ -244,7 +244,7 @@ class BorsaPyFeed(DataFeed):
                 continue
 
         prices = pd.DataFrame(prices).sort_index()
-        missing_symbols = sorted(set(tickers) - set(prices.columns.astype(str)))
+        missing_symbols = sorted(display_symbol(t) for t in (set(tickers) - set(prices.columns.astype(str))))
         # XU100 endeksi
         try:
             idx_raw = borsapy.index("XU100", period=self.period, interval="1d") \
