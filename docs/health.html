@@ -63,6 +63,7 @@
   <span><i class="bg-n"></i> Takip edilmiyor</span>
 </div>
 
+<script src="health-logic.js"></script>
 <script>
 const SOURCES = ["state/dashboard.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/dashboard.json"];
 const BG = {g:"bg-g", a:"bg-a", r:"bg-r", n:"bg-n"};
@@ -109,7 +110,7 @@ function metric(key, core, label, hint, value, sub, status, reason) {
   return {key, core, label, hint, value, sub, status, reason};
 }
 
-function evaluate(data, nowMs) {
+function legacyEvaluate(data, nowMs) {
   const h = data.operation_health || {};
   const deniz = h.deniz_bulletin || data.deniz_bulletin || {};
   const out = [];
@@ -233,7 +234,7 @@ async function load() {
     document.getElementById("app").innerHTML = '<div class="err">dashboard.json okunamadi: ' + esc(lastErr) + '</div>';
     return;
   }
-  const result = evaluate(data, Date.now());
+  const result = window.BistHealth.evaluate(data, Date.now());
   let html = '<div class="gate"><div class="beacon ' + BG[result.verdict] + '" style="color:' + COL[result.verdict] + '"></div><div><div class="verdict ' + CLS[result.verdict] + '">OPERASYON: ' + VTXT[result.verdict] + '</div><div class="note">' + esc(result.note) + '</div></div></div><div class="grid">';
   for (const m of result.metrics) {
     html += '<div class="row"><span class="dot ' + BG[m.status] + '"></span><span class="label">' + esc(m.label) + '<small>' + esc(m.hint) + '</small><span class="reason">-> ' + esc(m.reason) + '</span></span><span class="value ' + CLS[m.status] + '">' + esc(m.value) + (m.sub ? '<small>' + esc(m.sub) + '</small>' : '') + '</span></div>';
