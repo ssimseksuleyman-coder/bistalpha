@@ -190,6 +190,13 @@ def auto_update(snapshot_dir="deniz_snapshots"):
         print("[deniz_fetcher] Yeni bülten bulunamadı")
         return None
     bulletin = deniz.parse_bulletin(path)
+    status = deniz.bulletin_status(bulletin)
+    if not status.get("fresh"):
+        print(
+            f"[deniz_fetcher] Bülten eski; snapshot güncellenmedi: "
+            f"{bulletin.get('date')} ({status.get('age_days')} gün)"
+        )
+        return None
     bulletin["source_file"] = os.path.basename(path)
     bulletin["fetched_at"] = datetime.now().isoformat(timespec="seconds")
     deniz.save_snapshot(bulletin, out_dir=snapshot_dir)
