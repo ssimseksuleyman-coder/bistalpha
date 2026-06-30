@@ -283,6 +283,24 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "watchlists": report.get("watchlists", {}),
         "shadow_cycle": report.get("shadow_cycle"),
         "operation_health": _operation_health(report, label, data, health, notify_status or {}),
+        "account_governance": {
+            "F": {
+                "role": "production",
+                "note": "Ana motor; secim ve execution korunur.",
+            },
+            "O": {
+                "role": "shadow",
+                "note": "F ile elma-elma olculur; fark yaratmaya zorlanmaz.",
+            },
+            "B": {
+                "role": "shadow",
+                "note": "F ile ayni/benzer davraniyorsa kontrol hesabi olarak kalir.",
+            },
+            "A": {
+                "role": "baseline",
+                "note": "Basit baz cizgi; production adayi degil, karsilastirma icin tutulur.",
+            },
+        },
         "accounts": {},
     }
     try:
