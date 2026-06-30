@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-30T20:41:14",
-  "label": "gunici",
+  "timestamp": "2026-06-30T20:49:26",
+  "label": "push",
   "date": "2026-06-30",
   "mode": "F",
   "source": "yahoo",
@@ -102,36 +102,11 @@
       "A": {
         "value": 1.1895,
         "n_pos": 5,
-        "sells": [
-          {
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "reason": "stop",
-            "giveback": 16.22
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.002306,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.002306,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
@@ -152,36 +127,11 @@
       "B": {
         "value": 1.2214,
         "n_pos": 5,
-        "sells": [
-          {
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "reason": "stop",
-            "giveback": 16.22
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
@@ -202,36 +152,11 @@
       "F": {
         "value": 1.2214,
         "n_pos": 5,
-        "sells": [
-          {
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "reason": "stop",
-            "giveback": 16.22
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
@@ -252,36 +177,11 @@
       "O": {
         "value": 1.2214,
         "n_pos": 5,
-        "sells": [
-          {
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "reason": "stop",
-            "giveback": 16.22
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CVKMD",
-            "price": 38.84,
-            "shares": 0.001427,
-            "reason": "stop",
-            "pnl_pct": -9.88
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
@@ -393,12 +293,12 @@
     }
   },
   "operation_health": {
-    "label": "gunici",
-    "target_time": "14:30",
-    "delay_minutes": 371,
+    "label": "push",
+    "target_time": null,
+    "delay_minutes": null,
     "telegram": {
-      "sent": false,
-      "status": "failed"
+      "sent": true,
+      "status": "sent"
     },
     "email": {
       "sent": false,
@@ -428,15 +328,15 @@
       "loaded_from_snapshot": true
     },
     "data_health": {
-      "timestamp": "2026-06-30 20:41",
+      "timestamp": "2026-06-30 20:49",
       "data_issues": [],
       "healthy": true,
       "snapshots_removed": 0,
       "logs_removed": 0,
-      "temp_removed": 0
+      "temp_removed": 1
     },
-    "verdict": "red",
-    "updated_at": "2026-06-30T20:41:14"
+    "verdict": "green",
+    "updated_at": "2026-06-30T20:49:26"
   },
   "account_governance": {
     "F": {
@@ -1517,7 +1417,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-30T20:41:14",
+    "updated_at": "2026-06-30T20:49:26",
     "days_tracked": 18,
     "latest_date": "2026-06-30",
     "latest_avg_return_pct": -0.96,
@@ -2606,7 +2506,7 @@
           }
         ],
         "first_generated_at": "2026-06-30 13:26",
-        "last_generated_at": "2026-06-30 20:41",
+        "last_generated_at": "2026-06-30 20:49",
         "as_of": "2026-06-30",
         "age_trading_days": 0,
         "avg_return_pct": -0.96,
@@ -2616,7 +2516,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-30T20:41:14",
+    "updated_at": "2026-06-30T20:49:26",
     "tracked_days": 18,
     "current_candidates": 0,
     "hot_missed_count": 5,
@@ -2660,7 +2560,7 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-06-30T20:41:15",
+    "updated_at": "2026-06-30T20:49:26",
     "tracked_days": 18,
     "latest_date": "2026-06-30",
     "latest_regime": "mixed",
