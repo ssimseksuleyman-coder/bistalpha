@@ -176,8 +176,7 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
         picks, sig_map, _ = strat_mod.select(data, signals, date, mode="F")
         weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
         scale = strat_mod.regime_scale(data, date) if hasattr(strat_mod, "regime_scale") else 1.0
-        if scale != 1.0:
-            weights = {t: w * scale for t, w in weights.items()}
+        deployed = float(total) * max(0.0, min(1.0, float(scale)))
         tw = sum(weights.values())
         if tw > 0:
             for tic, w in weights.items():
@@ -185,7 +184,7 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
                 if ep and ep > 0:
                     ep = float(_py(ep))
                     w = float(_py(w))
-                    alloc = float(total * (w / tw) * (1 - friction))
+                    alloc = float(deployed * (w / tw) * (1 - friction))
                     state["positions"][tic] = {"entry": float(ep), "peak": float(ep), "shares": float(alloc / ep), "w": float(w)}
                     state["cash"] = float(state["cash"] - alloc)
                     state["stats"]["buys"] += 1
