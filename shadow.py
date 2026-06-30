@@ -127,11 +127,9 @@ def step(data, signals, date=None, slippage=None):
                     else:
                         weights = {t: 1.0 for t in picks}
                 scale = strat_mod.regime_scale(data, date)
-                if scale != 1.0:
-                    weights = {t: w * scale for t, w in weights.items()}
                 reason = "initial_entry" if initial_entry else "rebalance"
                 pf.rebalance(state, weights, prices_today, slippage=slippage,
-                             trade_date=trade_date, reason=reason)
+                             trade_date=trade_date, reason=reason, scale=scale)
                 new_trades.extend((state.get("history", [])[-1] or {}).get("trades", []))
             pf.save(state, state_dir=config.STATE_DIR)
             results[acc] = {

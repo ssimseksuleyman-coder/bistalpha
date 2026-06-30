@@ -143,14 +143,17 @@ def close_positions(state, sells, prices_today, slippage=0.0, trade_date=None):
     return trades
 
 
-def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=None, reason="rebalance"):
+def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=None, reason="rebalance", scale=1.0):
     """
     Portföyü yeni pick'lere göre günceller (sat + weighted al).
     picks_with_weights: {ticker: lot_weight}
     prices_today: {ticker: price}
+    scale: yatırılan sermaye oranı (1.0=tümü, 0.5=yarısı — sideways modu).
+           Kalan (1-scale) nakit olarak tutulur.
     Pozisyon state'i KALICI olarak günceller.
     """
     friction = config.COMMISSION / 2 + slippage
+    scale = max(0.0, min(1.0, scale))  # [0, 1] sınır
     trades = []
     # Toplam değer
     total = state["cash"]
@@ -170,13 +173,14 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=
             "pnl_pct": round((p / pos["entry"] - 1) * 100, 2),
         })
     state["positions"] = {}
-    # Weighted al
+    # Weighted al — scale ile kısmi yatırım (kalan nakit olarak kalır)
+    deployed = total * scale
     tw = sum(picks_with_weights.values())
     if tw > 0:
         for tic, w in picks_with_weights.items():
             ep = prices_today.get(tic)
             if ep and ep > 0:
-                alloc = total * (w / tw) * (1 - friction)
+                alloc = deployed * (w / tw) * (1 - friction)
                 state["positions"][tic] = {"entry": ep, "peak": ep, "shares": alloc / ep}
                 state["cash"] -= alloc
                 trades.append({

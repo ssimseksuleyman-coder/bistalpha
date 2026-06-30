@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from . import config
 from .signals import lot_multiplier
-from .strategy import select
+from .strategy import select, regime_scale
 
 
 def _rebal_dates(prices):
@@ -78,6 +78,10 @@ def run(data, signals, mode=None, slippage=0.0, verbose=False):
                 weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
             else:
                 weights = {t: 1.0 for t in picks}
+
+            # Rejim ölçeği — sadece DEPLOYED sermayeyi ölçekler, kalan nakit kalır
+            scale = regime_scale(data, today)
+            deployed = total * max(0.0, min(1.0, scale))
             tw = sum(weights.values())
 
             # Tüm pozisyonları sat
@@ -86,13 +90,13 @@ def run(data, signals, mode=None, slippage=0.0, verbose=False):
                 cash += pos['shares'] * p * (1 - friction)
                 del positions[tic]
 
-            # Weighted yeniden al
+            # Weighted yeniden al (deployed üzerinden)
             if tw > 0:
                 for tic in picks:
                     if tic in prices.columns:
                         ep = prices.loc[today, tic]
                         if pd.notna(ep) and ep > 0:
-                            alloc = total * (weights[tic] / tw) * (1 - friction)
+                            alloc = deployed * (weights[tic] / tw) * (1 - friction)
                             positions[tic] = {'entry': ep, 'peak': ep, 'shares': alloc / ep}
                             cash -= alloc
 
