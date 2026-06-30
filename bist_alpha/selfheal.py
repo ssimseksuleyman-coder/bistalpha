@@ -68,10 +68,13 @@ def validate_and_repair_state(account, state_dir="portfolios"):
         with open(path) as f:
             state = json.load(f)
         # Zorunlu alanlar
-        assert "account" in state and "cash" in state and "positions" in state
-        assert isinstance(state["positions"], dict)
+        if not ("account" in state and "cash" in state and "positions" in state):
+            raise ValueError("Eksik zorunlu alanlar: account/cash/positions")
+        if not isinstance(state["positions"], dict):
+            raise ValueError("positions dict değil")
         for tic, pos in state["positions"].items():
-            assert all(k in pos for k in ("entry", "peak", "shares"))
+            if not all(k in pos for k in ("entry", "peak", "shares")):
+                raise ValueError(f"{tic}: eksik pos alanı (entry/peak/shares)")
         return True
     except Exception as e:
         print(f"[selfheal] {account} portföyü bozuk ({e}) → yedeklenip sıfırlanıyor")

@@ -244,8 +244,12 @@ class DenizWebScanner(DenizFetcher):
     def _save_state(self, state):
         import json as _json
         os.makedirs(os.path.dirname(self._STATE_FILE) or ".", exist_ok=True)
-        with open(self._STATE_FILE, "w", encoding="utf-8") as f:
+        tmp = self._STATE_FILE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             _json.dump(state, f)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, self._STATE_FILE)
 
     def _workdays(self, n=5):
         """Son n iş gününün DD.MM.YYYY listesi (bugün dahil)."""

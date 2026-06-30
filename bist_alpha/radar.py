@@ -374,5 +374,8 @@ def update_missed_ledger(data, watchlists, report, date=None, max_snapshots=90):
         "recent_hot": recent_hot,
     }
     ledger = {"summary": summary, "snapshots": snapshots}
-    path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    import os as _os
+    tmp = str(path) + ".tmp"
+    Path(tmp).write_text(json.dumps(ledger, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    _os.replace(tmp, str(path))
     return summary

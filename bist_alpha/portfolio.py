@@ -32,12 +32,28 @@ def _path(account, state_dir):
 
 
 def load(account, state_dir="portfolios"):
-    """Hesabın mevcut pozisyonlarını yükler. Yoksa boş döner."""
+    """Hesabın mevcut pozisyonlarını yükler. Bozuksa yedekler ve sıfırlar."""
     p = _path(account, state_dir)
+    default = {"account": account, "cash": 1.0, "positions": {}, "history": []}
     if not os.path.exists(p):
-        return {"account": account, "cash": 1.0, "positions": {}, "history": []}
-    with open(p) as f:
-        return json.load(f)
+        return default
+    try:
+        with open(p, encoding="utf-8") as f:
+            state = json.load(f)
+        if not isinstance(state, dict):
+            raise ValueError("state dict değil")
+        if not isinstance(state.get("positions"), dict):
+            raise ValueError("positions eksik veya dict değil")
+        return state
+    except Exception as e:
+        import datetime as _dt
+        bak = p + f".bozuk_{_dt.datetime.now():%Y%m%d_%H%M%S}.bak"
+        try:
+            os.rename(p, bak)
+        except OSError:
+            pass
+        print(f"[portfolio] {account} bozuk JSON yedeklendi ({e}) → sıfırlandı: {bak}")
+        return default
 
 
 def save(state, state_dir="portfolios"):

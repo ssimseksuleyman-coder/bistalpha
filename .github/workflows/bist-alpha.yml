@@ -44,6 +44,7 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         with:
           python-version: '3.12'
+          cache: 'pip'
       - run: pip install -r requirements.txt
         if: steps.gate.outputs.run == 'true'
 
@@ -91,4 +92,21 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add -f portfolios/ deniz_snapshots/ docs/state/ 2>/dev/null || true
           git diff --staged --quiet || git commit -m "state $(date +%F_%H%M)"
-          git push || echo "push atlandi (degisiklik yok)"
+          if ! git push; then
+            echo "push hatasi — Telegram bildirim"
+            python3 - <<'PYNOTIFY'
+          import os, urllib.request, json
+          token = os.environ.get("TELEGRAM_TOKEN", "")
+          chat = os.environ.get("TELEGRAM_CHAT_ID", "")
+          if token and chat:
+              msg = "⚠️ BIST Alpha — git push başarısız (state commit kaybolabilir)"
+              data = json.dumps({"chat_id": chat, "text": msg}).encode()
+              req = urllib.request.Request(
+                  f"https://api.telegram.org/bot{token}/sendMessage",
+                  data=data, headers={"Content-Type": "application/json"})
+              try:
+                  urllib.request.urlopen(req, timeout=5)
+              except Exception as e:
+                  print(f"[notify] {e}")
+          PYNOTIFY
+          fi

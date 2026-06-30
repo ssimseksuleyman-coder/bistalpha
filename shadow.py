@@ -17,7 +17,10 @@ import argparse
 import sys
 import os
 import json
+import traceback
 from datetime import datetime
+
+import pandas as pd
 
 from bist_alpha import config, datafeed
 from bist_alpha import notifier
@@ -26,6 +29,7 @@ from bist_alpha import strategy as strat_mod
 from bist_alpha import omega as omega_mod
 from bist_alpha import g1_account as g1_mod
 from bist_alpha import portfolio as pf
+from bist_alpha import backtest as bt_mod
 from bist_alpha.signals import lot_multiplier
 
 ACCOUNTS = {"A": "A", "B": "B", "F": "F", "O": "O"}  # mode'lar
@@ -93,52 +97,57 @@ def step(data, signals, date=None, slippage=None):
     if date is None:
         date = prices.index[-1]
     slippage = slippage if slippage is not None else config.SLIPPAGE_PER_SIDE
-    prices_today = {t: prices.loc[date, t] for t in prices.columns
-                    if not __import__('pandas').isna(prices.loc[date, t])}
+    row = prices.loc[date].dropna()
+    prices_today = row.to_dict()
 
-    rebal_dates = __import__('bist_alpha.backtest', fromlist=['_rebal_dates'])._rebal_dates(prices)
+    rebal_dates = bt_mod._rebal_dates(prices)
     is_rebal = date in rebal_dates
     trade_date = str(date.date()) if hasattr(date, "date") else str(date)
 
     results = {}
     for acc, mode in ACCOUNTS.items():
-        state = pf.load(acc, state_dir=config.STATE_DIR)
-        # 1) Stop kontrol
-        sells = pf.check_stops(state, prices_today)
-        stop_trades = pf.close_positions(state, sells, prices_today,
-                                         slippage=slippage, trade_date=trade_date)
-        new_trades = list(stop_trades)
-        # 2) Rebalance
-        initial_entry = not state.get("positions") and not state.get("history")
-        should_rebalance = is_rebal or initial_entry
-        if should_rebalance:
-            if mode == "O":
-                picks, sig_map, exc = omega_mod.select(data, signals, date)
-                weights = omega_mod.weights(picks, sig_map)
-            else:
-                picks, sig_map, exc = strat_mod.select(data, signals, date, mode=mode)
-                if mode in ("B", "F"):
-                    weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
+        try:
+            state = pf.load(acc, state_dir=config.STATE_DIR)
+            # 1) Stop kontrol
+            sells = pf.check_stops(state, prices_today)
+            stop_trades = pf.close_positions(state, sells, prices_today,
+                                             slippage=slippage, trade_date=trade_date)
+            new_trades = list(stop_trades)
+            # 2) Rebalance
+            initial_entry = not state.get("positions") and not state.get("history")
+            should_rebalance = is_rebal or initial_entry
+            if should_rebalance:
+                if mode == "O":
+                    picks, sig_map, exc = omega_mod.select(data, signals, date)
+                    weights = omega_mod.weights(picks, sig_map)
                 else:
-                    weights = {t: 1.0 for t in picks}
-            scale = strat_mod.regime_scale(data, date)
-            if scale != 1.0:
-                weights = {t: w * scale for t, w in weights.items()}
-            reason = "initial_entry" if initial_entry else "rebalance"
-            pf.rebalance(state, weights, prices_today, slippage=slippage,
-                         trade_date=trade_date, reason=reason)
-            new_trades.extend((state.get("history", [])[-1] or {}).get("trades", []))
-        pf.save(state, state_dir=config.STATE_DIR)
-        results[acc] = {
-            "value": round(pf.current_value(state, prices_today), 4),
-            "n_pos": len(state["positions"]),
-            "sells": sells,
-            "stop_trades": stop_trades,
-            "rebalance": should_rebalance,
-            "initial_entry": initial_entry,
-            "new_trades": new_trades,
-            "last_event": state.get("history", [])[-1] if state.get("history") else None,
-        }
+                    picks, sig_map, exc = strat_mod.select(data, signals, date, mode=mode)
+                    if mode in ("B", "F"):
+                        weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
+                    else:
+                        weights = {t: 1.0 for t in picks}
+                scale = strat_mod.regime_scale(data, date)
+                if scale != 1.0:
+                    weights = {t: w * scale for t, w in weights.items()}
+                reason = "initial_entry" if initial_entry else "rebalance"
+                pf.rebalance(state, weights, prices_today, slippage=slippage,
+                             trade_date=trade_date, reason=reason)
+                new_trades.extend((state.get("history", [])[-1] or {}).get("trades", []))
+            pf.save(state, state_dir=config.STATE_DIR)
+            results[acc] = {
+                "value": round(pf.current_value(state, prices_today), 4),
+                "n_pos": len(state["positions"]),
+                "sells": sells,
+                "stop_trades": stop_trades,
+                "rebalance": should_rebalance,
+                "initial_entry": initial_entry,
+                "new_trades": new_trades,
+                "last_event": state.get("history", [])[-1] if state.get("history") else None,
+            }
+        except Exception:
+            tb = traceback.format_exc()
+            print(f"[shadow] Hesap {acc} HATA:\n{tb}")
+            results[acc] = {"error": tb[:500]}
     g1_state = pf.load("G1", state_dir=config.STATE_DIR)
     g1_initial_entry = not g1_state.get("positions") and not g1_state.get("history")
     g1_should_rebalance = is_rebal or g1_initial_entry
@@ -175,8 +184,7 @@ def status():
     data = _attach_dynamic_universe(feed, data)
     prices = data['prices']
     date = prices.index[-1]
-    prices_today = {t: prices.loc[date, t] for t in prices.columns
-                    if not __import__('pandas').isna(prices.loc[date, t])}
+    prices_today = prices.loc[date].dropna().to_dict()
     print(f"=== SHADOW DURUM @ {date.date()} ===")
     for acc in ACCOUNTS:
         state = pf.load(acc, state_dir=config.STATE_DIR)

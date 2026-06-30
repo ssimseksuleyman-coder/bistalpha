@@ -135,8 +135,12 @@ def save_snapshot(bulletin, out_dir="deniz_snapshots"):
     """Bülteni günlük snapshot JSON olarak saklar (geçmiş hafıza)."""
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, f"deniz_{bulletin['date'].replace('-','_')}.json")
-    with open(path, "w") as f:
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(bulletin, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
     return path
 
 
