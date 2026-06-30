@@ -74,7 +74,8 @@ def score(data, date):
     p_mom = prices.iloc[max(0, idx - config.MOM_GUN)]
     p_30 = prices.iloc[max(0, idx - config.RS_GUN_30)]
     p_5 = prices.iloc[max(0, idx - config.RS_GUN_5)]
-    valid = (p_now > 0) & (p_mom > 0) & (p_30 > 0) & (p_5 > 0) & p_now.notna() & p_mom.notna()
+    valid = (p_now > 0) & (p_mom > 0) & (p_30 > 0) & (p_5 > 0) \
+            & p_now.notna() & p_mom.notna() & p_30.notna() & p_5.notna()
     m252 = (p_now / p_mom - 1) * 100
     rs30 = (p_now / p_30 - 1) * 100
     rs5 = (p_now / p_5 - 1) * 100

@@ -96,6 +96,8 @@ def check_stops(state, prices_today):
         pt = prices_today.get(tic)
         if pt is None:
             continue
+        if "peak" not in pos or not pos["peak"]:  # eski JSON koruması
+            pos["peak"] = pos.get("entry", pt)
         if pt > pos['peak']:
             pos['peak'] = pt          # peak güncelle (kalıcı)
         st = stop_level(pos)

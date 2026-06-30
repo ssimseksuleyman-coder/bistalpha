@@ -210,7 +210,14 @@ def run_cycle(label="manuel"):
             if trade_notice:
                 notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
         except Exception as e:
-            print(f"[daemon] Shadow atlandi: {e}")
+            import traceback as _tb
+            _tb_str = _tb.format_exc()
+            print(f"[daemon] Shadow hatasi:\n{_tb_str}")
+            selfheal._write_error_log("daemon_shadow", _tb_str)
+            try:
+                notifier.notify_all("BIST Alpha Shadow HATA", f"{e}\n\n{_tb_str[:1000]}")
+            except Exception:
+                pass
         held_positions = {}
         try:
             from bist_alpha import portfolio as pf
