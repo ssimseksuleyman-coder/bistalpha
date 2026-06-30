@@ -249,6 +249,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import forward_test
     from bist_alpha import missed_log
     from bist_alpha import performance_ledger
+    from bist_alpha import g1_account as g1_mod
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -300,6 +301,10 @@ def _write_dashboard_state(report, label, data=None, universe=None,
                 "role": "baseline",
                 "note": "Basit baz cizgi; production adayi degil, karsilastirma icin tutulur.",
             },
+            "G1": {
+                "role": "shadow",
+                "note": "F secimini bozmaz; stop sonrasi re-entry pismanligini olcer.",
+            },
         },
         "accounts": {},
     }
@@ -343,6 +348,30 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             }
         except Exception:
             state["accounts"][acc] = {"error": "yüklenemedi"}
+    try:
+        f_state = pf.load("F", state_dir="portfolios")
+        f_return_pct = (pf.current_value(f_state, prices_today) - 1) * 100
+        g1_state = pf.load("G1", state_dir="portfolios")
+        g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
+        g1_positions = []
+        for t, p in g1_state.get("positions", {}).items():
+            cur = prices_today.get(t, p["entry"])
+            stop = pf.stop_level(p)
+            g1_positions.append({
+                "ticker": t,
+                "entry": round(p["entry"], 2),
+                "peak": round(p["peak"], 2),
+                "current": round(cur, 2),
+                "stop": round(stop, 2),
+                "pnl_pct": round((cur / p["entry"] - 1) * 100, 2),
+                "shares": round(p.get("shares", 0), 6),
+                "origin": p.get("origin", "rebalance"),
+            })
+        g1_info["positions"] = g1_positions
+        g1_info["trades"] = g1_state.get("trades", [])[-15:]
+        state["accounts"]["G1"] = g1_info
+    except Exception as e:
+        state["accounts"]["G1"] = {"error": f"yuklenemedi: {e}"}
     with open(os.path.join(out_dir, "dashboard.json"), "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2, default=str)
 

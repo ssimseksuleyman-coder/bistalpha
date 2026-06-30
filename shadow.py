@@ -24,6 +24,7 @@ from bist_alpha import notifier
 from bist_alpha import signals as sig_mod
 from bist_alpha import strategy as strat_mod
 from bist_alpha import omega as omega_mod
+from bist_alpha import g1_account as g1_mod
 from bist_alpha import portfolio as pf
 from bist_alpha.signals import lot_multiplier
 
@@ -43,6 +44,29 @@ def _attach_dynamic_universe(feed, data):
     print(f"[shadow] Dinamik evren: {len(universe)}")
     return data
 
+
+
+def _g1_events_to_trades(events):
+    """G1 events yapisini mevcut trade notice formatina cevirir."""
+    trades = []
+    for item in (events or {}).get("buys", []):
+        trades.append({
+            "type": "BUY", "ticker": item.get("ticker"),
+            "price": item.get("price"), "reason": "g1",
+        })
+    for item in (events or {}).get("sells", []):
+        trades.append({
+            "type": "SELL", "ticker": item.get("ticker"),
+            "price": item.get("price"), "reason": item.get("reason", "g1"),
+            "pnl_pct": item.get("pnl_pct"),
+            "was_reentry": item.get("was_reentry", False),
+        })
+    for item in (events or {}).get("reentries", []):
+        trades.append({
+            "type": "REENTRY", "ticker": item.get("ticker"),
+            "price": item.get("price"), "reason": "g1",
+        })
+    return trades
 
 def _format_trade_notice(result):
     """Sadece gerçekleşen shadow işlemleri için kısa bildirim metni üretir."""
@@ -115,6 +139,30 @@ def step(data, signals, date=None, slippage=None):
             "new_trades": new_trades,
             "last_event": state.get("history", [])[-1] if state.get("history") else None,
         }
+    g1_state = pf.load("G1", state_dir=config.STATE_DIR)
+    g1_initial_entry = not g1_state.get("positions") and not g1_state.get("history")
+    g1_should_rebalance = is_rebal or g1_initial_entry
+    g1_state, g1_events = g1_mod.step(
+        data, signals, g1_state, date, prices_today, g1_should_rebalance,
+        slippage=slippage)
+    f_return_pct = None
+    if results.get("F", {}).get("value") is not None:
+        f_return_pct = (results["F"]["value"] - 1) * 100
+    g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
+    g1_trades = _g1_events_to_trades(g1_events)
+    g1_info.update({
+        "rebalance": g1_should_rebalance,
+        "initial_entry": g1_initial_entry,
+        "events": g1_events,
+        "new_trades": g1_trades,
+        "last_event": {
+            "date": trade_date,
+            "event": "g1_shadow",
+            "trades": g1_trades,
+        } if g1_trades else None,
+    })
+    pf.save(g1_state, state_dir=config.STATE_DIR)
+    results["G1"] = g1_info
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
             "rebalance": is_rebal, "accounts": results}
 

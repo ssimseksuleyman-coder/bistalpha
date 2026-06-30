@@ -222,7 +222,7 @@
             <div class="stat"><div class="stat-value" id="statRegime">-</div><div class="stat-label">Piyasa rejimi</div></div>
             <div class="stat"><div class="stat-value" id="statDeniz">-</div><div class="stat-label">Deniz bulten</div></div>
             <div class="stat"><div class="stat-value" id="statTop">-</div><div class="stat-label">Oneri</div></div>
-            <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F/O pozisyon</div></div>
+            <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F/O/G1 pozisyon</div></div>
             <div class="stat"><div class="stat-value" id="statSource">-</div><div class="stat-label">Kaynak</div></div>
             <div class="stat"><div class="stat-value" id="statPool">-</div><div class="stat-label">BIST havuzu</div></div>
             <div class="stat"><div class="stat-value" id="statCount">-</div><div class="stat-label">Canli veri</div></div>
@@ -516,22 +516,40 @@ function renderDecisionCards(data) {
   `).join('');
 }
 
+function renderG1Metrics(acc) {
+  if (!acc || acc.account !== 'G1') return '';
+  const primary = acc.display?.primary || [];
+  const secondary = acc.display?.secondary || [];
+  const pText = primary.map(x => `${x.label}: ${x.value == null ? '-' : x.value}${x.unit || ''}${x.baseline != null ? ' / baz ' + x.baseline + '%' : ''}`).join(' | ');
+  const sText = secondary.map(x => `${x.label}: ${x.value == null ? '-' : x.value}${x.unit || ''}`).join(' | ');
+  const note = acc.display?.notes?.reentry_total_pnl_pct || '';
+  const gate = acc.promotion_gates
+    ? `Terfi: F ${acc.promotion_gates.beats_f ? 'OK' : '-'} | DD ${acc.promotion_gates.dd_ok ? 'OK' : '-'} | FB ${acc.promotion_gates.fb_rate_ok ? 'OK' : '-'}`
+    : '';
+  return `
+    <div class="meta" style="padding-top:8px"><b>G1 ana:</b> ${esc(pText || '-')}</div>
+    <div class="meta"><b>G1 detay:</b> ${esc(sText || '-')}</div>
+    <div class="meta"><b>Durum:</b> ${esc(acc.status || '-')} ${esc(gate)}</div>
+    ${note ? `<div class="meta">${esc(note)}</div>` : ''}
+  `;
+}
 function renderAccounts(accounts) {
-  const names = ['A', 'B', 'F', 'O'];
+  const names = ['A', 'B', 'F', 'O', 'G1'];
   el('accounts').innerHTML = names.map(name => {
     const acc = accounts?.[name];
     if (!acc) return `<div class="account"><div class="account-title">Hesap ${name}<span>-</span></div><div class="empty">Veri yok</div></div>`;
     if (acc.error) return `<div class="account"><div class="account-title">Hesap ${name}<span>Hata</span></div><div class="empty">${esc(acc.error)}</div></div>`;
     const positions = acc.positions || [];
-    const lastTrades = (acc.last_event?.trades || []).slice(-4);
+    const lastTrades = (acc.trades || acc.last_event?.trades || []).slice(-4);
     const perfClass = value => Number(value) >= 0 ? 'profit' : 'loss';
     return `<div class="account">
       <div class="account-title"><span>Hesap ${name}</span><span>${esc(acc.n_positions ?? positions.length)} pozisyon</span></div>
       <div class="meta">Deger ${esc(acc.value ?? '-')} | Nakit ${esc(acc.cash ?? '-')}</div>
+      ${renderG1Metrics(acc)}
       ${positions.length ? positions.slice(0, 8).map(p => `
         <div class="position">
           <strong>${esc(p.ticker)}</strong>
-          <span>Giris ${esc(p.entry)} | Gun ${esc(p.current)} | Stop ${esc(p.stop)} | <b class="${perfClass(p.pnl_pct)}">%${esc(p.pnl_pct ?? '-')}</b></span>
+          <span>Giris ${esc(p.entry)} | Gun ${esc(p.current)} | Stop ${esc(p.stop)} | <b class="${perfClass(p.pnl_pct)}">%${esc(p.pnl_pct ?? '-')}</b>${p.origin ? ' | ' + esc(p.origin) : ''}</span>
         </div>
       `).join('') : '<div class="empty">Henuz pozisyon yok</div>'}
       ${lastTrades.length ? `<div class="meta">Son islem: ${esc(acc.last_event?.event || '-')} ${esc(acc.last_event?.date || '')}</div>` : ''}
@@ -594,6 +612,7 @@ function governanceRows(data) {
     ['O', 'shadow', `F ile elma-elma olculur. Bugunku edge ${edge == null ? 'yok' : '%' + edge}; fark yaratmaya zorlanmaz.`],
     ['B', 'shadow', 'F ile ayni/benzer davraniyorsa sadece kontrol hesabi olarak kalir.'],
     ['A', 'baseline', 'Eski/basit baz cizgi. Gerideyse production adayi degil, karsilastirma icin tutulur.'],
+    ['G1', 'shadow', 'F secimini bozmaz; stop sonrasi re-entry pismanligini olcer.'],
   ];
   const rows = defaults.map(([name, role, note]) => [
     name,
@@ -738,7 +757,7 @@ async function loadDashboard() {
       ? `${deniz.date} ${deniz.fresh ? 'guncel' : 'ESKI'}`
       : 'yok';
     el('statTop').textContent = (data.top10 || []).length;
-    el('statPos').textContent = ['A','B','F','O'].map(k => accounts[k]?.n_positions ?? '-').join('/');
+    el('statPos').textContent = ['A','B','F','O','G1'].map(k => accounts[k]?.n_positions ?? '-').join('/');
     el('statSource').textContent = data.source || '-';
     el('statPool').textContent = data.source_pool_count || '-';
     if (data.source_pool_method) {
