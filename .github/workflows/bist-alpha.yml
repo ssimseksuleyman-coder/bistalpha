@@ -64,11 +64,7 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          DENIZ_SOURCE: email
-          IMAP_HOST: ${{ secrets.IMAP_HOST }}
-          IMAP_USER: ${{ secrets.IMAP_USER }}
-          IMAP_PASS: ${{ secrets.IMAP_PASS }}
-          DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
+          DENIZ_SOURCE: scanner
         run: |
           python3 daemon.py --once "${{ steps.gate.outputs.label }}"
           python3 - <<'PY'
