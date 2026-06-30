@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-30T22:07:06",
+  "timestamp": "2026-06-30T22:11:29",
   "label": "push",
   "date": "2026-06-30",
   "mode": "F",
@@ -16,9 +16,9 @@
   "dynamic_universe_count": 100,
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "market_regime": {
-    "name": "mixed",
-    "xu5": -2.9,
-    "xu21": 3.0
+    "name": "unknown",
+    "xu5": null,
+    "xu21": null
   },
   "deniz_bulletin": {
     "available": true,
@@ -32,7 +32,7 @@
     "fetched_at": "2026-06-30T14:30:00",
     "loaded_from_snapshot": true
   },
-  "deniz_regime": "mixed",
+  "deniz_regime": "unknown",
   "top10": [
     {
       "rank": 1,
@@ -328,7 +328,7 @@
       "loaded_from_snapshot": true
     },
     "data_health": {
-      "timestamp": "2026-06-30 22:07",
+      "timestamp": "2026-06-30 22:11",
       "data_issues": [],
       "healthy": true,
       "snapshots_removed": 0,
@@ -336,7 +336,7 @@
       "temp_removed": 1
     },
     "verdict": "green",
-    "updated_at": "2026-06-30T22:07:06"
+    "updated_at": "2026-06-30T22:11:29"
   },
   "account_governance": {
     "F": {
@@ -1417,7 +1417,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-30T22:07:06",
+    "updated_at": "2026-06-30T22:11:29",
     "days_tracked": 18,
     "latest_date": "2026-06-30",
     "latest_avg_return_pct": -0.96,
@@ -2506,7 +2506,7 @@
           }
         ],
         "first_generated_at": "2026-06-30 13:26",
-        "last_generated_at": "2026-06-30 22:07",
+        "last_generated_at": "2026-06-30 22:11",
         "as_of": "2026-06-30",
         "age_trading_days": 0,
         "avg_return_pct": -0.96,
@@ -2516,7 +2516,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-30T22:07:06",
+    "updated_at": "2026-06-30T22:11:29",
     "tracked_days": 18,
     "current_candidates": 0,
     "hot_missed_count": 5,
@@ -2560,10 +2560,10 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-06-30T22:07:06",
+    "updated_at": "2026-06-30T22:11:29",
     "tracked_days": 18,
     "latest_date": "2026-06-30",
-    "latest_regime": "mixed",
+    "latest_regime": "unknown",
     "latest_events": 12,
     "by_layer_regime": [
       {
@@ -2729,9 +2729,9 @@
         "label": "F Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 51,
-        "avg_return_pct": 19.47,
-        "hit_rate_pct": 74.5
+        "n": 46,
+        "avg_return_pct": 18.19,
+        "hit_rate_pct": 71.7
       },
       {
         "layer": "F_shadow",
@@ -2747,9 +2747,9 @@
         "label": "F Shadow",
         "role": "return",
         "regime": "unknown",
-        "n": 9,
-        "avg_return_pct": 20.46,
-        "hit_rate_pct": 77.8
+        "n": 14,
+        "avg_return_pct": 24.32,
+        "hit_rate_pct": 85.7
       },
       {
         "layer": "F_top10",
@@ -2774,9 +2774,9 @@
         "label": "F Top10",
         "role": "return",
         "regime": "mixed",
-        "n": 42,
-        "avg_return_pct": 11.32,
-        "hit_rate_pct": 64.3
+        "n": 41,
+        "avg_return_pct": 11.62,
+        "hit_rate_pct": 65.9
       },
       {
         "layer": "F_top10",
@@ -2792,9 +2792,9 @@
         "label": "F Top10",
         "role": "return",
         "regime": "unknown",
-        "n": 10,
-        "avg_return_pct": 11.29,
-        "hit_rate_pct": 70.0
+        "n": 11,
+        "avg_return_pct": 10.18,
+        "hit_rate_pct": 63.6
       },
       {
         "layer": "O_shadow",
@@ -2819,9 +2819,9 @@
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 51,
-        "avg_return_pct": 19.47,
-        "hit_rate_pct": 74.5
+        "n": 46,
+        "avg_return_pct": 18.19,
+        "hit_rate_pct": 71.7
       },
       {
         "layer": "O_shadow",
@@ -2837,9 +2837,9 @@
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "unknown",
-        "n": 9,
-        "avg_return_pct": 20.46,
-        "hit_rate_pct": 77.8
+        "n": 14,
+        "avg_return_pct": 24.32,
+        "hit_rate_pct": 85.7
       },
       {
         "layer": "peak_risks",
@@ -2874,12 +2874,12 @@
         "label": "Tepe Riski",
         "role": "risk",
         "regime": "mixed",
-        "n": 34,
-        "avg_return_pct": 7.56,
-        "hit_rate_pct": 79.4,
+        "n": 33,
+        "avg_return_pct": 7.75,
+        "hit_rate_pct": 78.8,
         "saved_loss_pct": 117.42,
-        "opportunity_cost_pct": 374.42,
-        "net_saved_pct": -257.0,
+        "opportunity_cost_pct": 373.11,
+        "net_saved_pct": -255.69,
         "saved_events": 6,
         "false_alarm_events": 24
       },
@@ -2902,12 +2902,12 @@
         "label": "Tepe Riski",
         "role": "risk",
         "regime": "unknown",
-        "n": 8,
-        "avg_return_pct": 2.21,
-        "hit_rate_pct": 37.5,
+        "n": 9,
+        "avg_return_pct": 2.11,
+        "hit_rate_pct": 44.4,
         "saved_loss_pct": 24.62,
-        "opportunity_cost_pct": 42.33,
-        "net_saved_pct": -17.71,
+        "opportunity_cost_pct": 43.64,
+        "net_saved_pct": -19.02,
         "saved_events": 4,
         "false_alarm_events": 3
       }
@@ -2939,7 +2939,7 @@
         "swap_hit_rate_pct": null,
         "latest": {
           "date": "2026-06-30",
-          "regime": "mixed",
+          "regime": "unknown",
           "overlap_pct": 100.0,
           "swap_n": 0,
           "o_only_count": 0,
