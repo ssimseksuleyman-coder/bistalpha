@@ -170,7 +170,7 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
             row["deniz_regime"] = sector_regime_flag(deniz_usable, get_sector(t))
         # Yan kaynak overlay (OMEGA istihbaratı — bayrak/etiket)
         from . import sidesource
-        ss = sidesource.annotate_ticker(t, get_sector(t))
+        ss = sidesource.annotate_ticker(t, get_sector(t), as_of=date)
         if ss:
             row["yan_kaynak"] = ss
         rows.append(row)

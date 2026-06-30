@@ -16,6 +16,8 @@ Kapsanan OMEGA kaynakları (data/omega/ altında):
 """
 import os
 import json
+from datetime import date as date_type, datetime
+from . import config
 
 _DIR = os.path.join(os.path.dirname(__file__), "..", "data", "omega")
 _cache = {}
@@ -33,9 +35,51 @@ def _load(name):
     return _cache[name]
 
 
-# ---- Deniz hisse teknik skoru ----
-def deniz_stock_score(ticker):
+def _date_from_meta(meta):
+    raw = (meta or {}).get("extracted") or (meta or {}).get("date")
+    if not raw:
+        src = (meta or {}).get("source", "")
+        import re
+        m = re.search(r"(\d{2})[./_-](\d{2})[./_-](\d{4})", src)
+        raw = f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else None
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(str(raw)[:10], "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+
+def _as_date(value):
+    if value is None:
+        return date_type.today()
+    if hasattr(value, "date"):
+        return value.date()
+    return datetime.strptime(str(value)[:10], "%Y-%m-%d").date()
+
+
+def deniz_source_status(as_of=None, max_age_days=None):
     d = _load("deniz_puanlari")
+    meta = d.get("_meta", {}) if isinstance(d, dict) else {}
+    src_date = _date_from_meta(meta)
+    if max_age_days is None:
+        max_age_days = getattr(config, "DENIZ_MAX_AGE_DAYS", 3)
+    if not src_date:
+        return {"available": bool(d), "date": None, "age_days": None,
+                "fresh": False, "status": "unknown"}
+    ref = _as_date(as_of)
+    age = max(0, (ref - src_date).days)
+    return {"available": True, "date": src_date.isoformat(), "age_days": age,
+            "fresh": age <= max_age_days, "status": "fresh" if age <= max_age_days else "stale",
+            "source": meta.get("source")}
+
+
+# ---- Deniz hisse teknik skoru ----
+def deniz_stock_score(ticker, as_of=None, allow_stale=False):
+    d = _load("deniz_puanlari")
+    if not allow_stale and as_of is not None:
+        if not deniz_source_status(as_of).get("fresh"):
+            return None
     v = d.get(ticker)
     return float(v) if isinstance(v, (int, float)) else None
 
@@ -127,9 +171,9 @@ def deniz_levels(ticker):
 
 
 # ---- Hepsini birleştir: bir hisse için tüm yan-kaynak bayrakları ----
-def annotate_ticker(ticker, sector=None):
+def annotate_ticker(ticker, sector=None, as_of=None, allow_stale_deniz=False):
     flags = {}
-    ds = deniz_stock_score(ticker)
+    ds = deniz_stock_score(ticker, as_of=as_of, allow_stale=allow_stale_deniz)
     if ds is not None:
         flags["deniz_skor"] = ds
     for fn, key in [(foreign_flow, "yabancı"), (volume_signal, "hacim"),

@@ -159,6 +159,55 @@ class EmailFetcher(DenizFetcher):
             return None
 
 
+
+class UrlFetcher(DenizFetcher):
+    """DENIZ_URL veya DENIZ_URL_TEMPLATE ile bulteni web/portal URL'sinden indirir."""
+    def __init__(self, save_dir="deniz_inbox"):
+        self.save_dir = save_dir
+
+    @staticmethod
+    def _candidate_urls():
+        urls = []
+        direct = getattr(config, "DENIZ_URL", None)
+        if direct:
+            urls.append(direct)
+        template = getattr(config, "DENIZ_URL_TEMPLATE", None)
+        if template:
+            for days_back in range(0, 7):
+                dt = datetime.now() - timedelta(days=days_back)
+                try:
+                    urls.append(template.format(date=dt, yyyy=dt.strftime("%Y"),
+                                                mm=dt.strftime("%m"), dd=dt.strftime("%d")))
+                except Exception:
+                    continue
+        return list(dict.fromkeys(urls))
+
+    def fetch_latest(self):
+        urls = self._candidate_urls()
+        if not urls:
+            return None
+        import requests
+        os.makedirs(self.save_dir, exist_ok=True)
+        for url in urls:
+            try:
+                r = requests.get(url, timeout=25)
+                if r.status_code != 200 or not r.content:
+                    continue
+                name = os.path.basename(url.split("?")[0]) or "deniz_bulten.xlsx"
+                if not name.lower().endswith((".xlsx", ".xls")):
+                    cd = r.headers.get("content-disposition", "")
+                    m = re.search(r'filename="?([^";]+)"?', cd)
+                    name = m.group(1) if m else "deniz_bulten.xlsx"
+                if not _is_bulletin_file(name):
+                    name = "Deniz_Yatirim_BIST_Teknik_Takip_Bulteni_" + datetime.now().strftime("%d_%m_%Y") + ".xlsx"
+                path = os.path.join(self.save_dir, os.path.basename(name))
+                with open(path, "wb") as f:
+                    f.write(r.content)
+                return path
+            except Exception as e:
+                print(f"[deniz_fetcher] URL indirme hatasi: {e}")
+        return None
+
 class FallbackFetcher(DenizFetcher):
     def __init__(self, fetchers):
         self.fetchers = fetchers
@@ -174,8 +223,10 @@ class FallbackFetcher(DenizFetcher):
 def get_fetcher():
     src = getattr(config, "DENIZ_SOURCE", "folder")
     if src == "email":
-        return FallbackFetcher([EmailFetcher(), FolderFetcher()])
-    return FolderFetcher()
+        return FallbackFetcher([EmailFetcher(), UrlFetcher(), FolderFetcher()])
+    if src in ("url", "web", "portal"):
+        return FallbackFetcher([UrlFetcher(), EmailFetcher(), FolderFetcher()])
+    return FallbackFetcher([FolderFetcher(), UrlFetcher()])
 
 
 def auto_update(snapshot_dir="deniz_snapshots"):
