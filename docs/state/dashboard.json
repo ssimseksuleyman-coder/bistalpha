@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-30T14:05:50",
-  "label": "push",
+  "timestamp": "2026-06-30T20:41:14",
+  "label": "gunici",
   "date": "2026-06-30",
   "mode": "F",
   "source": "yahoo",
@@ -17,19 +17,19 @@
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "market_regime": {
     "name": "mixed",
-    "xu5": -2.3,
-    "xu21": 3.6
+    "xu5": -2.9,
+    "xu21": 3.0
   },
   "deniz_bulletin": {
     "available": true,
-    "date": "2026-05-14",
-    "age_days": 47,
-    "fresh": false,
-    "status": "stale",
-    "market_score": 63.0,
+    "date": "2026-06-30",
+    "age_days": 0,
+    "fresh": true,
+    "status": "fresh",
+    "market_score": 47,
     "sector_count": 31,
-    "source_file": "1778951856512_Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_14_05_2026_13830__1_.xlsx",
-    "fetched_at": "2026-06-29T23:27:11",
+    "source_file": "Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_30.06.2026_14173.pdf",
+    "fetched_at": "2026-06-30T14:30:00",
     "loaded_from_snapshot": true
   },
   "deniz_regime": "mixed",
@@ -38,21 +38,22 @@
       "rank": 1,
       "ticker": "TURSG",
       "sector": "XSGRT",
-      "skor": 23.5,
-      "m252": 52.9,
+      "skor": 22.3,
+      "m252": 51.4,
       "sm_signal": "DAĞITIM",
       "action": "BEKLE",
       "display_signal": "DAĞITIM",
       "visa": false,
-      "m5": -1.1,
-      "m21": 0.8,
-      "mevcut_fiyat": 6.23,
-      "giris_fiyati": 6.23,
-      "hedef_1": 6.27,
-      "hedef_2": 6.3,
-      "stop": 5.3,
+      "m5": -2.1,
+      "m21": -0.2,
+      "mevcut_fiyat": 6.17,
+      "giris_fiyati": 6.17,
+      "hedef_1": 6.24,
+      "hedef_2": 6.31,
+      "stop": 5.24,
       "risk_pct": 15.0,
-      "potansiyel_pct": 0.6
+      "potansiyel_pct": 1.1,
+      "deniz_regime": "zayıf"
     }
   ],
   "watchlists": {
@@ -64,23 +65,23 @@
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XHOLD",
-        "score": 479.6,
-        "price": 153.1,
-        "m5": 13.9,
-        "m21": 58.1,
-        "m252": 2013.0,
+        "score": 482.6,
+        "price": 154.2,
+        "m5": 14.7,
+        "m21": 59.3,
+        "m252": 2028.2,
         "rank_1y": 1,
         "rank_1a": 1,
         "rank_1h": 1,
         "acceleration": 0,
-        "volume_ratio": 1.36,
+        "volume_ratio": 1.42,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": true,
-        "range_high": 153.5,
+        "range_high": 154.2,
         "range_low": 6.41,
-        "from_high_pct": -0.3,
-        "from_low_pct": 2287.1,
+        "from_high_pct": 0.0,
+        "from_low_pct": 2304.2,
         "tags": [
           {
             "label": "zirveye_yakin",
@@ -99,24 +100,24 @@
     "rebalance": false,
     "accounts": {
       "A": {
-        "value": 1.1849,
+        "value": 1.1895,
         "n_pos": 5,
         "sells": [
           {
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "reason": "stop",
-            "giveback": 15.01
+            "giveback": 16.22
           }
         ],
         "stop_trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.002306,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "rebalance": false,
@@ -125,48 +126,48 @@
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.002306,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.1849,
+          "total": 1.1895,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.002306,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
       },
       "B": {
-        "value": 1.2168,
+        "value": 1.2214,
         "n_pos": 5,
         "sells": [
           {
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "reason": "stop",
-            "giveback": 15.01
+            "giveback": 16.22
           }
         ],
         "stop_trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "rebalance": false,
@@ -175,48 +176,48 @@
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
       },
       "F": {
-        "value": 1.2168,
+        "value": 1.2214,
         "n_pos": 5,
         "sells": [
           {
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "reason": "stop",
-            "giveback": 15.01
+            "giveback": 16.22
           }
         ],
         "stop_trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "rebalance": false,
@@ -225,48 +226,48 @@
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
       },
       "O": {
-        "value": 1.2168,
+        "value": 1.2214,
         "n_pos": 5,
         "sells": [
           {
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "reason": "stop",
-            "giveback": 15.01
+            "giveback": 16.22
           }
         ],
         "stop_trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "rebalance": false,
@@ -275,25 +276,25 @@
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ],
         "last_event": {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
@@ -305,9 +306,9 @@
           "return_candidate",
           "drawdown_watch"
         ],
-        "value": 1.0,
-        "return_pct": 0.0,
-        "max_dd_pct": 0.0,
+        "value": 0.9904,
+        "return_pct": -0.96,
+        "max_dd_pct": -0.96,
         "n_positions": 1,
         "n_watch": 0,
         "buys": 1,
@@ -322,7 +323,7 @@
         "reentry_avg_pnl_pct": null,
         "reentry_win_rate": null,
         "reentry_rebalance_loss_count": 0,
-        "g1_vs_f_return_pct": -21.68,
+        "g1_vs_f_return_pct": -23.1,
         "promotion_gates": {
           "beats_f": false,
           "dd_ok": true,
@@ -335,13 +336,13 @@
             {
               "key": "g1_vs_f_return_pct",
               "label": "G1/F getiri farki",
-              "value": -21.68,
+              "value": -23.1,
               "unit": "%"
             },
             {
               "key": "max_dd_pct",
               "label": "Max DD (gunluk)",
-              "value": 0.0,
+              "value": -0.96,
               "unit": "%"
             },
             {
@@ -378,6 +379,7 @@
         },
         "watch_triggered": false,
         "status": "izlemede",
+        "n_pos": 1,
         "rebalance": false,
         "initial_entry": false,
         "events": {
@@ -391,12 +393,12 @@
     }
   },
   "operation_health": {
-    "label": "push",
-    "target_time": null,
-    "delay_minutes": null,
+    "label": "gunici",
+    "target_time": "14:30",
+    "delay_minutes": 371,
     "telegram": {
-      "sent": true,
-      "status": "sent"
+      "sent": false,
+      "status": "failed"
     },
     "email": {
       "sent": false,
@@ -415,26 +417,26 @@
     "last_data_date": "2026-06-30",
     "deniz_bulletin": {
       "available": true,
-      "date": "2026-05-14",
-      "age_days": 47,
-      "fresh": false,
-      "status": "stale",
-      "market_score": 63.0,
+      "date": "2026-06-30",
+      "age_days": 0,
+      "fresh": true,
+      "status": "fresh",
+      "market_score": 47,
       "sector_count": 31,
-      "source_file": "1778951856512_Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_14_05_2026_13830__1_.xlsx",
-      "fetched_at": "2026-06-29T23:27:11",
+      "source_file": "Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_30.06.2026_14173.pdf",
+      "fetched_at": "2026-06-30T14:30:00",
       "loaded_from_snapshot": true
     },
     "data_health": {
-      "timestamp": "2026-06-30 14:05",
+      "timestamp": "2026-06-30 20:41",
       "data_issues": [],
       "healthy": true,
       "snapshots_removed": 0,
       "logs_removed": 0,
-      "temp_removed": 1
+      "temp_removed": 0
     },
     "verdict": "red",
-    "updated_at": "2026-06-30T14:05:50"
+    "updated_at": "2026-06-30T20:41:14"
   },
   "account_governance": {
     "F": {
@@ -461,52 +463,52 @@
   "accounts": {
     "A": {
       "n_positions": 5,
-      "cash": 0.5383,
-      "value": 1.1849,
+      "cash": 0.537,
+      "value": 1.1895,
       "positions": [
         {
           "ticker": "KTLEV",
           "entry": 148.5,
           "peak": 186.0,
-          "current": 167.5,
+          "current": 174.5,
           "stop": 167.4,
-          "pnl_pct": 12.79,
+          "pnl_pct": 17.51,
           "shares": 0.000669
         },
         {
           "ticker": "ODINE",
           "entry": 1402.0,
-          "peak": 1890.0,
-          "current": 1887.0,
-          "stop": 1795.5,
-          "pnl_pct": 34.59,
+          "peak": 1919.0,
+          "current": 1919.0,
+          "stop": 1823.05,
+          "pnl_pct": 36.88,
           "shares": 7.1e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 117.2,
-          "peak": 153.0,
-          "current": 153.0,
-          "stop": 145.35,
-          "pnl_pct": 30.55,
+          "peak": 152.4,
+          "current": 152.0,
+          "stop": 144.78,
+          "pnl_pct": 29.69,
           "shares": 0.000848
         },
         {
           "ticker": "DSTKF",
           "entry": 2325.0,
-          "peak": 3640.0,
-          "current": 3640.0,
-          "stop": 3458.0,
-          "pnl_pct": 56.56,
+          "peak": 3625.0,
+          "current": 3622.5,
+          "stop": 3443.75,
+          "pnl_pct": 55.81,
           "shares": 4.3e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 11.99,
           "peak": 13.99,
-          "current": 13.91,
+          "current": 13.97,
           "stop": 12.59,
-          "pnl_pct": 16.01,
+          "pnl_pct": 16.51,
           "shares": 0.00829
         }
       ],
@@ -666,16 +668,16 @@
         {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.1849,
+          "total": 1.1895,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.002306,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
@@ -683,68 +685,68 @@
       "last_event": {
         "date": "2026-06-30",
         "event": "stop",
-        "total": 1.1849,
+        "total": 1.1895,
         "n_pos": 5,
         "trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.002306,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ]
       }
     },
     "B": {
       "n_positions": 5,
-      "cash": 0.5175,
-      "value": 1.2168,
+      "cash": 0.5167,
+      "value": 1.2214,
       "positions": [
         {
           "ticker": "KTLEV",
           "entry": 148.5,
           "peak": 186.0,
-          "current": 167.5,
+          "current": 174.5,
           "stop": 167.4,
-          "pnl_pct": 12.79,
+          "pnl_pct": 17.51,
           "shares": 0.00069
         },
         {
           "ticker": "ODINE",
           "entry": 1402.0,
-          "peak": 1890.0,
-          "current": 1887.0,
-          "stop": 1795.5,
-          "pnl_pct": 34.59,
+          "peak": 1919.0,
+          "current": 1919.0,
+          "stop": 1823.05,
+          "pnl_pct": 36.88,
           "shares": 7.3e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 117.2,
-          "peak": 153.0,
-          "current": 153.0,
-          "stop": 145.35,
-          "pnl_pct": 30.55,
+          "peak": 152.4,
+          "current": 152.0,
+          "stop": 144.78,
+          "pnl_pct": 29.69,
           "shares": 0.000874
         },
         {
           "ticker": "DSTKF",
           "entry": 2325.0,
-          "peak": 3640.0,
-          "current": 3640.0,
-          "stop": 3458.0,
-          "pnl_pct": 56.56,
+          "peak": 3625.0,
+          "current": 3622.5,
+          "stop": 3443.75,
+          "pnl_pct": 55.81,
           "shares": 6.6e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 11.99,
           "peak": 13.99,
-          "current": 13.91,
+          "current": 13.97,
           "stop": 12.59,
-          "pnl_pct": 16.01,
+          "pnl_pct": 16.51,
           "shares": 0.005128
         }
       ],
@@ -904,16 +906,16 @@
         {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
@@ -921,68 +923,68 @@
       "last_event": {
         "date": "2026-06-30",
         "event": "stop",
-        "total": 1.2168,
+        "total": 1.2214,
         "n_pos": 5,
         "trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ]
       }
     },
     "F": {
       "n_positions": 5,
-      "cash": 0.5175,
-      "value": 1.2168,
+      "cash": 0.5167,
+      "value": 1.2214,
       "positions": [
         {
           "ticker": "KTLEV",
           "entry": 148.5,
           "peak": 186.0,
-          "current": 167.5,
+          "current": 174.5,
           "stop": 167.4,
-          "pnl_pct": 12.79,
+          "pnl_pct": 17.51,
           "shares": 0.00069
         },
         {
           "ticker": "ODINE",
           "entry": 1402.0,
-          "peak": 1890.0,
-          "current": 1887.0,
-          "stop": 1795.5,
-          "pnl_pct": 34.59,
+          "peak": 1919.0,
+          "current": 1919.0,
+          "stop": 1823.05,
+          "pnl_pct": 36.88,
           "shares": 7.3e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 117.2,
-          "peak": 153.0,
-          "current": 153.0,
-          "stop": 145.35,
-          "pnl_pct": 30.55,
+          "peak": 152.4,
+          "current": 152.0,
+          "stop": 144.78,
+          "pnl_pct": 29.69,
           "shares": 0.000874
         },
         {
           "ticker": "DSTKF",
           "entry": 2325.0,
-          "peak": 3640.0,
-          "current": 3640.0,
-          "stop": 3458.0,
-          "pnl_pct": 56.56,
+          "peak": 3625.0,
+          "current": 3622.5,
+          "stop": 3443.75,
+          "pnl_pct": 55.81,
           "shares": 6.6e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 11.99,
           "peak": 13.99,
-          "current": 13.91,
+          "current": 13.97,
           "stop": 12.59,
-          "pnl_pct": 16.01,
+          "pnl_pct": 16.51,
           "shares": 0.005128
         }
       ],
@@ -1142,16 +1144,16 @@
         {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
@@ -1159,68 +1161,68 @@
       "last_event": {
         "date": "2026-06-30",
         "event": "stop",
-        "total": 1.2168,
+        "total": 1.2214,
         "n_pos": 5,
         "trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ]
       }
     },
     "O": {
       "n_positions": 5,
-      "cash": 0.5175,
-      "value": 1.2168,
+      "cash": 0.5167,
+      "value": 1.2214,
       "positions": [
         {
           "ticker": "KTLEV",
           "entry": 148.5,
           "peak": 186.0,
-          "current": 167.5,
+          "current": 174.5,
           "stop": 167.4,
-          "pnl_pct": 12.79,
+          "pnl_pct": 17.51,
           "shares": 0.00069
         },
         {
           "ticker": "ODINE",
           "entry": 1402.0,
-          "peak": 1890.0,
-          "current": 1887.0,
-          "stop": 1795.5,
-          "pnl_pct": 34.59,
+          "peak": 1919.0,
+          "current": 1919.0,
+          "stop": 1823.05,
+          "pnl_pct": 36.88,
           "shares": 7.3e-05
         },
         {
           "ticker": "DSTKF",
           "entry": 2325.0,
-          "peak": 3640.0,
-          "current": 3640.0,
-          "stop": 3458.0,
-          "pnl_pct": 56.56,
+          "peak": 3625.0,
+          "current": 3622.5,
+          "stop": 3443.75,
+          "pnl_pct": 55.81,
           "shares": 6.6e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 117.2,
-          "peak": 153.0,
-          "current": 153.0,
-          "stop": 145.35,
-          "pnl_pct": 30.55,
+          "peak": 152.4,
+          "current": 152.0,
+          "stop": 144.78,
+          "pnl_pct": 29.69,
           "shares": 0.000874
         },
         {
           "ticker": "PEKGY",
           "entry": 11.99,
           "peak": 13.99,
-          "current": 13.91,
+          "current": 13.97,
           "stop": 12.59,
-          "pnl_pct": 16.01,
+          "pnl_pct": 16.51,
           "shares": 0.005128
         }
       ],
@@ -1380,16 +1382,16 @@
         {
           "date": "2026-06-30",
           "event": "stop",
-          "total": 1.2168,
+          "total": 1.2214,
           "n_pos": 5,
           "trades": [
             {
               "type": "SELL",
               "ticker": "CVKMD",
-              "price": 39.4,
+              "price": 38.84,
               "shares": 0.001427,
               "reason": "stop",
-              "pnl_pct": -8.58
+              "pnl_pct": -9.88
             }
           ]
         }
@@ -1397,16 +1399,16 @@
       "last_event": {
         "date": "2026-06-30",
         "event": "stop",
-        "total": 1.2168,
+        "total": 1.2214,
         "n_pos": 5,
         "trades": [
           {
             "type": "SELL",
             "ticker": "CVKMD",
-            "price": 39.4,
+            "price": 38.84,
             "shares": 0.001427,
             "reason": "stop",
-            "pnl_pct": -8.58
+            "pnl_pct": -9.88
           }
         ]
       }
@@ -1418,9 +1420,9 @@
         "return_candidate",
         "drawdown_watch"
       ],
-      "value": 1.0,
-      "return_pct": 0.0,
-      "max_dd_pct": 0.0,
+      "value": 0.9904,
+      "return_pct": -0.96,
+      "max_dd_pct": -0.96,
       "n_positions": 1,
       "n_watch": 0,
       "buys": 1,
@@ -1435,7 +1437,7 @@
       "reentry_avg_pnl_pct": null,
       "reentry_win_rate": null,
       "reentry_rebalance_loss_count": 0,
-      "g1_vs_f_return_pct": -21.68,
+      "g1_vs_f_return_pct": -23.1,
       "promotion_gates": {
         "beats_f": false,
         "dd_ok": true,
@@ -1448,13 +1450,13 @@
           {
             "key": "g1_vs_f_return_pct",
             "label": "G1/F getiri farki",
-            "value": -21.68,
+            "value": -23.1,
             "unit": "%"
           },
           {
             "key": "max_dd_pct",
             "label": "Max DD (gunluk)",
-            "value": 0.0,
+            "value": -0.96,
             "unit": "%"
           },
           {
@@ -1496,9 +1498,9 @@
           "ticker": "TURSG",
           "entry": 6.23,
           "peak": 6.23,
-          "current": 6.23,
+          "current": 6.17,
           "stop": 5.3,
-          "pnl_pct": 0.0,
+          "pnl_pct": -0.96,
           "shares": 0.159551,
           "origin": "rebalance"
         }
@@ -1515,10 +1517,10 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-06-30T14:05:50",
+    "updated_at": "2026-06-30T20:41:14",
     "days_tracked": 18,
     "latest_date": "2026-06-30",
-    "latest_avg_return_pct": 0.0,
+    "latest_avg_return_pct": -0.96,
     "latest_hit_rate_pct": 0.0,
     "latest_age_trading_days": 0,
     "tracked_count": 1,
@@ -1543,8 +1545,8 @@
             "target_1": 187.6,
             "target_2": 191.6,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -9.51
+            "current_price": 174.5,
+            "return_pct": -5.73
           },
           {
             "rank": 2,
@@ -1559,8 +1561,8 @@
             "target_1": 1721.67,
             "target_2": 1749.33,
             "stop": 1575.0,
-            "current_price": 1887.0,
-            "return_pct": 12.52
+            "current_price": 1919.0,
+            "return_pct": 14.43
           },
           {
             "rank": 3,
@@ -1575,8 +1577,8 @@
             "target_1": 141.23,
             "target_2": 146.67,
             "stop": 125.64,
-            "current_price": 153.0,
-            "return_pct": 9.6
+            "current_price": 152.0,
+            "return_pct": 8.88
           },
           {
             "rank": 4,
@@ -1591,8 +1593,8 @@
             "target_1": 3335.0,
             "target_2": 3370.0,
             "stop": 3135.0,
-            "current_price": 3640.0,
-            "return_pct": 11.57
+            "current_price": 3622.5,
+            "return_pct": 11.03
           },
           {
             "rank": 5,
@@ -1607,8 +1609,8 @@
             "target_1": 347.08,
             "target_2": 354.67,
             "stop": 288.57,
-            "current_price": 345.75,
-            "return_pct": 1.84
+            "current_price": 337.25,
+            "return_pct": -0.66
           },
           {
             "rank": 6,
@@ -1623,8 +1625,8 @@
             "target_1": 13.9,
             "target_2": 14.11,
             "stop": 11.64,
-            "current_price": 13.91,
-            "return_pct": 2.88
+            "current_price": 13.97,
+            "return_pct": 3.33
           },
           {
             "rank": 7,
@@ -1639,8 +1641,8 @@
             "target_1": 29.48,
             "target_2": 30.26,
             "stop": 24.4,
-            "current_price": 31.8,
-            "return_pct": 10.03
+            "current_price": 30.54,
+            "return_pct": 5.67
           },
           {
             "rank": 8,
@@ -1655,8 +1657,8 @@
             "target_1": 125.33,
             "target_2": 126.67,
             "stop": 105.4,
-            "current_price": 140.0,
-            "return_pct": 12.9
+            "current_price": 138.6,
+            "return_pct": 11.77
           },
           {
             "rank": 9,
@@ -1671,8 +1673,8 @@
             "target_1": 100.85,
             "target_2": 104.55,
             "stop": 82.58,
-            "current_price": 81.0,
-            "return_pct": -14.29
+            "current_price": 83.85,
+            "return_pct": -11.27
           },
           {
             "rank": 10,
@@ -1687,16 +1689,16 @@
             "target_1": 44.43,
             "target_2": 45.99,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -8.46
+            "current_price": 38.84,
+            "return_pct": -9.76
           }
         ],
         "first_generated_at": "2026-06-22 15:38",
         "last_generated_at": "2026-06-22 21:56",
         "as_of": "2026-06-30",
         "age_trading_days": 6,
-        "avg_return_pct": 2.91,
-        "hit_rate_pct": 70.0,
+        "avg_return_pct": 2.77,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -1719,8 +1721,8 @@
             "target_1": 1347.33,
             "target_2": 1374.67,
             "stop": 1122.0,
-            "current_price": 1627.0,
-            "return_pct": 23.26
+            "current_price": 1660.0,
+            "return_pct": 25.76
           },
           {
             "rank": 2,
@@ -1735,8 +1737,8 @@
             "target_1": 186.07,
             "target_2": 190.13,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -5.79
+            "current_price": 174.5,
+            "return_pct": -1.86
           },
           {
             "rank": 3,
@@ -1751,8 +1753,8 @@
             "target_1": 1776.67,
             "target_2": 1803.33,
             "stop": 1575.0,
-            "current_price": 1887.0,
-            "return_pct": 11.33
+            "current_price": 1919.0,
+            "return_pct": 13.22
           },
           {
             "rank": 4,
@@ -1767,8 +1769,8 @@
             "target_1": 1571.67,
             "target_2": 1617.33,
             "stop": 1297.1,
-            "current_price": 1622.0,
-            "return_pct": 6.29
+            "current_price": 1604.0,
+            "return_pct": 5.11
           },
           {
             "rank": 5,
@@ -1783,8 +1785,8 @@
             "target_1": 140.2,
             "target_2": 142.3,
             "stop": 125.64,
-            "current_price": 153.0,
-            "return_pct": 12.42
+            "current_price": 152.0,
+            "return_pct": 11.68
           },
           {
             "rank": 6,
@@ -1799,8 +1801,8 @@
             "target_1": 3363.33,
             "target_2": 3401.67,
             "stop": 3158.75,
-            "current_price": 3640.0,
-            "return_pct": 13.04
+            "current_price": 3622.5,
+            "return_pct": 12.5
           },
           {
             "rank": 7,
@@ -1815,8 +1817,8 @@
             "target_1": 13.88,
             "target_2": 14.02,
             "stop": 11.68,
-            "current_price": 13.91,
-            "return_pct": 1.61
+            "current_price": 13.97,
+            "return_pct": 2.05
           },
           {
             "rank": 8,
@@ -1831,8 +1833,8 @@
             "target_1": 97.67,
             "target_2": 102.38,
             "stop": 79.01,
-            "current_price": 81.0,
-            "return_pct": -13.74
+            "current_price": 83.85,
+            "return_pct": -10.7
           },
           {
             "rank": 9,
@@ -1847,8 +1849,8 @@
             "target_1": 42.48,
             "target_2": 43.14,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -6.1
+            "current_price": 38.84,
+            "return_pct": -7.44
           },
           {
             "rank": 10,
@@ -1863,15 +1865,15 @@
             "target_1": 42.31,
             "target_2": 44.83,
             "stop": 33.81,
-            "current_price": 36.66,
-            "return_pct": -7.84
+            "current_price": 38.0,
+            "return_pct": -4.47
           }
         ],
         "first_generated_at": "2026-06-23 13:23",
         "last_generated_at": "2026-06-23 20:24",
         "as_of": "2026-06-30",
         "age_trading_days": 5,
-        "avg_return_pct": 3.45,
+        "avg_return_pct": 4.58,
         "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
@@ -1895,8 +1897,8 @@
             "target_1": 182.77,
             "target_2": 187.23,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -7.97
+            "current_price": 174.5,
+            "return_pct": -4.12
           },
           {
             "rank": 2,
@@ -1911,8 +1913,8 @@
             "target_1": 1783.0,
             "target_2": 1808.0,
             "stop": 1582.2,
-            "current_price": 1887.0,
-            "return_pct": 7.52
+            "current_price": 1919.0,
+            "return_pct": 9.34
           },
           {
             "rank": 3,
@@ -1927,8 +1929,8 @@
             "target_1": 1622.0,
             "target_2": 1685.0,
             "stop": 1325.15,
-            "current_price": 1622.0,
-            "return_pct": 1.37
+            "current_price": 1604.0,
+            "return_pct": 0.25
           },
           {
             "rank": 4,
@@ -1943,8 +1945,8 @@
             "target_1": 141.2,
             "target_2": 143.4,
             "stop": 126.81,
-            "current_price": 153.0,
-            "return_pct": 10.39
+            "current_price": 152.0,
+            "return_pct": 9.67
           },
           {
             "rank": 5,
@@ -1959,8 +1961,8 @@
             "target_1": 3370.83,
             "target_2": 3411.67,
             "stop": 3189.62,
-            "current_price": 3640.0,
-            "return_pct": 8.41
+            "current_price": 3622.5,
+            "return_pct": 7.89
           },
           {
             "rank": 6,
@@ -1975,8 +1977,8 @@
             "target_1": 13.85,
             "target_2": 13.98,
             "stop": 11.68,
-            "current_price": 13.91,
-            "return_pct": 1.38
+            "current_price": 13.97,
+            "return_pct": 1.82
           },
           {
             "rank": 7,
@@ -1991,8 +1993,8 @@
             "target_1": 353.25,
             "target_2": 362.5,
             "stop": 292.4,
-            "current_price": 345.75,
-            "return_pct": 1.02
+            "current_price": 337.25,
+            "return_pct": -1.46
           },
           {
             "rank": 8,
@@ -2007,8 +2009,8 @@
             "target_1": 29.85,
             "target_2": 30.85,
             "stop": 24.53,
-            "current_price": 31.8,
-            "return_pct": 13.65
+            "current_price": 30.54,
+            "return_pct": 9.15
           },
           {
             "rank": 9,
@@ -2023,8 +2025,8 @@
             "target_1": 91.47,
             "target_2": 96.78,
             "stop": 73.23,
-            "current_price": 81.0,
-            "return_pct": -9.35
+            "current_price": 83.85,
+            "return_pct": -6.16
           },
           {
             "rank": 10,
@@ -2039,16 +2041,16 @@
             "target_1": 41.28,
             "target_2": 42.66,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -3.76
+            "current_price": 38.84,
+            "return_pct": -5.13
           }
         ],
         "first_generated_at": "2026-06-24 13:02",
         "last_generated_at": "2026-06-24 20:25",
         "as_of": "2026-06-30",
         "age_trading_days": 4,
-        "avg_return_pct": 2.27,
-        "hit_rate_pct": 70.0,
+        "avg_return_pct": 2.13,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -2071,8 +2073,8 @@
             "target_1": 180.3,
             "target_2": 190.2,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -2.67
+            "current_price": 174.5,
+            "return_pct": 1.39
           },
           {
             "rank": 2,
@@ -2087,8 +2089,8 @@
             "target_1": 1887.67,
             "target_2": 1940.33,
             "stop": 1743.25,
-            "current_price": 1887.0,
-            "return_pct": 8.89
+            "current_price": 1919.0,
+            "return_pct": 10.73
           },
           {
             "rank": 3,
@@ -2103,8 +2105,8 @@
             "target_1": 143.27,
             "target_2": 144.33,
             "stop": 127.98,
-            "current_price": 153.0,
-            "return_pct": 9.68
+            "current_price": 152.0,
+            "return_pct": 8.96
           },
           {
             "rank": 4,
@@ -2119,8 +2121,8 @@
             "target_1": 1680.0,
             "target_2": 1760.0,
             "stop": 1360.0,
-            "current_price": 1622.0,
-            "return_pct": 0.68
+            "current_price": 1604.0,
+            "return_pct": -0.43
           },
           {
             "rank": 5,
@@ -2135,8 +2137,8 @@
             "target_1": 3545.83,
             "target_2": 3671.67,
             "stop": 3249.0,
-            "current_price": 3640.0,
-            "return_pct": 7.45
+            "current_price": 3622.5,
+            "return_pct": 6.94
           },
           {
             "rank": 6,
@@ -2151,8 +2153,8 @@
             "target_1": 13.79,
             "target_2": 13.94,
             "stop": 12.42,
-            "current_price": 13.91,
-            "return_pct": 0.8
+            "current_price": 13.97,
+            "return_pct": 1.23
           },
           {
             "rank": 7,
@@ -2167,8 +2169,8 @@
             "target_1": 345.33,
             "target_2": 352.67,
             "stop": 287.3,
-            "current_price": 345.75,
-            "return_pct": 0.29
+            "current_price": 337.25,
+            "return_pct": -2.18
           },
           {
             "rank": 8,
@@ -2183,8 +2185,8 @@
             "target_1": 29.57,
             "target_2": 30.09,
             "stop": 24.7,
-            "current_price": 31.8,
-            "return_pct": 8.76
+            "current_price": 30.54,
+            "return_pct": 4.45
           },
           {
             "rank": 9,
@@ -2199,8 +2201,8 @@
             "target_1": 40.71,
             "target_2": 41.23,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -2.18
+            "current_price": 38.84,
+            "return_pct": -3.57
           },
           {
             "rank": 10,
@@ -2215,16 +2217,16 @@
             "target_1": 87.1,
             "target_2": 93.95,
             "stop": 68.21,
-            "current_price": 81.0,
-            "return_pct": -4.42
+            "current_price": 83.85,
+            "return_pct": -1.06
           }
         ],
         "first_generated_at": "2026-06-25 12:58",
         "last_generated_at": "2026-06-25 20:28",
         "as_of": "2026-06-30",
         "age_trading_days": 3,
-        "avg_return_pct": 2.73,
-        "hit_rate_pct": 70.0,
+        "avg_return_pct": 2.65,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -2247,8 +2249,8 @@
             "target_1": 177.57,
             "target_2": 183.83,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -4.94
+            "current_price": 174.5,
+            "return_pct": -0.96
           },
           {
             "rank": 2,
@@ -2263,8 +2265,8 @@
             "target_1": 1900.0,
             "target_2": 1930.0,
             "stop": 1776.5,
-            "current_price": 1887.0,
-            "return_pct": 4.54
+            "current_price": 1919.0,
+            "return_pct": 6.32
           },
           {
             "rank": 3,
@@ -2279,8 +2281,8 @@
             "target_1": 144.37,
             "target_2": 146.83,
             "stop": 127.98,
-            "current_price": 153.0,
-            "return_pct": 7.67
+            "current_price": 152.0,
+            "return_pct": 6.97
           },
           {
             "rank": 4,
@@ -2295,8 +2297,8 @@
             "target_1": 1662.33,
             "target_2": 1749.67,
             "stop": 1338.75,
-            "current_price": 1622.0,
-            "return_pct": 3.84
+            "current_price": 1604.0,
+            "return_pct": 2.69
           },
           {
             "rank": 5,
@@ -2311,8 +2313,8 @@
             "target_1": 3537.5,
             "target_2": 3610.0,
             "stop": 3291.75,
-            "current_price": 3640.0,
-            "return_pct": 5.35
+            "current_price": 3622.5,
+            "return_pct": 4.85
           },
           {
             "rank": 6,
@@ -2327,8 +2329,8 @@
             "target_1": 14.07,
             "target_2": 14.25,
             "stop": 12.51,
-            "current_price": 13.91,
-            "return_pct": 0.14
+            "current_price": 13.97,
+            "return_pct": 0.58
           },
           {
             "rank": 7,
@@ -2343,8 +2345,8 @@
             "target_1": 343.67,
             "target_2": 349.33,
             "stop": 287.3,
-            "current_price": 345.75,
-            "return_pct": 2.14
+            "current_price": 337.25,
+            "return_pct": -0.37
           },
           {
             "rank": 8,
@@ -2359,8 +2361,8 @@
             "target_1": 30.75,
             "target_2": 31.51,
             "stop": 25.5,
-            "current_price": 31.8,
-            "return_pct": 8.61
+            "current_price": 30.54,
+            "return_pct": 4.3
           },
           {
             "rank": 9,
@@ -2375,8 +2377,8 @@
             "target_1": 40.47,
             "target_2": 40.97,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -1.55
+            "current_price": 38.84,
+            "return_pct": -2.95
           },
           {
             "rank": 10,
@@ -2391,16 +2393,16 @@
             "target_1": 80.8,
             "target_2": 83.4,
             "stop": 66.47,
-            "current_price": 81.0,
-            "return_pct": 3.58
+            "current_price": 83.85,
+            "return_pct": 7.23
           }
         ],
         "first_generated_at": "2026-06-26 13:02",
         "last_generated_at": "2026-06-29 09:45",
         "as_of": "2026-06-30",
         "age_trading_days": 2,
-        "avg_return_pct": 2.94,
-        "hit_rate_pct": 80.0,
+        "avg_return_pct": 2.86,
+        "hit_rate_pct": 70.0,
         "tracked_count": 10
       },
       {
@@ -2423,8 +2425,8 @@
             "target_1": 1643.67,
             "target_2": 1683.33,
             "stop": 1363.4,
-            "current_price": 1627.0,
-            "return_pct": 3.24
+            "current_price": 1660.0,
+            "return_pct": 5.33
           },
           {
             "rank": 2,
@@ -2439,8 +2441,8 @@
             "target_1": 175.9,
             "target_2": 179.1,
             "stop": 167.4,
-            "current_price": 167.5,
-            "return_pct": -4.83
+            "current_price": 174.5,
+            "return_pct": -0.85
           },
           {
             "rank": 3,
@@ -2455,8 +2457,8 @@
             "target_1": 1930.0,
             "target_2": 1970.0,
             "stop": 1795.5,
-            "current_price": 1887.0,
-            "return_pct": 1.07
+            "current_price": 1919.0,
+            "return_pct": 2.79
           },
           {
             "rank": 4,
@@ -2471,8 +2473,8 @@
             "target_1": 147.87,
             "target_2": 149.73,
             "stop": 131.94,
-            "current_price": 153.0,
-            "return_pct": 5.66
+            "current_price": 152.0,
+            "return_pct": 4.97
           },
           {
             "rank": 5,
@@ -2487,8 +2489,8 @@
             "target_1": 3614.17,
             "target_2": 3678.33,
             "stop": 3372.5,
-            "current_price": 3640.0,
-            "return_pct": 5.35
+            "current_price": 3622.5,
+            "return_pct": 4.85
           },
           {
             "rank": 6,
@@ -2503,8 +2505,8 @@
             "target_1": 1686.67,
             "target_2": 1728.33,
             "stop": 1398.25,
-            "current_price": 1622.0,
-            "return_pct": 3.38
+            "current_price": 1604.0,
+            "return_pct": 2.23
           },
           {
             "rank": 7,
@@ -2519,8 +2521,8 @@
             "target_1": 14.08,
             "target_2": 14.18,
             "stop": 12.59,
-            "current_price": 13.91,
-            "return_pct": -0.14
+            "current_price": 13.97,
+            "return_pct": 0.29
           },
           {
             "rank": 8,
@@ -2535,8 +2537,8 @@
             "target_1": 140.2,
             "target_2": 143.6,
             "stop": 116.28,
-            "current_price": 140.0,
-            "return_pct": 2.04
+            "current_price": 138.6,
+            "return_pct": 1.02
           },
           {
             "rank": 9,
@@ -2551,8 +2553,8 @@
             "target_1": 42.79,
             "target_2": 45.33,
             "stop": 39.41,
-            "current_price": 39.4,
-            "return_pct": -4.14
+            "current_price": 38.84,
+            "return_pct": -5.5
           },
           {
             "rank": 10,
@@ -2567,16 +2569,16 @@
             "target_1": 225.4,
             "target_2": 235.7,
             "stop": 182.84,
-            "current_price": 208.7,
-            "return_pct": -2.25
+            "current_price": 209.7,
+            "return_pct": -1.78
           }
         ],
         "first_generated_at": "2026-06-29 11:53",
         "last_generated_at": "2026-06-29 23:28",
         "as_of": "2026-06-30",
         "age_trading_days": 1,
-        "avg_return_pct": 0.94,
-        "hit_rate_pct": 60.0,
+        "avg_return_pct": 1.33,
+        "hit_rate_pct": 70.0,
         "tracked_count": 10
       },
       {
@@ -2593,65 +2595,72 @@
             "signal": "DAĞITIM",
             "sector": "XSGRT",
             "entry_price": 6.23,
-            "m5": -1.1,
-            "m21": 0.8,
-            "m252": 52.9,
-            "target_1": 6.27,
-            "target_2": 6.3,
-            "stop": 5.3,
-            "current_price": 6.23,
-            "return_pct": 0.0
+            "m5": -2.1,
+            "m21": -0.2,
+            "m252": 51.4,
+            "target_1": 6.24,
+            "target_2": 6.31,
+            "stop": 5.24,
+            "current_price": 6.17,
+            "return_pct": -0.96
           }
         ],
         "first_generated_at": "2026-06-30 13:26",
-        "last_generated_at": "2026-06-30 14:05",
+        "last_generated_at": "2026-06-30 20:41",
         "as_of": "2026-06-30",
         "age_trading_days": 0,
-        "avg_return_pct": 0.0,
+        "avg_return_pct": -0.96,
         "hit_rate_pct": 0.0,
         "tracked_count": 1
       }
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-06-30T14:05:50",
+    "updated_at": "2026-06-30T20:41:14",
     "tracked_days": 18,
     "current_candidates": 0,
-    "hot_missed_count": 4,
+    "hot_missed_count": 5,
     "regime_signal": "rotasyon_riski",
     "recent_hot": [
+      {
+        "date": "2026-06-08",
+        "ticker": "EFOR",
+        "kind": "transformation",
+        "return_pct": 17.95,
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
+      },
       {
         "date": "2026-06-16",
         "ticker": "SELEC",
         "kind": "transformation",
-        "return_pct": 53.8,
+        "return_pct": 54.53,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       },
       {
         "date": "2026-06-17",
         "ticker": "SELEC",
         "kind": "transformation",
-        "return_pct": 39.88,
+        "return_pct": 40.55,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       },
       {
         "date": "2026-06-18",
         "ticker": "SELEC",
         "kind": "transformation",
-        "return_pct": 27.18,
+        "return_pct": 27.79,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       },
       {
         "date": "2026-06-19",
         "ticker": "SELEC",
         "kind": "transformation",
-        "return_pct": 24.52,
+        "return_pct": 25.12,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       }
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-06-30T14:05:50",
+    "updated_at": "2026-06-30T20:41:15",
     "tracked_days": 18,
     "latest_date": "2026-06-30",
     "latest_regime": "mixed",
@@ -2663,13 +2672,13 @@
         "role": "discovery",
         "regime": "bear",
         "n": 23,
-        "avg_return_pct": -3.75,
+        "avg_return_pct": -4.57,
         "hit_rate_pct": 34.8,
-        "captured_alpha_pct": 26.4,
-        "false_positive_loss_pct": 112.69,
-        "net_discovery_pct": -86.29,
+        "captured_alpha_pct": 22.27,
+        "false_positive_loss_pct": 127.34,
+        "net_discovery_pct": -105.07,
         "hit_events": 1,
-        "false_positive_events": 10
+        "false_positive_events": 11
       },
       {
         "layer": "quiet_accumulation",
@@ -2677,11 +2686,11 @@
         "role": "discovery",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": -2.58,
-        "hit_rate_pct": 22.2,
-        "captured_alpha_pct": 49.44,
-        "false_positive_loss_pct": 142.15,
-        "net_discovery_pct": -92.71,
+        "avg_return_pct": -3.0,
+        "hit_rate_pct": 25.0,
+        "captured_alpha_pct": 55.0,
+        "false_positive_loss_pct": 162.85,
+        "net_discovery_pct": -107.85,
         "hit_events": 4,
         "false_positive_events": 23
       },
@@ -2691,13 +2700,13 @@
         "role": "discovery",
         "regime": "mixed",
         "n": 20,
-        "avg_return_pct": -5.56,
+        "avg_return_pct": -6.0,
         "hit_rate_pct": 20.0,
-        "captured_alpha_pct": 11.27,
-        "false_positive_loss_pct": 122.49,
-        "net_discovery_pct": -111.22,
+        "captured_alpha_pct": 14.67,
+        "false_positive_loss_pct": 134.73,
+        "net_discovery_pct": -120.06,
         "hit_events": 1,
-        "false_positive_events": 13
+        "false_positive_events": 14
       },
       {
         "layer": "quiet_accumulation",
@@ -2705,13 +2714,13 @@
         "role": "discovery",
         "regime": "sideways",
         "n": 6,
-        "avg_return_pct": -5.25,
-        "hit_rate_pct": 16.7,
-        "captured_alpha_pct": 4.85,
-        "false_positive_loss_pct": 36.38,
-        "net_discovery_pct": -31.53,
+        "avg_return_pct": -8.54,
+        "hit_rate_pct": 0.0,
+        "captured_alpha_pct": 0.0,
+        "false_positive_loss_pct": 51.25,
+        "net_discovery_pct": -51.25,
         "hit_events": 0,
-        "false_positive_events": 5
+        "false_positive_events": 6
       },
       {
         "layer": "quiet_accumulation",
@@ -2719,13 +2728,13 @@
         "role": "discovery",
         "regime": "unknown",
         "n": 8,
-        "avg_return_pct": -2.45,
-        "hit_rate_pct": 12.5,
-        "captured_alpha_pct": 6.76,
-        "false_positive_loss_pct": 26.36,
-        "net_discovery_pct": -19.6,
+        "avg_return_pct": -2.69,
+        "hit_rate_pct": 25.0,
+        "captured_alpha_pct": 5.81,
+        "false_positive_loss_pct": 27.31,
+        "net_discovery_pct": -21.5,
         "hit_events": 1,
-        "false_positive_events": 5
+        "false_positive_events": 2
       },
       {
         "layer": "transformation",
@@ -2733,13 +2742,13 @@
         "role": "discovery",
         "regime": "bear",
         "n": 39,
-        "avg_return_pct": -6.34,
-        "hit_rate_pct": 30.8,
-        "captured_alpha_pct": 39.16,
-        "false_positive_loss_pct": 286.24,
-        "net_discovery_pct": -247.08,
+        "avg_return_pct": -6.93,
+        "hit_rate_pct": 20.5,
+        "captured_alpha_pct": 42.99,
+        "false_positive_loss_pct": 313.27,
+        "net_discovery_pct": -270.28,
         "hit_events": 3,
-        "false_positive_events": 21
+        "false_positive_events": 23
       },
       {
         "layer": "transformation",
@@ -2747,13 +2756,13 @@
         "role": "discovery",
         "regime": "bull",
         "n": 40,
-        "avg_return_pct": -1.8,
-        "hit_rate_pct": 20.0,
-        "captured_alpha_pct": 155.37,
-        "false_positive_loss_pct": 227.29,
-        "net_discovery_pct": -71.92,
+        "avg_return_pct": -2.14,
+        "hit_rate_pct": 17.5,
+        "captured_alpha_pct": 155.26,
+        "false_positive_loss_pct": 241.05,
+        "net_discovery_pct": -85.79,
         "hit_events": 5,
-        "false_positive_events": 25
+        "false_positive_events": 24
       },
       {
         "layer": "transformation",
@@ -2761,13 +2770,13 @@
         "role": "discovery",
         "regime": "mixed",
         "n": 32,
-        "avg_return_pct": -6.56,
+        "avg_return_pct": -7.09,
         "hit_rate_pct": 31.2,
-        "captured_alpha_pct": 68.67,
-        "false_positive_loss_pct": 278.59,
-        "net_discovery_pct": -209.92,
-        "hit_events": 7,
-        "false_positive_events": 21
+        "captured_alpha_pct": 79.09,
+        "false_positive_loss_pct": 305.99,
+        "net_discovery_pct": -226.9,
+        "hit_events": 6,
+        "false_positive_events": 22
       },
       {
         "layer": "transformation",
@@ -2775,11 +2784,11 @@
         "role": "discovery",
         "regime": "sideways",
         "n": 8,
-        "avg_return_pct": -5.62,
+        "avg_return_pct": -5.75,
         "hit_rate_pct": 37.5,
-        "captured_alpha_pct": 7.74,
-        "false_positive_loss_pct": 52.71,
-        "net_discovery_pct": -44.97,
+        "captured_alpha_pct": 7.03,
+        "false_positive_loss_pct": 53.0,
+        "net_discovery_pct": -45.97,
         "hit_events": 0,
         "false_positive_events": 5
       },
@@ -2789,13 +2798,13 @@
         "role": "discovery",
         "regime": "unknown",
         "n": 8,
-        "avg_return_pct": -6.14,
-        "hit_rate_pct": 0.0,
-        "captured_alpha_pct": 0.0,
-        "false_positive_loss_pct": 49.09,
-        "net_discovery_pct": -49.09,
+        "avg_return_pct": -6.46,
+        "hit_rate_pct": 12.5,
+        "captured_alpha_pct": 0.05,
+        "false_positive_loss_pct": 51.77,
+        "net_discovery_pct": -51.72,
         "hit_events": 0,
-        "false_positive_events": 5
+        "false_positive_events": 4
       },
       {
         "layer": "F_shadow",
@@ -2803,7 +2812,7 @@
         "role": "return",
         "regime": "bear",
         "n": 38,
-        "avg_return_pct": 19.59,
+        "avg_return_pct": 20.65,
         "hit_rate_pct": 76.3
       },
       {
@@ -2812,7 +2821,7 @@
         "role": "return",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": 22.59,
+        "avg_return_pct": 23.58,
         "hit_rate_pct": 83.3
       },
       {
@@ -2821,7 +2830,7 @@
         "role": "return",
         "regime": "mixed",
         "n": 51,
-        "avg_return_pct": 18.24,
+        "avg_return_pct": 19.47,
         "hit_rate_pct": 74.5
       },
       {
@@ -2830,7 +2839,7 @@
         "role": "return",
         "regime": "sideways",
         "n": 6,
-        "avg_return_pct": 23.65,
+        "avg_return_pct": 24.42,
         "hit_rate_pct": 83.3
       },
       {
@@ -2839,7 +2848,7 @@
         "role": "return",
         "regime": "unknown",
         "n": 9,
-        "avg_return_pct": 19.28,
+        "avg_return_pct": 20.46,
         "hit_rate_pct": 77.8
       },
       {
@@ -2848,8 +2857,8 @@
         "role": "return",
         "regime": "bear",
         "n": 50,
-        "avg_return_pct": 5.31,
-        "hit_rate_pct": 70.0
+        "avg_return_pct": 5.77,
+        "hit_rate_pct": 68.0
       },
       {
         "layer": "F_top10",
@@ -2857,8 +2866,8 @@
         "role": "return",
         "regime": "bull",
         "n": 50,
-        "avg_return_pct": 5.14,
-        "hit_rate_pct": 62.0
+        "avg_return_pct": 5.47,
+        "hit_rate_pct": 64.0
       },
       {
         "layer": "F_top10",
@@ -2866,8 +2875,8 @@
         "role": "return",
         "regime": "mixed",
         "n": 42,
-        "avg_return_pct": 10.52,
-        "hit_rate_pct": 66.7
+        "avg_return_pct": 11.32,
+        "hit_rate_pct": 64.3
       },
       {
         "layer": "F_top10",
@@ -2875,7 +2884,7 @@
         "role": "return",
         "regime": "sideways",
         "n": 10,
-        "avg_return_pct": 3.45,
+        "avg_return_pct": 4.58,
         "hit_rate_pct": 60.0
       },
       {
@@ -2884,8 +2893,8 @@
         "role": "return",
         "regime": "unknown",
         "n": 10,
-        "avg_return_pct": 10.45,
-        "hit_rate_pct": 60.0
+        "avg_return_pct": 11.29,
+        "hit_rate_pct": 70.0
       },
       {
         "layer": "O_shadow",
@@ -2893,7 +2902,7 @@
         "role": "return",
         "regime": "bear",
         "n": 38,
-        "avg_return_pct": 19.59,
+        "avg_return_pct": 20.65,
         "hit_rate_pct": 76.3
       },
       {
@@ -2902,7 +2911,7 @@
         "role": "return",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": 22.59,
+        "avg_return_pct": 23.58,
         "hit_rate_pct": 83.3
       },
       {
@@ -2911,7 +2920,7 @@
         "role": "return",
         "regime": "mixed",
         "n": 51,
-        "avg_return_pct": 18.24,
+        "avg_return_pct": 19.47,
         "hit_rate_pct": 74.5
       },
       {
@@ -2920,7 +2929,7 @@
         "role": "return",
         "regime": "sideways",
         "n": 6,
-        "avg_return_pct": 23.65,
+        "avg_return_pct": 24.42,
         "hit_rate_pct": 83.3
       },
       {
@@ -2929,7 +2938,7 @@
         "role": "return",
         "regime": "unknown",
         "n": 9,
-        "avg_return_pct": 19.28,
+        "avg_return_pct": 20.46,
         "hit_rate_pct": 77.8
       },
       {
@@ -2938,13 +2947,13 @@
         "role": "risk",
         "regime": "bear",
         "n": 40,
-        "avg_return_pct": 5.88,
-        "hit_rate_pct": 67.5,
-        "saved_loss_pct": 80.23,
-        "opportunity_cost_pct": 315.28,
-        "net_saved_pct": -235.05,
-        "saved_events": 5,
-        "false_alarm_events": 23
+        "avg_return_pct": 5.79,
+        "hit_rate_pct": 65.0,
+        "saved_loss_pct": 78.65,
+        "opportunity_cost_pct": 310.19,
+        "net_saved_pct": -231.54,
+        "saved_events": 6,
+        "false_alarm_events": 22
       },
       {
         "layer": "peak_risks",
@@ -2952,13 +2961,13 @@
         "role": "risk",
         "regime": "bull",
         "n": 40,
-        "avg_return_pct": 8.42,
-        "hit_rate_pct": 62.5,
-        "saved_loss_pct": 101.93,
-        "opportunity_cost_pct": 438.7,
-        "net_saved_pct": -336.77,
+        "avg_return_pct": 8.65,
+        "hit_rate_pct": 55.0,
+        "saved_loss_pct": 103.6,
+        "opportunity_cost_pct": 449.5,
+        "net_saved_pct": -345.9,
         "saved_events": 12,
-        "false_alarm_events": 20
+        "false_alarm_events": 21
       },
       {
         "layer": "peak_risks",
@@ -2966,13 +2975,13 @@
         "role": "risk",
         "regime": "mixed",
         "n": 34,
-        "avg_return_pct": 7.89,
+        "avg_return_pct": 7.56,
         "hit_rate_pct": 79.4,
-        "saved_loss_pct": 120.39,
-        "opportunity_cost_pct": 388.5,
-        "net_saved_pct": -268.11,
+        "saved_loss_pct": 117.42,
+        "opportunity_cost_pct": 374.42,
+        "net_saved_pct": -257.0,
         "saved_events": 6,
-        "false_alarm_events": 23
+        "false_alarm_events": 24
       },
       {
         "layer": "peak_risks",
@@ -2980,11 +2989,11 @@
         "role": "risk",
         "regime": "sideways",
         "n": 8,
-        "avg_return_pct": 8.73,
-        "hit_rate_pct": 75.0,
-        "saved_loss_pct": 14.53,
-        "opportunity_cost_pct": 84.41,
-        "net_saved_pct": -69.88,
+        "avg_return_pct": 7.98,
+        "hit_rate_pct": 62.5,
+        "saved_loss_pct": 16.78,
+        "opportunity_cost_pct": 80.59,
+        "net_saved_pct": -63.81,
         "saved_events": 2,
         "false_alarm_events": 5
       },
@@ -2994,24 +3003,24 @@
         "role": "risk",
         "regime": "unknown",
         "n": 8,
-        "avg_return_pct": 2.42,
+        "avg_return_pct": 2.21,
         "hit_rate_pct": 37.5,
-        "saved_loss_pct": 21.53,
-        "opportunity_cost_pct": 40.89,
-        "net_saved_pct": -19.36,
-        "saved_events": 3,
-        "false_alarm_events": 2
+        "saved_loss_pct": 24.62,
+        "opportunity_cost_pct": 42.33,
+        "net_saved_pct": -17.71,
+        "saved_events": 4,
+        "false_alarm_events": 3
       }
     ],
     "shadow_comparison": {
       "F_shadow": {
         "n": 140,
-        "avg_return_pct": 20.02,
+        "avg_return_pct": 21.12,
         "hit_rate_pct": 77.9
       },
       "O_shadow": {
         "n": 140,
-        "avg_return_pct": 20.02,
+        "avg_return_pct": 21.12,
         "hit_rate_pct": 77.9
       },
       "O_minus_F": {

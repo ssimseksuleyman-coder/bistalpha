@@ -11,8 +11,20 @@ stop durumunu hesaplar, SAT sinyali üretir.
 """
 import os
 import json
+import math
 from datetime import datetime
 from . import config
+
+
+def _sanitize_json(obj):
+    """NaN/Infinity içeren float'ları None'a çevirir — JSON spec'ine aykırı değerler."""
+    if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+        return None
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_json(v) for v in obj]
+    return obj
 
 
 def _path(account, state_dir):
@@ -40,7 +52,7 @@ def save(state, state_dir="portfolios"):
     final = _path(state["account"], state_dir)
     tmp = final + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+        json.dump(_sanitize_json(state), f, ensure_ascii=False, indent=2)
         f.flush()
         os.fsync(f.fileno())
     os.replace(tmp, final)   # atomik (POSIX rename)
@@ -48,11 +60,13 @@ def save(state, state_dir="portfolios"):
 
 def stop_level(pos):
     """Bir pozisyonun güncel stop seviyesi (trailing + abs)."""
-    gain = pos['peak'] / pos['entry'] - 1
+    entry = pos['entry']
+    peak = pos.get('peak') or entry   # eski/bozuk JSON'da peak yoksa entry'ye düş
+    gain = peak / entry - 1
     trail = (config.TRAIL_TIGHT if gain >= 0.30
              else config.TRAIL_MID if gain >= 0.15
              else config.TRAIL_WIDE)
-    return max(pos['entry'] * (1 - config.ABS_STOP_PCT), pos['peak'] * (1 - trail))
+    return max(entry * (1 - config.ABS_STOP_PCT), peak * (1 - trail))
 
 
 def check_stops(state, prices_today):
@@ -89,7 +103,7 @@ def close_positions(state, sells, prices_today, slippage=0.0, trade_date=None):
         pos = state.get("positions", {}).get(tic)
         if not pos:
             continue
-        price = prices_today.get(tic, item.get("price", pos["entry"]))
+        price = prices_today.get(tic) or item.get("price") or pos["entry"]
         proceeds = pos["shares"] * price * (1 - friction)
         state["cash"] += proceeds
         pnl_pct = (price / pos["entry"] - 1) * 100

@@ -22,7 +22,9 @@ def pivot_levels(data, ticker, date=None):
         return None
     if date is None:
         date = prices.index[-1]
-    idx = prices.index.searchsorted(date)
+    idx = prices.index.searchsorted(date, side='right') - 1
+    if idx < 0:
+        return None
     h = maxs.iloc[idx][ticker]
     l = mins.iloc[idx][ticker]
     c = prices.iloc[idx][ticker]
@@ -49,7 +51,9 @@ def position_in_range(data, ticker, date=None):
     prices = data['prices']
     if date is None:
         date = prices.index[-1]
-    idx = prices.index.searchsorted(date)
+    idx = prices.index.searchsorted(date, side='right') - 1
+    if idx < 0:
+        return None
     c = prices.iloc[idx][ticker]
     if pd.isna(c):
         return None
@@ -75,7 +79,9 @@ def close_window_liquidity_ok(data, ticker, position_tl, date=None,
         return None
     if date is None:
         date = prices.index[-1]
-    idx = prices.index.searchsorted(date)
+    idx = prices.index.searchsorted(date, side='right') - 1
+    if idx < 0:
+        return None
     win = slice(max(0, idx - 20), idx + 1)
     avg_price = prices.iloc[win][ticker].mean()
     avg_vol = volumes.iloc[win][ticker].mean()

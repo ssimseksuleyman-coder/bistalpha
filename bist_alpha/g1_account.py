@@ -11,6 +11,7 @@ Canli oran bunu asarsa summary() watch_triggered=True doner -> drawdown_watch ak
 
 F'e SIFIR dokunus: ayri portfolio_G1.json, ayri hesap, ayri mantik.
 """
+import math
 from datetime import datetime
 from . import config
 from . import portfolio as pf
@@ -82,15 +83,17 @@ def _value(state, prices_today):
 
 
 def _py(x):
-    """numpy/pandas scalar -> native Python (JSON guvenli). Native zaten ise dokunmaz."""
+    """numpy/pandas scalar -> native Python (JSON guvenli). NaN/inf -> None."""
     if isinstance(x, bool):
         return x
     item = getattr(x, "item", None)   # numpy/pandas scalar -> .item() native doner
     if callable(item):
         try:
-            return x.item()
+            x = x.item()
         except Exception:
-            return x
+            pass
+    if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
+        return None
     return x
 
 

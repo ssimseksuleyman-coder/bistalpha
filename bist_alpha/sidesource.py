@@ -16,23 +16,25 @@ Kapsanan OMEGA kaynakları (data/omega/ altında):
 """
 import os
 import json
+import threading
 from datetime import date as date_type, datetime
 from . import config
 
 _DIR = os.path.join(os.path.dirname(__file__), "..", "data", "omega")
 _cache = {}
+_cache_lock = threading.Lock()
 
 
 def _load(name):
-    if name in _cache:
+    with _cache_lock:
+        if name not in _cache:
+            path = os.path.join(_DIR, f"{name}.json")
+            try:
+                with open(path, encoding="utf-8") as f:
+                    _cache[name] = json.load(f)
+            except Exception:
+                _cache[name] = {}
         return _cache[name]
-    path = os.path.join(_DIR, f"{name}.json")
-    try:
-        with open(path, encoding="utf-8") as f:
-            _cache[name] = json.load(f)
-    except Exception:
-        _cache[name] = {}
-    return _cache[name]
 
 
 def _date_from_meta(meta):

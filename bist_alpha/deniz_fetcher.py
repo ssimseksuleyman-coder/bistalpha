@@ -10,6 +10,7 @@ Adapter deseni — kullanıcı kaynağına göre seçer:
 """
 import os
 import glob
+import json
 import re
 import unicodedata
 from datetime import datetime, timedelta
@@ -26,11 +27,12 @@ def _normalized_name(value):
 
 def _is_bulletin_file(filename):
     normalized = _normalized_name(filename)
-    if not normalized.endswith((".xlsx", ".xls")):
+    if not normalized.endswith((".xlsx", ".xls", ".pdf")):
         return False
     return (
         ("teknik" in normalized and "takip" in normalized)
         or ("bist" in normalized and "bulten" in normalized)
+        or ("bist" in normalized and "teknik" in normalized)
     )
 
 
@@ -199,7 +201,8 @@ class UrlFetcher(DenizFetcher):
                     m = re.search(r'filename="?([^";]+)"?', cd)
                     name = m.group(1) if m else "deniz_bulten.xlsx"
                 if not _is_bulletin_file(name):
-                    name = "Deniz_Yatirim_BIST_Teknik_Takip_Bulteni_" + datetime.now().strftime("%d_%m_%Y") + ".xlsx"
+                    ext = ".pdf" if url.lower().endswith(".pdf") else ".xlsx"
+                    name = "Deniz_Yatirim_BIST_Teknik_Takip_Bulteni_" + datetime.now().strftime("%d_%m_%Y") + ext
                 path = os.path.join(self.save_dir, os.path.basename(name))
                 with open(path, "wb") as f:
                     f.write(r.content)
@@ -207,6 +210,111 @@ class UrlFetcher(DenizFetcher):
             except Exception as e:
                 print(f"[deniz_fetcher] URL indirme hatasi: {e}")
         return None
+
+class DenizWebScanner(DenizFetcher):
+    """
+    Deniz Yatırım /Uploads/ klasörünü paralel HEAD istekleriyle tarar.
+    Son bilinen dosya ID'sinden itibaren yeni BIST Teknik Takip Bülteni arar.
+
+    Neden işe yarar:
+      Bültenler https://www.denizyatirim.com/Uploads/..._DD.MM.YYYY_NNNNN.pdf
+      formatında ardışık ID ile yayınlanır. ID'ler tahmin edilemez ama her gün
+      ~5-30 adet artar. 150 ID × son 5 iş günü tarihi = 750 HEAD isteği.
+      10 paralel worker ile ~15-30 saniyede tamamlanır.
+    """
+    _BASE = "https://www.denizyatirim.com/Uploads/"
+    _NAME = ("Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_"
+             "B_lteni_{date}_{fid}.pdf")
+    _STATE_FILE = os.path.join("deniz_snapshots", "scanner_state.json")
+
+    def __init__(self, save_dir="deniz_inbox", max_scan=150, workers=10):
+        self.save_dir = save_dir
+        self.max_scan = max_scan
+        self.workers = workers
+
+    def _load_state(self):
+        if os.path.exists(self._STATE_FILE):
+            try:
+                with open(self._STATE_FILE, encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {"last_id": 14173}
+
+    def _save_state(self, state):
+        import json as _json
+        os.makedirs(os.path.dirname(self._STATE_FILE) or ".", exist_ok=True)
+        with open(self._STATE_FILE, "w", encoding="utf-8") as f:
+            _json.dump(state, f)
+
+    def _workdays(self, n=5):
+        """Son n iş gününün DD.MM.YYYY listesi (bugün dahil)."""
+        dates, d = [], datetime.now()
+        while len(dates) < n:
+            if d.weekday() < 5:
+                dates.append(d.strftime("%d.%m.%Y"))
+            d -= timedelta(days=1)
+        return dates
+
+    @staticmethod
+    def _head(session, url):
+        try:
+            r = session.head(url, timeout=4, allow_redirects=True)
+            return r.status_code == 200
+        except Exception:
+            return False
+
+    def fetch_latest(self):
+        import requests
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import json as _json
+
+        state = self._load_state()
+        last_id = state.get("last_id", 14173)
+        dates = self._workdays(5)
+        os.makedirs(self.save_dir, exist_ok=True)
+
+        session = requests.Session()
+        session.headers["User-Agent"] = "Mozilla/5.0 (compatible; bistalpha)"
+
+        # Tüm (fid, date) kombinasyonlarını paralel dene
+        candidates = []
+        for fid in range(last_id + 1, last_id + self.max_scan + 1):
+            for date_str in dates:
+                name = self._NAME.format(date=date_str, fid=fid)
+                candidates.append((fid, date_str, self._BASE + name, name))
+
+        found = []
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            fut_map = {ex.submit(self._head, session, url): (fid, name, url)
+                       for fid, _, url, name in candidates}
+            for fut in as_completed(fut_map):
+                fid, name, url = fut_map[fut]
+                if fut.result():
+                    found.append((fid, name, url))
+
+        if not found:
+            print("[deniz_scanner] Yeni bülten bulunamadı")
+            return None
+
+        # En küçük ID = en eski (muhtemelen en son bülten günü)
+        found.sort(key=lambda x: x[0])
+        best_fid, best_name, best_url = found[0]
+
+        try:
+            r = session.get(best_url, timeout=30)
+            r.raise_for_status()
+            path = os.path.join(self.save_dir, best_name)
+            with open(path, "wb") as f:
+                f.write(r.content)
+            state["last_id"] = best_fid
+            self._save_state(state)
+            print(f"[deniz_scanner] Bülten indirildi: {best_name} (ID {best_fid})")
+            return path
+        except Exception as e:
+            print(f"[deniz_scanner] İndirme hatası: {e}")
+            return None
+
 
 class FallbackFetcher(DenizFetcher):
     def __init__(self, fetchers):
@@ -223,10 +331,13 @@ class FallbackFetcher(DenizFetcher):
 def get_fetcher():
     src = getattr(config, "DENIZ_SOURCE", "folder")
     if src == "email":
-        return FallbackFetcher([EmailFetcher(), UrlFetcher(), FolderFetcher()])
+        return FallbackFetcher([EmailFetcher(), DenizWebScanner(), FolderFetcher()])
     if src in ("url", "web", "portal"):
-        return FallbackFetcher([UrlFetcher(), EmailFetcher(), FolderFetcher()])
-    return FallbackFetcher([FolderFetcher(), UrlFetcher()])
+        return FallbackFetcher([UrlFetcher(), DenizWebScanner(), FolderFetcher()])
+    if src == "scanner":
+        return DenizWebScanner()
+    # Varsayılan: scanner önce, sonra klasör ve e-posta
+    return FallbackFetcher([DenizWebScanner(), FolderFetcher(), EmailFetcher()])
 
 
 def auto_update(snapshot_dir="deniz_snapshots"):

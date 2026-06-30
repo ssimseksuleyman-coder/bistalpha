@@ -77,6 +77,9 @@ def _candidate_frame(data, date, universe):
     df["rank_1y"] = df["m252"].rank(ascending=False, method="min")
     df["rank_1a"] = df["m21"].rank(ascending=False, method="min")
     df["rank_1h"] = df["m5"].rank(ascending=False, method="min")
+    df = df.dropna(subset=["rank_1y", "rank_1a", "rank_1h"])
+    if df.empty:
+        return df
     df["acceleration"] = df["rank_1y"] - df[["rank_1a", "rank_1h"]].min(axis=1)
     return df
 

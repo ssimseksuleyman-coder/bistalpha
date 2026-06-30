@@ -33,6 +33,7 @@ from bist_alpha import selfheal
 
 SLOT_TARGETS = {
     "acilis": time(9, 45),
+    "bulten": time(10, 15),
     "gunici": time(14, 30),
     "kapanis": time(18, 40),
 }
@@ -376,6 +377,27 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         json.dump(state, f, ensure_ascii=False, indent=2, default=str)
 
 
+def _run_bulten_only():
+    """
+    Sadece Deniz bültenini indirir ve snapshot'a yazar.
+    10:15 cron'u için — tam rapor döngüsü çalıştırmadan bülteni günceller.
+    """
+    print(f"\n=== BÜLTEN İNDİRME @ {datetime.now().strftime('%H:%M')} ===")
+    bulletin = selfheal.guarded(
+        lambda: deniz_fetcher.auto_update(),
+        notify_fn=notifier.notify_all,
+        label="Deniz bülten indirme")
+    if bulletin:
+        sektor_say = len(bulletin.get("sector_scores", {}))
+        market = bulletin.get("market_score")
+        msg = (f"Deniz Bülteni {bulletin.get('date')} indirildi. "
+               f"XU100={market}, {sektor_say} sektör.")
+        print(f"[daemon] {msg}")
+        notifier.send_telegram(f"📥 {msg}")
+    else:
+        print("[daemon] Bülten bulunamadı veya güncel değil — snapshot korunuyor")
+
+
 def main():
     ap = argparse.ArgumentParser(description="BIST Alpha otonom servis")
     ap.add_argument("--once", metavar="LABEL", default=None,
@@ -398,7 +420,9 @@ def main():
         print("→ optimizer_suggestions.json yazıldı. Hiçbiri otomatik uygulanmadı.")
         return
 
-    if args.once:
+    if args.once == "bulten":
+        _run_bulten_only()
+    elif args.once:
         result = run_cycle(args.once)
         if result is None:
             raise SystemExit(1)

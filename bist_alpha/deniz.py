@@ -22,23 +22,16 @@ import glob
 from datetime import date as date_type, datetime
 
 
-def parse_bulletin(path):
-    """
-    Deniz Teknik Takip Bülteni xlsx'i okur.
-    Returns: dict {
-        'date': 'YYYY-MM-DD' (dosya adından),
-        'sector_scores': {sektor_kodu: 0-100 puan},
-        'market_score': XU100 puanı (0-100),
-    }
-    """
-    # Tarih (dosya adından, ör ..._14_05_2026_...)
-    m = re.search(r'(\d{2})[_.\-\s](\d{2})[_.\-\s](\d{4})', os.path.basename(path))
-    date = f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else "unknown"
+def _extract_date_from_filename(filename):
+    m = re.search(r'(\d{2})[_.\-\s](\d{2})[_.\-\s](\d{4})', filename)
+    return f"{m.group(3)}-{m.group(2)}-{m.group(1)}" if m else "unknown"
 
+
+def _parse_bulletin_xlsx(path, date):
+    """xlsx formatı: Sheet9'dan sektör puanları."""
     sector_scores = {}
     try:
         df9 = pd.read_excel(path, sheet_name='Sheet9', header=None, engine="openpyxl")
-        # Satır 1 başlık; satır 2+ veri. Kolon 0=kod, son sayısal kolon=100 puan
         for i in range(2, len(df9)):
             code = df9.iloc[i, 1]
             if pd.isna(code) or not isinstance(code, str):
@@ -46,7 +39,6 @@ def parse_bulletin(path):
             code = code.strip()
             if not (3 <= len(code) <= 6):
                 continue
-            # "100 Puan" kolonu — kolon 4 (Endeks, İsim, Puan, Toplam, 100Puan)
             score = None
             for c in [5, 4, 3]:
                 if c < df9.shape[1] and pd.notna(df9.iloc[i, c]):
@@ -59,9 +51,79 @@ def parse_bulletin(path):
                 sector_scores[code] = round(score, 1)
     except Exception as e:
         print(f"[deniz] Sheet9 okunamadı: {e}")
+    return sector_scores
+
+
+def _parse_bulletin_pdf(path):
+    """
+    PDF formatı: Sayfa 9 (puanlama) veya Sayfa 10 (5 günlük karşılaştırma) dan sektör puanları.
+
+    Sayfa 10 daha temiz metin üretir; her satırın son sayısı en güncel günün skoru.
+    Sayfa 9 birincil hedef: "X[KOD] ... NN" deseni.
+    """
+    try:
+        import pdfplumber
+    except ImportError:
+        print("[deniz] pdfplumber kurulu değil — 'pip install pdfplumber'")
+        return {}
+
+    sector_scores = {}
+    try:
+        with pdfplumber.open(path) as pdf:
+            # Önce sayfa 10 (index 9) — 5 günlük karşılaştırma, son sütun = en güncel
+            if len(pdf.pages) >= 10:
+                txt = pdf.pages[9].extract_text() or ""
+                # Satır deseni: XKOD Bıst İsim N1 N2 N3 N4 N5 XKOD Bıst İsim P1% P2%...
+                # Satır ikinci kez XKOD ile tekrarlanır; ilk yarıdaki son integer = en güncel gün.
+                for line in txt.splitlines():
+                    cm = re.match(r'^(X[A-Z0-9]{2,5})\s+', line.strip())
+                    if not cm:
+                        continue
+                    code = cm.group(1)
+                    # İlk yarı: ikinci 'X[KOD]' tekrarına kadar
+                    second = line.find(code, len(code) + 1)
+                    first_half = line[:second] if second > 0 else line
+                    integers = re.findall(r'\b(\d+)\b', first_half)
+                    if len(integers) >= 5:
+                        score = int(integers[-1])  # son sayı = en güncel gün
+                        if 0 <= score <= 100:
+                            sector_scores[code] = float(score)
+
+            # Sayfa 9 (index 8) — puanlama listesi; sayfa 10 boşsa buraya bak
+            if not sector_scores and len(pdf.pages) >= 9:
+                txt = pdf.pages[8].extract_text() or ""
+                for line in txt.splitlines():
+                    # "XKOD BIst ... NN" — satır sonundaki sayı = 100 puan skoru
+                    m = re.match(r'^(X[A-Z0-9]{2,5})\s+.+?\s+(\d{1,3})\s*$', line.strip())
+                    if m:
+                        code = m.group(1)
+                        score = int(m.group(2))
+                        if 0 <= score <= 100:
+                            sector_scores[code] = float(score)
+    except Exception as e:
+        print(f"[deniz] PDF parse hatası: {e}")
+
+    return sector_scores
+
+
+def parse_bulletin(path):
+    """
+    Deniz Teknik Takip Bülteni okur (xlsx veya pdf).
+    Returns: dict {
+        'date': 'YYYY-MM-DD' (dosya adından),
+        'sector_scores': {sektor_kodu: 0-100 puan},
+        'market_score': XU100 puanı (0-100),
+    }
+    """
+    date = _extract_date_from_filename(os.path.basename(path))
+    ext = os.path.splitext(path)[1].lower()
+
+    if ext == '.pdf':
+        sector_scores = _parse_bulletin_pdf(path)
+    else:
+        sector_scores = _parse_bulletin_xlsx(path, date)
 
     market_score = sector_scores.get('XU100')
-
     return {
         'date': date,
         'sector_scores': sector_scores,

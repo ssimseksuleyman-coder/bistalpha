@@ -278,6 +278,7 @@
 <script src="health-logic.js"></script>
 <script>
 const el = id => document.getElementById(id);
+let denizFreshForDisplay = false;
 const esc = value => String(value == null ? '' : value)
   .replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
@@ -295,7 +296,7 @@ function actionClass(action) {
 function detailText(item) {
   const parts = [item.sector, item.display_signal || item.sm_signal].filter(Boolean);
   const side = item.yan_kaynak || {};
-  if (side.deniz_skor != null) parts.push('Deniz:' + side.deniz_skor);
+  if (denizFreshForDisplay && side.deniz_skor != null) parts.push('Deniz:' + side.deniz_skor);
   if (side.hacim) parts.push(side.hacim);
   if (side.yabanci || side.yabancı) parts.push(side.yabanci || side.yabancı);
   if (side.bilanco || side.bilanço) parts.push('bilanco:' + (side.bilanco || side.bilanço));

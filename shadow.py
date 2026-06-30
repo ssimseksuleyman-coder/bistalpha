@@ -151,6 +151,7 @@ def step(data, signals, date=None, slippage=None):
     g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
     g1_trades = _g1_events_to_trades(g1_events)
     g1_info.update({
+        "n_pos": g1_info.get("n_positions"),
         "rebalance": g1_should_rebalance,
         "initial_entry": g1_initial_entry,
         "events": g1_events,

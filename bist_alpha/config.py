@@ -94,7 +94,7 @@ TELEGRAM_TOKEN   = _env("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = _env("TELEGRAM_CHAT_ID")
 
 # ---- Deniz bülten kaynağı (eksik #5) ----
-DENIZ_SOURCE = _env("DENIZ_SOURCE", "folder")  # "folder" | "email" | "url"
+DENIZ_SOURCE = _env("DENIZ_SOURCE", "scanner")  # "scanner" (varsayılan) | "folder" | "email" | "url"
 DENIZ_FOLDER = _env("DENIZ_FOLDER", "deniz_inbox")
 DENIZ_URL = _env("DENIZ_URL")
 DENIZ_URL_TEMPLATE = _env("DENIZ_URL_TEMPLATE")  # opsiyonel: {date:%d_%m_%Y} destekler

@@ -7,28 +7,46 @@
 # STATE: portföyler her çalışmadan sonra repo'ya commit edilir (kalıcı)
 #
 # TIMEZONE: GitHub cron UTC. Türkiye=UTC+3.
-#   09:45 TR=06:45 UTC | 14:30 TR=11:30 UTC | 18:30 TR=15:30 UTC
+#   09:45 TR=06:45 UTC | 10:15 TR=07:15 UTC | 14:30 TR=11:30 UTC | 18:30 TR=15:30 UTC
 #
 # KURULUM:
 #   1. Kodu private GitHub repo'ya koy
 #   2. Settings > Secrets > Actions: SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_TO,
-#      TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (+ Deniz: IMAP_HOST/USER/PASS/DENIZ_SENDER)
+#      TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 #   3. Push et — otomatik 7/24 çalışır
 
 name: BIST Alpha 7/24 Canli
 
 on:
   schedule:
-    - cron: '45 6 * * 1-5'    # 09:45 TR
-    - cron: '30 11 * * 1-5'   # 14:30 TR
-    - cron: '30 15 * * 1-5'   # 18:30 TR
+    - cron: '45 6 * * 1-5'   # 09:45 TR — açılış raporu (dün bülteni kullanılır)
+    - cron: '15 7 * * 1-5'   # 10:15 TR — SADECE bülten indirme
+    - cron: '30 11 * * 1-5'  # 14:30 TR — güniçi raporu (bugün bülteniyle)
+    - cron: '30 15 * * 1-5'  # 18:30 TR — kapanış raporu
   workflow_dispatch:
 
 permissions:
   contents: write
 
+env:
+  TZ: Europe/Istanbul
+  DATA_SOURCE: yahoo
+  DENIZ_SOURCE: scanner
+  SMTP_HOST: ${{ secrets.SMTP_HOST }}
+  SMTP_USER: ${{ secrets.SMTP_USER }}
+  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+  MAIL_TO: ${{ secrets.MAIL_TO }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  IMAP_HOST: ${{ secrets.IMAP_HOST }}
+  IMAP_USER: ${{ secrets.IMAP_USER }}
+  IMAP_PASS: ${{ secrets.IMAP_PASS }}
+  DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
+
 jobs:
-  rapor:
+  # ── 09:45 — Açılış raporu ─────────────────────────────────────────────────
+  acilis:
+    if: github.event.schedule == '45 6 * * 1-5' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,30 +54,78 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-
-      - name: Shadow adimi + rapor (canli veri)
-        env:
-          TZ: Europe/Istanbul
-          DATA_SOURCE: yahoo
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          DENIZ_SOURCE: email
-          IMAP_HOST: ${{ secrets.IMAP_HOST }}
-          IMAP_USER: ${{ secrets.IMAP_USER }}
-          IMAP_PASS: ${{ secrets.IMAP_PASS }}
-          DENIZ_SENDER: ${{ secrets.DENIZ_SENDER }}
+      - name: Acilis raporu
         run: |
           python3 shadow.py || true
-          python3 daemon.py --once otomatik
-
-      - name: Portfoy state commit (kalicilik)
+          python3 daemon.py --once acilis
+      - name: State commit
         run: |
           git config user.name "bist-alpha-bot"
           git config user.email "bot@bist-alpha"
-          git add portfolios/ deniz_snapshots/ 2>/dev/null || true
-          git commit -m "state $(date +%F_%H%M)" || echo "degisiklik yok"
+          git add portfolios/ deniz_snapshots/ docs/ 2>/dev/null || true
+          git commit -m "acilis $(date +%F_%H%M)" || echo "degisiklik yok"
+          git push || echo "push atlandi"
+
+  # ── 10:15 — Sadece bülten indirme ────────────────────────────────────────
+  bulten:
+    if: github.event.schedule == '15 7 * * 1-5'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Bulten indir (Deniz Web Scanner)
+        run: python3 daemon.py --once bulten
+      - name: Snapshot commit
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@bist-alpha"
+          git add deniz_snapshots/ deniz_inbox/ 2>/dev/null || true
+          git commit -m "bulten $(date +%F_%H%M)" || echo "yeni bulten yok"
+          git push || echo "push atlandi"
+
+  # ── 14:30 — Güniçi raporu ────────────────────────────────────────────────
+  gunici:
+    if: github.event.schedule == '30 11 * * 1-5'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Gunici raporu
+        run: |
+          python3 shadow.py || true
+          python3 daemon.py --once gunici
+      - name: State commit
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@bist-alpha"
+          git add portfolios/ deniz_snapshots/ docs/ 2>/dev/null || true
+          git commit -m "gunici $(date +%F_%H%M)" || echo "degisiklik yok"
+          git push || echo "push atlandi"
+
+  # ── 18:30 — Kapanış raporu ───────────────────────────────────────────────
+  kapanis:
+    if: github.event.schedule == '30 15 * * 1-5'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Kapanis raporu
+        run: |
+          python3 shadow.py || true
+          python3 daemon.py --once kapanis
+      - name: State commit
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@bist-alpha"
+          git add portfolios/ deniz_snapshots/ docs/ 2>/dev/null || true
+          git commit -m "kapanis $(date +%F_%H%M)" || echo "degisiklik yok"
           git push || echo "push atlandi"

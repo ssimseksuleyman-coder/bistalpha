@@ -83,6 +83,20 @@ def validate_and_repair_state(account, state_dir="portfolios"):
         return False
 
 
+def _write_error_log(label, tb):
+    """Tam traceback'i logs/ altına yazar (1500 karakter kısıtı yok)."""
+    try:
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_label = "".join(c if c.isalnum() or c in "-_" else "_" for c in label)[:30]
+        path = os.path.join(log_dir, f"error_{ts}_{safe_label}.log")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(f"[{datetime.now().isoformat()}] {label}\n\n{tb}")
+    except Exception:
+        pass
+
+
 def guarded(fn, notify_fn=None, label="döngü"):
     """
     Bir görevi koru: hata olursa yakala, logla, bildir, ÇÖKME.
@@ -93,6 +107,7 @@ def guarded(fn, notify_fn=None, label="döngü"):
     except Exception as e:
         tb = traceback.format_exc()
         print(f"[selfheal] {label} HATA (yakalandı, servis ayakta):\n{tb}")
+        _write_error_log(label, tb)
         if notify_fn:
             try:
                 notify_fn(f"⚠️ BIST Alpha — {label} hatası",
