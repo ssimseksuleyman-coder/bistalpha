@@ -12,6 +12,7 @@ import os
 import glob
 import json
 import re
+import time
 import unicodedata
 from datetime import datetime, timedelta
 from email.header import decode_header, make_header
@@ -261,63 +262,82 @@ class DenizWebScanner(DenizFetcher):
         return dates
 
     @staticmethod
-    def _head(session, url):
-        try:
-            r = session.head(url, timeout=4, allow_redirects=True)
-            return r.status_code == 200
-        except Exception:
-            return False
+    def _head_retry(session, url, retries=2, timeout=8):
+        """Tek URL varlik kontrolu — gecici hatada tekrar dener.
+
+        Deniz sunucusu agresif paralel/burst istekleri rate-limit/WAF ile
+        blokluyor (gozlemlendi: 750 paralel istek -> 725 ConnectionError).
+        Sirali + retry saglam calisiyor. 404 kesin yok, 200 kesin var;
+        baglanti/timeout/5xx gecici sayilir ve tekrar denenir.
+        """
+        for attempt in range(retries + 1):
+            try:
+                r = session.head(url, timeout=timeout, allow_redirects=True)
+                if r.status_code == 200:
+                    return True
+                if r.status_code == 404:
+                    return False
+                # diger kodlar (5xx, 429...) gecici -> tekrar dene
+            except Exception:
+                pass
+            if attempt < retries:
+                time.sleep(0.4 * (attempt + 1))
+        return False
 
     def fetch_latest(self):
         import requests
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        import json as _json
 
         state = self._load_state()
         last_id = state.get("last_id", 14173)
-        dates = self._workdays(5)
+        dates = self._workdays(5)  # bugün ilk sırada
         os.makedirs(self.save_dir, exist_ok=True)
 
         session = requests.Session()
         session.headers["User-Agent"] = "Mozilla/5.0 (compatible; bistalpha)"
 
-        # Tüm (fid, date) kombinasyonlarını paralel dene
-        candidates = []
+        # NAZIK SIRALI TARAMA (paralel burst DEĞİL):
+        # Deniz sunucusu 750 paralel HEAD'i rate-limit/WAF ile blokluyordu
+        # (gözlemlendi: 725 ConnectionError -> 0 bulundu -> her gün snapshot'a
+        # düşüp bülten güncellenmiyordu). fid artan sırada, her fid için iş
+        # günleri (bugün ilk); ilk 200'de erken çık = en küçük yeni fid = ilk
+        # görülmemiş bülten. Retry geçici bağlantı hatalarını yutar.
+        best_fid = best_name = best_url = None
         for fid in range(last_id + 1, last_id + self.max_scan + 1):
             for date_str in dates:
                 name = self._NAME.format(date=date_str, fid=fid)
-                candidates.append((fid, date_str, self._BASE + name, name))
+                url = self._BASE + name
+                if self._head_retry(session, url):
+                    best_fid, best_name, best_url = fid, name, url
+                    break
+                time.sleep(0.08)
+            if best_fid is not None:
+                break
 
-        found = []
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            fut_map = {ex.submit(self._head, session, url): (fid, name, url)
-                       for fid, _, url, name in candidates}
-            for fut in as_completed(fut_map):
-                fid, name, url = fut_map[fut]
-                if fut.result():
-                    found.append((fid, name, url))
-
-        if not found:
+        if best_fid is None:
             print("[deniz_scanner] Yeni bülten bulunamadı")
             return None
 
-        # En küçük ID = en eski (muhtemelen en son bülten günü)
-        found.sort(key=lambda x: x[0])
-        best_fid, best_name, best_url = found[0]
-
-        try:
-            r = session.get(best_url, timeout=30)
-            r.raise_for_status()
-            path = os.path.join(self.save_dir, best_name)
-            with open(path, "wb") as f:
-                f.write(r.content)
-            state["last_id"] = best_fid
-            self._save_state(state)
-            print(f"[deniz_scanner] Bülten indirildi: {best_name} (ID {best_fid})")
-            return path
-        except Exception as e:
-            print(f"[deniz_scanner] İndirme hatası: {e}")
-            return None
+        # İndirme GET'i de sunucu tarafında düşebiliyor (RemoteDisconnected
+        # gözlemlendi) — birkaç kez dener, aksi halde state ilerlemez ve
+        # sonraki çalışma tekrar dener.
+        last_err = None
+        for attempt in range(3):
+            try:
+                r = session.get(best_url, timeout=30)
+                r.raise_for_status()
+                path = os.path.join(self.save_dir, best_name)
+                with open(path, "wb") as f:
+                    f.write(r.content)
+                state["last_id"] = best_fid
+                self._save_state(state)
+                print(f"[deniz_scanner] Bülten indirildi: {best_name} (ID {best_fid})")
+                return path
+            except Exception as e:
+                last_err = e
+                if attempt < 2:
+                    time.sleep(1.0 * (attempt + 1))
+        print(f"[deniz_scanner] İndirme hatası (3 deneme): {last_err}")
+        return None
 
 
 class FallbackFetcher(DenizFetcher):
