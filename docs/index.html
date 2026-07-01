@@ -624,10 +624,12 @@ function governanceRows(data) {
     const acc = accounts[name] || {};
     const badgeClass = role === 'production' ? 'ok' : role === 'baseline' ? 'warn' : '';
     const extra = name === 'O' && overlap != null ? ` | O/F ortaklik %${overlap}` : '';
+    const retPct = acc.return_pct != null ? acc.return_pct : null;
+    const retStr = retPct != null ? `<b class="${retPct >= 0 ? 'profit' : 'loss'}">%${retPct >= 0 ? '+' : ''}${retPct}</b>` : '-';
     return `<div class="policy-row">
       <div class="policy-head"><span>Hesap ${esc(name)}</span><span class="badge ${badgeClass}">${esc(role)}</span></div>
       <div class="policy-note">${esc(note)}</div>
-      <div class="policy-note">Pozisyon ${esc(acc.n_positions ?? '-')} | Deger ${esc(acc.value ?? '-')}${esc(extra)}</div>
+      <div class="policy-note">Pozisyon ${esc(acc.n_positions ?? '-')} | Deger ${esc(acc.value ?? '-')} | Getiri ${retStr}${esc(extra)}</div>
     </div>`;
   }).join('');
 }

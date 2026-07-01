@@ -174,3 +174,18 @@ STOCK_TO_SECTOR = {
 def get_sector(ticker: str) -> str:
     """Hissenin sektörü; eşleme yoksa XU100 (muhafazakar — konsantrasyonu gevşetmez)."""
     return STOCK_TO_SECTOR.get(ticker, "XU100")
+
+
+def sector_concentration(tickers, warn_threshold=3):
+    """
+    Verilen hisse listesinin sektör dağılımı.
+    SEKTOR_CAP=2 + F modu koşullu vize istisnası normalde max 3/sektör üretir.
+    warn_threshold üstü (>3) anomaliye işaret eder (cap mantığı bozulmuş olabilir).
+    Returns: {"counts": {sektor: adet}, "warnings": [sektor, ...]}
+    """
+    counts = {}
+    for t in tickers:
+        sec = get_sector(t)
+        counts[sec] = counts.get(sec, 0) + 1
+    warnings = [sec for sec, n in counts.items() if n > warn_threshold]
+    return {"counts": counts, "warnings": warnings}

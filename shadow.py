@@ -30,6 +30,7 @@ from bist_alpha import omega as omega_mod
 from bist_alpha import g1_account as g1_mod
 from bist_alpha import portfolio as pf
 from bist_alpha import backtest as bt_mod
+from bist_alpha import tradelog
 from bist_alpha.signals import lot_multiplier
 
 ACCOUNTS = {"A": "A", "B": "B", "F": "F", "O": "O"}  # mode'lar
@@ -142,6 +143,10 @@ def step(data, signals, date=None, slippage=None):
                 "new_trades": new_trades,
                 "last_event": state.get("history", [])[-1] if state.get("history") else None,
             }
+            try:
+                tradelog.log_trades(acc, trade_date, new_trades)
+            except Exception as e:
+                print(f"[shadow] {acc} tradelog yazilamadi: {e}")
         except Exception:
             tb = traceback.format_exc()
             print(f"[shadow] Hesap {acc} HATA:\n{tb}")
@@ -170,6 +175,10 @@ def step(data, signals, date=None, slippage=None):
         } if g1_trades else None,
     })
     pf.save(g1_state, state_dir=config.STATE_DIR)
+    try:
+        tradelog.log_trades("G1", trade_date, g1_trades)
+    except Exception as e:
+        print(f"[shadow] G1 tradelog yazilamadi: {e}")
     results["G1"] = g1_info
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
             "rebalance": is_rebal, "accounts": results}

@@ -141,13 +141,16 @@ class YahooFeed(DataFeed):
         if prices.empty:
             raise ValueError("YahooFeed bos veri dondurdu; semboller/rate-limit/cache sorunu olabilir")
         # XU100 endeksi (Yahoo: XU100.IS)
+        _bist_ok = False
         try:
             bist_raw = yf.download("XU100.IS", period=self.period, interval="1d",
                                    auto_adjust=False, progress=False)
             bist = bist_raw['Close'].dropna()
             if hasattr(bist, 'columns'):
                 bist = bist.iloc[:, 0]
-        except Exception:
+            _bist_ok = not bist.empty
+        except Exception as e:
+            print(f"[datafeed] XU100.IS fetch basarisiz: {e}")
             bist = pd.Series(dtype=float)
 
         # Market cap: yfinance toplu vermez; PD_mn_TL yoksa fiyat*hacim proxy ile
@@ -162,6 +165,7 @@ class YahooFeed(DataFeed):
             'volumes': pd.DataFrame(volumes).sort_index(),
             'mcaps': mcaps,
             'bist': bist,
+            '_bist_ok': _bist_ok,
             '_source': 'yahoo',
             '_source_pool_count': len(tickers),
             '_missing_symbols': missing_symbols,
@@ -246,11 +250,14 @@ class BorsaPyFeed(DataFeed):
         prices = pd.DataFrame(prices).sort_index()
         missing_symbols = sorted(display_symbol(t) for t in (set(tickers) - set(prices.columns.astype(str))))
         # XU100 endeksi
+        _bist_ok = False
         try:
             idx_raw = borsapy.index("XU100", period=self.period, interval="1d") \
                 if hasattr(borsapy, "index") else None
             bist = idx_raw['close'] if idx_raw is not None and 'close' in idx_raw else pd.Series(dtype=float)
-        except Exception:
+            _bist_ok = not bist.empty
+        except Exception as e:
+            print(f"[datafeed] XU100 borsapy fetch basarisiz: {e}")
             bist = pd.Series(dtype=float)
 
         return {
@@ -261,6 +268,7 @@ class BorsaPyFeed(DataFeed):
             'volumes': pd.DataFrame(volumes).sort_index(),
             'mcaps': pd.DataFrame(prices),  # mcap yok → universe sıralama proxy (birim-bağımsız)
             'bist': bist,
+            '_bist_ok': _bist_ok,
             '_source': 'borsapy',
             '_source_pool_count': len(tickers),
             '_missing_symbols': missing_symbols,

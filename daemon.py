@@ -258,6 +258,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import missed_log
     from bist_alpha import performance_ledger
     from bist_alpha import g1_account as g1_mod
+    from bist_alpha import sectors as sectors_mod
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
     os.makedirs(out_dir, exist_ok=True)
     prices_today = {}
@@ -285,6 +286,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "dynamic_universe_count": len(universe) if universe is not None else report.get("dynamic_universe_count"),
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "market_regime": report.get("market_regime"),
+        "bist_data_ok": bool((data or {}).get("_bist_ok", False)),
         "deniz_bulletin": report.get("deniz_bulletin"),
         # Legacy field kept in sync for older dashboard/state consumers.
         "deniz_regime": (report.get("market_regime") or {}).get("name"),
@@ -346,13 +348,16 @@ def _write_dashboard_state(report, label, data=None, universe=None,
                     "pnl_pct": round((cur / p["entry"] - 1) * 100, 2),
                     "shares": round(p.get("shares", 0), 6),
                 })
+            _val = round(pf.current_value(s, prices_today), 4)
             state["accounts"][acc] = {
                 "n_positions": len(s.get("positions", {})),
                 "cash": round(s.get("cash", 0), 4),
-                "value": round(pf.current_value(s, prices_today), 4),
+                "value": _val,
+                "return_pct": round((_val - 1) * 100, 2),
                 "positions": positions,
                 "history": s.get("history", [])[-10:],
                 "last_event": s.get("history", [])[-1] if s.get("history") else None,
+                "sector_concentration": sectors_mod.sector_concentration(s.get("positions", {}).keys()),
             }
         except Exception:
             state["accounts"][acc] = {"error": "yüklenemedi"}
@@ -377,6 +382,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             })
         g1_info["positions"] = g1_positions
         g1_info["trades"] = g1_state.get("trades", [])[-15:]
+        g1_info["sector_concentration"] = sectors_mod.sector_concentration(g1_state.get("positions", {}).keys())
         state["accounts"]["G1"] = g1_info
     except Exception as e:
         state["accounts"]["G1"] = {"error": f"yuklenemedi: {e}"}

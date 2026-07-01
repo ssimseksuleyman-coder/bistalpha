@@ -11,7 +11,6 @@ Canli oran bunu asarsa summary() watch_triggered=True doner -> drawdown_watch ak
 
 F'e SIFIR dokunus: ayri portfolio_G1.json, ayri hesap, ayri mantik.
 """
-import math
 from datetime import datetime
 from . import config
 from . import portfolio as pf
@@ -23,12 +22,18 @@ LABELS = ["return_candidate", "drawdown_watch"]
 BASELINE_FB_RATE = 31.2       # tarihsel re-entry->tekrar-stop orani (%)
 BASELINE_FB_LOSS_RATE = 22.9  # tarihsel zararla tekrar-stop (%)
 FB_MIN_SAMPLE = 5             # watch tetigi icin min re-entry sayisi
+# --- ROLLING THROTTLE (mitigator): son K re-entry kapanisinin basarisizlik orani ---
+RE_THROTTLE_K = 8             # rolling pencere
+RE_THROTTLE_RATE = 0.50       # rolling fail > bu -> lot %50
+RE_PAUSE_RATE = 0.70          # rolling fail > bu -> re-entry DUR
+RE_THROTTLE_FACTOR = 0.5      # kisma carpani
 # Terfi kapilari (Analiz): bir canli donem F'i getiride gecerken AYNI ANDA saglanmali
 PROMO_MAX_DD = -10.0          # max_dd_pct bundan SIG (daha dar) olmali
 PROMO_FB_RATE = 31.2          # false_breakout_rate_pct <= bu
 PROMO_FB_LOSS = 22.9          # false_breakout_loss_rate_pct <= bu
 _STAT_KEYS = ("buys", "stops", "reentries", "reentry_restops", "reentry_restop_loss",
-              "reentry_closed", "reentry_wins", "reentry_total_pnl_pct", "reentry_rebalance_loss_count")
+              "reentry_closed", "reentry_wins", "reentry_total_pnl_pct", "reentry_rebalance_loss_count",
+              "reentry_throttled", "reentry_paused")
 _EQUITY_CAP = 120             # gunluk deger serisi (sparkline), ust sinir
 _TRADES_CAP = 500            # trade log ust siniri (sinirsiz buyumeyi onler)
 _HISTORY_CAP = 250           # rebalance snapshot ust siniri
@@ -36,7 +41,7 @@ _HISTORY_CAP = 250           # rebalance snapshot ust siniri
 
 def _new_state(account="G1"):
     s = {"account": account, "cash": 1.0, "positions": {}, "history": [],
-         "trades": [], "watch": {}, "equity_daily": [],
+         "trades": [], "watch": {}, "equity_daily": [], "reentry_recent": [],
          "stats": {k: 0 for k in _STAT_KEYS}, "role": ROLE, "labels": LABELS}
     s["stats"]["peak_value"] = 1.0
     s["stats"]["max_dd_pct"] = 0.0
@@ -50,6 +55,7 @@ def _ensure(state):
     state.setdefault("history", [])
     state.setdefault("trades", [])
     state.setdefault("watch", {})
+    state.setdefault("reentry_recent", [])
     state.setdefault("equity_daily", [])
     stats = state.setdefault("stats", {})
     for k in _STAT_KEYS:
@@ -75,6 +81,10 @@ def _close_reentry(state, pnl, via):
             st["reentry_restop_loss"] += 1
     elif via == "rebalance" and pnl < 0:
         st["reentry_rebalance_loss_count"] += 1
+    rec = state.setdefault("reentry_recent", [])
+    rec.append(1 if pnl < 0 else 0)
+    if len(rec) > RE_THROTTLE_K:
+        del rec[:-RE_THROTTLE_K]
 
 
 def _value(state, prices_today):
@@ -83,17 +93,15 @@ def _value(state, prices_today):
 
 
 def _py(x):
-    """numpy/pandas scalar -> native Python (JSON guvenli). NaN/inf -> None."""
+    """numpy/pandas scalar -> native Python (JSON guvenli). Native zaten ise dokunmaz."""
     if isinstance(x, bool):
         return x
     item = getattr(x, "item", None)   # numpy/pandas scalar -> .item() native doner
     if callable(item):
         try:
-            x = x.item()
+            return x.item()
         except Exception:
-            pass
-    if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
-        return None
+            return x
     return x
 
 
@@ -138,6 +146,10 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
                                     "pnl_pct": round(_py(pnl), 2), "was_reentry": bool(is_re)})
 
     # 2) YENIDEN-GIRIS (cikis ustune kapanis). origin=reentry.
+    #    ROLLING THROTTLE: son re-entry'ler kume halinde basarisizsa lot kis / dur (mitigator).
+    rec = state.get("reentry_recent", [])
+    roll = (sum(rec) / len(rec)) if len(rec) >= 4 else 0.0
+    re_factor = 0.0 if roll > RE_PAUSE_RATE else (RE_THROTTLE_FACTOR if roll > RE_THROTTLE_RATE else 1.0)
     for tic, w in list(state["watch"].items()):
         if tic in state["positions"]:
             state["watch"].pop(tic, None); continue
@@ -145,16 +157,23 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
         if pt is None:
             continue
         pt = float(_py(pt))
-        if pt > w["exit"] and state["cash"] >= w["cash"] * 0.5:
-            spend = float(min(w["cash"], state["cash"]))
+        if pt > w["exit"] and re_factor == 0.0:
+            state["stats"]["reentry_paused"] += 1
+            continue
+        if pt > w["exit"] and state["cash"] >= w["cash"] * 0.4 * re_factor:
+            spend = float(min(w["cash"], state["cash"]) * re_factor)
             state["positions"][tic] = {"entry": float(pt), "peak": float(pt),
                                        "shares": float(spend * (1 - friction) / pt),
                                        "w": float(w["w"]), "origin": "reentry"}
             state["cash"] = float(state["cash"] - spend)
             state["watch"].pop(tic, None)
             state["stats"]["reentries"] += 1
-            _log(state, date, "REENTRY", tic, pt, prev_exit=round(w["exit"], 2))
-            events["reentries"].append({"ticker": str(tic), "price": round(_py(pt), 2)})
+            if re_factor < 1.0:
+                state["stats"]["reentry_throttled"] += 1
+            _log(state, date, "REENTRY", tic, pt, prev_exit=round(w["exit"], 2),
+                 throttle=(round(re_factor, 2) if re_factor < 1.0 else None))
+            events["reentries"].append({"ticker": str(tic), "price": round(_py(pt), 2),
+                                        "throttle": (round(re_factor, 2) if re_factor < 1.0 else None)})
 
     # 3) REBALANCE (F secimi; watch sifirla). Rebalance satislari da events'e (FIX 3).
     if is_rebal:
@@ -176,7 +195,8 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
         picks, sig_map, _ = strat_mod.select(data, signals, date, mode="F")
         weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
         scale = strat_mod.regime_scale(data, date) if hasattr(strat_mod, "regime_scale") else 1.0
-        deployed = float(total) * max(0.0, min(1.0, float(scale)))
+        if scale != 1.0:
+            weights = {t: w * scale for t, w in weights.items()}
         tw = sum(weights.values())
         if tw > 0:
             for tic, w in weights.items():
@@ -184,7 +204,7 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
                 if ep and ep > 0:
                     ep = float(_py(ep))
                     w = float(_py(w))
-                    alloc = float(deployed * (w / tw) * (1 - friction))
+                    alloc = float(total * (w / tw) * (1 - friction))
                     state["positions"][tic] = {"entry": float(ep), "peak": float(ep), "shares": float(alloc / ep), "w": float(w)}
                     state["cash"] = float(state["cash"] - alloc)
                     state["stats"]["buys"] += 1
@@ -220,6 +240,9 @@ def summary(state, prices_today, f_return_pct=None):
     fb_loss = float(st["reentry_restop_loss"] / re * 100) if re else None
     # FIX 4: yanlis-kirilim baz cizgiyi asarsa drawdown_watch otomatik tetiklenir
     watch_triggered = bool(re >= FB_MIN_SAMPLE and fb_rate is not None and fb_rate > BASELINE_FB_RATE)
+    rec_s = state.get("reentry_recent", [])
+    roll_s = (sum(rec_s) / len(rec_s)) if len(rec_s) >= 4 else 0.0
+    throttle_state = "paused" if roll_s > RE_PAUSE_RATE else ("throttled" if roll_s > RE_THROTTLE_RATE else "normal")
     closed = st.get("reentry_closed", 0)
     re_win_rate = (st.get("reentry_wins", 0) / closed * 100) if closed else None
     re_total = st.get("reentry_total_pnl_pct", 0.0)
@@ -277,4 +300,8 @@ def summary(state, prices_today, f_return_pct=None):
         "display": display,
         "watch_triggered": watch_triggered,
         "status": "drawdown_watch_AKTIF" if watch_triggered else "izlemede",
+        "throttle_state": throttle_state,
+        "reentry_recent_fail_rate_pct": round(roll_s * 100, 1),
+        "reentry_throttled": st.get("reentry_throttled", 0),
+        "reentry_paused": st.get("reentry_paused", 0),
     }
