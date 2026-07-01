@@ -757,7 +757,7 @@ async function loadDashboard() {
     el('statRegime').textContent = data.market_regime?.name || data.deniz_regime || '-';
     const deniz = data.deniz_bulletin || {};
     el('statDeniz').textContent = deniz.date
-      ? `${deniz.date} ${deniz.fresh ? 'guncel' : 'ESKI'}`
+      ? `${deniz.date} ${deniz.fresh ? (deniz.age_days > 0 ? `guncel (${deniz.age_days}g)` : 'guncel') : 'ESKI'}`
       : 'yok';
     el('statTop').textContent = (data.top10 || []).length;
     el('statPos').textContent = ['A','B','F','O','G1'].map(k => accounts[k]?.n_positions ?? '-').join('/');
