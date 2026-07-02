@@ -1,0 +1,51 @@
+# KAP katalizor gunluk toplayici — ANA DAEMON'DAN AYRI (F'e/daemon'a dokunmaz).
+# KAP Next.js RSC + WAF -> requests calismaz, Playwright (gercek Chromium) sart.
+# Gunde 1 kez (kapanis sonrasi) calisir, docs/state/catalysts.json'a DEDUP-birikir.
+# event_study yeterli olay birikince (haftalar) ilk gercek katalizor hukmunu verir.
+#
+# AKTIVASYON: bu dosya repo'ya push edilince otomatik aktif. Istenmezse sil/disable.
+
+name: BIST Katalizor (KAP gunluk)
+
+on:
+  schedule:
+    - cron: '10 16 * * 1-5'   # 16:10 UTC = 19:10 TR (kapanis sonrasi), hafta ici
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bist-katalizor
+  cancel-in-progress: false
+
+jobs:
+  katalizor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Bagimliliklar + Chromium
+        run: |
+          pip install -r requirements.txt
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: KAP katalizor topla
+        env:
+          TZ: Europe/Istanbul
+        run: python run_catalyst.py
+
+      - name: catalysts.json commit (kalicilik)
+        if: always()
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f docs/state/catalysts.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "katalizor $(date +%F)"
+          git push || echo "push atlandi (degisiklik yok / catisma)"
