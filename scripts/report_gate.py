@@ -24,7 +24,12 @@ SLOTS = [
     ("kapanis", time(18, 40)),
 ]
 STATE_PATH = Path("docs/state/report_runs.json")
-WINDOW_MINUTES = int(os.environ.get("REPORT_WINDOW_MINUTES", "50"))
+# GitHub cron'u SAATLERCE gecikebiliyor (gozlem 2026-07-02: acilis ~3s gec,
+# 06:45 hedef -> 09:47'de tetiklendi). 50dk pencere gecikmis cron'u kaciriyordu
+# -> gate not_due -> daemon atlaniyor -> rapor/Telegram YOK. 210dk (3.5s) tolerans:
+# gecikmis cron hala pencerede kalir ve calisir. Slot bosluklari (acilis->gunici
+# 4s45, gunici->kapanis 4s10) 3.5s'ten genis -> ortusme yok. Dedup slot basina 1 rapor.
+WINDOW_MINUTES = int(os.environ.get("REPORT_WINDOW_MINUTES", "210"))
 
 
 def _now_istanbul() -> datetime:
