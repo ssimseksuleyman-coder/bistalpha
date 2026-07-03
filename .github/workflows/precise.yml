@@ -1,0 +1,61 @@
+# TAM-ZAMANLI raporlama — GitHub cron gecikmesini yener (uyu-tam-saatte-calis).
+# Cron'lar slot'tan SAATLER ONCE tetiklenir; precise_runner.py tam slot saatine
+# UYUR, sonra daemon'u calistirir -> rapor GEC degil TAM ZAMANINDA cikar.
+# Repo PUBLIC -> Actions dakikasi sinirsiz -> uyku bedava. Dis hesap/PAT GEREKMEZ.
+#
+# Native bist-alpha.yml (genis pencere) FALLBACK olarak kalir: precise cron'u
+# duserse native gecikmeli de olsa yakalar. Ayni report_runs.json'i paylasirlar ->
+# precise once isaretler -> native atlar (cift-Telegram yok).
+
+name: BIST Tam-Zamanli (precise)
+
+on:
+  schedule:
+    - cron: '0 2 * * 1-5'    # acilis (hedef 06:45 UTC=09:45 TR) icin erken -> uyur
+    - cron: '30 7 * * 1-5'   # gunici (hedef 11:30 UTC=14:30 TR)
+    - cron: '0 12 * * 1-5'   # kapanis (hedef 15:40 UTC=18:40 TR)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bist-precise
+  cancel-in-progress: false
+
+jobs:
+  precise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350        # uyku (max ~5.5s) + calisma icin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+
+      - name: Tam slot saatine uyu + daemon calistir
+        env:
+          TZ: Europe/Istanbul
+          DATA_SOURCE: yahoo
+          ALLOW_FILE_FALLBACK: "1"
+          YAHOO_BATCH_SIZE: "60"
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DENIZ_SOURCE: scanner
+        run: python3 precise_runner.py
+
+      - name: State commit (kalicilik)
+        if: always()
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f portfolios/ deniz_snapshots/ docs/state/ 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "precise state $(date +%F_%H%M)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push || echo "push atlandi (catisma/degisiklik yok)"
