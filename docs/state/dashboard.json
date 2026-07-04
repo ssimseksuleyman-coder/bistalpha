@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-03T19:15:12",
-  "label": "kapanis",
+  "timestamp": "2026-07-04T08:31:42",
+  "label": "push",
   "date": "2026-07-03",
   "mode": "F",
   "source": "yahoo",
@@ -1091,12 +1091,12 @@
           "return_candidate",
           "drawdown_watch"
         ],
-        "value": 0.9697,
-        "return_pct": -3.03,
-        "max_dd_pct": -3.35,
-        "n_positions": 1,
+        "value": 0.9639,
+        "return_pct": -3.61,
+        "max_dd_pct": -3.61,
+        "n_positions": 4,
         "n_watch": 0,
-        "buys": 1,
+        "buys": 5,
         "stops": 0,
         "reentries": 0,
         "reentry_restops": 0,
@@ -1108,7 +1108,7 @@
         "reentry_avg_pnl_pct": null,
         "reentry_win_rate": null,
         "reentry_rebalance_loss_count": 0,
-        "g1_vs_f_return_pct": -26.3,
+        "g1_vs_f_return_pct": -26.88,
         "promotion_gates": {
           "beats_f": false,
           "dd_ok": true,
@@ -1121,13 +1121,13 @@
             {
               "key": "g1_vs_f_return_pct",
               "label": "G1/F getiri farki",
-              "value": -26.3,
+              "value": -26.88,
               "unit": "%"
             },
             {
               "key": "max_dd_pct",
               "label": "Max DD (gunluk)",
-              "value": -3.35,
+              "value": -3.61,
               "unit": "%"
             },
             {
@@ -1168,7 +1168,7 @@
         "reentry_recent_fail_rate_pct": 0.0,
         "reentry_throttled": 0,
         "reentry_paused": 0,
-        "n_pos": 1,
+        "n_pos": 4,
         "rebalance": false,
         "initial_entry": false,
         "events": {
@@ -1182,9 +1182,9 @@
     }
   },
   "operation_health": {
-    "label": "kapanis",
-    "target_time": "18:40",
-    "delay_minutes": 35,
+    "label": "push",
+    "target_time": null,
+    "delay_minutes": null,
     "telegram": {
       "sent": true,
       "status": "sent"
@@ -1217,15 +1217,15 @@
       "loaded_from_snapshot": true
     },
     "data_health": {
-      "timestamp": "2026-07-03 19:15",
+      "timestamp": "2026-07-04 08:31",
       "data_issues": [],
       "healthy": true,
       "snapshots_removed": 0,
       "logs_removed": 0,
-      "temp_removed": 2
+      "temp_removed": 1
     },
-    "verdict": "amber",
-    "updated_at": "2026-07-03T19:15:12"
+    "verdict": "green",
+    "updated_at": "2026-07-04T08:31:42"
   },
   "account_governance": {
     "F": {
@@ -2277,12 +2277,12 @@
         "return_candidate",
         "drawdown_watch"
       ],
-      "value": 0.9697,
-      "return_pct": -3.03,
-      "max_dd_pct": -3.35,
-      "n_positions": 1,
+      "value": 0.9639,
+      "return_pct": -3.61,
+      "max_dd_pct": -3.61,
+      "n_positions": 4,
       "n_watch": 0,
-      "buys": 1,
+      "buys": 5,
       "stops": 0,
       "reentries": 0,
       "reentry_restops": 0,
@@ -2294,7 +2294,7 @@
       "reentry_avg_pnl_pct": null,
       "reentry_win_rate": null,
       "reentry_rebalance_loss_count": 0,
-      "g1_vs_f_return_pct": -26.3,
+      "g1_vs_f_return_pct": -26.88,
       "promotion_gates": {
         "beats_f": false,
         "dd_ok": true,
@@ -2307,13 +2307,13 @@
           {
             "key": "g1_vs_f_return_pct",
             "label": "G1/F getiri farki",
-            "value": -26.3,
+            "value": -26.88,
             "unit": "%"
           },
           {
             "key": "max_dd_pct",
             "label": "Max DD (gunluk)",
-            "value": -3.35,
+            "value": -3.61,
             "unit": "%"
           },
           {
@@ -2356,13 +2356,43 @@
       "reentry_paused": 0,
       "positions": [
         {
-          "ticker": "TURSG",
-          "entry": 6.23,
-          "peak": 6.23,
-          "current": 6.04,
-          "stop": 5.3,
-          "pnl_pct": -3.05,
-          "shares": 0.159551,
+          "ticker": "KTLEV",
+          "entry": 183.7,
+          "peak": 183.7,
+          "current": 183.7,
+          "stop": 156.14,
+          "pnl_pct": 0.0,
+          "shares": 0.00054,
+          "origin": "rebalance"
+        },
+        {
+          "ticker": "IEYHO",
+          "entry": 152.0,
+          "peak": 152.0,
+          "current": 152.0,
+          "stop": 129.2,
+          "pnl_pct": 0.0,
+          "shares": 0.000684,
+          "origin": "rebalance"
+        },
+        {
+          "ticker": "DSTKF",
+          "entry": 3750.0,
+          "peak": 3750.0,
+          "current": 3750.0,
+          "stop": 3187.5,
+          "pnl_pct": 0.0,
+          "shares": 5.2e-05,
+          "origin": "rebalance"
+        },
+        {
+          "ticker": "PEKGY",
+          "entry": 14.29,
+          "peak": 14.29,
+          "current": 14.29,
+          "stop": 12.15,
+          "pnl_pct": 0.0,
+          "shares": 0.00401,
           "origin": "rebalance"
         }
       ],
@@ -2373,18 +2403,61 @@
           "ticker": "TURSG",
           "price": 6.23,
           "weight": 1.0
+        },
+        {
+          "date": "2026-07-03",
+          "type": "SELL",
+          "ticker": "TURSG",
+          "price": 6.04,
+          "reason": "cold_start_reconcile",
+          "pnl_pct": -3.05
+        },
+        {
+          "date": "2026-07-03",
+          "type": "BUY",
+          "ticker": "KTLEV",
+          "price": 183.7,
+          "reason": "cold_start_reconcile",
+          "weight": 0.218
+        },
+        {
+          "date": "2026-07-03",
+          "type": "BUY",
+          "ticker": "IEYHO",
+          "price": 152.0,
+          "reason": "cold_start_reconcile",
+          "weight": 0.229
+        },
+        {
+          "date": "2026-07-03",
+          "type": "BUY",
+          "ticker": "DSTKF",
+          "price": 3750.0,
+          "reason": "cold_start_reconcile",
+          "weight": 0.427
+        },
+        {
+          "date": "2026-07-03",
+          "type": "BUY",
+          "ticker": "PEKGY",
+          "price": 14.29,
+          "reason": "cold_start_reconcile",
+          "weight": 0.126
         }
       ],
       "sector_concentration": {
         "counts": {
-          "XSGRT": 1
+          "XUTEK": 1,
+          "XHOLD": 1,
+          "XFINK": 1,
+          "XGMYO": 1
         },
         "warnings": []
       }
     }
   },
   "forward_test": {
-    "updated_at": "2026-07-03T19:15:12",
+    "updated_at": "2026-07-04T08:31:42",
     "days_tracked": 21,
     "latest_date": "2026-07-03",
     "latest_avg_return_pct": -0.3,
@@ -3473,7 +3546,7 @@
           }
         ],
         "first_generated_at": "2026-07-03 13:20",
-        "last_generated_at": "2026-07-03 19:15",
+        "last_generated_at": "2026-07-04 08:31",
         "as_of": "2026-07-03",
         "age_trading_days": 0,
         "avg_return_pct": -0.3,
@@ -3483,7 +3556,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-07-03T19:15:12",
+    "updated_at": "2026-07-04T08:31:42",
     "tracked_days": 21,
     "current_candidates": 11,
     "hot_missed_count": 16,
@@ -3562,7 +3635,7 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-07-03T19:15:12",
+    "updated_at": "2026-07-04T08:31:42",
     "tracked_days": 21,
     "latest_date": "2026-07-03",
     "latest_regime": "mixed",
