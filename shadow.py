@@ -153,10 +153,22 @@ def step(data, signals, date=None, slippage=None):
             results[acc] = {"error": tb[:500]}
     g1_state = pf.load("G1", state_dir=config.STATE_DIR)
     g1_initial_entry = not g1_state.get("positions") and not g1_state.get("history")
-    g1_should_rebalance = is_rebal or g1_initial_entry
-    g1_state, g1_events = g1_mod.step(
-        data, signals, g1_state, date, prices_today, g1_should_rebalance,
-        slippage=slippage)
+    if g1_initial_entry:
+        # DOGRU BOOTSTRAP DESENI: gec-katilan shadow, kendi (belki ince-gun) select()'i
+        # yerine F'in O ANKI portfoyunu bugunku fiyattan aynalar (fractional mirror).
+        # Boylece cold-start gunu tek-sinyal gunune denk gelse bile shadow dejenere
+        # baslamaz. F entry gecmisi KOPYALANMAZ (look-ahead onleme). Yarin bir G2
+        # eklenirse ayni tuzaga dusmez. Bkz. cold_start_from_reference / G1_DEVIR_NOTU.
+        f_state = pf.load("F", state_dir=config.STATE_DIR)
+        g1_state, g1_events = g1_mod.cold_start_from_reference(
+            g1_state, f_state, prices_today, date, slippage=slippage,
+            reason="gec-katilim cold-start, F'e senkron (bugunku fiyat)")
+        g1_should_rebalance = True
+    else:
+        g1_should_rebalance = is_rebal
+        g1_state, g1_events = g1_mod.step(
+            data, signals, g1_state, date, prices_today, g1_should_rebalance,
+            slippage=slippage)
     f_return_pct = None
     if results.get("F", {}).get("value") is not None:
         f_return_pct = (results["F"]["value"] - 1) * 100

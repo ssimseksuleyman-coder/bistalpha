@@ -1,12 +1,30 @@
 {
   "account": "G1",
-  "cash": 0.006000000000000005,
+  "cash": 0.5097223333562796,
   "positions": {
-    "TURSG": {
-      "entry": 6.230000019073486,
-      "peak": 6.230000019073486,
-      "shares": 0.15955056130928003,
-      "w": 1.0
+    "KTLEV": {
+      "entry": 183.6999969482422,
+      "peak": 183.6999969482422,
+      "shares": 0.0005395612146870039,
+      "w": 0.21823327461877404
+    },
+    "IEYHO": {
+      "entry": 152.0,
+      "peak": 152.0,
+      "shares": 0.0006836590654213479,
+      "w": 0.22879907350030884
+    },
+    "DSTKF": {
+      "entry": 3750.0,
+      "peak": 3750.0,
+      "shares": 5.169344540710972e-05,
+      "w": 0.42681320112473736
+    },
+    "PEKGY": {
+      "entry": 14.289999961853027,
+      "peak": 14.289999961853027,
+      "shares": 0.004009583415040273,
+      "w": 0.12615445075617993
     }
   },
   "history": [
@@ -14,6 +32,20 @@
       "date": "2026-06-30",
       "total": 1.0,
       "n_pos": 1
+    },
+    {
+      "type": "cold_start_reconcile",
+      "date": "2026-07-03",
+      "reason": "gec-katilim 06-30 ince gun (select=[TURSG]); F'e senkron, bugunku fiyat",
+      "mirrored": [
+        "KTLEV",
+        "IEYHO",
+        "DSTKF",
+        "PEKGY"
+      ],
+      "invested_frac": 0.4712,
+      "total": 0.9697,
+      "n_pos": 4
     }
   ],
   "trades": [
@@ -23,6 +55,46 @@
       "ticker": "TURSG",
       "price": 6.23,
       "weight": 1.0
+    },
+    {
+      "date": "2026-07-03",
+      "type": "SELL",
+      "ticker": "TURSG",
+      "price": 6.04,
+      "reason": "cold_start_reconcile",
+      "pnl_pct": -3.05
+    },
+    {
+      "date": "2026-07-03",
+      "type": "BUY",
+      "ticker": "KTLEV",
+      "price": 183.7,
+      "reason": "cold_start_reconcile",
+      "weight": 0.218
+    },
+    {
+      "date": "2026-07-03",
+      "type": "BUY",
+      "ticker": "IEYHO",
+      "price": 152.0,
+      "reason": "cold_start_reconcile",
+      "weight": 0.229
+    },
+    {
+      "date": "2026-07-03",
+      "type": "BUY",
+      "ticker": "DSTKF",
+      "price": 3750.0,
+      "reason": "cold_start_reconcile",
+      "weight": 0.427
+    },
+    {
+      "date": "2026-07-03",
+      "type": "BUY",
+      "ticker": "PEKGY",
+      "price": 14.29,
+      "reason": "cold_start_reconcile",
+      "weight": 0.126
     }
   ],
   "watch": {},
@@ -50,7 +122,7 @@
     0.9697
   ],
   "stats": {
-    "buys": 1,
+    "buys": 5,
     "stops": 0,
     "reentries": 0,
     "reentry_restops": 0,

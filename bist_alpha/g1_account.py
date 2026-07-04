@@ -115,6 +115,87 @@ def _log(state, date, typ, tic, price, **extra):
         state["trades"] = state["trades"][-_TRADES_CAP:]
 
 
+def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0, reason=""):
+    """DOGRU BOOTSTRAP DESENI (gec-katilan shadow icin).
+
+    Gec-katilan bir shadow'u referans hesabin (F) O ANKI portfoyune BUGUNKU
+    fiyatlardan senkronlar (FRACTIONAL MIRROR): F'in yatirim-orani + goreli
+    piyasa-degeri agirliklari korunur; boylece cold-start gunu tek-sinyal gunune
+    denk gelse bile shadow dejenere (tek-isim) baslamaz.
+
+    LOOK-AHEAD ONLEME: F'in entry GECMISI KOPYALANMAZ. G1 entry = reconcile gunu
+    fiyati (F'in gerceklesmis kari retroaktif yazilmaz).
+
+    Neden select() degil: select() cold-start gununun (belki ince) ciktisini verir;
+    F'in TASIDIGI sepet ise onceki rebalanstan gelir. Shadow "F'i aynalamak" istiyorsa
+    F'in pozisyonlarini okumali, o gunun select()'ini degil.
+
+    Acik 'cold_start_reconcile' history kaydi birakir (gizli reconcile = sessiz
+    look-ahead kadar kotu). (state, events) doner; step() ile ayni events formati."""
+    _ensure(state)
+    friction = config.COMMISSION / 2 + slippage
+    events = {"buys": [], "sells": [], "reentries": []}
+
+    # G1 toplam sermayesi (mevcut dejenere tohum dahil, bugunku fiyattan)
+    total = float(state["cash"])
+    for tic, pos in state["positions"].items():
+        total += float(pos["shares"] * float(_py(prices_today.get(tic, pos["entry"]))))
+
+    # F'in mevcut yatirim degeri + goreli piyasa-degeri agirliklari (BUGUNKU fiyat)
+    ref_pos = ref_state.get("positions", {})
+    ref_cash = float(ref_state.get("cash", 0.0))
+    ref_val = {}
+    for tic, pos in ref_pos.items():
+        p = prices_today.get(tic)
+        if p is None or float(_py(p)) <= 0:
+            continue
+        ref_val[str(tic)] = float(pos["shares"]) * float(_py(p))
+    ref_invested = sum(ref_val.values())
+    ref_total = ref_cash + ref_invested
+    invested_frac = (ref_invested / ref_total) if ref_total > 0 else 0.0
+
+    # mevcut (dejenere) tohumu bugunku fiyattan tasfiye et — izi trades'e dusur
+    for tic, pos in list(state["positions"].items()):
+        p = float(_py(prices_today.get(tic, pos["entry"])))
+        pnl = float((p / pos["entry"] - 1) * 100)
+        state["cash"] = float(state["cash"] + pos["shares"] * p * (1 - friction))
+        del state["positions"][tic]
+        _log(state, date, "SELL", tic, p, reason="cold_start_reconcile", pnl_pct=round(pnl, 2))
+        events["sells"].append({"ticker": str(tic), "price": round(_py(p), 2),
+                                "reason": "cold_start_reconcile", "pnl_pct": round(_py(pnl), 2)})
+
+    # F'in yatirim-orani kadarini, F'in goreli agirliklariyla, BUGUNKU fiyattan yerlestir
+    deploy = total * invested_frac
+    mirrored = []
+    if ref_invested > 0 and deploy > 0:
+        for tic, mv in ref_val.items():
+            ep = float(_py(prices_today.get(tic)))
+            if ep <= 0:
+                continue
+            w = mv / ref_invested
+            alloc = float(deploy * w * (1 - friction))
+            state["positions"][tic] = {"entry": ep, "peak": ep,
+                                       "shares": float(alloc / ep), "w": float(w)}
+            state["cash"] = float(state["cash"] - alloc)
+            state["stats"]["buys"] += 1
+            _log(state, date, "BUY", tic, ep, reason="cold_start_reconcile", weight=round(w, 3))
+            events["buys"].append({"ticker": str(tic), "price": round(_py(ep), 2)})
+            mirrored.append(str(tic))
+
+    state["history"].append({
+        "type": "cold_start_reconcile",
+        "date": str(date.date()) if hasattr(date, "date") else str(date),
+        "reason": reason or "gec-katilim cold-start, F'e senkron (bugunku fiyat, F entry gecmisi KOPYALANMADI)",
+        "mirrored": mirrored,
+        "invested_frac": round(invested_frac, 4),
+        "total": round(float(total), 4),
+        "n_pos": len(state["positions"]),
+    })
+    if len(state["history"]) > _HISTORY_CAP:
+        state["history"] = state["history"][-_HISTORY_CAP:]
+    return state, events
+
+
 def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
     """G1 gunluk adim. state yerinde guncellenir. (state, events) doner."""
     friction = config.COMMISSION / 2 + slippage
