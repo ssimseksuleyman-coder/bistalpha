@@ -768,7 +768,7 @@ function renderCatalystLedger(info) {
     const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
     return `<div class="forward-row">
       <strong>${esc(item.ticker)}</strong>
-      <span>${esc(item.type || '-')} | yas ${esc(item.age_trading_days ?? 0)}g | <b class="${cls}">%${esc(ret ?? '-')}</b> | ${item.f_overlap ? 'F-kesisim' : 'izleme'}</span>
+      <span>${esc(item.type || '-')} | ${esc(item.source_tier || 'kaynak')} | yas ${esc(item.age_trading_days ?? 0)}g | <b class="${cls}">%${esc(ret ?? '-')}</b> | ${item.f_overlap ? 'F-kesisim' : 'izleme'}</span>
     </div>`;
   }).join('');
   const typeRows = (info.by_type || []).slice(0, 4).map(row => {
@@ -792,6 +792,10 @@ function renderCatalystLedger(info) {
     <div class="forward-row">
       <strong>21g sonuc</strong>
       <span><b class="${avgClass}">%${esc(avg21 ?? '-')}</b> | isabet %${esc(info.hit_21d_pct ?? '-')} | karar ${esc(info.decision || '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Kaynak disiplini</strong>
+      <span>politika ${esc(info.policy_version || '-')} | karar icin min ${esc(info.min_mature_events_for_decision ?? 20)} olgun olay</span>
     </div>
     <div class="meta" style="padding-top:4px">${esc(info.note || 'F motoruna emir uretmez.')}</div>
     ${candidates || '<div class="empty">Son kaynak adayi yok</div>'}

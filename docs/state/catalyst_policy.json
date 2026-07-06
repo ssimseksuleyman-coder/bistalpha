@@ -1,0 +1,69 @@
+{
+  "version": "2026-07-06",
+  "purpose": "Katalizor kaynaklarini olcmek icin politika. Islem motoru degildir.",
+  "global_rules": {
+    "opens_trade": false,
+    "primary_window_days": 21,
+    "early_window_days": 5,
+    "minimum_mature_events_for_decision": 20,
+    "promotion_requires": [
+      "21g olgun olay >= 20",
+      "21g ortalama getiri > 0",
+      "21g isabet orani >= 50",
+      "F motoruna dokunmadan once resmi/veri kaynagi teyidi"
+    ]
+  },
+  "source_tiers": {
+    "primary": {
+      "score": 3,
+      "examples": ["KAP", "BIST", "SPK", "MKK"],
+      "rule": "Birincil kaynak. Yine de F motoruna otomatik emir uretmez."
+    },
+    "data_vendor": {
+      "score": 2,
+      "examples": ["Stockeys", "Finnet", "Investing", "TradingView", "Bigpara"],
+      "rule": "Veri/filtre kaynagi. KAP veya resmi tabloyla teyit edilmeden terfi etmez."
+    },
+    "social": {
+      "score": 1,
+      "examples": ["X", "StockeysPro/X", "analist paylasimi"],
+      "rule": "Erken radar. Tek basina islem sebebi degildir."
+    },
+    "rumor": {
+      "score": 0,
+      "examples": ["duyum", "ucacak", "tavan", "hedef fiyat tek basina"],
+      "rule": "Katalizor degil; risk etiketi olarak izlenir."
+    }
+  },
+  "positive_types": {
+    "temettu_verimi": ["temettu", "temettu verimi", "kar payi", "nakit temettu"],
+    "sermaye": ["bedelsiz", "bedelli", "sermaye artirimi", "bolunme"],
+    "geri_alim": ["geri alim", "pay geri alim", "pay alimi"],
+    "bilanco": ["bilanco", "net kar", "ciro", "favok", "ebitda", "marj", "beklenti ustu"],
+    "buyume_kalite": ["kar buyumesi", "satis buyumesi", "roe", "roic", "ozsermaye karliligi"],
+    "degerleme": ["fk", "f/k", "pd/dd", "fd/favok", "peg", "iskonto"],
+    "sirket_haberi": ["ihale", "sozlesme", "yeni is iliskisi", "yatirim", "tesvik", "kapasite artisi"],
+    "endeks": ["bist30", "bist50", "bist100", "msci", "ftse", "endekse dahil"],
+    "makro_sektor": ["ihracat", "doviz pozisyonu", "faiz", "petrol", "altin", "savunma", "bankacilik"]
+  },
+  "risk_types": {
+    "tedbir": ["spk tedbir", "vbts", "brut takas", "kredili islem yasagi", "aciga satis yasagi"],
+    "hukuki": ["ceza", "vergi cezasi", "dava", "faaliyet durdurma"],
+    "sahiplik": ["ortak satisi", "patron satisi", "tahsisli sermaye artirimi"],
+    "finansal_stres": ["borc yapilandirma", "konkordato", "iflas", "likidite"]
+  },
+  "blocked_as_positive": [
+    "ucacak",
+    "roket",
+    "tavan olacak",
+    "duyum",
+    "hedef fiyat",
+    "kesin al"
+  ],
+  "x_search_templates": [
+    "from:StockeysPro (\"temettu\" OR \"bedelsiz\" OR \"geri alim\" OR \"bilanco\" OR \"FAVOK\" OR \"PD/DD\" OR \"endeks\")",
+    "(\"BIST30\" OR \"BIST50\" OR \"BIST100\") (\"dahil\" OR \"cikarildi\" OR \"endeks\")",
+    "(\"yeni is iliskisi\" OR \"ihale\" OR \"sozlesme\") (\"KAP\" OR \"#KAP\")",
+    "(\"SPK tedbir\" OR \"VBTS\" OR \"brut takas\" OR \"kredili islem yasagi\")"
+  ]
+}

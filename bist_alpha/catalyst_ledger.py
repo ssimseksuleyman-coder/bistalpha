@@ -30,6 +30,10 @@ def _sources_path() -> Path:
     return _repo_root() / "docs" / "state" / "catalyst_sources.json"
 
 
+def _policy_path() -> Path:
+    return _repo_root() / "docs" / "state" / "catalyst_policy.json"
+
+
 def _round(value, digits=2):
     if value is None:
         return None
@@ -121,7 +125,46 @@ def _load_sources(path=None):
     return payload.get("sources", []) if isinstance(payload, dict) else []
 
 
-def _source_events(report, data, existing_events, sources):
+def _load_policy(path=None):
+    return _load_json(Path(path) if path else _policy_path(), {})
+
+
+def _source_quality(source, policy):
+    confidence = str(source.get("confidence") or "").lower()
+    source_text = " ".join([
+        str(source.get("source") or ""),
+        str(source.get("source_url") or ""),
+        str(source.get("label") or ""),
+        str(source.get("note") or ""),
+    ]).lower()
+    tier = source.get("source_tier")
+    if not tier:
+        if confidence in ("primary", "official"):
+            tier = "primary"
+        elif "kap" in source_text or "borsaistanbul" in source_text or "spk" in source_text:
+            tier = "primary"
+        elif any(x in source_text for x in ("stockeys", "finnet", "investing", "tradingview", "bigpara")):
+            tier = "data_vendor"
+        elif "x.com" in source_text or "twitter" in source_text:
+            tier = "social"
+        else:
+            tier = "social" if confidence == "secondary" else "data_vendor"
+    source_tiers = policy.get("source_tiers", {}) if isinstance(policy, dict) else {}
+    rule = source_tiers.get(tier, {})
+    score = rule.get("score", 1)
+    risk_types = policy.get("risk_types", {}) if isinstance(policy, dict) else {}
+    risk_only = source.get("risk_only") or source.get("type") in risk_types
+    requires_confirmation = tier != "primary"
+    return {
+        "source_tier": tier,
+        "source_score": int(score),
+        "source_rule": rule.get("rule"),
+        "requires_confirmation": bool(requires_confirmation),
+        "risk_only": bool(risk_only),
+    }
+
+
+def _source_events(report, data, existing_events, sources, policy=None):
     prices = data.get("prices") if data else None
     if prices is None or prices.empty:
         return []
@@ -139,6 +182,7 @@ def _source_events(report, data, existing_events, sources):
     for source in sources:
         if source.get("disabled"):
             continue
+        quality = _source_quality(source, policy or {})
         event_date = source.get("date")
         if not event_date or str(event_date) > as_of:
             continue
@@ -156,6 +200,11 @@ def _source_events(report, data, existing_events, sources):
                 "source": source.get("source"),
                 "source_url": source.get("source_url"),
                 "source_confidence": source.get("confidence", "secondary"),
+                "source_tier": quality["source_tier"],
+                "source_score": quality["source_score"],
+                "source_rule": quality["source_rule"],
+                "requires_confirmation": quality["requires_confirmation"],
+                "risk_only": quality["risk_only"],
                 "type": source.get("type", "catalyst"),
                 "label": source.get("label") or source.get("type") or "catalyst",
                 "event_date": str(event_date),
@@ -166,6 +215,7 @@ def _source_events(report, data, existing_events, sources):
                 "f_top10_at_entry": ticker in top10,
                 "f_position_at_entry": ticker in f_positions,
                 "opens_trade": False,
+                "keywords": source.get("keywords", []),
                 "note": source.get("note"),
             })
     return events
@@ -212,7 +262,7 @@ def _avg(values):
     return sum(values) / len(values) if values else None
 
 
-def _summary(events, sources, as_of):
+def _summary(events, sources, as_of, policy=None):
     latest_source = None
     if sources:
         active = [s for s in sources if not s.get("disabled")]
@@ -246,8 +296,30 @@ def _summary(events, sources, as_of):
             "avg_21d_return_pct": _round(_avg(bucket["ret21"])),
             "hit_21d_pct": _round(bucket["wins21"] / n21 * 100, 1) if n21 else None,
         })
+    quality_rows = {}
+    for event in events:
+        tier = event.get("source_tier") or "unknown"
+        row = quality_rows.setdefault(tier, {"tier": tier, "n": 0, "mature_21d": 0, "ret21": [], "wins21": 0})
+        row["n"] += 1
+        if event.get("return_21d_pct") is not None:
+            row["mature_21d"] += 1
+            row["ret21"].append(event.get("return_21d_pct"))
+            row["wins21"] += 1 if float(event.get("return_21d_pct")) > 0 else 0
+    source_quality = []
+    for row in quality_rows.values():
+        n21 = row["mature_21d"]
+        source_quality.append({
+            "tier": row["tier"],
+            "n": row["n"],
+            "mature_21d": n21,
+            "avg_21d_return_pct": _round(_avg(row["ret21"])),
+            "hit_21d_pct": _round(row["wins21"] / n21 * 100, 1) if n21 else None,
+        })
+    policy = policy or {}
+    global_rules = policy.get("global_rules", {}) if isinstance(policy, dict) else {}
     decision = "olcum_devam"
-    if len(mature21) >= 20:
+    min_events = int(global_rules.get("minimum_mature_events_for_decision", 20) or 20)
+    if len(mature21) >= min_events:
         avg21 = _avg(ret21)
         hit21 = sum(1 for r in ret21 if r > 0) / len(ret21) * 100 if ret21 else None
         if avg21 is not None and avg21 > 0 and hit21 is not None and hit21 >= 50:
@@ -273,10 +345,14 @@ def _summary(events, sources, as_of):
         "avg_21d_return_pct": _round(_avg(ret21)),
         "hit_21d_pct": _round(sum(1 for r in ret21 if r > 0) / len(ret21) * 100, 1) if ret21 else None,
         "decision": decision,
+        "policy_version": policy.get("version"),
+        "min_mature_events_for_decision": min_events,
+        "source_quality": sorted(source_quality, key=lambda x: x["tier"]),
         "latest_candidates": [
             {
                 "ticker": e.get("ticker"),
                 "type": e.get("type"),
+                "source_tier": e.get("source_tier"),
                 "entry_price": e.get("entry_price"),
                 "current_return_pct": e.get("current_return_pct"),
                 "age_trading_days": e.get("age_trading_days"),
@@ -289,15 +365,16 @@ def _summary(events, sources, as_of):
     }
 
 
-def update(report, data, path=None, sources_path=None, max_events=MAX_EVENTS):
+def update(report, data, path=None, sources_path=None, policy_path=None, max_events=MAX_EVENTS):
     prices = data.get("prices") if data else None
     if prices is None or prices.empty:
         return {"error": "price data missing"}
     ledger_path = Path(path) if path else _ledger_path()
     sources = _load_sources(sources_path)
+    policy = _load_policy(policy_path)
     ledger = _load_json(ledger_path, {"events": []})
     existing_events = ledger.get("events", [])
-    new_events = _source_events(report, data, existing_events, sources)
+    new_events = _source_events(report, data, existing_events, sources, policy)
     merged = {_event_key(e): e for e in existing_events}
     for event in new_events:
         merged[_event_key(event)] = event
@@ -307,7 +384,7 @@ def update(report, data, path=None, sources_path=None, max_events=MAX_EVENTS):
     events = [_refresh_event(event, prices, as_of_pos) for event in events]
     events.sort(key=lambda e: (e.get("event_date") or "", e.get("source_id") or "", e.get("ticker") or ""))
     payload = {
-        "summary": _summary(events, sources, as_of),
+        "summary": _summary(events, sources, as_of, policy),
         "events": events,
     }
     _save_json(ledger_path, payload)
