@@ -763,6 +763,7 @@ function renderCatalystLedger(info) {
   }
   const avg21 = info.avg_21d_return_pct;
   const avgClass = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const registry = info.source_registry_counts || {};
   const candidates = (info.latest_candidates || []).slice(0, 6).map(item => {
     const ret = item.current_return_pct;
     const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
@@ -795,7 +796,7 @@ function renderCatalystLedger(info) {
     </div>
     <div class="forward-row">
       <strong>Kaynak disiplini</strong>
-      <span>politika ${esc(info.policy_version || '-')} | karar icin min ${esc(info.min_mature_events_for_decision ?? 20)} olgun olay</span>
+      <span>politika ${esc(info.policy_version || '-')} | aktif ${esc(registry.active_measurement ?? 0)} | bekleyen ${esc(registry.approved_pending_event ?? 0)} | izleme ${esc(registry.watch_only ?? 0)} | risk ${esc(registry.risk_only ?? 0)}</span>
     </div>
     <div class="meta" style="padding-top:4px">${esc(info.note || 'F motoruna emir uretmez.')}</div>
     ${candidates || '<div class="empty">Son kaynak adayi yok</div>'}

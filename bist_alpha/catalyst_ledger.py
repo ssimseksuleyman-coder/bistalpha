@@ -317,6 +317,11 @@ def _summary(events, sources, as_of, policy=None):
         })
     policy = policy or {}
     global_rules = policy.get("global_rules", {}) if isinstance(policy, dict) else {}
+    registry = policy.get("source_registry", []) if isinstance(policy, dict) else []
+    registry_counts = {}
+    for source in registry:
+        status = source.get("status") or "unknown"
+        registry_counts[status] = registry_counts.get(status, 0) + 1
     decision = "olcum_devam"
     min_events = int(global_rules.get("minimum_mature_events_for_decision", 20) or 20)
     if len(mature21) >= min_events:
@@ -347,6 +352,7 @@ def _summary(events, sources, as_of, policy=None):
         "decision": decision,
         "policy_version": policy.get("version"),
         "min_mature_events_for_decision": min_events,
+        "source_registry_counts": registry_counts,
         "source_quality": sorted(source_quality, key=lambda x: x["tier"]),
         "latest_candidates": [
             {

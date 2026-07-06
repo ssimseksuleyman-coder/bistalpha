@@ -65,5 +65,121 @@
     "(\"BIST30\" OR \"BIST50\" OR \"BIST100\") (\"dahil\" OR \"cikarildi\" OR \"endeks\")",
     "(\"yeni is iliskisi\" OR \"ihale\" OR \"sozlesme\") (\"KAP\" OR \"#KAP\")",
     "(\"SPK tedbir\" OR \"VBTS\" OR \"brut takas\" OR \"kredili islem yasagi\")"
+  ],
+  "source_status_rules": {
+    "active_measurement": "Kaynak deftere olay uretmeye uygundur; yine de F motoruna emir uretmez.",
+    "approved_pending_event": "Kaynak kabul edildi, fakat elle girilen somut olay/link olmadan deftere eklenmez.",
+    "watch_only": "Kaynak izlenir; en az 10 somut olay gozlemi olmadan aktif olcume alinmaz.",
+    "risk_only": "Pozitif katalizor sayilmaz; sosyal/pump riski olarak etiketlenir."
+  },
+  "source_registry": [
+    {
+      "handle": "@StockeysPro",
+      "name": "StockeysPro / X",
+      "tier": "data_vendor",
+      "status": "active_measurement",
+      "role": "oran ve tema radari",
+      "allowed_types": ["temettu_verimi", "degerleme", "bilanco", "buyume_kalite"],
+      "rule": "Tablo/oran iceren paylasimlar deftere girer; KAP teyidi olmadan terfi etmez."
+    },
+    {
+      "handle": "@Finnet",
+      "name": "Finnet",
+      "tier": "data_vendor",
+      "status": "approved_pending_event",
+      "role": "finansal tablo ve oran kalitesi",
+      "allowed_types": ["bilanco", "buyume_kalite", "degerleme"],
+      "rule": "Somut tablo/link varsa deftere girer."
+    },
+    {
+      "handle": "@Bigpara",
+      "name": "Bigpara",
+      "tier": "data_vendor",
+      "status": "approved_pending_event",
+      "role": "temel veri ve haber ozeti",
+      "allowed_types": ["bilanco", "sirket_haberi", "temettu_verimi"],
+      "rule": "Haber tek basina degil; hisse+katalizor+link varsa deftere girer."
+    },
+    {
+      "handle": "@InvestingcomTR",
+      "name": "Investing.com TR",
+      "tier": "data_vendor",
+      "status": "approved_pending_event",
+      "role": "makro, piyasa ve temel veri",
+      "allowed_types": ["makro_sektor", "bilanco", "degerleme"],
+      "rule": "Genel piyasa yorumu deftere girmez; hisseye bagli katalizor gerekir."
+    },
+    {
+      "handle": "@Midas_TR",
+      "name": "Midas",
+      "tier": "data_vendor",
+      "status": "approved_pending_event",
+      "role": "KAP ve temel analiz ozeti",
+      "allowed_types": ["bilanco", "sirket_haberi", "temettu_verimi"],
+      "rule": "Ozet kaynak; resmi KAP teyidi aranir."
+    },
+    {
+      "handle": "@borsagundem",
+      "name": "Borsa Gundem",
+      "tier": "social",
+      "status": "approved_pending_event",
+      "role": "haber radari",
+      "allowed_types": ["sirket_haberi", "tedbir", "hukuki"],
+      "rule": "Haber radari; olumlu/olumsuz ayrimi defterde risk etiketiyle tutulur."
+    },
+    {
+      "handle": "@ParasalAnaliz",
+      "name": "Parasal Analiz",
+      "tier": "social",
+      "status": "watch_only",
+      "role": "temel analiz yorumu",
+      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
+      "rule": "En az 10 somut, linkli olay gozlenmeden aktif olcume alinmaz."
+    },
+    {
+      "handle": "@Yatirimci_Profili",
+      "name": "Yatirimci Profili",
+      "tier": "social",
+      "status": "watch_only",
+      "role": "sirket bazli temel analiz",
+      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
+      "rule": "Yorumdan cok sayisal/kaynakli paylasim aranir."
+    },
+    {
+      "handle": "@TemelAnaliz",
+      "name": "Temel Analiz",
+      "tier": "social",
+      "status": "watch_only",
+      "role": "temel analiz filtresi",
+      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
+      "rule": "Somut kaynak yoksa deftere girmez."
+    },
+    {
+      "handle": "@beyefendiborsa",
+      "name": "Beyefendi Borsa",
+      "tier": "social",
+      "status": "watch_only",
+      "role": "KAP ve sirket analizi",
+      "allowed_types": ["bilanco", "sirket_haberi", "degerleme"],
+      "rule": "KAP/link destekli paylasimlar aday olur."
+    },
+    {
+      "handle": "@erdeminan1967",
+      "name": "Erdem Inan",
+      "tier": "social",
+      "status": "watch_only",
+      "role": "fon portfoyleri ve uzun vade",
+      "allowed_types": ["sahiplik", "buyume_kalite", "degerleme"],
+      "rule": "Fon/portfoy degisimi deftere olay olarak alinabilir; yorum tek basina alinmaz."
+    },
+    {
+      "handle": "@Hisse_Onerileri",
+      "name": "Hisse Onerileri",
+      "tier": "rumor",
+      "status": "risk_only",
+      "role": "sosyal sinyal riski",
+      "allowed_types": ["tedbir"],
+      "rule": "Pozitif katalizor sayilmaz; pump/oneriden kaynaklanan risk etiketi olarak tutulur."
+    }
   ]
 }
