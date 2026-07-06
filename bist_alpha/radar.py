@@ -332,6 +332,54 @@ def _refresh_snapshots(snapshots, data, as_of):
     return hot
 
 
+def _hot_diagnostics(hot, snapshots, window_days=5):
+    by_ticker = {}
+    by_kind = {}
+    for event in hot:
+        ticker = event.get("ticker")
+        kind = event.get("kind") or "unknown"
+        by_kind[kind] = by_kind.get(kind, 0) + 1
+        row = by_ticker.setdefault(ticker, {
+            "ticker": ticker,
+            "count": 0,
+            "max_return_pct": None,
+            "avg_return_pct": 0.0,
+            "first_date": event.get("date"),
+            "last_date": event.get("date"),
+            "kinds": {},
+        })
+        row["count"] += 1
+        ret = event.get("return_pct")
+        row["avg_return_pct"] += float(ret or 0)
+        row["max_return_pct"] = ret if row["max_return_pct"] is None else max(row["max_return_pct"], ret)
+        row["last_date"] = event.get("date")
+        row["kinds"][kind] = row["kinds"].get(kind, 0) + 1
+    rows = []
+    for row in by_ticker.values():
+        row["avg_return_pct"] = _round(row["avg_return_pct"] / row["count"], 2) if row["count"] else None
+        rows.append(row)
+    rows = sorted(rows, key=lambda x: (-(x.get("max_return_pct") or 0), x.get("ticker") or ""))[:10]
+
+    recent_dates = {s.get("date") for s in snapshots[-window_days:]}
+    recent_hot = [event for event in hot if event.get("date") in recent_dates]
+    recent_unique = sorted({event.get("ticker") for event in recent_hot if event.get("ticker")})
+    signal = "normal"
+    if len(recent_unique) >= 3:
+        signal = "rotasyon_riski"
+    elif len(recent_unique) >= 2:
+        signal = "rotasyon_izle"
+    return {
+        "hot_unique_count": len(by_ticker),
+        "hot_by_kind": by_kind,
+        "hot_by_ticker": rows,
+        "recent_window_days": window_days,
+        "recent_hot_events": len(recent_hot),
+        "recent_hot_unique_count": len(recent_unique),
+        "recent_hot_unique": recent_unique,
+        "regime_signal": signal,
+    }
+
+
 def update_missed_ledger(data, watchlists, report, date=None, max_snapshots=90):
     prices = data.get("prices")
     if prices is None or prices.empty:
@@ -363,14 +411,14 @@ def update_missed_ledger(data, watchlists, report, date=None, max_snapshots=90):
     })
     snapshots = snapshots[-max_snapshots:]
     hot = _refresh_snapshots(snapshots, data, date)
-    recent_hot = hot[-10:]
-    regime = "rotasyon_riski" if len(recent_hot) >= 3 else "normal"
+    diagnostics = _hot_diagnostics(hot, snapshots)
+    recent_hot = [event for event in hot if event.get("date") in {s.get("date") for s in snapshots[-diagnostics["recent_window_days"]:]}][-10:]
     summary = {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "tracked_days": len(snapshots),
         "current_candidates": len(current_items),
         "hot_missed_count": len(hot),
-        "regime_signal": regime,
+        **diagnostics,
         "recent_hot": recent_hot,
     }
     ledger = {"summary": summary, "snapshots": snapshots}

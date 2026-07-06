@@ -395,9 +395,11 @@ function renderWatchlists(watch, missed) {
   }
   const signal = missed?.regime_signal || 'normal';
   const hot = missed?.hot_missed_count ?? 0;
+  const uniqueHot = missed?.hot_unique_count ?? '-';
+  const recentUnique = missed?.recent_hot_unique_count ?? '-';
   const radarCount = watch.radar_universe_count || '-';
   const tradeCount = watch.trade_universe_count || '-';
-  el('radarStamp').textContent = signal === 'normal' ? 'normal' : 'rotasyon riski';
+  el('radarStamp').textContent = signal === 'normal' ? 'normal' : signal.replace(/_/g, ' ');
   el('watchlists').innerHTML = `
     <div class="watch-section">
       <div class="watch-title"><span>Evren</span><span class="badge">F:${esc(tradeCount)} / Radar:${esc(radarCount)}</span></div>
@@ -417,7 +419,7 @@ function renderWatchlists(watch, missed) {
     </div>
     <div class="watch-section">
       <div class="watch-title"><span>Kacirilanlar Defteri</span><span class="badge ${signal === 'normal' ? '' : 'warn'}">${esc(signal)}</span></div>
-      <div class="meta">Takip gunu: ${esc(missed?.tracked_days ?? '-')} | Aday: ${esc(missed?.current_candidates ?? '-')} | Sicak kacirilan: ${esc(hot)}</div>
+      <div class="meta">Takip gunu: ${esc(missed?.tracked_days ?? '-')} | Aday: ${esc(missed?.current_candidates ?? '-')} | Sicak olay: ${esc(hot)} | Benzersiz: ${esc(uniqueHot)} | Son pencere benzersiz: ${esc(recentUnique)}</div>
     </div>
   `;
 }
