@@ -51,7 +51,7 @@ console.log("\n[2] Cekirdek taze + Deniz backend stale -> SARI");
   check("missing reason", r.metrics.find(m => m.key === "missing").reason, "eksik: ALTIN, DMLKT");
 }
 
-console.log("\n[2b] Backend operasyon kirmizi -> KIRMIZI");
+console.log("\n[2b] Backend eski karar bilgi; metrikler esas -> SARI");
 {
   const d = {
     operation_health: {
@@ -66,7 +66,7 @@ console.log("\n[2b] Backend operasyon kirmizi -> KIRMIZI");
     timestamp: "2026-06-29T08:00:00",
   };
   const r = evaluate(d, MON_PM);
-  check("verdict", r.verdict, "r");
+  check("verdict", r.verdict, "a");
   check("backend", r.backendVerdict, "r");
 }
 
@@ -124,6 +124,37 @@ console.log("\n[6] Bozuk/eksik girdi -> cokme yok");
   }
   check("cokmedi", crashed, false);
   if (r) check("verdict", r.verdict, "r");
+}
+
+console.log("\n[7] SLA gecikme esikleri");
+{
+  const base = {
+    last_data_date: "2026-06-29",
+    price_count: 605,
+    source_pool_count: 607,
+    source: "yahoo",
+    timestamp: "2026-06-29T14:30:00",
+    deniz_bulletin: { available: true, fresh: true, age_days: 0 },
+    operation_health: {
+      target_time: "14:30",
+      source: "yahoo",
+      last_data_date: "2026-06-29",
+      price_count: 605,
+      source_pool_count: 607,
+      data_health: { data_issues: [] },
+      telegram: { sent: true, status: "sent" },
+      deniz_bulletin: { available: true, fresh: true, age_days: 0 },
+    },
+  };
+  const warn = JSON.parse(JSON.stringify(base));
+  warn.operation_health.delay_minutes = 40;
+  check("40 dk sari", evaluate(warn, MON_PM).metrics.find(m => m.key === "sla").status, "a");
+  check("40 dk verdict sari", evaluate(warn, MON_PM).verdict, "a");
+
+  const red = JSON.parse(JSON.stringify(base));
+  red.operation_health.delay_minutes = 61;
+  check("61 dk kirmizi", evaluate(red, MON_PM).metrics.find(m => m.key === "sla").status, "r");
+  check("61 dk verdict kirmizi", evaluate(red, MON_PM).verdict, "r");
 }
 
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");

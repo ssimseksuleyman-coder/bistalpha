@@ -76,9 +76,9 @@ def _operation_health(report, label, data, health, notify_status):
     delay_minutes = delay["delay_minutes"]
     if health and not health.get("healthy", True):
         core_status = "red"
-    elif delay_minutes is not None and delay_minutes > 35:
+    elif delay_minutes is not None and delay_minutes > 60:
         core_status = "red"
-    elif (delay_minutes is not None and delay_minutes > 10) or fallback or (
+    elif (delay_minutes is not None and delay_minutes > 15) or fallback or (
             missing_pct is not None and missing_pct > 5):
         core_status = "amber"
 

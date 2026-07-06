@@ -176,7 +176,7 @@
     out.push(metric(
       "sla", true, "Rapor SLA", "hedef saat ve gecikme dakikasi",
       h.target_time || "-", delay == null ? "plansiz" : delay + " dk gecikme",
-      delay == null ? "n" : delay <= 10 ? "g" : delay <= 35 ? "a" : "r",
+      delay == null ? "n" : delay <= 15 ? "g" : delay <= 60 ? "a" : "r",
       delay == null ? "manuel/push calismasi" : "hedefe gore " + delay + " dakika"
     ));
 
@@ -228,14 +228,16 @@
     const coreWorst = out.filter(x => x.core && x.status !== "n").reduce((w, x) => worse(w, x.status), "g");
     const auxWorst = out.filter(x => !x.core && x.status !== "n").reduce((w, x) => worse(w, x.status), "g");
     const backendVerdict = normalizeVerdict(h.verdict);
-    let verdict = backendVerdict || coreWorst;
+    let verdict = coreWorst;
     let note = "Cekirdek operasyon saglikli; sinyal raporu okunabilir.";
-    if (backendVerdict === "r") note = "Backend operasyon kirmizi dedi; raporu kontrol et.";
-    else if (coreWorst === "r") note = "Cekirdek veri/operasyon sorunlu; sinyale temkinli yaklas.";
+    if (coreWorst === "r") note = "Cekirdek veri/operasyon sorunlu; sinyale temkinli yaklas.";
     else if (coreWorst === "a") note = "Cekirdek katmanda uyari var; raporu kontrol ederek kullan.";
     else if (auxWorst === "r" || auxWorst === "a") {
       verdict = "a";
       note = "Fiyat verisi saglikli; yardimci kaynaklarda uyari var.";
+    }
+    if (backendVerdict && backendVerdict !== verdict) {
+      note += " Backend eski karar: " + backendVerdict + "; panel guncel metriklere gore okur.";
     }
 
     return { metrics: out, verdict, note, coreWorst, auxWorst, backendVerdict };

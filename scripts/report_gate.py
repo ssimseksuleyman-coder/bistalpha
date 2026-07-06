@@ -93,9 +93,12 @@ def due_slot(now: datetime | None = None) -> tuple[bool, str, str]:
     now = now or _now_istanbul()
     event = os.environ.get("GITHUB_EVENT_NAME", "")
 
-    if event in {"workflow_dispatch", "push"}:
-        label = "manuel" if event == "workflow_dispatch" else "push"
-        return True, label, event
+    if event == "workflow_dispatch":
+        return True, "manuel", event
+    if event == "push":
+        if os.environ.get("ALLOW_PUSH_REPORT", "").lower() in {"1", "true", "yes"}:
+            return True, "push", "push_allowed"
+        return False, "", "push_ignored"
 
     if now.weekday() >= 5:
         return False, "", "weekend"
