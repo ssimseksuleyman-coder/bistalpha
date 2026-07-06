@@ -23,6 +23,7 @@ from bist_alpha import datafeed
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 LEDGER = os.path.join(REPO, "reports", "ibs_reversal_ledger.json")
+BACKTEST_REPORT = os.path.join(REPO, "reports", "ibs_reversal_backtest.json")
 
 IBS_MAX = 0.15
 RSI_MAX = 35.0
@@ -32,6 +33,8 @@ LOOKAHEAD_DAYS = (1, 3, 5, 10)
 LIVE_ENV = "IBS_LEDGER_LIVE"
 SCAN_DAYS_ENV = "IBS_LEDGER_SCAN_DAYS"
 COOLDOWN_DAYS = 5
+BACKTEST_WARMUP_DAYS = 40
+COST_STRESS_PCT = (0.4, 0.8, 1.0, 2.0)
 
 
 def _rsi(close: pd.Series, n: int = 14) -> pd.Series:
@@ -98,6 +101,20 @@ def _forward_returns(prices: pd.DataFrame, ticker: str, idx: int) -> dict:
     return out
 
 
+def _forward_returns_from_entry(prices: pd.DataFrame, ticker: str, idx: int, entry: float) -> dict:
+    out = {}
+    if not entry or pd.isna(entry):
+        return out
+    for days in LOOKAHEAD_DAYS:
+        j = idx + days
+        key = f"fwd_{days}d_pct"
+        if j < len(prices.index):
+            out[key] = round((prices[ticker].iloc[j] / entry - 1) * 100, 2)
+        else:
+            out[key] = None
+    return out
+
+
 def _current_universe(feed, data, date) -> set[str]:
     try:
         return set(feed.dynamic_universe(data, date=date))
@@ -110,6 +127,53 @@ def _default_feed():
     if os.environ.get(LIVE_ENV, "").lower() in ("1", "true", "yes", "evet"):
         return datafeed.get_feed()
     return datafeed.FileFeed()
+
+
+def _indicator_frames(prices: pd.DataFrame, highs: pd.DataFrame, lows: pd.DataFrame) -> dict:
+    rng = (highs - lows).replace(0, np.nan)
+    ibs = ((prices - lows) / rng).replace([np.inf, -np.inf], np.nan)
+    rsi = prices.apply(_rsi)
+    adx_cols = {}
+    for ticker in prices.columns:
+        if ticker in highs.columns and ticker in lows.columns:
+            adx_cols[ticker] = _adx(highs[ticker], lows[ticker], prices[ticker])
+    adx = pd.DataFrame(adx_cols, index=prices.index)
+    return {"ibs": ibs, "rsi": rsi, "adx": adx}
+
+
+def _volume_ratio_frame(prices: pd.DataFrame, vols: pd.DataFrame) -> pd.DataFrame:
+    vols = vols.reindex_like(prices)
+    base = vols.rolling(20, min_periods=10).mean().shift(1)
+    return (vols / base).replace([np.inf, -np.inf], np.nan)
+
+
+def _event_from_frames(
+    prices: pd.DataFrame,
+    indicators: dict,
+    vol_ratio: pd.DataFrame,
+    ticker: str,
+    idx: int,
+    run_at: str,
+) -> dict:
+    date = prices.index[idx]
+    c = prices[ticker].iloc[idx]
+    event = {
+        "run_at": run_at,
+        "signal_date": str(pd.Timestamp(date).date()),
+        "ticker": ticker,
+        "close": round(float(c), 4),
+        "ibs": round(float(indicators["ibs"][ticker].iloc[idx]), 3),
+        "rsi14": round(float(indicators["rsi"][ticker].iloc[idx]), 1),
+        "adx14": round(float(indicators["adx"][ticker].iloc[idx]), 1),
+        "ret_5d_pct": round(float((prices[ticker].iloc[idx] / prices[ticker].iloc[max(0, idx - 5)] - 1) * 100), 2),
+        "volume_ratio20": None,
+    }
+    if ticker in vol_ratio.columns:
+        vr = vol_ratio[ticker].iloc[idx]
+        if not pd.isna(vr):
+            event["volume_ratio20"] = round(float(vr), 2)
+    event.update(_forward_returns_from_entry(prices, ticker, idx, float(c)))
+    return event
 
 
 def _events_for_date(feed, data, prices, highs, lows, vols, date) -> list[dict]:
@@ -258,6 +322,91 @@ def summarize(events: list[dict]) -> dict:
     return summary
 
 
+def cost_stress(events: list[dict], costs: tuple[float, ...] = COST_STRESS_PCT) -> dict:
+    out = {}
+    for cost in costs:
+        label = f"roundtrip_{cost:g}pct"
+        out[label] = {}
+        for days in LOOKAHEAD_DAYS:
+            key = f"fwd_{days}d_pct"
+            vals = [e[key] - cost for e in events if e.get(key) is not None]
+            if not vals:
+                out[label][key] = {"n": 0, "avg": None, "hit_rate": None}
+                continue
+            out[label][key] = {
+                "n": len(vals),
+                "avg": round(sum(vals) / len(vals), 2),
+                "hit_rate": round(sum(1 for v in vals if v > 0) / len(vals) * 100, 1),
+            }
+    return out
+
+
+def backtest_events(data=None, backtest_days: int | None = None) -> list[dict]:
+    feed = _default_feed()
+    data = data or feed.get_latest()
+    prices = data["prices"].sort_index()
+    highs = data["maxs"].reindex_like(prices)
+    lows = data["mins"].reindex_like(prices)
+    vols = data.get("volumes", pd.DataFrame()).reindex_like(prices)
+    if prices.empty:
+        return []
+
+    indicators = _indicator_frames(prices, highs, lows)
+    vol_ratio = _volume_ratio_frame(prices, vols)
+    run_at = datetime.now().isoformat(timespec="seconds")
+    start_idx = BACKTEST_WARMUP_DAYS
+    if backtest_days:
+        start_idx = max(start_idx, len(prices.index) - max(1, int(backtest_days)))
+
+    rows = []
+    for idx in range(start_idx, len(prices.index)):
+        date = prices.index[idx]
+        universe = _current_universe(feed, data, date)
+        for ticker in sorted(universe):
+            if ticker not in prices.columns or ticker not in indicators["adx"].columns:
+                continue
+            c = prices[ticker].iloc[idx]
+            ibs = indicators["ibs"][ticker].iloc[idx]
+            rsi = indicators["rsi"][ticker].iloc[idx]
+            adx = indicators["adx"][ticker].iloc[idx]
+            if pd.isna(c) or pd.isna(ibs) or pd.isna(rsi) or pd.isna(adx):
+                continue
+            if ibs <= IBS_MAX and rsi <= RSI_MAX and adx >= ADX_MIN:
+                rows.append(_event_from_frames(prices, indicators, vol_ratio, ticker, idx, run_at))
+    rows.sort(key=lambda x: (x["signal_date"], x["ticker"]))
+    return rows
+
+
+def write_backtest_report(events: list[dict], path: str = BACKTEST_REPORT) -> dict:
+    cooldown = _cooldown_events(events)
+    report = {
+        "run_at": datetime.now().isoformat(timespec="seconds"),
+        "type": "ibs_rsi_adx_forward_backtest",
+        "source": "file" if os.environ.get(LIVE_ENV, "").lower() not in ("1", "true", "yes", "evet") else "live",
+        "params": {
+            "ibs_max": IBS_MAX,
+            "rsi_max": RSI_MAX,
+            "adx_min": ADX_MIN,
+            "lookahead_days": list(LOOKAHEAD_DAYS),
+            "cooldown_days": COOLDOWN_DAYS,
+            "warmup_days": BACKTEST_WARMUP_DAYS,
+        },
+        "summary": summarize(events),
+        "cost_stress": {
+            "all_events": cost_stress(events),
+            f"cooldown_{COOLDOWN_DAYS}d": cost_stress(cooldown),
+        },
+        "events": events,
+    }
+    if events:
+        report["date_range"] = {
+            "first_signal": events[0]["signal_date"],
+            "last_signal": events[-1]["signal_date"],
+        }
+    _save_json(path, report)
+    return report
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Isolated IBS/RSI/ADX reversal ledger.")
     parser.add_argument(
@@ -266,7 +415,41 @@ def main() -> int:
         default=int(os.environ.get(SCAN_DAYS_ENV, "1") or "1"),
         help="Number of recorded trading days to scan; default: 1.",
     )
+    parser.add_argument(
+        "--backtest",
+        action="store_true",
+        help="Run a full historical forward-return backtest into reports/ibs_reversal_backtest.json.",
+    )
+    parser.add_argument(
+        "--backtest-days",
+        type=int,
+        default=0,
+        help="Limit backtest to last N recorded trading days; 0 means all available history.",
+    )
     args = parser.parse_args()
+    if args.backtest:
+        events = backtest_events(backtest_days=args.backtest_days or None)
+        report = write_backtest_report(events)
+        print("IBS/RSI/ADX BACKTEST (izole; F'e dokunmaz)")
+        if report.get("date_range"):
+            dr = report["date_range"]
+            print(f"Tarih: {dr['first_signal']} -> {dr['last_signal']}")
+        print(f"Olay: {report['summary']['n_events']} | hisse: {report['summary']['unique_tickers']}")
+        for days in LOOKAHEAD_DAYS:
+            stat = report["summary"].get(f"fwd_{days}d_pct", {})
+            print(f"  {days}g: n={stat.get('n')} avg={stat.get('avg')} hit%={stat.get('hit_rate')}")
+        cooldown = report["summary"].get(f"cooldown_{COOLDOWN_DAYS}d", {})
+        if cooldown:
+            print(f"Cooldown {COOLDOWN_DAYS}g: olay={cooldown.get('n_events')}")
+            for days in LOOKAHEAD_DAYS:
+                stat = cooldown.get(f"fwd_{days}d_pct", {})
+                print(
+                    f"  cd {days}g: n={stat.get('n')} "
+                    f"avg={stat.get('avg')} hit%={stat.get('hit_rate')}"
+                )
+        print(f"Rapor: {os.path.relpath(BACKTEST_REPORT, REPO)}")
+        return 0
+
     events = find_events(scan_days=args.scan_days)
     result = append_events(events)
     print("IBS/RSI/ADX TEPKI RADARI (izole; F'e dokunmaz)")
