@@ -265,6 +265,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Katalizor Defteri</h2>
+            <span class="stamp" id="catalystStamp"></span>
+          </div>
+          <div class="forward" id="catalystLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>IBS Tepki Radari</h2>
             <span class="stamp" id="ibsStamp"></span>
           </div>
@@ -744,6 +752,53 @@ function renderPerformanceLedger(info) {
   `;
 }
 
+function renderCatalystLedger(info) {
+  if (!info) {
+    el('catalystLedger').innerHTML = '<div class="empty">Katalizor defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('catalystLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg21 = info.avg_21d_return_pct;
+  const avgClass = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const candidates = (info.latest_candidates || []).slice(0, 6).map(item => {
+    const ret = item.current_return_pct;
+    const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.type || '-')} | yas ${esc(item.age_trading_days ?? 0)}g | <b class="${cls}">%${esc(ret ?? '-')}</b> | ${item.f_overlap ? 'F-kesisim' : 'izleme'}</span>
+    </div>`;
+  }).join('');
+  const typeRows = (info.by_type || []).slice(0, 4).map(row => {
+    const cls = row.avg_21d_return_pct == null || Number(row.avg_21d_return_pct) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(row.type)}</strong>
+      <span>n ${esc(row.n)} | 21g ${esc(row.mature_21d)} | <b class="${cls}">%${esc(row.avg_21d_return_pct ?? '-')}</b> | hit %${esc(row.hit_21d_pct ?? '-')}</span>
+    </div>`;
+  }).join('');
+  el('catalystStamp').textContent = info.decision || 'olcum';
+  el('catalystLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? '-')}</div><div class="forward-label">olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.latest_f_overlap ?? 0)}</div><div class="forward-label">son F-kesisim</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>${esc(info.latest_source_label || 'kaynak yok')}</strong>
+      <span>son olay ${esc(info.latest_events ?? 0)} | acik 21g ${esc(info.open_21d ?? 0)}</span>
+    </div>
+    <div class="forward-row">
+      <strong>21g sonuc</strong>
+      <span><b class="${avgClass}">%${esc(avg21 ?? '-')}</b> | isabet %${esc(info.hit_21d_pct ?? '-')} | karar ${esc(info.decision || '-')}</span>
+    </div>
+    <div class="meta" style="padding-top:4px">${esc(info.note || 'F motoruna emir uretmez.')}</div>
+    ${candidates || '<div class="empty">Son kaynak adayi yok</div>'}
+    ${typeRows}
+  `;
+}
+
 function statBox(label, stat) {
   return `<div class="forward-box">
     <div class="forward-value">${esc(stat?.avg ?? '-')}</div>
@@ -800,6 +855,7 @@ async function loadDashboard() {
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderPerformanceLedger(data.performance_ledger);
+    renderCatalystLedger(data.catalyst_ledger);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
     renderOperationGate(data);

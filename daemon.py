@@ -234,6 +234,11 @@ def run_cycle(label="manuel"):
             report["watchlists"] = radar.build_watchlists(data, signals, report)
         except Exception as e:
             report["watchlists"] = {"error": str(e)}
+        try:
+            from bist_alpha import catalyst_ledger
+            report["catalyst_ledger"] = catalyst_ledger.update(report, data)
+        except Exception as e:
+            report["catalyst_ledger"] = {"error": str(e)}
         text = reporter.format_text(report)
         print(text)
         # 5) Bildirim (eksik #2)
@@ -257,6 +262,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import forward_test
     from bist_alpha import missed_log
     from bist_alpha import performance_ledger
+    from bist_alpha import catalyst_ledger
     from bist_alpha import g1_account as g1_mod
     from bist_alpha import sectors as sectors_mod
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
@@ -292,6 +298,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),
         "watchlists": report.get("watchlists", {}),
+        "catalyst_ledger": report.get("catalyst_ledger"),
         "shadow_cycle": report.get("shadow_cycle"),
         "operation_health": _operation_health(report, label, data, health, notify_status or {}),
         "account_governance": {
@@ -332,6 +339,11 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             report, data, watchlists=report.get("watchlists", {}))
     except Exception as e:
         state["performance_ledger"] = {"error": str(e)}
+    if not state.get("catalyst_ledger"):
+        try:
+            state["catalyst_ledger"] = catalyst_ledger.update(report, data)
+        except Exception as e:
+            state["catalyst_ledger"] = {"error": str(e)}
     for acc in ["A", "B", "F", "O"]:
         try:
             s = pf.load(acc, state_dir="portfolios")

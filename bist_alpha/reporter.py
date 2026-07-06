@@ -295,6 +295,23 @@ def format_text(report):
                 tags = _watch_tags(w, max_tags=4)
                 L.append(f"   {w['ticker']:7s} 1Y:%{w['m252']} 1A:%{w['m21']} 1H:%{w['m5']} "
                          f"{_watch_signal(w)} | {tags}")
+    cat = report.get("catalyst_ledger") or {}
+    if cat and not cat.get("error"):
+        L.append("")
+        L.append("KATALIZOR DEFTERI (islem degil, 21g olcum):")
+        L.append(
+            f"   kaynak:{cat.get('latest_source_label') or '-'} | olay:{cat.get('latest_events', 0)} | "
+            f"F-kesisim:{cat.get('latest_f_overlap', 0)} | 21g olgun:{cat.get('matured_21d', 0)} | "
+            f"karar:{cat.get('decision') or '-'}"
+        )
+        if cat.get("avg_21d_return_pct") is not None:
+            L.append(f"   21g ort:%{cat.get('avg_21d_return_pct')} | isabet:%{cat.get('hit_21d_pct')}")
+        else:
+            L.append("   21g sonucu henuz olgunlasmadi; defter izliyor.")
+        for item in (cat.get("latest_candidates") or [])[:5]:
+            mark = "F" if item.get("f_overlap") else "izle"
+            L.append(f"   {item.get('ticker'):7s} {item.get('type')} | yas:{item.get('age_trading_days')}g | "
+                     f"simdi:%{item.get('current_return_pct')} | {mark}")
     if report.get("shadow_accounts"):
         L.append("")
         L.append("📈 SHADOW PERFORMANS:")
