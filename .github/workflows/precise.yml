@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: bist-precise
+  group: bist-alpha
   cancel-in-progress: false
 
 jobs:
@@ -29,6 +29,8 @@ jobs:
     timeout-minutes: 350        # uyku (max ~5.5s) + calisma icin
     steps:
       - uses: actions/checkout@v4
+      - name: En son state'i al
+        run: git pull --rebase --autostash || true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

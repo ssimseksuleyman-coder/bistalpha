@@ -30,6 +30,7 @@ STATE_PATH = Path("docs/state/report_runs.json")
 # gecikmis cron hala pencerede kalir ve calisir. Slot bosluklari (acilis->gunici
 # 4s45, gunici->kapanis 4s10) 3.5s'ten genis -> ortusme yok. Dedup slot basina 1 rapor.
 WINDOW_MINUTES = int(os.environ.get("REPORT_WINDOW_MINUTES", "210"))
+CLAIM_TTL_MINUTES = int(os.environ.get("REPORT_CLAIM_TTL_MINUTES", "45"))
 
 
 def _now_istanbul() -> datetime:
@@ -54,6 +55,29 @@ def _write_state(state: dict) -> None:
 
 def _marker_key(now: datetime, label: str) -> str:
     return f"{now:%Y-%m-%d}:{label}"
+
+
+def _parse_iso(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _record_blocks(record: dict | None, now: datetime) -> bool:
+    """Sent records always block; fresh claim records block duplicate runners."""
+    if not record:
+        return False
+    if not isinstance(record, dict):
+        return True
+    if record.get("sent_at"):
+        return True
+    claim_at = _parse_iso(record.get("claim_at"))
+    if claim_at is None:
+        return True
+    return now - claim_at <= timedelta(minutes=CLAIM_TTL_MINUTES)
 
 
 def _github_output(**values: str) -> None:
@@ -81,10 +105,25 @@ def due_slot(now: datetime | None = None) -> tuple[bool, str, str]:
         target = datetime.combine(now.date(), slot_time, tzinfo=now.tzinfo)
         if target <= now <= target + timedelta(minutes=WINDOW_MINUTES):
             key = _marker_key(now, label)
-            if key in sent:
+            if _record_blocks(sent.get(key), now):
                 return False, label, f"already_sent:{key}"
             return True, label, f"due:{key}"
     return False, "", "not_due"
+
+
+def claim(label: str, now: datetime | None = None) -> bool:
+    """Reserve a slot before running daemon so parallel workflows do not duplicate."""
+    if not label:
+        raise SystemExit("label required")
+    now = now or _now_istanbul()
+    state = _load_state()
+    sent = state.setdefault("sent", {})
+    key = _marker_key(now, label)
+    if _record_blocks(sent.get(key), now):
+        return False
+    sent[key] = {"claim_at": now.isoformat(timespec="seconds")}
+    _write_state(state)
+    return True
 
 
 def mark(label: str, now: datetime | None = None) -> None:
@@ -98,6 +137,20 @@ def mark(label: str, now: datetime | None = None) -> None:
     _write_state(state)
 
 
+def release(label: str, now: datetime | None = None) -> None:
+    """Release a claim if daemon failed before a real report was sent."""
+    if not label:
+        raise SystemExit("label required")
+    now = now or _now_istanbul()
+    state = _load_state()
+    sent = state.setdefault("sent", {})
+    key = _marker_key(now, label)
+    record = sent.get(key)
+    if isinstance(record, dict) and record.get("claim_at") and not record.get("sent_at"):
+        sent.pop(key, None)
+        _write_state(state)
+
+
 def main(argv: list[str]) -> int:
     cmd = argv[1] if len(argv) > 1 else "check"
     if cmd == "check":
@@ -109,6 +162,17 @@ def main(argv: list[str]) -> int:
         label = argv[2] if len(argv) > 2 else ""
         mark(label)
         print(f"marked {label}")
+        return 0
+    if cmd == "claim":
+        label = argv[2] if len(argv) > 2 else ""
+        ok = claim(label)
+        _github_output(claimed=str(ok).lower())
+        print(f"claimed={str(ok).lower()} label={label}")
+        return 0 if ok else 2
+    if cmd == "release":
+        label = argv[2] if len(argv) > 2 else ""
+        release(label)
+        print(f"released {label}")
         return 0
     raise SystemExit(f"unknown command: {cmd}")
 

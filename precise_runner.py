@@ -56,9 +56,36 @@ def already_sent(label: str) -> bool:
         import report_gate as G
         now = G._now_istanbul()
         key = G._marker_key(now, label)
-        return key in G._load_state().get("sent", {})
+        return G._record_blocks(G._load_state().get("sent", {}).get(key), now)
     except Exception:
         return False
+
+
+def sync_latest_state() -> None:
+    """Pull latest committed state before gate checks; failure is non-fatal."""
+    try:
+        subprocess.run(["git", "pull", "--rebase", "--autostash"], check=False)
+    except Exception as exc:
+        print(f"[precise] git pull atlandi: {exc}")
+
+
+def claim_slot(label: str) -> bool:
+    try:
+        sys.path.insert(0, "scripts")
+        import report_gate as G
+        return G.claim(label)
+    except Exception as exc:
+        print(f"[precise] claim hatasi: {exc}")
+        return False
+
+
+def release_slot(label: str) -> None:
+    try:
+        sys.path.insert(0, "scripts")
+        import report_gate as G
+        G.release(label)
+    except Exception as exc:
+        print(f"[precise] release hatasi: {exc}")
 
 
 def main(argv) -> int:
@@ -66,6 +93,7 @@ def main(argv) -> int:
     label, target, wait = plan()
     print(f"[precise] hedef slot={label} @ {target:%Y-%m-%d %H:%M} TR | bekleme={wait/60:.0f}dk")
 
+    sync_latest_state()
     if already_sent(label):
         print(f"[precise] {label} bugun zaten gonderilmis -> cik"); return 0
     if wait > MAX_WAIT_H * 3600:
@@ -76,9 +104,20 @@ def main(argv) -> int:
     if wait > 0:
         print(f"[precise] {wait/60:.0f}dk uyunuyor -> tam saatte calisacak")
         _time.sleep(wait)
+
+    sync_latest_state()
+    if already_sent(label):
+        print(f"[precise] {label} uyku sonrasi zaten gonderilmis -> cik"); return 0
+    if not claim_slot(label):
+        print(f"[precise] {label} baska workflow tarafindan ayrilmis -> cik"); return 0
+
     print(f"[precise] {label} CALISTIRILIYOR @ {datetime.now(TZ_TR):%H:%M:%S} TR")
-    subprocess.run([sys.executable, "daemon.py", "--once", label], check=False)
-    subprocess.run([sys.executable, "scripts/report_gate.py", "mark", label], check=False)
+    try:
+        subprocess.run([sys.executable, "daemon.py", "--once", label], check=True)
+        subprocess.run([sys.executable, "scripts/report_gate.py", "mark", label], check=True)
+    except Exception:
+        release_slot(label)
+        raise
     return 0
 
 

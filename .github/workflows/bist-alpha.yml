@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: En son state'i al
+        run: git pull --rebase --autostash || true
       - name: Planli tetik kapisi
         id: gate
         env:
