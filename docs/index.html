@@ -265,6 +265,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>IBS Tepki Radari</h2>
+            <span class="stamp" id="ibsStamp"></span>
+          </div>
+          <div class="forward" id="ibsRadar"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>Shadow Hesaplar</h2>
           </div>
           <div class="accounts" id="accounts"></div>
@@ -734,18 +742,63 @@ function renderPerformanceLedger(info) {
   `;
 }
 
+function statBox(label, stat) {
+  return `<div class="forward-box">
+    <div class="forward-value">${esc(stat?.avg ?? '-')}</div>
+    <div class="forward-label">${esc(label)} | hit %${esc(stat?.hit_rate ?? '-')}</div>
+  </div>`;
+}
+
+function renderIbsRadar(info) {
+  if (!info) {
+    el('ibsRadar').innerHTML = '<div class="empty">IBS backtest ozeti henuz yok</div>';
+    return;
+  }
+  const cd = info.summary?.cooldown_5d || {};
+  const cost08 = info.cost_stress?.roundtrip_0.8pct || {};
+  const range = info.date_range
+    ? `${info.date_range.first_signal} -> ${info.date_range.last_signal}`
+    : '-';
+  el('ibsStamp').textContent = info.verdict === 'radar_adayi_islem_motoru_degil' ? 'radar' : 'olcum';
+  el('ibsRadar').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(cd.n_events ?? '-')}</div><div class="forward-label">cooldown olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.summary?.unique_tickers ?? '-')}</div><div class="forward-label">hisse</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(cd.fwd_10d_pct?.avg ?? '-')}</div><div class="forward-label">10g avg | hit %${esc(cd.fwd_10d_pct?.hit_rate ?? '-')}</div></div>
+    </div>
+    <div class="meta" style="padding-top:10px">Tarih: ${esc(range)}</div>
+    <div class="meta">Karar: radar adayi; islem motoru degil. 1-3g maliyete dayanikli degil, 10g tepki daha anlamli.</div>
+    <div class="forward-row">
+      <strong>Cooldown 5g</strong>
+      <span>1g %${esc(cd.fwd_1d_pct?.avg ?? '-')} | 3g %${esc(cd.fwd_3d_pct?.avg ?? '-')} | 5g %${esc(cd.fwd_5d_pct?.avg ?? '-')} | 10g %${esc(cd.fwd_10d_pct?.avg ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Maliyet stresi %0.8</strong>
+      <span>1g %${esc(cost08.fwd_1d_pct?.avg ?? '-')} | 3g %${esc(cost08.fwd_3d_pct?.avg ?? '-')} | 5g %${esc(cost08.fwd_5d_pct?.avg ?? '-')} | 10g %${esc(cost08.fwd_10d_pct?.avg ?? '-')}</span>
+    </div>
+  `;
+}
+
 async function loadDashboard() {
   el('status').textContent = 'Guncelleniyor';
   try {
     const response = await fetch('state/dashboard.json?ts=' + Date.now(), { cache: 'no-store' });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const data = await response.json();
+    let ibsInfo = null;
+    try {
+      const ibsResponse = await fetch('state/ibs_reversal_backtest_summary.json?ts=' + Date.now(), { cache: 'no-store' });
+      if (ibsResponse.ok) ibsInfo = await ibsResponse.json();
+    } catch (_) {
+      ibsInfo = null;
+    }
     const accounts = data.accounts || {};
     renderTop(data.top10 || []);
     renderDecisionCards(data);
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderPerformanceLedger(data.performance_ledger);
+    renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
     renderOperationGate(data);
     renderAccountGovernance(data);
