@@ -10,6 +10,7 @@ Terfi protokolu:
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 from datetime import datetime
@@ -29,6 +30,8 @@ ADX_MIN = 18.0
 MAX_EVENTS_PER_RUN = 30
 LOOKAHEAD_DAYS = (1, 3, 5, 10)
 LIVE_ENV = "IBS_LEDGER_LIVE"
+SCAN_DAYS_ENV = "IBS_LEDGER_SCAN_DAYS"
+COOLDOWN_DAYS = 5
 
 
 def _rsi(close: pd.Series, n: int = 14) -> pd.Series:
@@ -109,20 +112,8 @@ def _default_feed():
     return datafeed.FileFeed()
 
 
-def find_events(data=None, date=None) -> list[dict]:
-    feed = _default_feed()
-    data = data or feed.get_latest()
-    prices = data["prices"].sort_index()
-    highs = data["maxs"].reindex_like(prices)
-    lows = data["mins"].reindex_like(prices)
-    vols = data.get("volumes", pd.DataFrame()).reindex_like(prices)
-    if prices.empty:
-        return []
-    date = date or prices.index[-1]
-    idx = prices.index.searchsorted(date)
-    if idx <= 20 or idx >= len(prices.index):
-        return []
-    date = prices.index[idx]
+def _events_for_date(feed, data, prices, highs, lows, vols, date) -> list[dict]:
+    idx = prices.index.get_loc(date)
     universe = _current_universe(feed, data, date)
 
     rows = []
@@ -172,6 +163,37 @@ def find_events(data=None, date=None) -> list[dict]:
         rows.append(event)
 
     rows.sort(key=lambda x: (x["ibs"], x["rsi14"], -x["adx14"]))
+    return rows
+
+
+def _scan_dates(prices: pd.DataFrame, date=None, scan_days: int = 1) -> list[pd.Timestamp]:
+    if prices.empty:
+        return []
+    date = pd.Timestamp(date) if date is not None else prices.index[-1]
+    idx = prices.index.searchsorted(date)
+    if idx >= len(prices.index):
+        idx = len(prices.index) - 1
+    if idx <= 20:
+        return []
+    start = max(21, idx - max(1, int(scan_days)) + 1)
+    return list(prices.index[start:idx + 1])
+
+
+def find_events(data=None, date=None, scan_days: int | None = None) -> list[dict]:
+    feed = _default_feed()
+    data = data or feed.get_latest()
+    prices = data["prices"].sort_index()
+    highs = data["maxs"].reindex_like(prices)
+    lows = data["mins"].reindex_like(prices)
+    vols = data.get("volumes", pd.DataFrame()).reindex_like(prices)
+    if scan_days is None:
+        scan_days = int(os.environ.get(SCAN_DAYS_ENV, "1") or "1")
+
+    rows = []
+    for scan_date in _scan_dates(prices, date=date, scan_days=scan_days):
+        rows.extend(_events_for_date(feed, data, prices, highs, lows, vols, scan_date))
+
+    rows.sort(key=lambda x: (x["signal_date"], x["ibs"], x["rsi14"], -x["adx14"]))
     return rows[:MAX_EVENTS_PER_RUN]
 
 
@@ -191,30 +213,77 @@ def append_events(events: list[dict], ledger_path: str = LEDGER) -> dict:
     return {"added": added, "total": len(ledger["events"]), "summary": ledger["summary"]}
 
 
-def summarize(events: list[dict]) -> dict:
-    summary = {"n_events": len(events)}
+def _horizon_stats(events: list[dict]) -> dict:
+    stats = {}
     for days in LOOKAHEAD_DAYS:
         key = f"fwd_{days}d_pct"
         vals = [e[key] for e in events if e.get(key) is not None]
         if not vals:
-            summary[key] = {"n": 0, "avg": None, "hit_rate": None}
+            stats[key] = {"n": 0, "avg": None, "hit_rate": None}
             continue
-        summary[key] = {
+        stats[key] = {
             "n": len(vals),
             "avg": round(sum(vals) / len(vals), 2),
             "hit_rate": round(sum(1 for v in vals if v > 0) / len(vals) * 100, 1),
         }
+    return stats
+
+
+def _cooldown_events(events: list[dict], cooldown_days: int = COOLDOWN_DAYS) -> list[dict]:
+    kept = []
+    last_signal = {}
+    for event in sorted(events, key=lambda e: (e.get("signal_date", ""), e.get("ticker", ""))):
+        ticker = event.get("ticker")
+        date = pd.Timestamp(event.get("signal_date"))
+        prev = last_signal.get(ticker)
+        if prev is not None and (date - prev).days < cooldown_days:
+            continue
+        kept.append(event)
+        last_signal[ticker] = date
+    return kept
+
+
+def summarize(events: list[dict]) -> dict:
+    cooldown = _cooldown_events(events)
+    summary = {
+        "n_events": len(events),
+        "unique_tickers": len({e.get("ticker") for e in events}),
+    }
+    summary.update(_horizon_stats(events))
+    summary[f"cooldown_{COOLDOWN_DAYS}d"] = {
+        "n_events": len(cooldown),
+        "unique_tickers": len({e.get("ticker") for e in cooldown}),
+        **_horizon_stats(cooldown),
+    }
     return summary
 
 
 def main() -> int:
-    events = find_events()
+    parser = argparse.ArgumentParser(description="Isolated IBS/RSI/ADX reversal ledger.")
+    parser.add_argument(
+        "--scan-days",
+        type=int,
+        default=int(os.environ.get(SCAN_DAYS_ENV, "1") or "1"),
+        help="Number of recorded trading days to scan; default: 1.",
+    )
+    args = parser.parse_args()
+    events = find_events(scan_days=args.scan_days)
     result = append_events(events)
     print("IBS/RSI/ADX TEPKI RADARI (izole; F'e dokunmaz)")
+    print(f"Taranan gun: {max(1, args.scan_days)}")
     print(f"Yeni olay: {result['added']} | toplam: {result['total']}")
     for days in LOOKAHEAD_DAYS:
         stat = result["summary"].get(f"fwd_{days}d_pct", {})
         print(f"  {days}g: n={stat.get('n')} avg={stat.get('avg')} hit%={stat.get('hit_rate')}")
+    cooldown = result["summary"].get(f"cooldown_{COOLDOWN_DAYS}d", {})
+    if cooldown:
+        print(f"Cooldown {COOLDOWN_DAYS}g: olay={cooldown.get('n_events')}")
+        for days in LOOKAHEAD_DAYS:
+            stat = cooldown.get(f"fwd_{days}d_pct", {})
+            print(
+                f"  cd {days}g: n={stat.get('n')} "
+                f"avg={stat.get('avg')} hit%={stat.get('hit_rate')}"
+            )
     print(f"Defter: {os.path.relpath(LEDGER, REPO)}")
     return 0
 
