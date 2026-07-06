@@ -306,8 +306,10 @@ function detailText(item) {
   const side = item.yan_kaynak || {};
   if (denizFreshForDisplay && side.deniz_skor != null) parts.push('Deniz:' + side.deniz_skor);
   if (side.hacim) parts.push(side.hacim);
-  if (side.yabanci || side.yabancı) parts.push(side.yabanci || side.yabancı);
-  if (side.bilanco || side.bilanço) parts.push('bilanco:' + (side.bilanco || side.bilanço));
+  const foreignFlow = side.yabanci || side['yabanc\u0131'];
+  const earnings = side.bilanco || side['bilan\u00e7o'];
+  if (foreignFlow) parts.push(foreignFlow);
+  if (earnings) parts.push('bilanco:' + earnings);
   if (side.fx_risk) parts.push('FX-risk');
   if (side.sezonsal) parts.push(side.sezonsal);
   return parts.join(' | ');
@@ -755,7 +757,7 @@ function renderIbsRadar(info) {
     return;
   }
   const cd = info.summary?.cooldown_5d || {};
-  const cost08 = info.cost_stress?.roundtrip_0.8pct || {};
+  const cost08 = info.cost_stress?.['roundtrip_0.8pct'] || {};
   const range = info.date_range
     ? `${info.date_range.first_signal} -> ${info.date_range.last_signal}`
     : '-';
