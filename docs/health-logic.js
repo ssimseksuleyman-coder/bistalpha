@@ -223,6 +223,16 @@
       denizStatus, denizReason
     ));
 
+    const kap = (d.official_sources && d.official_sources.kap) || {};
+    const kapStatus = kap.status || "missing";
+    out.push(metric(
+      "kap", false, "KAP resmi kaynak", "katalizor olay toplama durumu",
+      kap.latest_event_date || "-",
+      "olay " + (kap.total_events ?? 0) + " | " + kapStatus,
+      kapStatus === "ok" ? "g" : kapStatus === "error" ? "r" : "a",
+      kap.error || kap.note || "KAP status bekleniyor"
+    ));
+
     const issues = (h.data_health && h.data_health.data_issues) || [];
     out.push(metric(
       "health", true, "Bakim saglik kontrolu", "NaN, donmus fiyat, eski veri uyarilari",

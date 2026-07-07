@@ -759,7 +759,7 @@ function renderPerformanceLedger(info) {
   `;
 }
 
-function renderCatalystLedger(info) {
+function renderCatalystLedger(info, data) {
   if (!info) {
     el('catalystLedger').innerHTML = '<div class="empty">Katalizor defteri henuz yok</div>';
     return;
@@ -771,6 +771,7 @@ function renderCatalystLedger(info) {
   const avg21 = info.avg_21d_return_pct;
   const avgClass = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
   const registry = info.source_registry_counts || {};
+  const kap = data?.official_sources?.kap || {};
   const candidates = (info.latest_candidates || []).slice(0, 6).map(item => {
     const ret = item.current_return_pct;
     const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
@@ -804,6 +805,10 @@ function renderCatalystLedger(info) {
     <div class="forward-row">
       <strong>Kaynak disiplini</strong>
       <span>politika ${esc(info.policy_version || '-')} | aktif ${esc(registry.active_measurement ?? 0)} | bekleyen ${esc(registry.approved_pending_event ?? 0)} | izleme ${esc(registry.watch_only ?? 0)} | risk ${esc(registry.risk_only ?? 0)}</span>
+    </div>
+    <div class="forward-row">
+      <strong>KAP resmi kaynak</strong>
+      <span>${esc(kap.status || 'bekleniyor')} | olay ${esc(kap.total_events ?? 0)} | son ${esc(kap.latest_event_date || '-')}</span>
     </div>
     <div class="meta" style="padding-top:4px">${esc(info.note || 'F motoruna emir uretmez.')}</div>
     ${candidates || '<div class="empty">Son kaynak adayi yok</div>'}
@@ -867,7 +872,7 @@ async function loadDashboard() {
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderPerformanceLedger(data.performance_ledger);
-    renderCatalystLedger(data.catalyst_ledger);
+    renderCatalystLedger(data.catalyst_ledger, data);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
     renderOperationGate(data);

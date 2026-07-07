@@ -90,6 +90,40 @@ def _sla_diagnostics(label, delay):
     }
 
 
+def _kap_status():
+    import json
+    from pathlib import Path
+    root = Path(__file__).resolve().parent
+    status_path = root / "docs" / "state" / "kap_status.json"
+    events_path = root / "docs" / "state" / "catalysts.json"
+    status = {}
+    status_file_seen = status_path.exists()
+    if status_path.exists():
+        try:
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            status = {"status": "error", "error": f"kap_status okunamadi: {e}"}
+    events = []
+    if events_path.exists():
+        try:
+            events = json.loads(events_path.read_text(encoding="utf-8")).get("events", [])
+        except Exception as e:
+            status.setdefault("warnings", []).append(f"catalysts okunamadi: {e}")
+    latest_event_date = status.get("latest_event_date") or max(
+        (e.get("date") for e in events if e.get("date")), default=None)
+    status_value = status.get("status") or ("missing_status" if events and not status_file_seen else "missing")
+    return {
+        "status": status_value,
+        "updated_at": status.get("updated_at"),
+        "added": status.get("added"),
+        "total_events": status.get("total_events", len(events)),
+        "latest_event_date": latest_event_date,
+        "opens_trade": False,
+        "note": status.get("note") or "KAP resmi kaynak defteri; olcer, F motoruna emir uretmez.",
+        "error": status.get("error"),
+    }
+
+
 def _operation_health(report, label, data, health, notify_status):
     """Dashboard icin operasyon ve veri guvenilirligi ozetini uretir."""
     delay = _report_delay(label)
@@ -398,6 +432,9 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "market_regime": report.get("market_regime"),
         "bist_data_ok": bool((data or {}).get("_bist_ok", False)),
         "deniz_bulletin": report.get("deniz_bulletin"),
+        "official_sources": {
+            "kap": _kap_status(),
+        },
         # Legacy field kept in sync for older dashboard/state consumers.
         "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),
