@@ -17,6 +17,7 @@ Akış (her tetiklemede):
   Zamanlama: scheduler 09:45/14:30/18:30 (eksik #3)
 """
 import argparse
+import os
 import sys
 from datetime import datetime, time
 
@@ -52,9 +53,47 @@ def _report_delay(label, now=None):
     }
 
 
+def _sla_diagnostics(label, delay):
+    """Rapor gecikmesini sadece dakika degil, kok neden sinifi olarak da yaz."""
+    delay_minutes = delay.get("delay_minutes")
+    event = os.environ.get("GITHUB_EVENT_NAME", "")
+    gate_reason = os.environ.get("REPORT_GATE_REASON", "")
+    gate_label = os.environ.get("REPORT_GATE_LABEL", label)
+    if delay_minutes is None:
+        status = "unplanned"
+        if label in {"manuel", "push"} or event in {"workflow_dispatch", "push"}:
+            root_cause = "plansiz_manuel_veya_push"
+        else:
+            root_cause = "plansiz_kosu"
+    else:
+        if delay_minutes <= 15:
+            status = "on_time"
+            root_cause = "zamaninda"
+        elif delay_minutes <= 60:
+            status = "late"
+            root_cause = "github_actions_cron_gecikmesi"
+        else:
+            status = "missed_or_very_late"
+            root_cause = "cron_penceresi_cok_gecikti"
+        if event == "workflow_dispatch":
+            root_cause = "manuel_calistirma_planli_slotta"
+        elif event == "push":
+            root_cause = "push_calistirma_planli_slotta"
+    return {
+        "status": status,
+        "root_cause": root_cause,
+        "event": event or "local",
+        "gate_label": gate_label,
+        "gate_reason": gate_reason,
+        "target_time": delay.get("target_time"),
+        "delay_minutes": delay_minutes,
+    }
+
+
 def _operation_health(report, label, data, health, notify_status):
     """Dashboard icin operasyon ve veri guvenilirligi ozetini uretir."""
     delay = _report_delay(label)
+    sla = _sla_diagnostics(label, delay)
     deniz_info = report.get("deniz_bulletin") or {}
     pool = report.get("source_pool_count") or (data or {}).get("_source_pool_count")
     price_count = report.get("price_count")
@@ -95,6 +134,7 @@ def _operation_health(report, label, data, health, notify_status):
         "label": label,
         "target_time": delay["target_time"],
         "delay_minutes": delay["delay_minutes"],
+        "sla": sla,
         "telegram": {
             "sent": telegram_ok,
             "status": "sent" if telegram_ok is True else "failed" if telegram_ok is False else "unknown",

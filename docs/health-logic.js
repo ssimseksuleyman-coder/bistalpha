@@ -173,11 +173,13 @@
     ));
 
     const delay = num(h.delay_minutes);
+    const slaInfo = h.sla || {};
+    const slaReason = slaInfo.root_cause || (delay == null ? "manuel/push calismasi" : "hedefe gore " + delay + " dakika");
     out.push(metric(
       "sla", true, "Rapor SLA", "hedef saat ve gecikme dakikasi",
-      h.target_time || "-", delay == null ? "plansiz" : delay + " dk gecikme",
+      h.target_time || "-", delay == null ? "plansiz" : delay + " dk gecikme | " + slaReason,
       delay == null ? "n" : delay <= 15 ? "g" : delay <= 60 ? "a" : "r",
-      delay == null ? "manuel/push calismasi" : "hedefe gore " + delay + " dakika"
+      slaReason
     ));
 
     const tg = h.telegram || {};

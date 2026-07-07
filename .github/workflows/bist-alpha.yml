@@ -68,6 +68,8 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DENIZ_SOURCE: scanner
+          REPORT_GATE_LABEL: ${{ steps.gate.outputs.label }}
+          REPORT_GATE_REASON: ${{ steps.gate.outputs.reason }}
         run: |
           python3 daemon.py --once "${{ steps.gate.outputs.label }}"
           python3 - <<'PY'
