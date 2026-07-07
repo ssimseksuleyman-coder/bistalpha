@@ -346,9 +346,19 @@ class BorsaPyFeed(DataFeed):
         return set(turnover.nlargest(size).index.tolist())
 
 
-def get_feed():
-    """config.DATA_SOURCE'a göre uygun feed'i döner."""
-    source = getattr(config, "DATA_SOURCE", "file")
+def normalize_source(source=None):
+    """Fallback etiketlerinden gerçek feed adını çıkar."""
+    source = str(source or getattr(config, "DATA_SOURCE", "file"))
+    if source.startswith("file_fallback_from_"):
+        return "file"
+    if "_fallback_from_" in source:
+        return source.split("_fallback_from_", 1)[0]
+    return source
+
+
+def get_feed(source=None):
+    """İstenen kaynağa ya da config.DATA_SOURCE'a göre uygun feed'i döner."""
+    source = normalize_source(source)
     if source == "api":
         return APIFeed()
     if source == "yahoo":

@@ -77,6 +77,7 @@ def _env(key, default=None):
 # ---- Veri kaynağı (eksik #1) ----
 DATA_SOURCE = _env("DATA_SOURCE", "yahoo")   # "file" | "yahoo" | "borsapy" (TradingView) | "api"
 ALLOW_FILE_FALLBACK = _env("ALLOW_FILE_FALLBACK", "0").lower() in ("1", "true", "yes", "evet")
+DATA_FALLBACK_CHAIN = _env("DATA_FALLBACK_CHAIN", "borsapy,file")
 BIST_API_URL = _env("BIST_API_URL")           # APIFeed için
 BIST_API_KEY = _env("BIST_API_KEY")
 TV_USERNAME = _env("TV_USERNAME")    # borsapy/TradingView opsiyonel auth

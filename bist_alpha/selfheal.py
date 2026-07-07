@@ -22,10 +22,37 @@ def with_retry(fn, retries=3, delay=5, label="işlem"):
             return fn()
         except Exception as e:
             last = e
-            print(f"[selfheal] {label} denemesi {i+1}/{retries} başarısız: {e}")
+            print(f"[selfheal] {label} denemesi {i+1}/{retries} basarisiz: {e}")
             if i < retries - 1:
                 time.sleep(delay)
     raise last
+
+
+def _fallback_sources(primary, config):
+    """Primary + fallback zincirini yinelenmeyen kaynak listesine cevir."""
+    raw_chain = getattr(config, "DATA_FALLBACK_CHAIN", "borsapy,file") or ""
+    chain = [x.strip() for x in str(raw_chain).split(",") if x.strip()]
+    sources = []
+    for source in [primary] + chain:
+        if source not in sources:
+            sources.append(source)
+    return sources
+
+
+def _tag_source(data, source, primary, attempts):
+    """Dashboard/health icin kaynagin nasil secildigini gorunur kil."""
+    data["_source_base"] = source
+    data["_source_primary"] = primary
+    data["_source_attempts"] = attempts[-5:]
+    if source != primary:
+        data["_source_fallback_from"] = primary
+        if source == "file":
+            data["_source"] = f"file_fallback_from_{primary}"
+        else:
+            data["_source"] = f"{source}_fallback_from_{primary}"
+    else:
+        data["_source"] = source
+    return data
 
 
 def safe_feed():
@@ -118,3 +145,51 @@ def guarded(fn, notify_fn=None, label="döngü"):
             except Exception:
                 pass
         return None
+
+
+# Runtime override: keep the old function above for historical context, but use
+# the explicit fallback chain below.
+def safe_feed():
+    """
+    Fetch primary data; if it fails, try live-ish fallback before file fallback.
+
+    Default chain with DATA_SOURCE=yahoo:
+      yahoo -> borsapy -> file
+
+    File fallback is still gated by ALLOW_FILE_FALLBACK.
+    """
+    from . import config, datafeed
+
+    source = getattr(config, "DATA_SOURCE", "file")
+    allow_file_fallback = getattr(config, "ALLOW_FILE_FALLBACK", False)
+    attempts = []
+    last_error = None
+
+    for candidate in _fallback_sources(source, config):
+        if candidate == "file" and candidate != source and not allow_file_fallback:
+            attempts.append({
+                "source": candidate,
+                "status": "skipped",
+                "reason": "ALLOW_FILE_FALLBACK=0",
+            })
+            continue
+        try:
+            feed = datafeed.get_feed(candidate)
+            data = with_retry(feed.get_latest, retries=3, delay=10,
+                              label=f"{candidate} veri cekme")
+            if data["prices"].shape[1] < 50 or data["prices"].empty:
+                raise ValueError("Veri yetersiz/bos")
+            if candidate != source:
+                print(f"[selfheal] {source} coktu -> {candidate} yedegi kullaniliyor")
+            attempts.append({"source": candidate, "status": "ok"})
+            return _tag_source(data, candidate, source, attempts)
+        except Exception as e:
+            last_error = e
+            attempts.append({
+                "source": candidate,
+                "status": "failed",
+                "error": str(e)[:300],
+            })
+            print(f"[selfheal] {candidate} veri kaynagi basarisiz: {e}")
+
+    raise RuntimeError(f"{source} ve yedek veri kaynaklari alinamadi: {attempts}") from last_error

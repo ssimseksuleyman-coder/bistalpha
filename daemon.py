@@ -142,7 +142,9 @@ def _operation_health(report, label, data, health, notify_status):
         missing_pct = round(missing / int(pool) * 100, 2) if pool and int(pool) else missing_pct
     fallback = bool(report.get("source_pool_fallback") or (data or {}).get("_source_pool_fallback"))
     source = report.get("source") or (data or {}).get("_source")
-    if isinstance(source, str) and source.startswith("file_fallback_from_"):
+    if (data or {}).get("_source_fallback_from"):
+        fallback = True
+    if isinstance(source, str) and "_fallback_from_" in source:
         fallback = True
 
     core_status = "green"
@@ -324,10 +326,11 @@ def run_cycle(label="manuel"):
 
     # 2) Dinamik veri (eksik #1) — self-heal: çökerse gömülü yedeğe düş
     data = selfheal.safe_feed()
-    feed = datafeed.get_feed()
+    feed = datafeed.get_feed(data.get("_source_base") or data.get("_source"))
     universe = feed.dynamic_universe(data)
     data['_dynamic_universe'] = universe
-    data['_dynamic_universe_method'] = 'likidite_fiyat_x_hacim' if data.get('_source') in ('yahoo', 'borsapy') else 'piyasa_degeri'
+    source_base = data.get("_source_base") or datafeed.normalize_source(data.get("_source"))
+    data['_dynamic_universe_method'] = 'likidite_fiyat_x_hacim' if source_base in ('yahoo', 'borsapy') else 'piyasa_degeri'
     print(f"[daemon] Kaynak: {data.get('_source', config.DATA_SOURCE)}")
     print(f"[daemon] Veri: {data['prices'].shape[1]} hisse, dinamik evren: {len(universe)}")
 
@@ -421,6 +424,10 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "date": report.get("date"),
         "mode": report.get("mode"),
         "source": report.get("source") or (data or {}).get("_source"),
+        "source_base": (data or {}).get("_source_base"),
+        "source_primary": (data or {}).get("_source_primary"),
+        "source_fallback_from": (data or {}).get("_source_fallback_from"),
+        "source_attempts": (data or {}).get("_source_attempts", []),
         "source_pool_count": report.get("source_pool_count") or (data or {}).get("_source_pool_count"),
         "source_pool_method": report.get("source_pool_method") or (data or {}).get("_source_pool_method"),
         "source_pool_fallback": report.get("source_pool_fallback") if report.get("source_pool_fallback") is not None else (data or {}).get("_source_pool_fallback"),

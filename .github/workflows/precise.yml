@@ -41,6 +41,7 @@ jobs:
         env:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
+          DATA_FALLBACK_CHAIN: "borsapy,file"
           ALLOW_FILE_FALLBACK: "1"
           YAHOO_BATCH_SIZE: "60"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}

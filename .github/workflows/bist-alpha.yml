@@ -59,6 +59,7 @@ jobs:
         env:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
+          DATA_FALLBACK_CHAIN: "borsapy,file"
           ALLOW_FILE_FALLBACK: "1"
           YAHOO_BATCH_SIZE: "60"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
@@ -78,7 +79,7 @@ jobs:
           d = json.loads(Path("docs/state/dashboard.json").read_text(encoding="utf-8"))
           source = d.get("source")
           price_count = d.get("price_count", 0)
-          assert source == "yahoo" or str(source).startswith("file_fallback_from_"), f"Beklenmeyen kaynak: {source}"
+          assert source == "yahoo" or str(source).startswith("borsapy_fallback_from_") or str(source).startswith("file_fallback_from_"), f"Beklenmeyen kaynak: {source}"
           assert price_count >= 50, price_count
           if source == "yahoo":
               assert d.get("source_pool_count", 0) >= price_count, (d.get("source_pool_count"), price_count)
