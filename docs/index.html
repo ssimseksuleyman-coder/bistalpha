@@ -688,10 +688,10 @@ function renderForward(info) {
   el('forwardTest').innerHTML = `
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.valid_days_tracked ?? info.days_tracked ?? '-')}</div><div class="forward-label">gecerli kayit</div></div>
-      <div class="forward-box"><div class="forward-value">%${esc(primary.avg_return_pct ?? info.latest_valid_avg_return_pct ?? '-')}</div><div class="forward-label">${esc(cohortLabel)} ort.</div></div>
-      <div class="forward-box"><div class="forward-value">%${esc(primary.hit_rate_pct ?? info.latest_valid_hit_rate_pct ?? '-')}</div><div class="forward-label">olgun arti oran</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(primary.avg_return_pct ?? info.latest_valid_avg_return_pct ?? info.latest_avg_return_pct ?? '-')}</div><div class="forward-label">${esc(cohortLabel)} ort.</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(primary.hit_rate_pct ?? info.latest_valid_hit_rate_pct ?? info.latest_hit_rate_pct ?? '-')}</div><div class="forward-label">olgun arti oran</div></div>
     </div>
-    <div class="meta" style="padding-top:10px">Toplam: ${esc(info.days_tracked ?? '-')} | Gecersiz: ${esc(info.invalid_snapshot_count ?? 0)} | Son gecerli yas: ${esc(info.latest_valid_age_trading_days ?? '-')} islem gunu</div>
+    <div class="meta" style="padding-top:10px">Toplam: ${esc(info.days_tracked ?? '-')} | Gecersiz: ${esc(info.invalid_snapshot_count ?? 0)} | Son gecerli yas: ${esc(info.latest_valid_age_trading_days ?? info.latest_age_trading_days ?? '-')} islem gunu</div>
     <div class="forward-row">
       <strong>Top7 golge</strong>
       <span>n ${esc(top7.n ?? '-')} | ort %${esc(top7.avg_return_pct ?? '-')} | hit %${esc(top7.hit_rate_pct ?? '-')}</span>
