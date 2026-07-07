@@ -188,6 +188,16 @@
       tg.sent === true ? "Telegram API basarili" : tg.sent === false ? "Telegram API hata dondurdu" : "sonuc kaydi yok"
     ));
 
+    const consistency = d.consistency && d.consistency.account_values;
+    const cStatus = consistency && consistency.status;
+    out.push(metric(
+      "account_consistency", true, "Hesap tutarliligi", "dashboard / Telegram / portfolio ayni mi",
+      cStatus || "-",
+      consistency ? "max getiri farki %" + (consistency.max_return_diff_pct ?? "-") : "metrik yok",
+      cStatus === "ok" ? "g" : cStatus === "warn" ? "a" : "n",
+      consistency ? (consistency.note || "hesaplar karsilastirildi") : "dashboard.json henuz bu metrigi uretmiyor"
+    ));
+
     const age = num(deniz.age_days);
     let denizStatus = "n";
     let denizReason = "age_days okunamadi";

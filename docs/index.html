@@ -624,6 +624,7 @@ function renderOperationGate(data) {
 
 function governanceRows(data) {
   const accounts = data.accounts || {};
+  const consistency = data.consistency?.account_values;
   const shadow = data.performance_ledger?.shadow_comparison || {};
   const edge = shadow.O_edge_vs_F_pct;
   const overlap = shadow.divergence?.avg_overlap_pct;
@@ -640,7 +641,11 @@ function governanceRows(data) {
     policy[name]?.role || role,
     policy[name]?.note || note,
   ]);
-  return rows.map(([name, role, note]) => {
+  const consistencyRow = consistency ? `<div class="policy-row">
+      <div class="policy-head"><span>Deger tutarliligi</span><span class="badge ${consistency.status === 'ok' ? 'ok' : 'warn'}">${esc(consistency.status)}</span></div>
+      <div class="policy-note">Telegram / dashboard / portfolio kontrolu. Max getiri farki %${esc(consistency.max_return_diff_pct ?? '-')} | max pozisyon farki ${esc(consistency.max_position_diff ?? '-')}</div>
+    </div>` : '';
+  return consistencyRow + rows.map(([name, role, note]) => {
     const acc = accounts[name] || {};
     const badgeClass = role === 'production' ? 'ok' : role === 'baseline' ? 'warn' : '';
     const extra = name === 'O' && overlap != null ? ` | O/F ortaklik %${overlap}` : '';

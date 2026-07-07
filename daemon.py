@@ -154,6 +154,69 @@ def _shadow_summary(data):
     return accounts
 
 
+def _account_value_consistency(report_accounts, dashboard_accounts):
+    """Telegram raporu ile dashboard portfolio okumasi ayni mi, olcer."""
+    rows = []
+    max_value_diff = 0.0
+    max_return_diff = 0.0
+    max_position_diff = 0
+    for acc in ["A", "B", "F", "O"]:
+        report_acc = (report_accounts or {}).get(acc) or {}
+        dash_acc = (dashboard_accounts or {}).get(acc) or {}
+        report_error = report_acc.get("error")
+        dash_error = dash_acc.get("error")
+        if not report_acc or not dash_acc:
+            rows.append({
+                "account": acc,
+                "status": "warn",
+                "reason": "hesap rapor veya dashboard tarafinda eksik",
+            })
+            continue
+        if report_error or dash_error:
+            rows.append({
+                "account": acc,
+                "status": "warn",
+                "reason": report_error or dash_error,
+            })
+            continue
+        try:
+            value_diff = abs(float(report_acc.get("value", 0)) - float(dash_acc.get("value", 0)))
+            return_diff = abs(float(report_acc.get("return_pct", 0)) - float(dash_acc.get("return_pct", 0)))
+            position_diff = abs(int(report_acc.get("n_positions", 0)) - int(dash_acc.get("n_positions", 0)))
+        except Exception as e:
+            rows.append({
+                "account": acc,
+                "status": "warn",
+                "reason": f"karsilastirma hatasi: {e}",
+            })
+            continue
+        ok = value_diff <= 0.001 and return_diff <= 0.05 and position_diff == 0
+        max_value_diff = max(max_value_diff, value_diff)
+        max_return_diff = max(max_return_diff, return_diff)
+        max_position_diff = max(max_position_diff, position_diff)
+        rows.append({
+            "account": acc,
+            "status": "ok" if ok else "warn",
+            "value_diff": round(value_diff, 6),
+            "return_diff_pct": round(return_diff, 4),
+            "position_diff": position_diff,
+            "report_value": report_acc.get("value"),
+            "dashboard_value": dash_acc.get("value"),
+            "report_return_pct": report_acc.get("return_pct"),
+            "dashboard_return_pct": dash_acc.get("return_pct"),
+        })
+    status = "ok" if rows and all(row.get("status") == "ok" for row in rows) else "warn"
+    return {
+        "status": status,
+        "checked_accounts": len(rows),
+        "max_value_diff": round(max_value_diff, 6),
+        "max_return_diff_pct": round(max_return_diff, 4),
+        "max_position_diff": max_position_diff,
+        "rows": rows,
+        "note": "Telegram shadow_accounts ile dashboard portfolio okumasi karsilastirildi.",
+    }
+
+
 def _telegram_ingest():
     """Telegram'a gönderilen dosyaları indir (Deniz/endeks/fiyat)."""
     from bist_alpha import telegram_ingest
@@ -373,6 +436,12 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             }
         except Exception:
             state["accounts"][acc] = {"error": "yüklenemedi"}
+    state["consistency"] = {
+        "account_values": _account_value_consistency(
+            report.get("shadow_accounts", {}),
+            state.get("accounts", {}),
+        )
+    }
     try:
         f_state = pf.load("F", state_dir="portfolios")
         f_return_pct = (pf.current_value(f_state, prices_today) - 1) * 100
