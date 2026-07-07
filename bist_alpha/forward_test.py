@@ -136,6 +136,91 @@ def _refresh_snapshot(snapshot, latest_prices, prices, last_date):
     return snapshot
 
 
+def _is_valid_snapshot(snapshot):
+    return (snapshot.get("tracked_count") or 0) > 0 and snapshot.get("avg_return_pct") is not None
+
+
+def _avg(values):
+    values = [float(v) for v in values if v is not None and not pd.isna(v)]
+    if not values:
+        return None
+    return _round(sum(values) / len(values))
+
+
+def _cohort_summary(snapshots, min_age):
+    cohort = [
+        s for s in snapshots
+        if _is_valid_snapshot(s) and (s.get("age_trading_days") or 0) >= min_age
+    ]
+    return {
+        "age_ge_days": min_age,
+        "snapshots": len(cohort),
+        "avg_return_pct": _avg([s.get("avg_return_pct") for s in cohort]),
+        "hit_rate_pct": _avg([s.get("hit_rate_pct") for s in cohort]),
+        "avg_tracked_count": _avg([s.get("tracked_count") for s in cohort]),
+    }
+
+
+def _rank_band_summary(snapshots, rank_min, rank_max, min_age=1):
+    returns = []
+    winners = 0
+    for snap in snapshots:
+        if not _is_valid_snapshot(snap) or (snap.get("age_trading_days") or 0) < min_age:
+            continue
+        for item in snap.get("items", []):
+            rank = item.get("rank")
+            ret = item.get("return_pct")
+            if rank is None or ret is None or pd.isna(ret):
+                continue
+            try:
+                rank_i = int(rank)
+            except (TypeError, ValueError):
+                continue
+            if rank_min <= rank_i <= rank_max:
+                returns.append(float(ret))
+                if float(ret) > 0:
+                    winners += 1
+    return {
+        "rank_min": rank_min,
+        "rank_max": rank_max,
+        "min_age_days": min_age,
+        "n": len(returns),
+        "avg_return_pct": _round(sum(returns) / len(returns)) if returns else None,
+        "hit_rate_pct": _round(winners / len(returns) * 100, 1) if returns else None,
+    }
+
+
+def _forward_summary(snapshots):
+    latest = snapshots[-1] if snapshots else None
+    valid = [s for s in snapshots if _is_valid_snapshot(s)]
+    latest_valid = valid[-1] if valid else None
+    cohorts = [_cohort_summary(snapshots, age) for age in (1, 5, 10, 21, 30)]
+    primary = next((c for c in cohorts if c["age_ge_days"] == 5), None)
+    if not primary or not primary.get("snapshots"):
+        primary = next((c for c in cohorts if c.get("snapshots")), None)
+    return {
+        "updated_at": datetime.now().isoformat(timespec="seconds"),
+        "days_tracked": len(snapshots),
+        "valid_days_tracked": len(valid),
+        "invalid_snapshot_count": len(snapshots) - len(valid),
+        "latest_date": latest.get("date") if latest else None,
+        "latest_avg_return_pct": latest.get("avg_return_pct") if latest else None,
+        "latest_hit_rate_pct": latest.get("hit_rate_pct") if latest else None,
+        "latest_age_trading_days": latest.get("age_trading_days") if latest else None,
+        "tracked_count": latest.get("tracked_count") if latest else None,
+        "latest_valid_date": latest_valid.get("date") if latest_valid else None,
+        "latest_valid_avg_return_pct": latest_valid.get("avg_return_pct") if latest_valid else None,
+        "latest_valid_hit_rate_pct": latest_valid.get("hit_rate_pct") if latest_valid else None,
+        "latest_valid_age_trading_days": latest_valid.get("age_trading_days") if latest_valid else None,
+        "latest_valid_tracked_count": latest_valid.get("tracked_count") if latest_valid else None,
+        "primary_cohort": primary,
+        "mature_cohorts": cohorts,
+        "top7_shadow": _rank_band_summary(snapshots, 1, 7),
+        "tail8_10_shadow": _rank_band_summary(snapshots, 8, 10),
+        "recent": snapshots[-7:],
+    }
+
+
 def update(report, data=None, path=None, max_snapshots=MAX_SNAPSHOTS):
     """Forward-test dosyasini guncelle ve dashboard icin ozet dondur."""
     path = Path(path) if path else _default_path()
@@ -156,17 +241,7 @@ def update(report, data=None, path=None, max_snapshots=MAX_SNAPSHOTS):
     if latest_prices:
         snapshots = [_refresh_snapshot(s, latest_prices, prices, last_date) for s in snapshots]
 
-    latest = snapshots[-1] if snapshots else None
-    summary = {
-        "updated_at": datetime.now().isoformat(timespec="seconds"),
-        "days_tracked": len(snapshots),
-        "latest_date": latest.get("date") if latest else None,
-        "latest_avg_return_pct": latest.get("avg_return_pct") if latest else None,
-        "latest_hit_rate_pct": latest.get("hit_rate_pct") if latest else None,
-        "latest_age_trading_days": latest.get("age_trading_days") if latest else None,
-        "tracked_count": latest.get("tracked_count") if latest else None,
-        "recent": snapshots[-7:],
-    }
+    summary = _forward_summary(snapshots)
 
     ledger = {
         "updated_at": summary["updated_at"],

@@ -671,22 +671,35 @@ function renderForward(info) {
     el('forwardTest').innerHTML = `<div class="error">${esc(info.error)}</div>`;
     return;
   }
-  const recent = (info.recent || []).slice(-1)[0];
-  const topRows = (recent?.items || []).slice(0, 5).map(item => {
+  const recentList = info.recent || [];
+  const latestValid = [...recentList].reverse().find(s => Number(s.tracked_count) > 0) || recentList.slice(-1)[0];
+  const primary = info.primary_cohort || {};
+  const top7 = info.top7_shadow || {};
+  const tail = info.tail8_10_shadow || {};
+  const cohortLabel = primary.age_ge_days != null ? `>=${primary.age_ge_days}g olgun` : 'olgun kohort';
+  const topRows = (latestValid?.items || []).slice(0, 5).map(item => {
     const cls = Number(item.return_pct) >= 0 ? 'profit' : 'loss';
     return `<div class="forward-row">
       <strong>${esc(item.ticker)}</strong>
       <span>Giris ${esc(item.entry_price ?? '-')} | Son ${esc(item.current_price ?? '-')} | <b class="${cls}">%${esc(item.return_pct ?? '-')}</b></span>
     </div>`;
   }).join('');
-  el('forwardStamp').textContent = info.latest_date || '';
+  el('forwardStamp').textContent = info.latest_valid_date || info.latest_date || '';
   el('forwardTest').innerHTML = `
     <div class="forward-grid">
-      <div class="forward-box"><div class="forward-value">${esc(info.days_tracked ?? '-')}</div><div class="forward-label">kayit gunu</div></div>
-      <div class="forward-box"><div class="forward-value">%${esc(info.latest_avg_return_pct ?? '-')}</div><div class="forward-label">son Top 10 ort.</div></div>
-      <div class="forward-box"><div class="forward-value">%${esc(info.latest_hit_rate_pct ?? '-')}</div><div class="forward-label">arti oran</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.valid_days_tracked ?? info.days_tracked ?? '-')}</div><div class="forward-label">gecerli kayit</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(primary.avg_return_pct ?? info.latest_valid_avg_return_pct ?? '-')}</div><div class="forward-label">${esc(cohortLabel)} ort.</div></div>
+      <div class="forward-box"><div class="forward-value">%${esc(primary.hit_rate_pct ?? info.latest_valid_hit_rate_pct ?? '-')}</div><div class="forward-label">olgun arti oran</div></div>
     </div>
-    <div class="meta" style="padding-top:10px">Yas: ${esc(info.latest_age_trading_days ?? 0)} islem gunu | Izlenen: ${esc(info.tracked_count ?? '-')}</div>
+    <div class="meta" style="padding-top:10px">Toplam: ${esc(info.days_tracked ?? '-')} | Gecersiz: ${esc(info.invalid_snapshot_count ?? 0)} | Son gecerli yas: ${esc(info.latest_valid_age_trading_days ?? '-')} islem gunu</div>
+    <div class="forward-row">
+      <strong>Top7 golge</strong>
+      <span>n ${esc(top7.n ?? '-')} | ort %${esc(top7.avg_return_pct ?? '-')} | hit %${esc(top7.hit_rate_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Rank 8-10 kuyruk</strong>
+      <span>n ${esc(tail.n ?? '-')} | ort %${esc(tail.avg_return_pct ?? '-')} | hit %${esc(tail.hit_rate_pct ?? '-')}</span>
+    </div>
     ${topRows || '<div class="empty">Hisse detayi yok</div>'}
   `;
 }
