@@ -99,6 +99,7 @@ def run_maintenance(data, snapshot_dir="deniz_snapshots", log_dir="logs"):
     report = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "data_issues": issues,
+        "data_cleaning": data.get("_data_cleaning", {}),
         "healthy": len(issues) == 0,
         "snapshots_removed": n_snap,
         "logs_removed": n_log,

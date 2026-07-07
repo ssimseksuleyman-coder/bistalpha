@@ -152,6 +152,7 @@ def _operation_health(report, label, data, health, notify_status):
         "missing_symbol_list": missing_list,
         "last_data_date": report.get("last_data_date"),
         "deniz_bulletin": deniz_info,
+        "data_cleaning": (data or {}).get("_data_cleaning", {}),
         "data_health": health or {},
         "verdict": core_status,
         "updated_at": datetime.now().isoformat(timespec="seconds"),

@@ -231,6 +231,18 @@
       issues.length ? "bakim " + issues.length + " sorun buldu" : "bakim temiz"
     ));
 
+    const cleaning = h.data_cleaning || (h.data_health && h.data_health.data_cleaning) || {};
+    const dropped = cleaning.dropped_dates || [];
+    out.push(metric(
+      "data_cleaning", false, "Veri temizleme", "yarim/seyrek son bar atildi mi",
+      cleaning.dropped_sparse_tail ? "uygulandi" : "yok",
+      cleaning.dropped_sparse_tail ? "son saglikli " + (cleaning.last_healthy_date || "-") : "ham veri kullanildi",
+      cleaning.dropped_sparse_tail ? "a" : "g",
+      cleaning.dropped_sparse_tail
+        ? "atilan gun: " + dropped.map(x => x.date + " %" + x.nan_pct).join(", ")
+        : "son satir yeterli dolulukta"
+    ));
+
     out.push(metric(
       "gap", false, "Fiyat/hacim bosluk orani", "seri ici eksik bar orani",
       "N/A", "backend metrigi eklenecek", "n",

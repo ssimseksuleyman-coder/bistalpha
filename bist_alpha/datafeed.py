@@ -16,6 +16,41 @@ from abc import ABC, abstractmethod
 from . import config
 
 
+def _drop_sparse_tail(frames, threshold=0.50):
+    """OHLCV tablolarinda sondaki yari-bos gunleri at; son saglikli kapanisi koru."""
+    prices = frames.get("prices")
+    if prices is None or prices.empty:
+        return frames, {}
+    cleaned = {k: v.copy() for k, v in frames.items()}
+    dropped = []
+    while not cleaned["prices"].empty:
+        last_row = cleaned["prices"].iloc[-1]
+        nan_pct = float(last_row.isna().mean())
+        if nan_pct <= threshold:
+            break
+        last_date = cleaned["prices"].index[-1]
+        dropped.append({
+            "date": str(last_date.date()) if hasattr(last_date, "date") else str(last_date),
+            "nan_pct": round(nan_pct * 100, 2),
+        })
+        for key, frame in list(cleaned.items()):
+            if hasattr(frame, "index") and last_date in frame.index:
+                cleaned[key] = frame.drop(index=last_date)
+    if not dropped:
+        return frames, {}
+    meta = {
+        "dropped_sparse_tail": True,
+        "threshold_pct": round(threshold * 100, 2),
+        "dropped_dates": dropped,
+        "last_healthy_date": (
+            str(cleaned["prices"].index[-1].date())
+            if not cleaned["prices"].empty and hasattr(cleaned["prices"].index[-1], "date")
+            else str(cleaned["prices"].index[-1]) if not cleaned["prices"].empty else None
+        ),
+    }
+    return cleaned, meta
+
+
 class DataFeed(ABC):
     """Tüm veri kaynakları bu arayüzü uygular."""
 
@@ -153,17 +188,24 @@ class YahooFeed(DataFeed):
             print(f"[datafeed] XU100.IS fetch basarisiz: {e}")
             bist = pd.Series(dtype=float)
 
-        # Market cap: yfinance toplu vermez; PD_mn_TL yoksa fiyat*hacim proxy ile
-        # evren seçimi yapılır (mcaps = son fiyat * ort hacim yaklaşımı)
-        mcaps = pd.DataFrame(prices)  # placeholder; dynamic_universe fiyat*hacim kullanır
+        frames, cleaning = _drop_sparse_tail({
+            "prices": prices,
+            "mins": pd.DataFrame(mins).sort_index(),
+            "maxs": pd.DataFrame(maxs).sort_index(),
+            "aofs": pd.DataFrame(aofs).sort_index(),
+            "volumes": pd.DataFrame(volumes).sort_index(),
+        })
+        prices = frames["prices"]
+        if prices.empty:
+            raise ValueError("YahooFeed temizleme sonrasi saglikli kapanis kalmadi")
 
         return {
             'prices': prices,
-            'mins': pd.DataFrame(mins).sort_index(),
-            'maxs': pd.DataFrame(maxs).sort_index(),
-            'aofs': pd.DataFrame(aofs).sort_index(),
-            'volumes': pd.DataFrame(volumes).sort_index(),
-            'mcaps': mcaps,
+            'mins': frames["mins"],
+            'maxs': frames["maxs"],
+            'aofs': frames["aofs"],
+            'volumes': frames["volumes"],
+            'mcaps': pd.DataFrame(prices),
             'bist': bist,
             '_bist_ok': _bist_ok,
             '_source': 'yahoo',
@@ -171,6 +213,7 @@ class YahooFeed(DataFeed):
             '_missing_symbols': missing_symbols,
             '_source_pool_method': universe_meta().get("method"),
             '_source_pool_fallback': universe_meta().get("fallback"),
+            '_data_cleaning': cleaning,
         }
 
     def dynamic_universe(self, data, date=None, size=None):
@@ -260,12 +303,23 @@ class BorsaPyFeed(DataFeed):
             print(f"[datafeed] XU100 borsapy fetch basarisiz: {e}")
             bist = pd.Series(dtype=float)
 
+        frames, cleaning = _drop_sparse_tail({
+            "prices": prices,
+            "mins": pd.DataFrame(mins).sort_index(),
+            "maxs": pd.DataFrame(maxs).sort_index(),
+            "aofs": pd.DataFrame(aofs).sort_index(),
+            "volumes": pd.DataFrame(volumes).sort_index(),
+        })
+        prices = frames["prices"]
+        if prices.empty:
+            raise ValueError("BorsaPyFeed temizleme sonrasi saglikli kapanis kalmadi")
+
         return {
             'prices': prices,
-            'mins': pd.DataFrame(mins).sort_index(),
-            'maxs': pd.DataFrame(maxs).sort_index(),
-            'aofs': pd.DataFrame(aofs).sort_index(),
-            'volumes': pd.DataFrame(volumes).sort_index(),
+            'mins': frames["mins"],
+            'maxs': frames["maxs"],
+            'aofs': frames["aofs"],
+            'volumes': frames["volumes"],
             'mcaps': pd.DataFrame(prices),  # mcap yok → universe sıralama proxy (birim-bağımsız)
             'bist': bist,
             '_bist_ok': _bist_ok,
@@ -274,6 +328,7 @@ class BorsaPyFeed(DataFeed):
             '_missing_symbols': missing_symbols,
             '_source_pool_method': universe_meta().get("method"),
             '_source_pool_fallback': universe_meta().get("fallback"),
+            '_data_cleaning': cleaning,
         }
 
     def dynamic_universe(self, data, date=None, size=None):
