@@ -1,20 +1,20 @@
 {
   "summary": {
-    "updated_at": "2026-07-08T10:06:29",
-    "tracked_days": 23,
-    "current_candidates": 11,
-    "hot_missed_count": 21,
-    "hot_unique_count": 6,
+    "updated_at": "2026-07-08T14:32:01",
+    "tracked_days": 24,
+    "current_candidates": 8,
+    "hot_missed_count": 22,
+    "hot_unique_count": 7,
     "hot_by_kind": {
-      "transformation": 11,
-      "quiet_accumulation": 10
+      "transformation": 13,
+      "quiet_accumulation": 9
     },
     "hot_by_ticker": [
       {
         "ticker": "SELEC",
         "count": 4,
-        "max_return_pct": 52.54,
-        "avg_return_pct": 35.23,
+        "max_return_pct": 51.07,
+        "avg_return_pct": 33.93,
         "first_date": "2026-06-16",
         "last_date": "2026-06-19",
         "kinds": {
@@ -23,20 +23,42 @@
       },
       {
         "ticker": "SKBNK",
-        "count": 7,
-        "max_return_pct": 31.13,
-        "avg_return_pct": 22.26,
+        "count": 6,
+        "max_return_pct": 30.38,
+        "avg_return_pct": 22.69,
         "first_date": "2026-06-15",
-        "last_date": "2026-07-01",
+        "last_date": "2026-06-29",
         "kinds": {
-          "quiet_accumulation": 7
+          "quiet_accumulation": 6
+        }
+      },
+      {
+        "ticker": "INFO",
+        "count": 3,
+        "max_return_pct": 28.09,
+        "avg_return_pct": 23.18,
+        "first_date": "2026-06-29",
+        "last_date": "2026-07-06",
+        "kinds": {
+          "transformation": 3
+        }
+      },
+      {
+        "ticker": "AKFIS",
+        "count": 1,
+        "max_return_pct": 26.26,
+        "avg_return_pct": 26.26,
+        "first_date": "2026-06-26",
+        "last_date": "2026-06-26",
+        "kinds": {
+          "quiet_accumulation": 1
         }
       },
       {
         "ticker": "KOCMT",
         "count": 2,
-        "max_return_pct": 28.35,
-        "avg_return_pct": 24.55,
+        "max_return_pct": 23.62,
+        "avg_return_pct": 19.96,
         "first_date": "2026-07-01",
         "last_date": "2026-07-02",
         "kinds": {
@@ -45,31 +67,20 @@
       },
       {
         "ticker": "EFOR",
-        "count": 5,
-        "max_return_pct": 24.09,
-        "avg_return_pct": 19.59,
+        "count": 4,
+        "max_return_pct": 21.83,
+        "avg_return_pct": 18.2,
         "first_date": "2026-06-05",
-        "last_date": "2026-06-11",
+        "last_date": "2026-06-10",
         "kinds": {
-          "transformation": 5
-        }
-      },
-      {
-        "ticker": "AKFIS",
-        "count": 1,
-        "max_return_pct": 23.64,
-        "avg_return_pct": 23.64,
-        "first_date": "2026-06-26",
-        "last_date": "2026-06-26",
-        "kinds": {
-          "quiet_accumulation": 1
+          "transformation": 4
         }
       },
       {
         "ticker": "TEHOL",
         "count": 2,
-        "max_return_pct": 18.1,
-        "avg_return_pct": 17.95,
+        "max_return_pct": 19.85,
+        "avg_return_pct": 19.71,
         "first_date": "2026-06-16",
         "last_date": "2026-06-17",
         "kinds": {
@@ -78,33 +89,26 @@
       }
     ],
     "recent_window_days": 5,
-    "recent_hot_events": 3,
+    "recent_hot_events": 2,
     "recent_hot_unique_count": 2,
     "recent_hot_unique": [
-      "KOCMT",
-      "SKBNK"
+      "INFO",
+      "KOCMT"
     ],
     "regime_signal": "rotasyon_izle",
     "recent_hot": [
       {
-        "date": "2026-07-01",
-        "ticker": "KOCMT",
-        "kind": "transformation",
-        "return_pct": 28.35,
-        "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
-      },
-      {
-        "date": "2026-07-01",
-        "ticker": "SKBNK",
-        "kind": "quiet_accumulation",
-        "return_pct": 15.43,
-        "reason": "birikim + hacim artisi, henuz Top 10 degil"
-      },
-      {
         "date": "2026-07-02",
         "ticker": "KOCMT",
         "kind": "transformation",
-        "return_pct": 20.74,
+        "return_pct": 16.3,
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
+      },
+      {
+        "date": "2026-07-06",
+        "ticker": "INFO",
+        "kind": "transformation",
+        "return_pct": 19.24,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       }
     ]
@@ -168,8 +172,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.17,
-          "current_price": 11.41,
-          "return_pct": -24.79
+          "current_price": 11.04,
+          "return_pct": -27.22
         },
         {
           "ticker": "QUAGR",
@@ -203,8 +207,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 4.24,
-          "current_price": 3.79,
-          "return_pct": -10.61
+          "current_price": 3.49,
+          "return_pct": -17.69
         },
         {
           "ticker": "HRKET",
@@ -248,8 +252,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 124.6,
-          "current_price": 100.1,
-          "return_pct": -19.66
+          "current_price": 94.25,
+          "return_pct": -24.36
         },
         {
           "ticker": "EFOR",
@@ -293,8 +297,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 12.8,
-          "current_price": 15.35,
-          "return_pct": 19.92
+          "current_price": 15.07,
+          "return_pct": 17.73
         },
         {
           "ticker": "BRLSM",
@@ -333,8 +337,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 21.38,
-          "current_price": 17.99,
-          "return_pct": -15.86
+          "current_price": 17.04,
+          "return_pct": -20.3
         },
         {
           "ticker": "KCAER",
@@ -373,8 +377,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.13,
-          "current_price": 15.0,
-          "return_pct": 6.16
+          "current_price": 13.96,
+          "return_pct": -1.2
         },
         {
           "ticker": "CGCAM",
@@ -418,8 +422,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 52.55,
-          "current_price": 44.76,
-          "return_pct": -14.82
+          "current_price": 45.5,
+          "return_pct": -13.42
         },
         {
           "ticker": "SMRTG",
@@ -463,8 +467,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 12.02,
-          "current_price": 11.23,
-          "return_pct": -6.57
+          "current_price": 10.38,
+          "return_pct": -13.64
         },
         {
           "ticker": "QUAGR",
@@ -498,8 +502,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 4.24,
-          "current_price": 3.79,
-          "return_pct": -10.61
+          "current_price": 3.49,
+          "return_pct": -17.69
         },
         {
           "ticker": "KRDMA",
@@ -538,8 +542,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 39.02,
-          "current_price": 39.54,
-          "return_pct": 1.33
+          "current_price": 37.96,
+          "return_pct": -2.72
         }
       ]
     },
@@ -596,8 +600,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 119.5,
-          "current_price": 100.1,
-          "return_pct": -16.23
+          "current_price": 94.25,
+          "return_pct": -21.13
         },
         {
           "ticker": "KCAER",
@@ -636,8 +640,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.07,
-          "current_price": 15.0,
-          "return_pct": -0.46
+          "current_price": 13.96,
+          "return_pct": -7.37
         },
         {
           "ticker": "ALFAS",
@@ -681,8 +685,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 61.15,
-          "current_price": 45.88,
-          "return_pct": -24.97
+          "current_price": 44.9,
+          "return_pct": -26.57
         },
         {
           "ticker": "AKENR",
@@ -721,8 +725,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 14.38,
-          "current_price": 11.41,
-          "return_pct": -20.65
+          "current_price": 11.04,
+          "return_pct": -23.23
         },
         {
           "ticker": "BRLSM",
@@ -766,8 +770,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 23.5,
-          "current_price": 17.99,
-          "return_pct": -23.45
+          "current_price": 17.04,
+          "return_pct": -27.49
         },
         {
           "ticker": "EFOR",
@@ -811,8 +815,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 12.37,
-          "current_price": 15.35,
-          "return_pct": 24.09
+          "current_price": 15.07,
+          "return_pct": 21.83
         },
         {
           "ticker": "GESAN",
@@ -856,8 +860,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 79.25,
-          "current_price": 78.2,
-          "return_pct": -1.32
+          "current_price": 80.1,
+          "return_pct": 1.07
         },
         {
           "ticker": "HATSN",
@@ -901,8 +905,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 63.0,
-          "current_price": 53.2,
-          "return_pct": -15.56
+          "current_price": 52.4,
+          "return_pct": -16.83
         },
         {
           "ticker": "RYSAS",
@@ -936,8 +940,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 25.3,
-          "current_price": 20.8,
-          "return_pct": -17.79
+          "current_price": 20.46,
+          "return_pct": -19.13
         },
         {
           "ticker": "TRMET",
@@ -971,8 +975,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 121.0,
-          "current_price": 120.4,
-          "return_pct": -0.5
+          "current_price": 117.1,
+          "return_pct": -3.22
         },
         {
           "ticker": "SAHOL",
@@ -1006,8 +1010,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 91.5,
-          "current_price": 93.6,
-          "return_pct": 2.3
+          "current_price": 90.15,
+          "return_pct": -1.48
         },
         {
           "ticker": "FZLGY",
@@ -1041,8 +1045,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.2,
-          "current_price": 14.12,
-          "return_pct": -7.11
+          "current_price": 13.46,
+          "return_pct": -11.45
         },
         {
           "ticker": "IZFAS",
@@ -1081,8 +1085,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 67.85,
-          "current_price": 63.5,
-          "return_pct": -6.41
+          "current_price": 60.15,
+          "return_pct": -11.35
         }
       ]
     },
@@ -1134,8 +1138,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 14.75,
-          "current_price": 15.0,
-          "return_pct": 1.69
+          "current_price": 13.96,
+          "return_pct": -5.36
         },
         {
           "ticker": "EFOR",
@@ -1174,8 +1178,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.75,
-          "current_price": 15.35,
-          "return_pct": 20.39
+          "current_price": 15.07,
+          "return_pct": 18.2
         },
         {
           "ticker": "HRKET",
@@ -1214,8 +1218,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 131.4,
-          "current_price": 100.1,
-          "return_pct": -23.82
+          "current_price": 94.25,
+          "return_pct": -28.27
         },
         {
           "ticker": "DAPGM",
@@ -1249,8 +1253,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 11.8,
-          "current_price": 9.4,
-          "return_pct": -20.34
+          "current_price": 9.3,
+          "return_pct": -21.19
         },
         {
           "ticker": "ALFAS",
@@ -1294,8 +1298,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 63.3,
-          "current_price": 45.88,
-          "return_pct": -27.52
+          "current_price": 44.9,
+          "return_pct": -29.07
         },
         {
           "ticker": "BRLSM",
@@ -1329,8 +1333,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 21.82,
-          "current_price": 17.99,
-          "return_pct": -17.55
+          "current_price": 17.04,
+          "return_pct": -21.91
         },
         {
           "ticker": "GESAN",
@@ -1379,8 +1383,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 87.15,
-          "current_price": 78.2,
-          "return_pct": -10.27
+          "current_price": 80.1,
+          "return_pct": -8.09
         },
         {
           "ticker": "SURGY",
@@ -1424,8 +1428,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 75.65,
-          "current_price": 69.4,
-          "return_pct": -8.26
+          "current_price": 67.9,
+          "return_pct": -10.24
         },
         {
           "ticker": "DAPGM",
@@ -1459,8 +1463,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 11.8,
-          "current_price": 9.4,
-          "return_pct": -20.34
+          "current_price": 9.3,
+          "return_pct": -21.19
         },
         {
           "ticker": "ALARK",
@@ -1494,8 +1498,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 104.5,
-          "current_price": 103.7,
-          "return_pct": -0.77
+          "current_price": 98.3,
+          "return_pct": -5.93
         },
         {
           "ticker": "BRSAN",
@@ -1529,8 +1533,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 598.0,
-          "current_price": 559.0,
-          "return_pct": -6.52
+          "current_price": 539.0,
+          "return_pct": -9.87
         },
         {
           "ticker": "FZLGY",
@@ -1564,8 +1568,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.79,
-          "current_price": 14.12,
-          "return_pct": -10.58
+          "current_price": 13.46,
+          "return_pct": -14.76
         },
         {
           "ticker": "YKBNK",
@@ -1599,8 +1603,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 35.54,
-          "current_price": 37.46,
-          "return_pct": 5.4
+          "current_price": 36.42,
+          "return_pct": 2.48
         },
         {
           "ticker": "RYSAS",
@@ -1634,8 +1638,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 25.72,
-          "current_price": 20.8,
-          "return_pct": -19.13
+          "current_price": 20.46,
+          "return_pct": -20.45
         }
       ]
     },
@@ -1687,8 +1691,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 13.1,
-          "current_price": 15.35,
-          "return_pct": 17.18
+          "current_price": 15.07,
+          "return_pct": 15.04
         },
         {
           "ticker": "KCAER",
@@ -1722,8 +1726,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 14.4,
-          "current_price": 15.0,
-          "return_pct": 4.17
+          "current_price": 13.96,
+          "return_pct": -3.06
         },
         {
           "ticker": "HRKET",
@@ -1757,8 +1761,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 121.0,
-          "current_price": 100.1,
-          "return_pct": -17.27
+          "current_price": 94.25,
+          "return_pct": -22.11
         },
         {
           "ticker": "KRDMA",
@@ -1797,8 +1801,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 40.02,
-          "current_price": 39.54,
-          "return_pct": -1.2
+          "current_price": 37.96,
+          "return_pct": -5.15
         },
         {
           "ticker": "DAPGM",
@@ -1832,8 +1836,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 11.44,
-          "current_price": 9.4,
-          "return_pct": -17.83
+          "current_price": 9.3,
+          "return_pct": -18.71
         },
         {
           "ticker": "BRLSM",
@@ -1867,8 +1871,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 20.9,
-          "current_price": 17.99,
-          "return_pct": -13.92
+          "current_price": 17.04,
+          "return_pct": -18.47
         },
         {
           "ticker": "DOAS",
@@ -1902,8 +1906,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 200.9,
-          "current_price": 184.6,
-          "return_pct": -8.11
+          "current_price": 183.0,
+          "return_pct": -8.91
         },
         {
           "ticker": "GESAN",
@@ -1942,8 +1946,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 89.65,
-          "current_price": 78.2,
-          "return_pct": -12.77
+          "current_price": 80.1,
+          "return_pct": -10.65
         },
         {
           "ticker": "DAPGM",
@@ -1977,8 +1981,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 11.44,
-          "current_price": 9.4,
-          "return_pct": -17.83
+          "current_price": 9.3,
+          "return_pct": -18.71
         },
         {
           "ticker": "DOAS",
@@ -2012,8 +2016,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 200.9,
-          "current_price": 184.6,
-          "return_pct": -8.11
+          "current_price": 183.0,
+          "return_pct": -8.91
         },
         {
           "ticker": "FZLGY",
@@ -2041,8 +2045,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.2,
-          "current_price": 14.12,
-          "return_pct": -12.84
+          "current_price": 13.46,
+          "return_pct": -16.91
         },
         {
           "ticker": "BRSAN",
@@ -2076,8 +2080,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 619.0,
-          "current_price": 559.0,
-          "return_pct": -9.69
+          "current_price": 539.0,
+          "return_pct": -12.92
         },
         {
           "ticker": "ALARK",
@@ -2111,8 +2115,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 105.9,
-          "current_price": 103.7,
-          "return_pct": -2.08
+          "current_price": 98.3,
+          "return_pct": -7.18
         }
       ]
     },
@@ -2174,8 +2178,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 21.94,
-          "current_price": 16.53,
-          "return_pct": -24.66
+          "current_price": 16.19,
+          "return_pct": -26.21
         },
         {
           "ticker": "KRDMA",
@@ -2214,8 +2218,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 41.18,
-          "current_price": 39.54,
-          "return_pct": -3.98
+          "current_price": 37.96,
+          "return_pct": -7.82
         },
         {
           "ticker": "EFOR",
@@ -2249,8 +2253,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 13.19,
-          "current_price": 15.35,
-          "return_pct": 16.38
+          "current_price": 15.07,
+          "return_pct": 14.25
         },
         {
           "ticker": "KCAER",
@@ -2284,8 +2288,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 14.81,
-          "current_price": 15.0,
-          "return_pct": 1.28
+          "current_price": 13.96,
+          "return_pct": -5.74
         },
         {
           "ticker": "DOAS",
@@ -2319,8 +2323,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 205.4,
-          "current_price": 184.6,
-          "return_pct": -10.13
+          "current_price": 183.0,
+          "return_pct": -10.91
         },
         {
           "ticker": "GSDHO",
@@ -2364,8 +2368,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 6.6,
-          "current_price": 6.12,
-          "return_pct": -7.27
+          "current_price": 5.72,
+          "return_pct": -13.33
         },
         {
           "ticker": "SDTTR",
@@ -2409,8 +2413,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 257.5,
-          "current_price": 263.0,
-          "return_pct": 2.14
+          "current_price": 255.25,
+          "return_pct": -0.87
         },
         {
           "ticker": "FZLGY",
@@ -2444,8 +2448,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 17.82,
-          "current_price": 14.12,
-          "return_pct": -20.76
+          "current_price": 13.46,
+          "return_pct": -24.47
         },
         {
           "ticker": "KCAER",
@@ -2484,8 +2488,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.81,
-          "current_price": 15.0,
-          "return_pct": 1.28
+          "current_price": 13.96,
+          "return_pct": -5.74
         },
         {
           "ticker": "KRDMA",
@@ -2524,8 +2528,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 41.18,
-          "current_price": 39.54,
-          "return_pct": -3.98
+          "current_price": 37.96,
+          "return_pct": -7.82
         },
         {
           "ticker": "DOAS",
@@ -2559,8 +2563,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 205.4,
-          "current_price": 184.6,
-          "return_pct": -10.13
+          "current_price": 183.0,
+          "return_pct": -10.91
         },
         {
           "ticker": "ALARK",
@@ -2588,8 +2592,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 106.0,
-          "current_price": 103.7,
-          "return_pct": -2.17
+          "current_price": 98.3,
+          "return_pct": -7.26
         },
         {
           "ticker": "BRSAN",
@@ -2617,8 +2621,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 616.0,
-          "current_price": 559.0,
-          "return_pct": -9.25
+          "current_price": 539.0,
+          "return_pct": -12.5
         },
         {
           "ticker": "BARMA",
@@ -2662,8 +2666,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 68.2,
-          "current_price": 70.4,
-          "return_pct": 3.23
+          "current_price": 69.7,
+          "return_pct": 2.2
         },
         {
           "ticker": "MEGMT",
@@ -2702,8 +2706,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 86.75,
-          "current_price": 72.4,
-          "return_pct": -16.54
+          "current_price": 69.8,
+          "return_pct": -19.54
         }
       ]
     },
@@ -2763,8 +2767,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 204.0,
-          "current_price": 184.6,
-          "return_pct": -9.51
+          "current_price": 183.0,
+          "return_pct": -10.29
         },
         {
           "ticker": "SMRTG",
@@ -2803,8 +2807,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 12.52,
-          "current_price": 11.23,
-          "return_pct": -10.3
+          "current_price": 10.38,
+          "return_pct": -17.09
         },
         {
           "ticker": "LINK",
@@ -2848,8 +2852,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.41,
-          "current_price": 7.21,
-          "return_pct": -2.7
+          "current_price": 6.99,
+          "return_pct": -5.67
         },
         {
           "ticker": "YKBNK",
@@ -2883,8 +2887,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 40.46,
-          "current_price": 37.46,
-          "return_pct": -7.41
+          "current_price": 36.42,
+          "return_pct": -9.99
         },
         {
           "ticker": "AKBNK",
@@ -2918,8 +2922,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 76.75,
-          "current_price": 73.5,
-          "return_pct": -4.23
+          "current_price": 71.2,
+          "return_pct": -7.23
         },
         {
           "ticker": "KCAER",
@@ -2958,8 +2962,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.32,
-          "current_price": 15.0,
-          "return_pct": -2.09
+          "current_price": 13.96,
+          "return_pct": -8.88
         },
         {
           "ticker": "FZLGY",
@@ -2993,8 +2997,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 17.96,
-          "current_price": 14.12,
-          "return_pct": -21.38
+          "current_price": 13.46,
+          "return_pct": -25.06
         },
         {
           "ticker": "GARAN",
@@ -3028,8 +3032,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 141.0,
-          "current_price": 133.7,
-          "return_pct": -5.18
+          "current_price": 130.7,
+          "return_pct": -7.3
         },
         {
           "ticker": "KCAER",
@@ -3068,8 +3072,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.32,
-          "current_price": 15.0,
-          "return_pct": -2.09
+          "current_price": 13.96,
+          "return_pct": -8.88
         },
         {
           "ticker": "DOAS",
@@ -3103,8 +3107,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 204.0,
-          "current_price": 184.6,
-          "return_pct": -9.51
+          "current_price": 183.0,
+          "return_pct": -10.29
         },
         {
           "ticker": "KRDMA",
@@ -3143,8 +3147,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 41.42,
-          "current_price": 39.54,
-          "return_pct": -4.54
+          "current_price": 37.96,
+          "return_pct": -8.35
         },
         {
           "ticker": "ALARK",
@@ -3178,8 +3182,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 109.4,
-          "current_price": 103.7,
-          "return_pct": -5.21
+          "current_price": 98.3,
+          "return_pct": -10.15
         },
         {
           "ticker": "GARAN",
@@ -3213,8 +3217,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 141.0,
-          "current_price": 133.7,
-          "return_pct": -5.18
+          "current_price": 130.7,
+          "return_pct": -7.3
         },
         {
           "ticker": "AKSA",
@@ -3248,8 +3252,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 12.02,
-          "current_price": 11.84,
-          "return_pct": -1.5
+          "current_price": 11.55,
+          "return_pct": -3.91
         },
         {
           "ticker": "SKBNK",
@@ -3288,8 +3292,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.69,
-          "current_price": 19.08,
-          "return_pct": 29.88
+          "current_price": 18.97,
+          "return_pct": 29.14
         },
         {
           "ticker": "MGROS",
@@ -3323,8 +3327,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 699.0,
-          "current_price": 639.0,
-          "return_pct": -8.58
+          "current_price": 638.0,
+          "return_pct": -8.73
         }
       ]
     },
@@ -3386,8 +3390,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 12.84,
-          "current_price": 11.23,
-          "return_pct": -12.54
+          "current_price": 10.38,
+          "return_pct": -19.16
         },
         {
           "ticker": "GOKNR",
@@ -3436,8 +3440,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 26.48,
-          "current_price": 24.7,
-          "return_pct": -6.72
+          "current_price": 23.12,
+          "return_pct": -12.69
         },
         {
           "ticker": "SELEC",
@@ -3476,8 +3480,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 135.7,
-          "current_price": 207.0,
-          "return_pct": 52.54
+          "current_price": 205.0,
+          "return_pct": 51.07
         },
         {
           "ticker": "TAVHL",
@@ -3511,8 +3515,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 302.0,
-          "current_price": 272.5,
-          "return_pct": -9.77
+          "current_price": 260.0,
+          "return_pct": -13.91
         },
         {
           "ticker": "AKSA",
@@ -3551,8 +3555,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 12.54,
-          "current_price": 11.84,
-          "return_pct": -5.58
+          "current_price": 11.55,
+          "return_pct": -7.89
         },
         {
           "ticker": "ORGE",
@@ -3596,8 +3600,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 127.4,
-          "current_price": 108.8,
-          "return_pct": -14.6
+          "current_price": 105.8,
+          "return_pct": -16.95
         },
         {
           "ticker": "AKBNK",
@@ -3631,8 +3635,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 77.1,
-          "current_price": 73.5,
-          "return_pct": -4.67
+          "current_price": 71.2,
+          "return_pct": -7.65
         },
         {
           "ticker": "YKBNK",
@@ -3666,8 +3670,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 40.5,
-          "current_price": 37.46,
-          "return_pct": -7.51
+          "current_price": 36.42,
+          "return_pct": -10.07
         },
         {
           "ticker": "TAVHL",
@@ -3701,8 +3705,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 302.0,
-          "current_price": 272.5,
-          "return_pct": -9.77
+          "current_price": 260.0,
+          "return_pct": -13.91
         },
         {
           "ticker": "AKSA",
@@ -3741,8 +3745,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 12.54,
-          "current_price": 11.84,
-          "return_pct": -5.58
+          "current_price": 11.55,
+          "return_pct": -7.89
         },
         {
           "ticker": "KCAER",
@@ -3781,8 +3785,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 14.88,
-          "current_price": 15.0,
-          "return_pct": 0.81
+          "current_price": 13.96,
+          "return_pct": -6.18
         },
         {
           "ticker": "FZLGY",
@@ -3816,8 +3820,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 17.59,
-          "current_price": 14.12,
-          "return_pct": -19.73
+          "current_price": 13.46,
+          "return_pct": -23.48
         },
         {
           "ticker": "TEHOL",
@@ -3851,8 +3855,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 33.04,
-          "current_price": 39.02,
-          "return_pct": 18.1
+          "current_price": 39.6,
+          "return_pct": 19.85
         },
         {
           "ticker": "KRDMA",
@@ -3891,8 +3895,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 41.42,
-          "current_price": 39.54,
-          "return_pct": -4.54
+          "current_price": 37.96,
+          "return_pct": -8.35
         },
         {
           "ticker": "ALARK",
@@ -3926,8 +3930,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 103.8,
-          "current_price": 103.7,
-          "return_pct": -0.1
+          "current_price": 98.3,
+          "return_pct": -5.3
         },
         {
           "ticker": "SKBNK",
@@ -3966,8 +3970,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 14.55,
-          "current_price": 19.08,
-          "return_pct": 31.13
+          "current_price": 18.97,
+          "return_pct": 30.38
         }
       ]
     },
@@ -4024,8 +4028,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 149.2,
-          "current_price": 207.0,
-          "return_pct": 38.74
+          "current_price": 205.0,
+          "return_pct": 37.4
         },
         {
           "ticker": "DITAS",
@@ -4064,8 +4068,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 51.45,
-          "current_price": 29.9,
-          "return_pct": -41.89
+          "current_price": 28.78,
+          "return_pct": -44.06
         },
         {
           "ticker": "EFOR",
@@ -4104,8 +4108,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 13.95,
-          "current_price": 15.35,
-          "return_pct": 10.04
+          "current_price": 15.07,
+          "return_pct": 8.03
         },
         {
           "ticker": "YKBNK",
@@ -4133,8 +4137,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 40.9,
-          "current_price": 37.46,
-          "return_pct": -8.41
+          "current_price": 36.42,
+          "return_pct": -10.95
         },
         {
           "ticker": "SMRTG",
@@ -4168,8 +4172,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.3,
-          "current_price": 11.23,
-          "return_pct": -8.7
+          "current_price": 10.38,
+          "return_pct": -15.61
         },
         {
           "ticker": "AKSA",
@@ -4208,8 +4212,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 12.29,
-          "current_price": 11.84,
-          "return_pct": -3.66
+          "current_price": 11.55,
+          "return_pct": -6.02
         },
         {
           "ticker": "ORGE",
@@ -4248,8 +4252,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 123.6,
-          "current_price": 108.8,
-          "return_pct": -11.97
+          "current_price": 105.8,
+          "return_pct": -14.4
         },
         {
           "ticker": "PSGYO",
@@ -4288,8 +4292,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 3.83,
-          "current_price": 3.55,
-          "return_pct": -7.31
+          "current_price": 3.46,
+          "return_pct": -9.66
         },
         {
           "ticker": "ENERY",
@@ -4328,8 +4332,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 9.78,
-          "current_price": 9.64,
-          "return_pct": -1.43
+          "current_price": 9.21,
+          "return_pct": -5.83
         },
         {
           "ticker": "PSGYO",
@@ -4368,8 +4372,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 3.83,
-          "current_price": 3.55,
-          "return_pct": -7.31
+          "current_price": 3.46,
+          "return_pct": -9.66
         },
         {
           "ticker": "KCAER",
@@ -4403,8 +4407,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 14.92,
-          "current_price": 15.0,
-          "return_pct": 0.54
+          "current_price": 13.96,
+          "return_pct": -6.43
         },
         {
           "ticker": "TAVHL",
@@ -4438,8 +4442,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 300.25,
-          "current_price": 272.5,
-          "return_pct": -9.24
+          "current_price": 260.0,
+          "return_pct": -13.41
         },
         {
           "ticker": "AKSA",
@@ -4473,8 +4477,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.29,
-          "current_price": 11.84,
-          "return_pct": -3.66
+          "current_price": 11.55,
+          "return_pct": -6.02
         },
         {
           "ticker": "GARAN",
@@ -4508,8 +4512,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 141.0,
-          "current_price": 133.7,
-          "return_pct": -5.18
+          "current_price": 130.7,
+          "return_pct": -7.3
         },
         {
           "ticker": "TEHOL",
@@ -4543,8 +4547,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 33.12,
-          "current_price": 39.02,
-          "return_pct": 17.81
+          "current_price": 39.6,
+          "return_pct": 19.57
         },
         {
           "ticker": "KRDMA",
@@ -4578,8 +4582,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 40.8,
-          "current_price": 39.54,
-          "return_pct": -3.09
+          "current_price": 37.96,
+          "return_pct": -6.96
         }
       ]
     },
@@ -4636,8 +4640,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 9.53,
-          "current_price": 9.05,
-          "return_pct": -5.04
+          "current_price": 9.12,
+          "return_pct": -4.3
         },
         {
           "ticker": "SELEC",
@@ -4671,8 +4675,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 164.1,
-          "current_price": 207.0,
-          "return_pct": 26.14
+          "current_price": 205.0,
+          "return_pct": 24.92
         },
         {
           "ticker": "EFOR",
@@ -4711,8 +4715,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 14.43,
-          "current_price": 15.35,
-          "return_pct": 6.38
+          "current_price": 15.07,
+          "return_pct": 4.44
         },
         {
           "ticker": "YKBNK",
@@ -4740,8 +4744,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 42.7,
-          "current_price": 37.46,
-          "return_pct": -12.27
+          "current_price": 36.42,
+          "return_pct": -14.71
         },
         {
           "ticker": "KCAER",
@@ -4780,8 +4784,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.3,
-          "current_price": 15.0,
-          "return_pct": -1.96
+          "current_price": 13.96,
+          "return_pct": -8.76
         },
         {
           "ticker": "ORGE",
@@ -4815,8 +4819,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 122.8,
-          "current_price": 108.8,
-          "return_pct": -11.4
+          "current_price": 105.8,
+          "return_pct": -13.84
         },
         {
           "ticker": "SMRTG",
@@ -4850,8 +4854,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.41,
-          "current_price": 11.23,
-          "return_pct": -9.51
+          "current_price": 10.38,
+          "return_pct": -16.36
         },
         {
           "ticker": "ODAS",
@@ -4895,8 +4899,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 9.05,
-          "current_price": 8.15,
-          "return_pct": -9.94
+          "current_price": 8.18,
+          "return_pct": -9.61
         },
         {
           "ticker": "EFOR",
@@ -4935,8 +4939,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.43,
-          "current_price": 15.35,
-          "return_pct": 6.38
+          "current_price": 15.07,
+          "return_pct": 4.44
         },
         {
           "ticker": "TAVHL",
@@ -4964,8 +4968,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 304.5,
-          "current_price": 272.5,
-          "return_pct": -10.51
+          "current_price": 260.0,
+          "return_pct": -14.61
         },
         {
           "ticker": "AKSA",
@@ -4993,8 +4997,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.17,
-          "current_price": 11.84,
-          "return_pct": -2.71
+          "current_price": 11.55,
+          "return_pct": -5.09
         },
         {
           "ticker": "GARAN",
@@ -5028,8 +5032,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 144.0,
-          "current_price": 133.7,
-          "return_pct": -7.15
+          "current_price": 130.7,
+          "return_pct": -9.24
         },
         {
           "ticker": "ISCTR",
@@ -5063,8 +5067,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.47,
-          "current_price": 14.34,
-          "return_pct": -7.3
+          "current_price": 14.03,
+          "return_pct": -9.31
         },
         {
           "ticker": "PASEU",
@@ -5098,8 +5102,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 118.0,
-          "current_price": 100.1,
-          "return_pct": -15.17
+          "current_price": 91.75,
+          "return_pct": -22.25
         },
         {
           "ticker": "ALARK",
@@ -5133,8 +5137,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 102.9,
-          "current_price": 103.7,
-          "return_pct": 0.78
+          "current_price": 98.3,
+          "return_pct": -4.47
         },
         {
           "ticker": "TOASO",
@@ -5168,8 +5172,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 332.0,
-          "current_price": 301.5,
-          "return_pct": -9.19
+          "current_price": 294.5,
+          "return_pct": -11.3
         }
       ]
     },
@@ -5226,8 +5230,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 18.37,
-          "current_price": 16.84,
-          "return_pct": -8.33
+          "current_price": 19.8,
+          "return_pct": 7.78
         },
         {
           "ticker": "EFOR",
@@ -5261,8 +5265,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 15.75,
-          "current_price": 15.35,
-          "return_pct": -2.54
+          "current_price": 15.07,
+          "return_pct": -4.32
         },
         {
           "ticker": "GENIL",
@@ -5301,8 +5305,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 9.34,
-          "current_price": 9.05,
-          "return_pct": -3.1
+          "current_price": 9.12,
+          "return_pct": -2.36
         },
         {
           "ticker": "SELEC",
@@ -5336,8 +5340,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 167.6,
-          "current_price": 207.0,
-          "return_pct": 23.51
+          "current_price": 205.0,
+          "return_pct": 22.32
         },
         {
           "ticker": "AKBNK",
@@ -5371,8 +5375,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 81.85,
-          "current_price": 73.5,
-          "return_pct": -10.2
+          "current_price": 71.2,
+          "return_pct": -13.01
         },
         {
           "ticker": "LINK",
@@ -5416,8 +5420,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.46,
-          "current_price": 7.21,
-          "return_pct": -3.35
+          "current_price": 6.99,
+          "return_pct": -6.3
         },
         {
           "ticker": "YKBNK",
@@ -5451,8 +5455,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 43.38,
-          "current_price": 37.46,
-          "return_pct": -13.65
+          "current_price": 36.42,
+          "return_pct": -16.04
         },
         {
           "ticker": "PSGYO",
@@ -5491,8 +5495,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 4.0,
-          "current_price": 3.55,
-          "return_pct": -11.25
+          "current_price": 3.46,
+          "return_pct": -13.5
         },
         {
           "ticker": "EFOR",
@@ -5531,8 +5535,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.75,
-          "current_price": 15.35,
-          "return_pct": -2.54
+          "current_price": 15.07,
+          "return_pct": -4.32
         },
         {
           "ticker": "TAVHL",
@@ -5560,8 +5564,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 297.0,
-          "current_price": 272.5,
-          "return_pct": -8.25
+          "current_price": 260.0,
+          "return_pct": -12.46
         },
         {
           "ticker": "AKSA",
@@ -5589,8 +5593,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 11.79,
-          "current_price": 11.84,
-          "return_pct": 0.42
+          "current_price": 11.55,
+          "return_pct": -2.04
         },
         {
           "ticker": "PASEU",
@@ -5624,8 +5628,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 118.5,
-          "current_price": 100.1,
-          "return_pct": -15.53
+          "current_price": 91.75,
+          "return_pct": -22.57
         },
         {
           "ticker": "ISCTR",
@@ -5659,8 +5663,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.36,
-          "current_price": 14.34,
-          "return_pct": -6.64
+          "current_price": 14.03,
+          "return_pct": -8.66
         },
         {
           "ticker": "GARAN",
@@ -5688,8 +5692,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 143.7,
-          "current_price": 133.7,
-          "return_pct": -6.96
+          "current_price": 130.7,
+          "return_pct": -9.05
         },
         {
           "ticker": "VAKBN",
@@ -5723,8 +5727,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 35.0,
-          "current_price": 31.94,
-          "return_pct": -8.74
+          "current_price": 31.24,
+          "return_pct": -10.74
         },
         {
           "ticker": "CEMZY",
@@ -5768,8 +5772,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.99,
-          "current_price": 13.5,
-          "return_pct": -9.94
+          "current_price": 12.59,
+          "return_pct": -16.01
         }
       ]
     },
@@ -5821,8 +5825,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.67,
-          "current_price": 15.35,
-          "return_pct": -7.92
+          "current_price": 15.07,
+          "return_pct": -9.6
         },
         {
           "ticker": "CELHA",
@@ -5861,8 +5865,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 17.65,
-          "current_price": 16.84,
-          "return_pct": -4.59
+          "current_price": 19.8,
+          "return_pct": 12.18
         },
         {
           "ticker": "VSNMD",
@@ -5906,8 +5910,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 96.55,
-          "current_price": 87.8,
-          "return_pct": -9.06
+          "current_price": 84.1,
+          "return_pct": -12.89
         },
         {
           "ticker": "SELEC",
@@ -5941,8 +5945,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 184.3,
-          "current_price": 207.0,
-          "return_pct": 12.32
+          "current_price": 205.0,
+          "return_pct": 11.23
         },
         {
           "ticker": "ODAS",
@@ -5981,8 +5985,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 9.53,
-          "current_price": 8.15,
-          "return_pct": -14.48
+          "current_price": 8.18,
+          "return_pct": -14.17
         },
         {
           "ticker": "PSGYO",
@@ -6021,8 +6025,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 4.02,
-          "current_price": 3.55,
-          "return_pct": -11.69
+          "current_price": 3.46,
+          "return_pct": -13.93
         },
         {
           "ticker": "AKBNK",
@@ -6056,8 +6060,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 82.0,
-          "current_price": 73.5,
-          "return_pct": -10.37
+          "current_price": 71.2,
+          "return_pct": -13.17
         },
         {
           "ticker": "PASEU",
@@ -6091,8 +6095,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 123.0,
-          "current_price": 100.1,
-          "return_pct": -18.62
+          "current_price": 91.75,
+          "return_pct": -25.41
         },
         {
           "ticker": "PASEU",
@@ -6120,8 +6124,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 123.0,
-          "current_price": 100.1,
-          "return_pct": -18.62
+          "current_price": 91.75,
+          "return_pct": -25.41
         },
         {
           "ticker": "ESCOM",
@@ -6165,8 +6169,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 6.6,
-          "current_price": 5.93,
-          "return_pct": -10.15
+          "current_price": 6.11,
+          "return_pct": -7.42
         },
         {
           "ticker": "AKSA",
@@ -6200,8 +6204,8 @@
           "watch_days": 6,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 12.33,
-          "current_price": 11.84,
-          "return_pct": -3.97
+          "current_price": 11.55,
+          "return_pct": -6.33
         },
         {
           "ticker": "TAVHL",
@@ -6229,8 +6233,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 288.0,
-          "current_price": 272.5,
-          "return_pct": -5.38
+          "current_price": 260.0,
+          "return_pct": -9.72
         },
         {
           "ticker": "SKBNK",
@@ -6269,8 +6273,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 16.13,
-          "current_price": 19.08,
-          "return_pct": 18.29
+          "current_price": 18.97,
+          "return_pct": 17.61
         },
         {
           "ticker": "GARAN",
@@ -6298,8 +6302,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 143.7,
-          "current_price": 133.7,
-          "return_pct": -6.96
+          "current_price": 130.7,
+          "return_pct": -9.05
         },
         {
           "ticker": "ISCTR",
@@ -6327,8 +6331,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 15.42,
-          "current_price": 14.34,
-          "return_pct": -7.0
+          "current_price": 14.03,
+          "return_pct": -9.01
         },
         {
           "ticker": "TRALT",
@@ -6362,8 +6366,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 51.4,
-          "current_price": 51.2,
-          "return_pct": -0.39
+          "current_price": 50.85,
+          "return_pct": -1.07
         }
       ]
     },
@@ -6415,8 +6419,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.23,
-          "current_price": 15.35,
-          "return_pct": -5.42
+          "current_price": 15.07,
+          "return_pct": -7.15
         },
         {
           "ticker": "CELHA",
@@ -6455,8 +6459,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 18.01,
-          "current_price": 16.84,
-          "return_pct": -6.5
+          "current_price": 19.8,
+          "return_pct": 9.94
         },
         {
           "ticker": "VSNMD",
@@ -6495,8 +6499,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 97.0,
-          "current_price": 87.8,
-          "return_pct": -9.48
+          "current_price": 84.1,
+          "return_pct": -13.3
         },
         {
           "ticker": "HRKET",
@@ -6540,8 +6544,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 130.9,
-          "current_price": 100.1,
-          "return_pct": -23.53
+          "current_price": 94.25,
+          "return_pct": -28.0
         },
         {
           "ticker": "SELEC",
@@ -6575,8 +6579,8 @@
           "watch_days": 6,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 202.7,
-          "current_price": 207.0,
-          "return_pct": 2.12
+          "current_price": 205.0,
+          "return_pct": 1.13
         },
         {
           "ticker": "AKBNK",
@@ -6604,8 +6608,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 80.5,
-          "current_price": 73.5,
-          "return_pct": -8.7
+          "current_price": 71.2,
+          "return_pct": -11.55
         },
         {
           "ticker": "ODAS",
@@ -6649,8 +6653,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 9.51,
-          "current_price": 8.15,
-          "return_pct": -14.3
+          "current_price": 8.18,
+          "return_pct": -13.99
         },
         {
           "ticker": "YKBNK",
@@ -6684,8 +6688,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 42.88,
-          "current_price": 37.46,
-          "return_pct": -12.64
+          "current_price": 36.42,
+          "return_pct": -15.07
         },
         {
           "ticker": "SKBNK",
@@ -6724,8 +6728,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 16.47,
-          "current_price": 19.08,
-          "return_pct": 15.85
+          "current_price": 18.97,
+          "return_pct": 15.18
         },
         {
           "ticker": "TOASO",
@@ -6764,8 +6768,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 345.0,
-          "current_price": 301.5,
-          "return_pct": -12.61
+          "current_price": 294.5,
+          "return_pct": -14.64
         },
         {
           "ticker": "PASEU",
@@ -6793,8 +6797,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 126.0,
-          "current_price": 100.1,
-          "return_pct": -20.56
+          "current_price": 91.75,
+          "return_pct": -27.18
         },
         {
           "ticker": "PSGYO",
@@ -6828,8 +6832,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 3.75,
-          "current_price": 3.55,
-          "return_pct": -5.33
+          "current_price": 3.46,
+          "return_pct": -7.73
         },
         {
           "ticker": "GEREL",
@@ -6873,8 +6877,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 43.0,
-          "current_price": 36.9,
-          "return_pct": -14.19
+          "current_price": 33.04,
+          "return_pct": -23.16
         },
         {
           "ticker": "TRALT",
@@ -6908,8 +6912,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 49.8,
-          "current_price": 51.2,
-          "return_pct": 2.81
+          "current_price": 50.85,
+          "return_pct": 2.11
         }
       ]
     },
@@ -6966,8 +6970,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.6,
-          "current_price": 6.85,
-          "return_pct": -9.87
+          "current_price": 6.34,
+          "return_pct": -16.58
         },
         {
           "ticker": "BALSU",
@@ -7001,8 +7005,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 18.67,
-          "current_price": 17.35,
-          "return_pct": -7.07
+          "current_price": 15.05,
+          "return_pct": -19.39
         },
         {
           "ticker": "CELHA",
@@ -7036,8 +7040,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 19.05,
-          "current_price": 16.84,
-          "return_pct": -11.6
+          "current_price": 19.8,
+          "return_pct": 3.94
         },
         {
           "ticker": "EFOR",
@@ -7071,8 +7075,8 @@
           "watch_days": 6,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.45,
-          "current_price": 15.35,
-          "return_pct": -6.69
+          "current_price": 15.07,
+          "return_pct": -8.39
         },
         {
           "ticker": "HRKET",
@@ -7116,8 +7120,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 118.7,
-          "current_price": 100.1,
-          "return_pct": -15.67
+          "current_price": 94.25,
+          "return_pct": -20.6
         },
         {
           "ticker": "SELEC",
@@ -7151,8 +7155,8 @@
           "watch_days": 7,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 220.0,
-          "current_price": 207.0,
-          "return_pct": -5.91
+          "current_price": 205.0,
+          "return_pct": -6.82
         },
         {
           "ticker": "AKBNK",
@@ -7180,8 +7184,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 80.95,
-          "current_price": 73.5,
-          "return_pct": -9.2
+          "current_price": 71.2,
+          "return_pct": -12.04
         },
         {
           "ticker": "KCAER",
@@ -7220,8 +7224,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.3,
-          "current_price": 15.0,
-          "return_pct": -1.96
+          "current_price": 13.96,
+          "return_pct": -8.76
         },
         {
           "ticker": "SKBNK",
@@ -7255,8 +7259,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.93,
-          "current_price": 19.08,
-          "return_pct": 12.7
+          "current_price": 18.97,
+          "return_pct": 12.05
         },
         {
           "ticker": "TOASO",
@@ -7290,8 +7294,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 341.0,
-          "current_price": 301.5,
-          "return_pct": -11.58
+          "current_price": 294.5,
+          "return_pct": -13.64
         },
         {
           "ticker": "ODAS",
@@ -7325,8 +7329,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 8.56,
-          "current_price": 8.15,
-          "return_pct": -4.79
+          "current_price": 8.18,
+          "return_pct": -4.44
         },
         {
           "ticker": "GEREL",
@@ -7370,8 +7374,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 43.58,
-          "current_price": 36.9,
-          "return_pct": -15.33
+          "current_price": 33.04,
+          "return_pct": -24.19
         }
       ]
     },
@@ -7428,8 +7432,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 7.53,
-          "current_price": 6.85,
-          "return_pct": -9.03
+          "current_price": 6.34,
+          "return_pct": -15.8
         },
         {
           "ticker": "BALSU",
@@ -7463,8 +7467,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 20.52,
-          "current_price": 17.35,
-          "return_pct": -15.45
+          "current_price": 15.05,
+          "return_pct": -26.66
         },
         {
           "ticker": "EFOR",
@@ -7498,8 +7502,8 @@
           "watch_days": 7,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.56,
-          "current_price": 15.35,
-          "return_pct": -7.31
+          "current_price": 15.07,
+          "return_pct": -9.0
         },
         {
           "ticker": "CELHA",
@@ -7533,8 +7537,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 18.17,
-          "current_price": 16.84,
-          "return_pct": -7.32
+          "current_price": 19.8,
+          "return_pct": 8.97
         },
         {
           "ticker": "LINK",
@@ -7578,8 +7582,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.17,
-          "current_price": 7.21,
-          "return_pct": 0.56
+          "current_price": 6.99,
+          "return_pct": -2.51
         },
         {
           "ticker": "SELEC",
@@ -7607,8 +7611,8 @@
           "watch_days": 8,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 214.9,
-          "current_price": 207.0,
-          "return_pct": -3.68
+          "current_price": 205.0,
+          "return_pct": -4.61
         },
         {
           "ticker": "KCAER",
@@ -7647,8 +7651,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.33,
-          "current_price": 15.0,
-          "return_pct": -2.15
+          "current_price": 13.96,
+          "return_pct": -8.94
         },
         {
           "ticker": "PASEU",
@@ -7682,8 +7686,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 127.7,
-          "current_price": 100.1,
-          "return_pct": -21.61
+          "current_price": 91.75,
+          "return_pct": -28.15
         },
         {
           "ticker": "SKBNK",
@@ -7717,8 +7721,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 16.92,
-          "current_price": 19.08,
-          "return_pct": 12.77
+          "current_price": 18.97,
+          "return_pct": 12.12
         },
         {
           "ticker": "TOASO",
@@ -7746,8 +7750,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 335.5,
-          "current_price": 301.5,
-          "return_pct": -10.13
+          "current_price": 294.5,
+          "return_pct": -12.22
         }
       ]
     },
@@ -7793,8 +7797,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 18.59,
-          "current_price": 17.35,
-          "return_pct": -6.67
+          "current_price": 15.05,
+          "return_pct": -19.04
         },
         {
           "ticker": "EFOR",
@@ -7828,8 +7832,8 @@
           "watch_days": 8,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 17.0,
-          "current_price": 15.35,
-          "return_pct": -9.71
+          "current_price": 15.07,
+          "return_pct": -11.35
         },
         {
           "ticker": "VSNMD",
@@ -7868,8 +7872,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 99.2,
-          "current_price": 87.8,
-          "return_pct": -11.49
+          "current_price": 84.1,
+          "return_pct": -15.22
         },
         {
           "ticker": "BORLS",
@@ -7903,8 +7907,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 6.91,
-          "current_price": 6.85,
-          "return_pct": -0.87
+          "current_price": 6.34,
+          "return_pct": -8.25
         },
         {
           "ticker": "CELHA",
@@ -7938,8 +7942,8 @@
           "watch_days": 6,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 18.83,
-          "current_price": 16.84,
-          "return_pct": -10.57
+          "current_price": 19.8,
+          "return_pct": 5.15
         },
         {
           "ticker": "SELEC",
@@ -7967,8 +7971,8 @@
           "watch_days": 9,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 198.3,
-          "current_price": 207.0,
-          "return_pct": 4.39
+          "current_price": 205.0,
+          "return_pct": 3.38
         },
         {
           "ticker": "PASEU",
@@ -8002,8 +8006,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 127.5,
-          "current_price": 100.1,
-          "return_pct": -21.49
+          "current_price": 91.75,
+          "return_pct": -28.04
         },
         {
           "ticker": "THYAO",
@@ -8042,8 +8046,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 330.75,
-          "current_price": 347.0,
-          "return_pct": 4.91
+          "current_price": 335.5,
+          "return_pct": 1.44
         },
         {
           "ticker": "OTKAR",
@@ -8077,8 +8081,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 366.25,
-          "current_price": 374.0,
-          "return_pct": 2.12
+          "current_price": 354.5,
+          "return_pct": -3.21
         },
         {
           "ticker": "AKFIS",
@@ -8122,8 +8126,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 72.35,
-          "current_price": 89.45,
-          "return_pct": 23.64
+          "current_price": 91.35,
+          "return_pct": 26.26
         },
         {
           "ticker": "SKBNK",
@@ -8151,8 +8155,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 15.45,
-          "current_price": 19.08,
-          "return_pct": 23.5
+          "current_price": 18.97,
+          "return_pct": 22.78
         }
       ]
     },
@@ -8209,8 +8213,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 108.0,
-          "current_price": 87.8,
-          "return_pct": -18.7
+          "current_price": 84.1,
+          "return_pct": -22.13
         },
         {
           "ticker": "CELHA",
@@ -8249,8 +8253,8 @@
           "watch_days": 7,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 20.08,
-          "current_price": 16.84,
-          "return_pct": -16.14
+          "current_price": 19.8,
+          "return_pct": -1.39
         },
         {
           "ticker": "BALSU",
@@ -8278,8 +8282,8 @@
           "watch_days": 4,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 17.5,
-          "current_price": 17.35,
-          "return_pct": -0.86
+          "current_price": 15.05,
+          "return_pct": -14.0
         },
         {
           "ticker": "INFO",
@@ -8313,8 +8317,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.2,
-          "current_price": 7.38,
-          "return_pct": 2.5
+          "current_price": 8.8,
+          "return_pct": 22.22
         },
         {
           "ticker": "ALARK",
@@ -8348,8 +8352,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 107.5,
-          "current_price": 103.7,
-          "return_pct": -3.53
+          "current_price": 98.3,
+          "return_pct": -8.56
         },
         {
           "ticker": "THYAO",
@@ -8383,8 +8387,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 329.0,
-          "current_price": 347.0,
-          "return_pct": 5.47
+          "current_price": 335.5,
+          "return_pct": 1.98
         },
         {
           "ticker": "AEFES",
@@ -8418,8 +8422,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 21.34,
-          "current_price": 20.22,
-          "return_pct": -5.25
+          "current_price": 20.48,
+          "return_pct": -4.03
         },
         {
           "ticker": "VSNMD",
@@ -8458,8 +8462,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 108.0,
-          "current_price": 87.8,
-          "return_pct": -18.7
+          "current_price": 84.1,
+          "return_pct": -22.13
         },
         {
           "ticker": "OTKAR",
@@ -8493,8 +8497,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 374.5,
-          "current_price": 374.0,
-          "return_pct": -0.13
+          "current_price": 354.5,
+          "return_pct": -5.34
         },
         {
           "ticker": "AKFIS",
@@ -8538,8 +8542,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 79.55,
-          "current_price": 89.45,
-          "return_pct": 12.45
+          "current_price": 91.35,
+          "return_pct": 14.83
         },
         {
           "ticker": "SKBNK",
@@ -8567,8 +8571,8 @@
           "watch_days": 6,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 15.67,
-          "current_price": 19.08,
-          "return_pct": 21.76
+          "current_price": 18.97,
+          "return_pct": 21.06
         },
         {
           "ticker": "GEREL",
@@ -8607,8 +8611,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 43.4,
-          "current_price": 36.9,
-          "return_pct": -14.98
+          "current_price": 33.04,
+          "return_pct": -23.87
         }
       ]
     },
@@ -8673,8 +8677,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 7.45,
-          "current_price": 7.21,
-          "return_pct": -3.22
+          "current_price": 6.99,
+          "return_pct": -6.17
         },
         {
           "ticker": "KOCMT",
@@ -8718,8 +8722,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 3.81,
-          "current_price": 4.89,
-          "return_pct": 28.35
+          "current_price": 4.71,
+          "return_pct": 23.62
         },
         {
           "ticker": "VSNMD",
@@ -8758,8 +8762,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 93.95,
-          "current_price": 87.8,
-          "return_pct": -6.55
+          "current_price": 84.1,
+          "return_pct": -10.48
         },
         {
           "ticker": "ENERY",
@@ -8793,8 +8797,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 11.49,
-          "current_price": 9.64,
-          "return_pct": -16.1
+          "current_price": 9.21,
+          "return_pct": -19.84
         },
         {
           "ticker": "BINHO",
@@ -8833,8 +8837,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 11.41,
-          "current_price": 10.42,
-          "return_pct": -8.68
+          "current_price": 10.32,
+          "return_pct": -9.55
         },
         {
           "ticker": "KCAER",
@@ -8873,8 +8877,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.37,
-          "current_price": 15.0,
-          "return_pct": -2.41
+          "current_price": 13.96,
+          "return_pct": -9.17
         },
         {
           "ticker": "INFO",
@@ -8908,8 +8912,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 6.87,
-          "current_price": 7.38,
-          "return_pct": 7.42
+          "current_price": 8.8,
+          "return_pct": 28.09
         },
         {
           "ticker": "ALARK",
@@ -8943,8 +8947,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 107.4,
-          "current_price": 103.7,
-          "return_pct": -3.45
+          "current_price": 98.3,
+          "return_pct": -8.47
         },
         {
           "ticker": "BALSU",
@@ -8983,8 +8987,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 17.97,
-          "current_price": 17.35,
-          "return_pct": -3.45
+          "current_price": 15.05,
+          "return_pct": -16.25
         },
         {
           "ticker": "VSNMD",
@@ -9023,8 +9027,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 93.95,
-          "current_price": 87.8,
-          "return_pct": -6.55
+          "current_price": 84.1,
+          "return_pct": -10.48
         },
         {
           "ticker": "OTKAR",
@@ -9058,8 +9062,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 376.75,
-          "current_price": 374.0,
-          "return_pct": -0.73
+          "current_price": 354.5,
+          "return_pct": -5.91
         },
         {
           "ticker": "SKBNK",
@@ -9098,8 +9102,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 16.53,
-          "current_price": 19.08,
-          "return_pct": 15.43
+          "current_price": 18.97,
+          "return_pct": 14.76
         }
       ]
     },
@@ -9161,8 +9165,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 4.05,
-          "current_price": 4.89,
-          "return_pct": 20.74
+          "current_price": 4.71,
+          "return_pct": 16.3
         },
         {
           "ticker": "GRTHO",
@@ -9196,8 +9200,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 242.9,
-          "current_price": 240.3,
-          "return_pct": -1.07
+          "current_price": 234.3,
+          "return_pct": -3.54
         },
         {
           "ticker": "LINK",
@@ -9241,8 +9245,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 7.22,
-          "current_price": 7.21,
-          "return_pct": -0.14
+          "current_price": 6.99,
+          "return_pct": -3.19
         },
         {
           "ticker": "EKGYO",
@@ -9276,8 +9280,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 22.0,
-          "current_price": 20.5,
-          "return_pct": -6.82
+          "current_price": 20.46,
+          "return_pct": -7.0
         },
         {
           "ticker": "GSDHO",
@@ -9321,8 +9325,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 6.18,
-          "current_price": 6.12,
-          "return_pct": -0.97
+          "current_price": 5.72,
+          "return_pct": -7.44
         },
         {
           "ticker": "AKBNK",
@@ -9356,8 +9360,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 77.95,
-          "current_price": 73.5,
-          "return_pct": -5.71
+          "current_price": 71.2,
+          "return_pct": -8.66
         },
         {
           "ticker": "BINHO",
@@ -9401,8 +9405,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 10.45,
-          "current_price": 10.42,
-          "return_pct": -0.29
+          "current_price": 10.32,
+          "return_pct": -1.24
         },
         {
           "ticker": "YKBNK",
@@ -9441,8 +9445,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 40.5,
-          "current_price": 37.46,
-          "return_pct": -7.51
+          "current_price": 36.42,
+          "return_pct": -10.07
         },
         {
           "ticker": "OTKAR",
@@ -9476,8 +9480,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 377.0,
-          "current_price": 374.0,
-          "return_pct": -0.8
+          "current_price": 354.5,
+          "return_pct": -5.97
         }
       ]
     },
@@ -9534,8 +9538,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 4.45,
-          "current_price": 4.89,
-          "return_pct": 9.89
+          "current_price": 4.71,
+          "return_pct": 5.84
         },
         {
           "ticker": "PATEK",
@@ -9574,8 +9578,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 24.86,
-          "current_price": 24.12,
-          "return_pct": -2.98
+          "current_price": 23.04,
+          "return_pct": -7.32
         },
         {
           "ticker": "LINK",
@@ -9614,8 +9618,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 7.52,
-          "current_price": 7.21,
-          "return_pct": -4.12
+          "current_price": 6.99,
+          "return_pct": -7.05
         },
         {
           "ticker": "KCAER",
@@ -9659,8 +9663,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.2,
-          "current_price": 15.0,
-          "return_pct": -1.32
+          "current_price": 13.96,
+          "return_pct": -8.16
         },
         {
           "ticker": "GRTHO",
@@ -9699,8 +9703,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 245.7,
-          "current_price": 240.3,
-          "return_pct": -2.2
+          "current_price": 234.3,
+          "return_pct": -4.64
         },
         {
           "ticker": "GSDHO",
@@ -9744,8 +9748,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 6.17,
-          "current_price": 6.12,
-          "return_pct": -0.81
+          "current_price": 5.72,
+          "return_pct": -7.29
         },
         {
           "ticker": "BINHO",
@@ -9779,8 +9783,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 10.81,
-          "current_price": 10.42,
-          "return_pct": -3.61
+          "current_price": 10.32,
+          "return_pct": -4.53
         },
         {
           "ticker": "GESAN",
@@ -9819,8 +9823,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 77.65,
-          "current_price": 78.2,
-          "return_pct": 0.71
+          "current_price": 80.1,
+          "return_pct": 3.16
         },
         {
           "ticker": "OTKAR",
@@ -9848,8 +9852,8 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 388.25,
-          "current_price": 374.0,
-          "return_pct": -3.67
+          "current_price": 354.5,
+          "return_pct": -8.69
         },
         {
           "ticker": "KAREL",
@@ -9888,8 +9892,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 11.58,
-          "current_price": 11.02,
-          "return_pct": -4.84
+          "current_price": 10.17,
+          "return_pct": -12.18
         },
         {
           "ticker": "TUPRS",
@@ -9923,8 +9927,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 248.2,
-          "current_price": 247.4,
-          "return_pct": -0.32
+          "current_price": 258.75,
+          "return_pct": 4.25
         }
       ]
     },
@@ -9986,8 +9990,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 4.94,
-          "current_price": 4.89,
-          "return_pct": -1.01
+          "current_price": 4.71,
+          "return_pct": -4.66
         },
         {
           "ticker": "EFOR",
@@ -10031,8 +10035,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 14.68,
-          "current_price": 15.35,
-          "return_pct": 4.56
+          "current_price": 15.07,
+          "return_pct": 2.66
         },
         {
           "ticker": "INFO",
@@ -10071,8 +10075,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 8.11,
-          "current_price": 7.38,
-          "return_pct": -9.0
+          "current_price": 8.8,
+          "return_pct": 8.51
         },
         {
           "ticker": "MOGAN",
@@ -10116,8 +10120,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 16.03,
-          "current_price": 15.86,
-          "return_pct": -1.06
+          "current_price": 15.93,
+          "return_pct": -0.62
         },
         {
           "ticker": "AKFYE",
@@ -10156,8 +10160,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 25.86,
-          "current_price": 25.78,
-          "return_pct": -0.31
+          "current_price": 24.5,
+          "return_pct": -5.26
         },
         {
           "ticker": "THYAO",
@@ -10196,8 +10200,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 348.25,
-          "current_price": 347.0,
-          "return_pct": -0.36
+          "current_price": 335.5,
+          "return_pct": -3.66
         },
         {
           "ticker": "TRMET",
@@ -10231,8 +10235,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 121.0,
-          "current_price": 120.4,
-          "return_pct": -0.5
+          "current_price": 117.1,
+          "return_pct": -3.22
         },
         {
           "ticker": "TUPRS",
@@ -10266,8 +10270,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 258.0,
-          "current_price": 247.4,
-          "return_pct": -4.11
+          "current_price": 258.75,
+          "return_pct": 0.29
         },
         {
           "ticker": "EKGYO",
@@ -10301,8 +10305,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 20.94,
-          "current_price": 20.5,
-          "return_pct": -2.1
+          "current_price": 20.46,
+          "return_pct": -2.29
         },
         {
           "ticker": "TUPRS",
@@ -10336,8 +10340,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 258.0,
-          "current_price": 247.4,
-          "return_pct": -4.11
+          "current_price": 258.75,
+          "return_pct": 0.29
         },
         {
           "ticker": "OTKAR",
@@ -10376,8 +10380,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 366.0,
-          "current_price": 374.0,
-          "return_pct": 2.19
+          "current_price": 354.5,
+          "return_pct": -3.14
         }
       ]
     },
@@ -10434,8 +10438,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 4.89,
-          "current_price": 4.89,
-          "return_pct": 0.0
+          "current_price": 4.71,
+          "return_pct": -3.68
         },
         {
           "ticker": "EFOR",
@@ -10474,8 +10478,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.35,
-          "current_price": 15.35,
-          "return_pct": 0.0
+          "current_price": 15.07,
+          "return_pct": -1.82
         },
         {
           "ticker": "THYAO",
@@ -10514,8 +10518,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 347.0,
-          "current_price": 347.0,
-          "return_pct": 0.0
+          "current_price": 335.5,
+          "return_pct": -3.31
         },
         {
           "ticker": "INFO",
@@ -10549,8 +10553,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 7.38,
-          "current_price": 7.38,
-          "return_pct": 0.0
+          "current_price": 8.8,
+          "return_pct": 19.24
         },
         {
           "ticker": "MOGAN",
@@ -10594,8 +10598,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 15.86,
-          "current_price": 15.86,
-          "return_pct": 0.0
+          "current_price": 15.93,
+          "return_pct": 0.44
         },
         {
           "ticker": "AKFYE",
@@ -10634,8 +10638,8 @@
           "watch_days": 2,
           "quarantine_status": "karantina",
           "entry_price": 25.78,
-          "current_price": 25.78,
-          "return_pct": 0.0
+          "current_price": 24.5,
+          "return_pct": -4.97
         },
         {
           "ticker": "KCAER",
@@ -10679,8 +10683,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 15.0,
-          "current_price": 15.0,
-          "return_pct": 0.0
+          "current_price": 13.96,
+          "return_pct": -6.93
         },
         {
           "ticker": "PATEK",
@@ -10724,8 +10728,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 24.12,
-          "current_price": 24.12,
-          "return_pct": 0.0
+          "current_price": 23.04,
+          "return_pct": -4.48
         },
         {
           "ticker": "THYAO",
@@ -10764,8 +10768,8 @@
           "watch_days": 1,
           "quarantine_status": "karantina",
           "entry_price": 347.0,
-          "current_price": 347.0,
-          "return_pct": 0.0
+          "current_price": 335.5,
+          "return_pct": -3.31
         },
         {
           "ticker": "OTKAR",
@@ -10793,8 +10797,8 @@
           "watch_days": 5,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 374.0,
-          "current_price": 374.0,
-          "return_pct": 0.0
+          "current_price": 354.5,
+          "return_pct": -5.21
         },
         {
           "ticker": "TUPRS",
@@ -10822,7 +10826,315 @@
           "watch_days": 3,
           "quarantine_status": "teyitli_izleme",
           "entry_price": 247.4,
-          "current_price": 247.4,
+          "current_price": 258.75,
+          "return_pct": 4.59
+        }
+      ]
+    },
+    {
+      "date": "2026-07-08",
+      "generated_at": "2026-07-08T14:32:01",
+      "top10": [
+        "GUNDG",
+        "KTLEV",
+        "ODINE",
+        "IEYHO",
+        "DSTKF",
+        "OZATD",
+        "ALKLC",
+        "PEKGY",
+        "CVKMD",
+        "SKBNK"
+      ],
+      "items": [
+        {
+          "ticker": "EFOR",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XUTEK",
+          "score": 173.0,
+          "price": 15.07,
+          "m5": 2.9,
+          "m21": 33.0,
+          "m252": -30.4,
+          "rank_1y": 122,
+          "rank_1a": 16,
+          "rank_1h": 27,
+          "acceleration": 106,
+          "volume_ratio": 0.87,
+          "sm_signal": "Üst_fitil_UYARI",
+          "display_signal": "Üst_fitil_UYARI",
+          "radar_only": false,
+          "range_high": 31.98,
+          "range_low": 5.34,
+          "from_high_pct": -52.9,
+          "from_low_pct": 182.2,
+          "tags": [
+            {
+              "label": "ust_fitil_uyari",
+              "severity": "warn",
+              "note": "ust fitil var; adini dagitim gibi okuma"
+            },
+            {
+              "label": "sektor_cap_dolu",
+              "severity": "info",
+              "note": "Top10 icinde sektor kotasi dolu"
+            }
+          ],
+          "watch_days": 3,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 15.07,
+          "current_price": 15.07,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "KOCMT",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XU100",
+          "score": 159.0,
+          "price": 4.71,
+          "m5": 27.6,
+          "m21": 79.8,
+          "m252": 78.6,
+          "rank_1y": 39,
+          "rank_1a": 6,
+          "rank_1h": 1,
+          "acceleration": 38,
+          "volume_ratio": 1.34,
+          "sm_signal": "GÜÇLÜ_BİRİKİM",
+          "display_signal": "GÜÇLÜ_BİRİKİM",
+          "radar_only": false,
+          "range_high": 4.94,
+          "range_low": 2.4,
+          "from_high_pct": -4.7,
+          "from_low_pct": 96.2,
+          "tags": [
+            {
+              "label": "sektor_cap_dolu",
+              "severity": "info",
+              "note": "Top10 icinde sektor kotasi dolu"
+            }
+          ],
+          "watch_days": 6,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 4.71,
+          "current_price": 4.71,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "INFO",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XAKUR",
+          "score": 148.0,
+          "price": 8.8,
+          "m5": 27.4,
+          "m21": 143.1,
+          "m252": 125.6,
+          "rank_1y": 32,
+          "rank_1a": 1,
+          "rank_1h": 2,
+          "acceleration": 31,
+          "volume_ratio": 0.44,
+          "sm_signal": "Birikim",
+          "display_signal": "Birikim",
+          "radar_only": true,
+          "range_high": 8.8,
+          "range_low": 3.01,
+          "from_high_pct": 0.0,
+          "from_low_pct": 192.4,
+          "tags": [
+            {
+              "label": "zirveye_yakin",
+              "severity": "warn",
+              "note": "52 haftalik tepeye cok yakin"
+            }
+          ],
+          "watch_days": 3,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 8.8,
+          "current_price": 8.8,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "MOGAN",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XU100",
+          "score": 127.0,
+          "price": 15.93,
+          "m5": 16.7,
+          "m21": 27.7,
+          "m252": 75.6,
+          "rank_1y": 40,
+          "rank_1a": 17,
+          "rank_1h": 4,
+          "acceleration": 36,
+          "volume_ratio": 0.91,
+          "sm_signal": "Nötr",
+          "display_signal": "Nötr",
+          "radar_only": true,
+          "range_high": 16.03,
+          "range_low": 8.05,
+          "from_high_pct": -0.6,
+          "from_low_pct": 97.9,
+          "tags": [
+            {
+              "label": "zirveye_yakin",
+              "severity": "warn",
+              "note": "52 haftalik tepeye cok yakin"
+            },
+            {
+              "label": "sektor_cap_dolu",
+              "severity": "info",
+              "note": "Top10 icinde sektor kotasi dolu"
+            }
+          ],
+          "watch_days": 3,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 15.93,
+          "current_price": 15.93,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "AKFYE",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XELKT",
+          "score": 112.0,
+          "price": 24.5,
+          "m5": 9.5,
+          "m21": 14.5,
+          "m252": 51.8,
+          "rank_1y": 52,
+          "rank_1a": 24,
+          "rank_1h": 13,
+          "acceleration": 39,
+          "volume_ratio": 1.61,
+          "sm_signal": "DAĞITIM",
+          "display_signal": "DAĞITIM",
+          "radar_only": true,
+          "range_high": 27.68,
+          "range_low": 16.29,
+          "from_high_pct": -11.5,
+          "from_low_pct": 50.4,
+          "tags": [
+            {
+              "label": "dagitim_bilgi",
+              "severity": "warn",
+              "note": "eleme degil; tepe/yorulma etiketi"
+            }
+          ],
+          "watch_days": 3,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 24.5,
+          "current_price": 24.5,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "SELEC",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XUHIZ",
+          "score": 110.0,
+          "price": 205.0,
+          "m5": 2.5,
+          "m21": 98.3,
+          "m252": 113.1,
+          "rank_1y": 34,
+          "rank_1a": 2,
+          "rank_1h": 32,
+          "acceleration": 32,
+          "volume_ratio": 0.22,
+          "sm_signal": "Nötr",
+          "display_signal": "Nötr",
+          "radar_only": false,
+          "range_high": 223.0,
+          "range_low": 67.2,
+          "from_high_pct": -8.1,
+          "from_low_pct": 205.1,
+          "tags": [
+            {
+              "label": "karantina_1_3_gun",
+              "severity": "info",
+              "note": "yeni radar adayi; teyit bekliyor"
+            }
+          ],
+          "watch_days": 1,
+          "quarantine_status": "karantina",
+          "entry_price": 205.0,
+          "current_price": 205.0,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "THYAO",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XULAS",
+          "score": 103.0,
+          "price": 335.5,
+          "m5": 2.1,
+          "m21": 13.1,
+          "m252": 17.7,
+          "rank_1y": 82,
+          "rank_1a": 27,
+          "rank_1h": 35,
+          "acceleration": 55,
+          "volume_ratio": 1.23,
+          "sm_signal": "Üst_fitil_UYARI",
+          "display_signal": "Üst_fitil_UYARI",
+          "radar_only": false,
+          "range_high": 348.25,
+          "range_low": 264.5,
+          "from_high_pct": -3.7,
+          "from_low_pct": 26.8,
+          "tags": [
+            {
+              "label": "ust_fitil_uyari",
+              "severity": "warn",
+              "note": "ust fitil var; adini dagitim gibi okuma"
+            }
+          ],
+          "watch_days": 3,
+          "quarantine_status": "teyitli_izleme",
+          "entry_price": 335.5,
+          "current_price": 335.5,
+          "return_pct": 0.0
+        },
+        {
+          "ticker": "TUPRS",
+          "kind": "transformation",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "sector": "XKMYA",
+          "score": 102.0,
+          "price": 258.75,
+          "m5": 9.5,
+          "m21": 9.5,
+          "m252": 69.7,
+          "rank_1y": 43,
+          "rank_1a": 37,
+          "rank_1h": 12,
+          "acceleration": 31,
+          "volume_ratio": 1.12,
+          "sm_signal": "Birikim",
+          "display_signal": "Birikim",
+          "radar_only": false,
+          "range_high": 275.5,
+          "range_low": 157.3,
+          "from_high_pct": -6.1,
+          "from_low_pct": 64.5,
+          "tags": [
+            {
+              "label": "karantina_1_3_gun",
+              "severity": "info",
+              "note": "yeni radar adayi; teyit bekliyor"
+            }
+          ],
+          "watch_days": 1,
+          "quarantine_status": "karantina",
+          "entry_price": 258.75,
+          "current_price": 258.75,
           "return_pct": 0.0
         }
       ]
