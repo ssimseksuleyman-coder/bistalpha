@@ -40,6 +40,11 @@ MAX_WINDOW_DRAG_PCT = 8.0       # C2b: pencere-basi taban-drag (low) tavani. YAR
 #   cok-tutuk). C2b "tum pencereler <=tavan" -> bir asim kalici diskalifiye (KASITLI: gercek
 #   felaket-penceresi gorursen gecme; churny-non-felaket tetiklerse esigi revize et).
 
+CORP_ACTION_THRESH = -20.0     # gunluk < bu = BIST ±%10/20 limit-DISI = kesin bedelsiz/split
+#   artefakti (ham veri, auto_adjust=False). Taban DEGIL -> ledger'da taban-sayimi+drag'den haric.
+#   IZOLE: sadece bu tool; F'e/F-girdisine/backtest.py'ye dokunmaz (regresyon riski YOK).
+
+
 def _last_history_date(pf_path=None):
     pf_path = pf_path or os.path.join(REPO, "portfolios", "portfolio_F.json")
     s = json.load(open(pf_path, encoding="utf-8"))
@@ -95,7 +100,7 @@ def analyze_window(pf_path=None, since_date=None):
     close = raw["Close"].copy(); low = raw["Low"].copy()
     close.columns = [c.replace(".IS", "") for c in close.columns]
     low.columns = [c.replace(".IS", "") for c in low.columns]
-    details = []; drag_stops = []; locks = []
+    details = []; drag_stops = []; locks = []; corp_actions = 0
     for x in stops:
         t = x["tic"]
         if t not in close.columns:
@@ -107,9 +112,16 @@ def analyze_window(pf_path=None, since_date=None):
         rc = FLA.backtest_exit(ser, pos)
         rl = FLA.backtest_exit(ser, pos, use_low=True, lows_series=lser)
         dayret = round((ser.iloc[pos] / ser.iloc[pos - 1] - 1) * 100, 1)
+        # CORPORATE-ACTION GUARD (izole, ledger-side): gunluk < -%20 = BIST ±%10/20 limit-DISI
+        # = kesin bedelsiz/split artefakti (auto_adjust=False), gercek taban DEGIL -> taban-sayimi
+        # + drag'den haric tut. F'e/F-girdisine/backtest'e SIFIR dokunus; sadece hayalet-tabani onler.
+        is_corp = dayret < CORP_ACTION_THRESH
         details.append(dict(date=x["date"], tic=t, daily_ret=dayret,
-                            taban=rc["was_locked"], lock_days=rc["lock_days"]))
-        if rc["was_locked"]:
+                            taban=(rc["was_locked"] and not is_corp),
+                            corp_action=is_corp, lock_days=rc["lock_days"]))
+        if is_corp:
+            corp_actions += 1
+        elif rc["was_locked"]:
             locks.append(rc["lock_days"])
             w = (x["shares"] * ser.iloc[pos] / x["total"] * 100
                  if x.get("shares") and x.get("total") else 0)
@@ -121,8 +133,8 @@ def analyze_window(pf_path=None, since_date=None):
         run_date=str(pd.Timestamp.now().date()),
         window_start_date=since_date,
         window_last_date=end_date,
-        n_stops=n, n_taban_stops=nt,
-        taban_ratio=round(nt / n * 100) if n else 0,
+        n_stops=n, n_taban_stops=nt, corp_action_stops=corp_actions,
+        taban_ratio=round(nt / (n - corp_actions) * 100) if (n - corp_actions) else 0,
         max_consecutive_lock=max(locks) if locks else 0,
         multi_day_locks=sum(1 for l in locks if l >= 2),
         booked_ret=round(booked, 1),
