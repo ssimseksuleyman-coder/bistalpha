@@ -11,7 +11,9 @@ Amac: paper penceresinde iki soruyu SEZGIYLE degil KANITLA yanitlamak:
 
 GECIS KRITERI (onden sabit, sezgi degil):
   C1 Yeterli kanit : >=5 bagimsiz pencere (tek/uc pencere yetmez)
-  C2 Kotumser-poz  : her pencerede taban_honest_ret_low > 0 (en kotu sinirda bile pozitif)
+  C2 Kumulatif+drag: (a) KUMULATIF taban-honest low > 0 (bireysel dusus-penceresine izin;
+                     "her pencere pozitif" momentum'u paper'da hapseder) + (b) pencere-basi
+                     taban-drag <= 8pp (taban-lock SURPRIZINI yakalar, piyasa-dususunu degil)
   C3 Modellenmis kuyruk: max ardisik-kilit <= 5 gun (olctugumuz kuyrugun icinde, surpriz yok)
   C4 Karakterize   : taban_ratio pencereler-arasi tutarli (asiri spike raporlanir)
   HAZIR ancak C1 & C2 & C3 & C4. Aksi: "N pencere daha gerek".
@@ -26,10 +28,17 @@ REPO = os.path.dirname(os.path.abspath(__file__))
 LEDGER = os.path.join(REPO, "reports", "taban_honest_ledger.json")
 
 MIN_READY_WINDOWS = 5
-MIN_LOW_RETURN_PCT = 0.0
+MIN_LOW_RETURN_PCT = 0.0        # C2a: KUMULATIF taban-honest low bu ustunde (pencere-basi DEGIL)
 MAX_READY_LOCK_DAYS = 5
 MAX_TABAN_RATIO_PCT = 60
 MAX_TABAN_RATIO_RANGE_PCT = 50
+MAX_WINDOW_DRAG_PCT = 8.0       # C2b: pencere-basi taban-drag (low) tavani. YARGI-CAGRISI:
+#   drag ~1.5pp/taban-stop (olculen: TERA %17.5 ceza x %9 agirlik). 8pp ~= 5-6 taban-stop =
+#   sepetin YARISI bir pencerede kilit = kriz-baslangici (2018/2020 deseni) = yakalanmasi
+#   gereken kuyruk. Gozlem-ustu (olculen max 4.45pp, ~1.8x), felaket-alti (gercek kriz 12-30pp+).
+#   PROVIZYONEL: 2 pencerede kalibre; C1=5'e ulasinca YENIDEN BAK (normal-rough 8'e yaklasirsa
+#   cok-tutuk). C2b "tum pencereler <=tavan" -> bir asim kalici diskalifiye (KASITLI: gercek
+#   felaket-penceresi gorursen gecme; churny-non-felaket tetiklerse esigi revize et).
 
 def _last_history_date(pf_path=None):
     pf_path = pf_path or os.path.join(REPO, "portfolios", "portfolio_F.json")
@@ -143,7 +152,16 @@ def assess(ledger):
     """OLCULEBILIR gecis-kriteri (sezgi degil). Doner: (hazir_mi, satirlar)."""
     n = len(ledger)
     c1 = n >= MIN_READY_WINDOWS
-    c2 = all(w.get("taban_honest_low", 0) > MIN_LOW_RETURN_PCT for w in ledger) and n > 0
+    # C2: (a) KUMULATIF taban-honest low > 0 (bireysel dusus-penceresine izin; momentum
+    #     stratejisi dusus donemleri yasar — "her pencere pozitif" sistemi paper'da hapseder)
+    #     + (b) pencere-basi taban-drag sinirli (taban-lock SURPRIZINI yakalar, piyasayi degil).
+    cum_low = 1.0
+    for w in ledger:
+        cum_low *= (1 + w.get("taban_honest_low", 0) / 100.0)
+    cum_low = (cum_low - 1) * 100
+    c2a = (cum_low > MIN_LOW_RETURN_PCT) and n > 0
+    c2b = all(w.get("drag_low", 0) <= MAX_WINDOW_DRAG_PCT for w in ledger) and n > 0
+    c2 = c2a and c2b
     c3 = all(w.get("max_consecutive_lock", 0) <= MAX_READY_LOCK_DAYS for w in ledger) and n > 0
     ratios = [w.get("taban_ratio", 0) for w in ledger]
     ratio_range = (max(ratios) - min(ratios)) if ratios else 0
@@ -154,7 +172,8 @@ def assess(ledger):
     )
     lines = [
         f"  C1 Yeterli kanit (>={MIN_READY_WINDOWS} pencere): {'OK' if c1 else 'HAYIR'} ({n} pencere)",
-        f"  C2 Kotumser-pozitif (low>{MIN_LOW_RETURN_PCT:g}) : {'OK' if c2 else 'HAYIR'}",
+        f"  C2 Kumulatif-poz + drag-sinir  : {'OK' if c2 else 'HAYIR'} "
+        f"(a: kum-low {cum_low:+.1f}%>0={c2a} | b: drag<={MAX_WINDOW_DRAG_PCT}pp={c2b})",
         f"  C3 Modellenmis kuyruk (<={MAX_READY_LOCK_DAYS} gun): {'OK' if c3 else 'HAYIR'}",
         f"  C4 Taban_ratio kontrolu        : {'OK' if c4 else 'HAYIR'} "
         f"{ratios} (max<={MAX_TABAN_RATIO_PCT}, aralik<={MAX_TABAN_RATIO_RANGE_PCT})",
