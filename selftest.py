@@ -28,6 +28,19 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
 fails = []
 
+# Windows konsol (cp1252) Türkçe/emoji karakterlerde UnicodeEncodeError verir -> utf-8'e sabitle.
+# Izole/kozmetik: yalniz bu script'in cikti-akisini etkiler; PYTHONIOENCODING gerekmeden calisir.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+# [2] orphan-taramasi os.walk(".") ile TUM agaci gezer; repo-ici .venv/site-packages'i yutmasin
+# diye bu dizinlere HIC inme (dirs'i yerinde buda). Aksi halde binlerce pip .py'si tek string'e
+# okunur -> patolojik yavas + bellek sisme (olculdu: 450MB+). Sadece proje kaynagini tara.
+_WALK_SKIP = {".venv", "venv", "env", ".git", "__pycache__", "node_modules",
+              "site-packages", ".pytest_cache", ".mypy_cache", ".idea", "scratchpad"}
+
 
 def ok(msg): print(f"   \u2713 {msg}")
 def bad(msg): print(f"   \u2717 {msg}"); fails.append(msg)
@@ -53,9 +66,8 @@ def main():
     # 2. Orphan modül
     print("\n[2] Orphan modül (bağlı mı)")
     src = ""
-    for root, _, files in os.walk("."):
-        if "__pycache__" in root:
-            continue
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [dd for dd in dirs if dd not in _WALK_SKIP]   # yerinde buda: bu dizinlere inme
         for f in files:
             if f.endswith(".py"):
                 src += open(os.path.join(root, f), encoding="utf-8").read()
