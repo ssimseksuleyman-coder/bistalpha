@@ -16,7 +16,7 @@ def send_email(subject, body, to=None):
     host = getattr(config, "SMTP_HOST", None)
     if not host:
         print("[notifier] SMTP yapılandırılmamış — e-posta atlandı")
-        return False
+        return None   # yapılandırılmadı (disabled) != gönderilemedi (False). daemon None->"unknown".
     msg = MIMEMultipart()
     msg["From"] = config.SMTP_USER
     msg["To"] = to or config.MAIL_TO
