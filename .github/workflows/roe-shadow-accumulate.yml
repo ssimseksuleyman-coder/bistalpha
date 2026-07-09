@@ -1,0 +1,100 @@
+name: roe-shadow-accumulate
+
+# G3/ROE forward-shadow olcum-kapisini GUVENILIR biriktirir.
+# IZOLE: daemon'dan ayri, reports/roe_shadow_ledger.json'a yazar, F/A/B/O/G1'e sifir dokunus.
+# Uc-eklemeli: (1) saglik-flag + Telegram-alarm, (2) commit-race onleme, (3) dedup catch-up.
+#
+# ARAYUZ (dogrulandi): python roe_shadow.py --catch-up
+#   -> son ledger-kaydindan bugune F'in TUM event'lerini history-replay ile GERIYE-BAKIP yakalar,
+#      her birini O EVENTIN tarihiyle + O AN frozen-ROE'yle kaydeder (look-ahead-siz: yalniz
+#      olgunlasmamis event dondurulur, matured=backfill=atlanir).
+#   -> STDOUT'a: "HEALTH: events_caught=N picks_with_roe=M median_split_ok=BOOL deviation_happened=BOOL"
+#      (sessiz hafta events_caught=0 -> picks_with_roe=NA, yanlis-alarm YOK). Exit 0=ok.
+
+on:
+  schedule:
+    # Haftalik: her Cumartesi 06:00 UTC. Daemon (bist-alpha.yml/precise.yml) yalniz hafta-ici
+    # (1-5) kosar -> COMMIT-RACE YOK (dogrulandi). BIST kapali, veri tam.
+    - cron: '0 6 * * 6'
+  workflow_dispatch:   # elle de tetiklenebilir
+
+# Ayni anda tek kosu (ust uste tetik -> commit-race olmasin)
+concurrency:
+  group: roe-shadow
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # reports/ commit icin
+
+jobs:
+  accumulate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # ledger gecmisi + dedup icin tam gecmis
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Bagimliliklar
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt   # yfinance/pandas/numpy zaten burada
+
+      - name: G3/ROE-shadow biriktir (catch-up, o-gun-ROE frozen)
+        id: run
+        run: |
+          set -o pipefail
+          # (3) DEDUP CATCH-UP: son kayittan bugune TUM F-event'leri history-replay ile yakala.
+          OUTPUT=$(python roe_shadow.py --catch-up 2>&1) || { echo "$OUTPUT"; echo "RUN_FAILED=1" >> $GITHUB_OUTPUT; exit 0; }
+          echo "$OUTPUT"
+          # (1) SAGLIK-FLAG: STDOUT'tan HEALTH ozetini cek
+          HEALTH=$(echo "$OUTPUT" | grep -oE 'HEALTH:.*' | tail -1 || echo "HEALTH: yok")
+          echo "health=$HEALTH" >> $GITHUB_OUTPUT
+          echo "RUN_FAILED=0" >> $GITHUB_OUTPUT
+          # sessiz-bozulma: event yakalandi AMA ROE-veri bos (picks_with_roe=0). Sessiz hafta (NA) alarm DEGIL.
+          if echo "$HEALTH" | grep -qE 'picks_with_roe=0( |$)'; then
+            echo "SILENT_FAIL=1" >> $GITHUB_OUTPUT
+          else
+            echo "SILENT_FAIL=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Ledger commit (izole, sadece reports/)
+        if: steps.run.outputs.RUN_FAILED == '0'
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          # (2) COMMIT-RACE ONLEME: sadece reports/ ekle (daemon oraya dokunmuyor, + hafta-sonu);
+          #     push oncesi rebase; push basarisizsa self-healing (sonraki catch-up ayni kaydi turetir).
+          git add reports/roe_shadow_ledger.json
+          if git diff --cached --quiet; then
+            echo "Degisiklik yok (bu hafta yeni F-event olmadi) — commit atlaniyor."
+          else
+            git commit -m "roe-shadow: haftalik birikim $(date -u +%Y-%m-%d) [${{ steps.run.outputs.health }}]"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push origin "${GITHUB_REF_NAME}" || echo "push atlandi (catisma) — sonraki catch-up self-heal eder"
+          fi
+
+      - name: Telegram alarm (sessiz-bozulma ya da hata)
+        # (1) SAGLIK-ALARMI: ROE-veri bos ya da kosu-hatasi -> Telegram (repo secret'i: TELEGRAM_TOKEN)
+        if: steps.run.outputs.SILENT_FAIL == '1' || steps.run.outputs.RUN_FAILED == '1'
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ]; then
+            if [ "${{ steps.run.outputs.RUN_FAILED }}" = "1" ]; then
+              MSG="roe-shadow KOSU HATASI ($(date -u +%Y-%m-%d)) — G3 birikimi durdu, kontrol et."
+            else
+              MSG="roe-shadow SESSIZ-BOZULMA: ROE-veri bos (picks_with_roe=0). G3 sinyali kirlenir, veri-kaynagini kontrol et."
+            fi
+            curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+              -d chat_id="${TG_CHAT}" -d text="$MSG" > /dev/null || echo "Telegram gonderilemedi"
+          else
+            echo "Telegram secret'lari yok — alarm atlaniyor (ama sessiz-bozulma VAR, elle kontrol et)."
+          fi
