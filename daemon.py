@@ -418,6 +418,8 @@ def _write_dashboard_state(report, label, data=None, universe=None,
                             if not pd.isna(prices.loc[last, t])}
         except Exception:
             prices_today = {}
+    dashboard_watchlists = dict(report.get("watchlists", {}) or {})
+    dashboard_watchlists["firsatlar"] = report.get("firsatlar", [])
     state = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "label": label,
@@ -445,7 +447,8 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         # Legacy field kept in sync for older dashboard/state consumers.
         "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),
-        "watchlists": report.get("watchlists", {}),
+        "firsatlar": report.get("firsatlar", []),
+        "watchlists": dashboard_watchlists,
         "catalyst_ledger": report.get("catalyst_ledger"),
         "shadow_cycle": report.get("shadow_cycle"),
         "operation_health": _operation_health(report, label, data, health, notify_status or {}),

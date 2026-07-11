@@ -376,6 +376,20 @@ function renderWatchItems(items, emptyText) {
   `).join('');
 }
 
+function renderOpportunityItems(items, emptyText) {
+  if (!items || !items.length) return `<div class="empty">${esc(emptyText)}</div>`;
+  return items.slice(0, 5).map(item => `
+    <div class="watch-item">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.sector || '-')} | ${esc(item.display_signal || item.sm_signal || 'guclu birikim')}<br>
+        1H %${esc(item.m5 ?? '-')} | 1A %${esc(item.m21 ?? '-')} | M252 %${esc(item.m252 ?? '-')}
+        <br><span class="meta">izleme: pick degil, F motoru ayri kalir</span>
+      </span>
+      <span class="badge">FIRSAT</span>
+    </div>
+  `).join('');
+}
+
 function renderTagLine(item) {
   const tagLabels = (item.tags || []).map(t => typeof t === 'string' ? t : t.label).filter(Boolean);
   const tags = [...new Set(tagLabels)].slice(0, 3);
@@ -404,6 +418,10 @@ function renderWatchlists(watch, missed) {
     <div class="watch-section">
       <div class="watch-title"><span>Evren</span><span class="badge">F:${esc(tradeCount)} / Radar:${esc(radarCount)}</span></div>
       <div class="meta">${esc(watch.radar_note || 'Radar izleme amaclidir; islem motoru ayri kalir.')}</div>
+    </div>
+    <div class="watch-section">
+      <div class="watch-title"><span>Firsat Sinyal</span><span class="badge">izleme</span></div>
+      ${renderOpportunityItems(watch.firsatlar, 'Firsat sinyal adayi yok')}
     </div>
     <div class="watch-section">
       <div class="watch-title"><span>Donusum Radari</span><span class="badge">izleme</span></div>
