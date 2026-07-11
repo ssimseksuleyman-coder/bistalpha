@@ -218,6 +218,37 @@ def _catalyst_info(report, ticker):
     }
 
 
+def _deniz_info(report, ticker, sector, date):
+    bulletin = report.get("deniz_bulletin") or {}
+    scores = bulletin.get("sector_scores") or {}
+    sector_score = _safe_float(scores.get(sector)) if sector else None
+    if sector_score is None:
+        sector_regime = "unknown"
+    elif sector_score < 40:
+        sector_regime = "weak"
+    elif sector_score >= 70:
+        sector_regime = "strong"
+    else:
+        sector_regime = "normal"
+    stock_score = None
+    try:
+        from . import sidesource
+        stock_score = sidesource.deniz_stock_score(ticker, as_of=date)
+    except Exception:
+        stock_score = None
+    return {
+        "deniz": {
+            "bulletin_date": bulletin.get("date"),
+            "bulletin_fresh": bulletin.get("fresh"),
+            "market_score": _round(bulletin.get("market_score"), 1),
+            "sector_score": _round(sector_score, 1),
+            "sector_regime": sector_regime,
+            "stock_score": _round(stock_score, 1),
+            "role": "context_only",
+        }
+    }
+
+
 def _f_not_selected_reason(item, top10):
     ticker = item.get("ticker")
     if ticker in {x.get("ticker") for x in top10}:
@@ -261,6 +292,7 @@ def _current_item(report, data, date, item):
     }
     row.update(_range_profile(data, date, ticker))
     row.update(_catalyst_info(report, ticker))
+    row.update(_deniz_info(report, ticker, row.get("sector"), date))
     return row
 
 
