@@ -265,6 +265,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Firsat Defteri</h2>
+            <span class="stamp" id="opportunityStamp"></span>
+          </div>
+          <div class="forward" id="opportunityLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>Katalizor Defteri</h2>
             <span class="stamp" id="catalystStamp"></span>
           </div>
@@ -790,6 +798,57 @@ function renderPerformanceLedger(info) {
   `;
 }
 
+function renderOpportunityLedger(info) {
+  if (!info) {
+    el('opportunityLedger').innerHTML = '<div class="empty">Firsat defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('opportunityLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg5 = info.avg_5d_return_pct;
+  const avg21 = info.avg_21d_return_pct;
+  const cls5 = avg5 == null || Number(avg5) >= 0 ? 'profit' : 'loss';
+  const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const candidates = (info.latest_candidates || []).slice(0, 5).map(item => {
+    const ret = item.current_return_pct;
+    const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
+    const tech = [
+      `hacim ${item.volume_ratio ?? '-'}x`,
+      `fitil ${item.upper_wick ?? '-'}`,
+      `kapanis ${item.close_strength ?? '-'}`,
+      `tepe ${item.from_high_pct ?? '-'}%`,
+    ].join(' | ');
+    return `<div class="forward-row">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.f_not_selected_reason || 'F disinda')} | <b class="${cls}">%${esc(ret ?? '-')}</b><br><span class="meta">${esc(tech)} | katalizor ${item.catalyst_present ? 'var' : 'yok'}</span></span>
+    </div>`;
+  }).join('');
+  el('opportunityStamp').textContent = info.decision || 'olcum';
+  el('opportunityLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.current_candidates ?? 0)}</div><div class="forward-label">guncel aday</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_5d ?? 0)}</div><div class="forward-label">5g olgun</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>5g sonuc</strong>
+      <span><b class="${cls5}">%${esc(avg5 ?? '-')}</b> | hit %${esc(info.hit_5d_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>21g sonuc</strong>
+      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | min ${esc(info.min_mature_events_for_decision ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Sonradan F'e girdi mi?</strong>
+      <span>${esc(info.entered_f_top10_later_count ?? 0)} olay | %${esc(info.entered_f_top10_later_pct ?? '-')}</span>
+    </div>
+    ${candidates || '<div class="empty">Guncel firsat adayi yok</div>'}
+    <div class="meta" style="padding-top:10px">Firsat defteri islem acmaz; F motoru ayri kalir.</div>
+  `;
+}
+
 function renderCatalystLedger(info, data) {
   if (!info) {
     el('catalystLedger').innerHTML = '<div class="empty">Katalizor defteri henuz yok</div>';
@@ -903,6 +962,7 @@ async function loadDashboard() {
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
     renderPerformanceLedger(data.performance_ledger);
+    renderOpportunityLedger(data.opportunity_ledger);
     renderCatalystLedger(data.catalyst_ledger, data);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);

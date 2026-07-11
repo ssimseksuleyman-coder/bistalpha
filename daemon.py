@@ -402,6 +402,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import portfolio as pf
     from bist_alpha import forward_test
     from bist_alpha import missed_log
+    from bist_alpha import opportunity_ledger
     from bist_alpha import performance_ledger
     from bist_alpha import catalyst_ledger
     from bist_alpha import g1_account as g1_mod
@@ -485,6 +486,10 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             data, report.get("watchlists", {}), report)
     except Exception as e:
         state["missed_opportunities"] = {"error": str(e)}
+    try:
+        state["opportunity_ledger"] = opportunity_ledger.update(report, data)
+    except Exception as e:
+        state["opportunity_ledger"] = {"error": str(e)}
     try:
         state["performance_ledger"] = performance_ledger.update(
             report, data, watchlists=report.get("watchlists", {}))
