@@ -935,6 +935,7 @@ function renderQualityLedger(info) {
   }
   const avg21 = info.avg_21d_return_pct;
   const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const source = info.source_meta || {};
   const rows = (info.latest_candidates || []).slice(0, 5).map(item => {
     const ret = item.current_return_pct;
     const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
@@ -960,6 +961,10 @@ function renderQualityLedger(info) {
     <div class="forward-row">
       <strong>ROE shadow</strong>
       <span>kayit ${esc(roe.records ?? 0)} | olgun ${esc(roe.matured ?? 0)} | edge %${esc(roe.avg_edge_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Kaynak</strong>
+      <span>${esc(source.source_status || '-')} | ${esc(source.source_file || '-')} | extracted ${esc(source.extracted_at || '-')}</span>
     </div>
     ${rows || '<div class="empty">Kalite olayi yok</div>'}
     <div class="meta" style="padding-top:10px">${esc(info.note || 'KAP teyidi olmadan islem yok.')}</div>

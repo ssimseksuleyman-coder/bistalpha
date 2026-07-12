@@ -32,6 +32,23 @@ def _roe_shadow_path() -> Path:
     return _repo_root() / "reports" / "roe_shadow_ledger.json"
 
 
+def _source_meta():
+    payload = _load_json(_earnings_path(), {})
+    companies = payload.get("companies", []) if isinstance(payload, dict) else []
+    available = bool(companies)
+    meta = payload.get("_meta", {}) if isinstance(payload, dict) else {}
+    return {
+        "source_name": meta.get("source"),
+        "source_file": str(_earnings_path().relative_to(_repo_root())),
+        "extracted_at": meta.get("extracted"),
+        "n_companies": meta.get("n_companies"),
+        "data_available": available,
+        "source_status": "static_deniz_extract_not_kap_live" if available else "local_source_missing_or_invalid",
+        "public_repo_policy": "local_only_not_committed",
+        "kap_financial_parser": "pending",
+    }
+
+
 def _load_json(path: Path, default):
     if not path.exists():
         return default
@@ -256,6 +273,7 @@ def _summary(events, as_of):
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of": as_of,
+        "source_meta": _source_meta(),
         "tracked_events": len(events),
         "kap_confirmed": len(confirmed),
         "opens_trade": False,
