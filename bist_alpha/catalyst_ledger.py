@@ -228,6 +228,14 @@ def _refresh_event(event, prices, as_of_pos):
     if entry_pos is None and event.get("entry_date"):
         entry_pos = _position_of_date(prices, event.get("entry_date"))
         event["entry_pos"] = entry_pos
+    if entry is None and entry_pos is None and event.get("event_date"):
+        entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, event.get("event_date"))
+        event["entry_price"] = _round(entry)
+        event["entry_date"] = entry_date
+        event["entry_pos"] = entry_pos
+    if entry is None and entry_pos is not None:
+        entry = _price_at_pos(prices, ticker, int(entry_pos))
+        event["entry_price"] = _round(entry)
     current = _price_at_pos(prices, ticker, as_of_pos)
     event["current_price"] = _round(current)
     if entry_pos is None or entry is None or current is None:
