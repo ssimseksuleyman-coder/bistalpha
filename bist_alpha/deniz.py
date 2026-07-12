@@ -204,9 +204,9 @@ def bulletin_status(bulletin, as_of=None, max_age_days=None):
         "age_days": age_days,
         "fresh": fresh,
         "status": "fresh" if fresh else "stale",
-        "market_score": bulletin.get("market_score"),
+        "market_score": None,   # Deniz ham-agregat public'e yazilmaz (lisans); dashboard self market_regime kullanir
         "sector_count": len(bulletin.get("sector_scores", {})),
-        "source_file": bulletin.get("source_file"),
+        "source_file": None,    # Deniz PDF dosya-adi public'e yazilmaz (lisans)
         "fetched_at": bulletin.get("fetched_at"),
         "loaded_from_snapshot": bulletin.get("loaded_from_snapshot", False),
     }

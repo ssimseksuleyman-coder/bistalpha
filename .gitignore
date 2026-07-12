@@ -4,7 +4,8 @@
 *.bozuk*
 logs/
 optimizer_suggestions.json
-# NOT: portfolios/ ve deniz_snapshots/ İGNORE EDİLMEZ — state kalıcılığı için commit edilir
+# NOT: portfolios/ İGNORE EDİLMEZ — F-state kalıcılığı için commit edilir.
+# (deniz_snapshots/ ARTIK ignore — Deniz lisanslı-türev; aşağıda local'e alındı.)
 
 .venv/
 .env
@@ -16,4 +17,12 @@ local/
 
 # Deniz bulteninden turetilmis statik temel veri local kalir.
 # Kod public olabilir; lisansli/turev veri PDF gibi repoya commit edilmez.
+# deniz_inbox/ = ham Deniz PDF'leri (en hassas); kaza-git-add korumasi (history'de degil, sadece untracked).
+deniz_inbox/
 data/omega/earnings_actuals_1Q26.json
+data/omega/deniz_*.json
+data/omega/stock_scores_timeseries.json
+# Deniz gunluk bulten snapshot'lari (parse-edilmis tescilli veri) local kalir.
+deniz_snapshots/*
+# scanner_state.json = tarama-imleci (Deniz-arastirma DEGIL); cloud-fetch surdukce tracked kalir.
+!deniz_snapshots/scanner_state.json

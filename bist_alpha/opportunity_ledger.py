@@ -230,20 +230,12 @@ def _deniz_info(report, ticker, sector, date):
         sector_regime = "strong"
     else:
         sector_regime = "normal"
-    stock_score = None
-    try:
-        from . import sidesource
-        stock_score = sidesource.deniz_stock_score(ticker, as_of=date)
-    except Exception:
-        stock_score = None
+    # Deniz turev-verisi PUBLIC repo'ya yazilmaz (lisans): ham market/sector/stock skoru DEGIL.
+    # Yalniz KABA rejim-etiketi kalir; Faz-3'te self-uretilen sektor-RS ile degisecek.
+    # Deniz yoksa sector_score=None -> sector_regime="unknown" (graceful, cokmeden).
     return {
         "deniz": {
-            "bulletin_date": bulletin.get("date"),
-            "bulletin_fresh": bulletin.get("fresh"),
-            "market_score": _round(bulletin.get("market_score"), 1),
-            "sector_score": _round(sector_score, 1),
             "sector_regime": sector_regime,
-            "stock_score": _round(stock_score, 1),
             "role": "context_only",
         }
     }
