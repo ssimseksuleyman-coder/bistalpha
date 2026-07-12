@@ -1,0 +1,25 @@
+{
+  "version": "2026-07-12",
+  "purpose": "Macro Surprise olaylarini olcmek icin kaynak defteri. Islem motoru degildir.",
+  "rules": {
+    "opens_trade": false,
+    "primary_windows": [1, 5, 21, 63],
+    "minimum_mature_events_for_decision": 20,
+    "external_first": ["US_CPI", "FED", "NFP", "DXY", "US10Y", "BRENT"],
+    "turkey_second": ["TR_CPI", "TCMB_RATE", "PMI", "INDUSTRIAL_PRODUCTION", "RESERVES"]
+  },
+  "source_schema": {
+    "id": "unique_event_id",
+    "date": "YYYY-MM-DD",
+    "type": "US_CPI | FED | NFP | DXY | US10Y | BRENT | TR_CPI | TCMB_RATE | PMI | INDUSTRIAL_PRODUCTION | RESERVES",
+    "actual": "published value",
+    "expected": "consensus or previous expectation",
+    "surprise": "actual - expected, optional if actual/expected exist",
+    "unit": "pct | bps | index | usd | text",
+    "direction": "risk_on | risk_off | mixed | unknown",
+    "source": "FRED/BLS/Fed/TCMB/TUIK/S&P Global/EIA/manual",
+    "source_url": "official or free source url",
+    "note": "short explanation"
+  },
+  "sources": []
+}

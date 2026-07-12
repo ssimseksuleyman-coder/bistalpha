@@ -281,6 +281,22 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Temel Kalite Defteri</h2>
+            <span class="stamp" id="qualityStamp"></span>
+          </div>
+          <div class="forward" id="qualityLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <h2>Macro Surprise Defteri</h2>
+            <span class="stamp" id="macroStamp"></span>
+          </div>
+          <div class="forward" id="macroLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>IBS Tepki Radari</h2>
             <span class="stamp" id="ibsStamp"></span>
           </div>
@@ -908,6 +924,89 @@ function renderCatalystLedger(info, data) {
   `;
 }
 
+function renderQualityLedger(info) {
+  if (!info) {
+    el('qualityLedger').innerHTML = '<div class="empty">Temel kalite defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('qualityLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg21 = info.avg_21d_return_pct;
+  const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const rows = (info.latest_candidates || []).slice(0, 5).map(item => {
+    const ret = item.current_return_pct;
+    const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
+    const flags = (item.quality_flags || []).join(', ') || 'bayrak yok';
+    const missing = (item.missing_quality_fields || []).length ? ' | eksik: ' + item.missing_quality_fields.join(', ') : '';
+    return `<div class="forward-row">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.result || '-')} | ROE ${esc(item.roe_pct ?? '-')} | kar YoY ${esc(item.profit_yoy_pct ?? '-')} | <b class="${cls}">%${esc(ret ?? '-')}</b><br><span class="meta">${esc(flags + missing)}</span></span>
+    </div>`;
+  }).join('');
+  const roe = info.roe_shadow || {};
+  el('qualityStamp').textContent = info.decision || 'olcum';
+  el('qualityLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">kalite olayi</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.kap_confirmed ?? 0)}</div><div class="forward-label">KAP teyitli</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>21g sonuc</strong>
+      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>ROE shadow</strong>
+      <span>kayit ${esc(roe.records ?? 0)} | olgun ${esc(roe.matured ?? 0)} | edge %${esc(roe.avg_edge_pct ?? '-')}</span>
+    </div>
+    ${rows || '<div class="empty">Kalite olayi yok</div>'}
+    <div class="meta" style="padding-top:10px">${esc(info.note || 'KAP teyidi olmadan islem yok.')}</div>
+  `;
+}
+
+function renderMacroLedger(info) {
+  if (!info) {
+    el('macroLedger').innerHTML = '<div class="empty">Macro Surprise defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('macroLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg21 = info.avg_21d_market_return_pct;
+  const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const events = (info.latest_events || []).slice(0, 5).map(item => {
+    const ret = item.market_return_21d_pct;
+    const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(item.type)}</strong>
+      <span>${esc(item.date)} | ${esc(item.direction || 'unknown')} | surprise ${esc(item.surprise ?? '-')} | <b class="${cls}">21g %${esc(ret ?? '-')}</b></span>
+    </div>`;
+  }).join('');
+  const groups = (info.by_group || []).map(row => `
+    <div class="forward-row">
+      <strong>${esc(row.group)}</strong>
+      <span>n ${esc(row.n)} | 21g %${esc(row.avg_21d_market_return_pct ?? '-')} | hit %${esc(row.hit_21d_pct ?? '-')}</span>
+    </div>`).join('');
+  el('macroStamp').textContent = info.decision || 'olcum';
+  el('macroLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">makro olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_63d ?? 0)}</div><div class="forward-label">63g olgun</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>21g piyasa etkisi</strong>
+      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_market_return_pct ?? '-')}</span>
+    </div>
+    ${events || '<div class="empty">Olay bekleniyor: ABD CPI/Fed/NFP/DXY/10Y/Brent, sonra TR makro</div>'}
+    ${groups}
+    <div class="meta" style="padding-top:10px">${esc(info.note || 'Fiyat disi makro olcum; F motoruna emir uretmez.')}</div>
+  `;
+}
+
 function statBox(label, stat) {
   return `<div class="forward-box">
     <div class="forward-value">${esc(stat?.avg ?? '-')}</div>
@@ -966,6 +1065,8 @@ async function loadDashboard() {
     renderPerformanceLedger(data.performance_ledger);
     renderOpportunityLedger(data.opportunity_ledger);
     renderCatalystLedger(data.catalyst_ledger, data);
+    renderQualityLedger(data.quality_ledger);
+    renderMacroLedger(data.macro_surprise_ledger);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
     renderOperationGate(data);
