@@ -217,10 +217,10 @@
             <span class="stamp" id="modeStamp"></span>
           </div>
           <div class="stats">
-            <div class="stat"><div class="stat-value" id="statDate">-</div><div class="stat-label">Tarih</div></div>
+            <div class="stat"><div class="stat-value" id="statDate">-</div><div class="stat-label">Rapor tarihi</div></div>
             <div class="stat"><div class="stat-value" id="statMode">-</div><div class="stat-label">Mod</div></div>
             <div class="stat"><div class="stat-value" id="statRegime">-</div><div class="stat-label">Piyasa rejimi</div></div>
-            <div class="stat"><div class="stat-value" id="statDeniz">-</div><div class="stat-label">Deniz bulten</div></div>
+            <div class="stat"><div class="stat-value" id="statDeniz">-</div><div class="stat-label">BIST Alpha rapor</div></div>
             <div class="stat"><div class="stat-value" id="statTop">-</div><div class="stat-label">Oneri</div></div>
             <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F/O/G1 pozisyon</div></div>
             <div class="stat"><div class="stat-value" id="statSource">-</div><div class="stat-label">Kaynak</div></div>
@@ -327,6 +327,11 @@ function fmtTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function datePart(value) {
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || ''));
+  return match ? match[1] : '';
 }
 
 function actionClass(action) {
@@ -1079,13 +1084,11 @@ async function loadDashboard() {
     el('subtitle').textContent = `${data.label || 'otomatik'} calisma | ${fmtTime(data.timestamp)}`;
     el('topStamp').textContent = data.date || '';
     el('modeStamp').textContent = data.mode ? `Mod ${data.mode}` : '';
-    el('statDate').textContent = data.date || '-';
+    el('statDate').textContent = datePart(data.timestamp) || data.generated_at?.slice(0, 10) || data.date || '-';
     el('statMode').textContent = data.mode || '-';
     el('statRegime').textContent = data.market_regime?.name || data.deniz_regime || '-';
-    const deniz = data.deniz_bulletin || {};
-    el('statDeniz').textContent = deniz.date
-      ? `${deniz.date} ${deniz.fresh ? (deniz.age_days > 0 ? `guncel (${deniz.age_days}g)` : 'guncel') : 'ESKI'}`
-      : 'yok';
+    el('statDeniz').textContent = data.label || 'otomatik';
+    el('statDeniz').title = data.timestamp ? `BIST Alpha raporu: ${fmtTime(data.timestamp)}` : '';
     el('statTop').textContent = (data.top10 || []).length;
     el('statPos').textContent = ['A','B','F','O','G1'].map(k => accounts[k]?.n_positions ?? '-').join('/');
     el('statSource').textContent = data.source || '-';

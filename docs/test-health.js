@@ -26,13 +26,14 @@ console.log("[1] Tamamen saglikli -> YESIL");
     source_pool_fallback: false,
     timestamp: "2026-06-29T09:45:00",
     deniz_bulletin: { available: true, fresh: true, age_days: 1, status: "fresh" },
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
   };
   const r = evaluate(d, MON_PM);
   check("verdict", r.verdict, "g");
-  check("deniz", r.metrics.find(m => m.key === "deniz").status, "g");
+  check("deniz metriği yok", r.metrics.some(m => m.key === "deniz"), false);
 }
 
-console.log("\n[2] Cekirdek taze + Deniz backend stale -> SARI");
+console.log("\n[2] Cekirdek taze + Deniz backend stale -> YESIL");
 {
   const d = {
     last_data_date: "2026-06-29",
@@ -43,11 +44,12 @@ console.log("\n[2] Cekirdek taze + Deniz backend stale -> SARI");
     timestamp: "2026-06-29T08:00:00",
     deniz_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
     missing_symbol_list: ["ALTIN", "DMLKT"],
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
   };
   const r = evaluate(d, MON_PM);
-  check("verdict", r.verdict, "a");
+  check("verdict", r.verdict, "g");
   check("coreWorst", r.coreWorst, "g");
-  check("deniz", r.metrics.find(m => m.key === "deniz").status, "r");
+  check("deniz metriği yok", r.metrics.some(m => m.key === "deniz"), false);
   check("missing reason", r.metrics.find(m => m.key === "missing").reason, "eksik: ALTIN, DMLKT");
 }
 
@@ -64,9 +66,10 @@ console.log("\n[2b] Backend eski karar bilgi; metrikler esas -> SARI");
       data_health: { data_issues: [] },
     },
     timestamp: "2026-06-29T08:00:00",
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
   };
   const r = evaluate(d, MON_PM);
-  check("verdict", r.verdict, "a");
+  check("verdict", r.verdict, "g");
   check("backend", r.backendVerdict, "r");
 }
 

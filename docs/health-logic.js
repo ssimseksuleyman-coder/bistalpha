@@ -75,9 +75,6 @@
     const h = d.operation_health && typeof d.operation_health === "object"
       ? d.operation_health
       : {};
-    const deniz = (h.deniz_bulletin && typeof h.deniz_bulletin === "object")
-      ? h.deniz_bulletin
-      : ((d.deniz_bulletin && typeof d.deniz_bulletin === "object") ? d.deniz_bulletin : {});
     const out = [];
 
     const lastData = str(h.last_data_date) || str(d.last_data_date) || str(d.date);
@@ -198,29 +195,6 @@
       consistency ? "max getiri farki %" + (consistency.max_return_diff_pct ?? "-") : "metrik yok",
       cStatus === "ok" ? "g" : cStatus === "warn" ? "a" : "n",
       consistency ? (consistency.note || "hesaplar karsilastirildi") : "dashboard.json henuz bu metrigi uretmiyor"
-    ));
-
-    const age = num(deniz.age_days);
-    let denizStatus = "n";
-    let denizReason = "age_days okunamadi";
-    if (deniz.available === false) {
-      denizStatus = "r";
-      denizReason = "bulten yok";
-    } else if (deniz.fresh === true) {
-      denizStatus = "g";
-      denizReason = "backend taze kabul etti";
-    } else if (deniz.fresh === false) {
-      denizStatus = "r";
-      denizReason = "backend eski kabul etti; puan/etiket kullanilmaz";
-    } else if (age != null) {
-      denizStatus = age <= 1 ? "g" : age <= 3 ? "a" : "r";
-      denizReason = "bulten yasi " + age + " gun";
-    }
-    out.push(metric(
-      "deniz", false, "Deniz bulteni", "yardimci kaynak; backend fresh karari esastir",
-      deniz.date || (deniz.available === false ? "yok" : "-"),
-      age == null ? (deniz.status || "") : age + " gun | " + (deniz.status || ""),
-      denizStatus, denizReason
     ));
 
     const kap = (d.official_sources && d.official_sources.kap) || {};

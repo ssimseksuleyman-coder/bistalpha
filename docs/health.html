@@ -112,7 +112,6 @@ function metric(key, core, label, hint, value, sub, status, reason) {
 
 function legacyEvaluate(data, nowMs) {
   const h = data.operation_health || {};
-  const deniz = h.deniz_bulletin || data.deniz_bulletin || {};
   const out = [];
 
   const lastData = h.last_data_date || data.last_data_date || data.date;
@@ -179,15 +178,6 @@ function legacyEvaluate(data, nowMs) {
     tg.sent === true ? "gonderildi" : tg.sent === false ? "hata" : "bilinmiyor",
     tg.sent === true ? "g" : tg.sent === false ? "r" : "n",
     tg.sent === true ? "Telegram API basarili" : tg.sent === false ? "Telegram API hata dondurdu" : "sonuc kaydi yok"
-  ));
-
-  const dzAge = deniz.age_days;
-  out.push(metric(
-    "deniz", false, "Deniz bulteni", "yardimci kaynak; F kararini override etmez",
-    deniz.date || (deniz.available === false ? "yok" : "-"),
-    dzAge == null ? (deniz.status || "") : dzAge + " gun | " + (deniz.status || ""),
-    deniz.available === false ? "r" : dzAge == null ? "n" : dzAge <= 1 ? "g" : dzAge <= 3 ? "a" : "r",
-    deniz.available === false ? "bulten yok" : dzAge == null ? "yas okunamadi" : "bulten yasi " + dzAge + " gun"
   ));
 
   const issues = (h.data_health && h.data_health.data_issues) || [];
