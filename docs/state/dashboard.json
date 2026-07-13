@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-10T19:12:28",
-  "label": "kapanis",
+  "timestamp": "2026-07-13T10:09:35",
+  "label": "acilis",
   "date": "2026-07-10",
   "mode": "F",
   "source": "yahoo",
@@ -31,22 +31,18 @@
   },
   "bist_data_ok": true,
   "deniz_bulletin": {
-    "available": true,
-    "date": "2026-07-10",
-    "age_days": 0,
-    "fresh": true,
-    "status": "fresh",
-    "market_score": null,
-    "sector_count": 31,
-    "source_file": null,
-    "fetched_at": "2026-07-10T14:30:41",
-    "loaded_from_snapshot": true
+    "available": false,
+    "date": null,
+    "age_days": null,
+    "fresh": false,
+    "status": "missing",
+    "market_score": null
   },
   "official_sources": {
     "kap": {
       "status": "ok",
-      "updated_at": "2026-07-09T21:08:09",
-      "added": 1,
+      "updated_at": "2026-07-10T21:01:03",
+      "added": 0,
       "total_events": 11,
       "latest_event_date": "2026-07-09",
       "opens_trade": false,
@@ -255,6 +251,24 @@
       "stop": 16.38,
       "risk_pct": 15.0,
       "potansiyel_pct": 3.5
+    }
+  ],
+  "firsatlar": [
+    {
+      "ticker": "BIGEN",
+      "sector": "XU100",
+      "m252": 777.4,
+      "sm_signal": "GÜÇLÜ_BİRİKİM",
+      "m5": 13.3,
+      "m21": 99.2
+    },
+    {
+      "ticker": "AKFIS",
+      "sector": "XU100",
+      "m252": 309.4,
+      "sm_signal": "GÜÇLÜ_BİRİKİM",
+      "m5": 6.1,
+      "m21": 38.3
     }
   ],
   "watchlists": {
@@ -861,10 +875,28 @@
     ],
     "radar_universe_count": 150,
     "trade_universe_count": 100,
-    "radar_note": "Top10/F motoru 100 evrenle kalir; radar 150 hisseyi izleme amacli tarar."
+    "radar_note": "Top10/F motoru 100 evrenle kalir; radar 150 hisseyi izleme amacli tarar.",
+    "firsatlar": [
+      {
+        "ticker": "BIGEN",
+        "sector": "XU100",
+        "m252": 777.4,
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 13.3,
+        "m21": 99.2
+      },
+      {
+        "ticker": "AKFIS",
+        "sector": "XU100",
+        "m252": 309.4,
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 6.1,
+        "m21": 38.3
+      }
+    ]
   },
   "catalyst_ledger": {
-    "updated_at": "2026-07-10T19:12:27",
+    "updated_at": "2026-07-13T10:09:34",
     "as_of": "2026-07-10",
     "source_count": 1,
     "tracked_events": 18,
@@ -876,7 +908,7 @@
     "open_21d": 18,
     "matured_5d": 0,
     "matured_21d": 0,
-    "avg_current_return_pct": null,
+    "avg_current_return_pct": -0.79,
     "avg_5d_return_pct": null,
     "hit_5d_pct": null,
     "avg_21d_return_pct": null,
@@ -904,108 +936,108 @@
         "ticker": "AEFES",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 20.22,
+        "current_return_pct": 1.19,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "AKBNK",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 73.5,
+        "current_return_pct": -6.46,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "BIMAS",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 371.0,
+        "current_return_pct": 0.4,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "EKGYO",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 20.5,
+        "current_return_pct": -0.1,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "ENKAI",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 91.05,
+        "current_return_pct": -0.82,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "EREGL",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 41.52,
+        "current_return_pct": -2.7,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "FROTO",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 82.0,
+        "current_return_pct": -0.24,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "GARAN",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 133.7,
+        "current_return_pct": -3.52,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "ISCTR",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 14.34,
+        "current_return_pct": -3.91,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "KCHOL",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 188.0,
+        "current_return_pct": 2.55,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "MGROS",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 639.0,
+        "current_return_pct": -2.11,
+        "age_trading_days": 4,
         "f_overlap": false
       },
       {
         "ticker": "SAHOL",
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
-        "entry_price": null,
-        "current_return_pct": null,
-        "age_trading_days": null,
+        "entry_price": 93.6,
+        "current_return_pct": -3.31,
+        "age_trading_days": 4,
         "f_overlap": false
       }
     ],
@@ -1222,17 +1254,17 @@
     }
   },
   "operation_health": {
-    "label": "kapanis",
-    "target_time": "18:40",
-    "delay_minutes": 32,
+    "label": "acilis",
+    "target_time": "09:45",
+    "delay_minutes": 24,
     "sla": {
       "status": "late",
       "root_cause": "github_actions_cron_gecikmesi",
       "event": "schedule",
-      "gate_label": "kapanis",
+      "gate_label": "acilis",
       "gate_reason": "",
-      "target_time": "18:40",
-      "delay_minutes": 32
+      "target_time": "09:45",
+      "delay_minutes": 24
     },
     "telegram": {
       "sent": true,
@@ -1254,20 +1286,16 @@
     ],
     "last_data_date": "2026-07-10",
     "deniz_bulletin": {
-      "available": true,
-      "date": "2026-07-10",
-      "age_days": 0,
-      "fresh": true,
-      "status": "fresh",
-      "market_score": 51.0,
-      "sector_count": 31,
-      "source_file": "Deniz_Yat_r_m_Strateji_ve_Ara_t_rma_BIST_Teknik_Takip_B_lteni_10.07.2026_14268.pdf",
-      "fetched_at": "2026-07-10T14:30:41",
-      "loaded_from_snapshot": true
+      "available": false,
+      "date": null,
+      "age_days": null,
+      "fresh": false,
+      "status": "missing",
+      "market_score": null
     },
     "data_cleaning": {},
     "data_health": {
-      "timestamp": "2026-07-10 19:12",
+      "timestamp": "2026-07-13 10:09",
       "data_issues": [],
       "data_cleaning": {},
       "healthy": true,
@@ -1276,7 +1304,7 @@
       "temp_removed": 2
     },
     "verdict": "amber",
-    "updated_at": "2026-07-10T19:12:28"
+    "updated_at": "2026-07-13T10:09:35"
   },
   "account_governance": {
     "F": {
@@ -2532,7 +2560,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-07-10T19:12:28",
+    "updated_at": "2026-07-13T10:09:35",
     "days_tracked": 26,
     "valid_days_tracked": 26,
     "invalid_snapshot_count": 0,
@@ -3832,7 +3860,7 @@
           }
         ],
         "first_generated_at": "2026-07-10 14:31",
-        "last_generated_at": "2026-07-10 19:12",
+        "last_generated_at": "2026-07-13 10:09",
         "as_of": "2026-07-10",
         "age_trading_days": 0,
         "avg_return_pct": 0.11,
@@ -3842,7 +3870,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-07-10T19:12:28",
+    "updated_at": "2026-07-13T10:09:35",
     "tracked_days": 26,
     "current_candidates": 8,
     "hot_missed_count": 21,
@@ -3926,8 +3954,124 @@
     "regime_signal": "normal",
     "recent_hot": []
   },
+  "opportunity_ledger": {
+    "updated_at": "2026-07-13T10:09:35",
+    "tracked_days": 1,
+    "latest_date": "2026-07-10",
+    "current_candidates": 2,
+    "total_events": 2,
+    "unique_tickers": 2,
+    "matured_5d": 0,
+    "avg_5d_return_pct": null,
+    "hit_5d_pct": null,
+    "matured_21d": 0,
+    "avg_21d_return_pct": null,
+    "hit_21d_pct": null,
+    "entered_f_top10_later_count": 0,
+    "entered_f_top10_later_pct": 0.0,
+    "decision": "olcum_devam",
+    "min_mature_events_for_decision": 20,
+    "latest_candidates": [
+      {
+        "ticker": "BIGEN",
+        "entry_date": "2026-07-10",
+        "entry_price": 98.0,
+        "sector": "XU100",
+        "source_layer": "firsat",
+        "source_label": "FIRSAT",
+        "reason": "strong_accumulation_not_f_pick",
+        "f_not_selected_reason": "sector_cap_or_slot_full",
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 13.3,
+        "m21": 99.2,
+        "m252": 777.4,
+        "volume_ratio": 1.08,
+        "upper_wick": 0.168,
+        "close_strength": 0.789,
+        "quality": {
+          "status": "pending_official_free_data",
+          "kap_confirmed": null,
+          "quality_score": null
+        },
+        "macro": {
+          "status": "pending_macro_surprise_ledger",
+          "support": null
+        },
+        "range_high": 98.0,
+        "range_low": 8.49,
+        "from_high_pct": 0.0,
+        "near_high": true,
+        "from_low_pct": 1054.3,
+        "catalyst_present": false,
+        "catalyst_types": [],
+        "catalyst_source_tiers": [],
+        "deniz": {
+          "sector_regime": "unknown",
+          "role": "context_only"
+        },
+        "current_price": 98.0,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "return_21d_pct": null,
+        "entered_f_top10_later": false,
+        "entered_f_top10_date": null,
+        "status": "open"
+      },
+      {
+        "ticker": "AKFIS",
+        "entry_date": "2026-07-10",
+        "entry_price": 91.05,
+        "sector": "XU100",
+        "source_layer": "firsat",
+        "source_label": "FIRSAT",
+        "reason": "strong_accumulation_not_f_pick",
+        "f_not_selected_reason": "sector_cap_or_slot_full",
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 6.1,
+        "m21": 38.3,
+        "m252": 309.4,
+        "volume_ratio": 0.64,
+        "upper_wick": 0.375,
+        "close_strength": 0.788,
+        "quality": {
+          "status": "pending_official_free_data",
+          "kap_confirmed": null,
+          "quality_score": null
+        },
+        "macro": {
+          "status": "pending_macro_surprise_ledger",
+          "support": null
+        },
+        "range_high": 91.05,
+        "range_low": 20.16,
+        "from_high_pct": 0.0,
+        "near_high": true,
+        "from_low_pct": 351.6,
+        "catalyst_present": false,
+        "catalyst_types": [],
+        "catalyst_source_tiers": [],
+        "deniz": {
+          "sector_regime": "unknown",
+          "role": "context_only"
+        },
+        "current_price": 91.05,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "return_21d_pct": null,
+        "entered_f_top10_later": false,
+        "entered_f_top10_date": null,
+        "status": "open"
+      }
+    ],
+    "notes": [
+      "FIRSAT is measurement-only; it does not open trades.",
+      "Quality/macro fields stay pending until free official data is connected."
+    ]
+  },
   "performance_ledger": {
-    "updated_at": "2026-07-10T19:12:28",
+    "updated_at": "2026-07-13T10:09:35",
     "tracked_days": 26,
     "latest_date": "2026-07-10",
     "latest_regime": "mixed",
@@ -4325,6 +4469,72 @@
       "discovery": "Kesif katmanlari yakalanan alpha eksi false-positive kaybi ile olculur.",
       "risk": "Risk katmanlari saved-loss eksi firsat maliyeti ile olculur."
     }
+  },
+  "quality_ledger": {
+    "updated_at": "2026-07-13T10:09:35",
+    "as_of": "2026-07-10",
+    "source_meta": {
+      "source_name": null,
+      "source_file": "data/omega/earnings_actuals_1Q26.json",
+      "extracted_at": null,
+      "n_companies": null,
+      "data_available": false,
+      "source_status": "local_source_missing_or_invalid",
+      "public_repo_policy": "local_only_not_committed",
+      "kap_financial_parser": "pending"
+    },
+    "tracked_events": 0,
+    "kap_confirmed": 0,
+    "opens_trade": false,
+    "matured_5d": 0,
+    "matured_21d": 0,
+    "matured_63d": 0,
+    "avg_5d_return_pct": null,
+    "hit_5d_pct": null,
+    "avg_21d_return_pct": null,
+    "hit_21d_pct": null,
+    "avg_63d_return_pct": null,
+    "hit_63d_pct": null,
+    "decision": "olcum_devam",
+    "roe_shadow": {
+      "records": 1,
+      "matured": 0,
+      "avg_edge_pct": null,
+      "note": "ROE shadow is isolated; it measures, does not trade."
+    },
+    "latest_candidates": [],
+    "by_result": [],
+    "note": "Temel kalite defteri olcer; KAP teyidi olmadan F motoruna emir uretmez."
+  },
+  "macro_surprise_ledger": {
+    "updated_at": "2026-07-13T10:09:35",
+    "as_of": "2026-07-10",
+    "tracked_events": 0,
+    "source_count": 0,
+    "opens_trade": false,
+    "matured_21d": 0,
+    "matured_63d": 0,
+    "avg_21d_market_return_pct": null,
+    "hit_21d_pct": null,
+    "avg_63d_market_return_pct": null,
+    "hit_63d_pct": null,
+    "decision": "olay_bekliyor",
+    "by_group": [],
+    "latest_events": [],
+    "event_types": {
+      "US_CPI": "external",
+      "FED": "external",
+      "NFP": "external",
+      "DXY": "external",
+      "US10Y": "external",
+      "BRENT": "external",
+      "TR_CPI": "turkey",
+      "TCMB_RATE": "turkey",
+      "PMI": "turkey",
+      "INDUSTRIAL_PRODUCTION": "turkey",
+      "RESERVES": "turkey"
+    },
+    "note": "Macro Surprise defteri olcer; fiyat sinyalinden bagimsizdir ve F motoruna emir uretmez."
   },
   "consistency": {
     "account_values": {
