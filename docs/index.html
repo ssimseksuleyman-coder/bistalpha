@@ -297,6 +297,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Akis ve Geri Alim Defteri</h2>
+            <span class="stamp" id="flowStamp"></span>
+          </div>
+          <div class="forward" id="flowLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>Macro Surprise Defteri</h2>
             <span class="stamp" id="macroStamp"></span>
           </div>
@@ -1020,6 +1028,53 @@ function renderBrokerLedger(info) {
   `;
 }
 
+function renderFlowLedger(info) {
+  if (!info) {
+    el('flowLedger').innerHTML = '<div class="empty">Akis/geri alim defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('flowLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg21 = info.avg_21d_return_pct;
+  const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const rows = (info.by_type || []).map(row => {
+    const cls = row.avg_21d_return_pct == null || Number(row.avg_21d_return_pct) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(row.type)}</strong>
+      <span>n ${esc(row.n)} | 21g ${esc(row.mature_21d)} | <b class="${cls}">%${esc(row.avg_21d_return_pct ?? '-')}</b> | hit %${esc(row.hit_21d_pct ?? '-')}</span>
+    </div>`;
+  }).join('');
+  const latest = (info.latest_candidates || []).slice(0, 4).map(item => {
+    const ret = item.current_return_pct;
+    const cls = ret == null || Number(ret) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(item.ticker)}</strong>
+      <span>${esc(item.type)} | ${esc(item.signal || '-')} | <b class="${cls}">%${esc(ret ?? '-')}</b> | yas ${esc(item.age_trading_days ?? '-')}g</span>
+    </div>`;
+  }).join('');
+  el('flowStamp').textContent = info.decision || 'olcum';
+  el('flowLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.kap_buyback_events ?? 0)}</div><div class="forward-label">KAP geri alim</div></div>
+      <div class="forward-box"><div class="forward-value">${esc((info.foreign_flow_events ?? 0) + '/' + (info.takas_events ?? 0))}</div><div class="forward-label">yabanci/takas</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>21g sonuc</strong>
+      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Local kaynak</strong>
+      <span>${esc(info.local_input_files ?? 0)} dosya | ${esc(info.local_input_dir || '-')}</span>
+    </div>
+    ${latest || '<div class="empty">KAP geri alim veya local akis olayi yok</div>'}
+    ${rows}
+    <div class="meta" style="padding-top:10px">${esc(info.public_detail_policy || info.note || 'F motoruna emir uretmez.')}</div>
+  `;
+}
+
 function renderMacroLedger(info) {
   if (!info) {
     el('macroLedger').innerHTML = '<div class="empty">Macro Surprise defteri henuz yok</div>';
@@ -1121,6 +1176,7 @@ async function loadDashboard() {
     renderCatalystLedger(data.catalyst_ledger, data);
     renderQualityLedger(data.quality_ledger);
     renderBrokerLedger(data.broker_bulletin_ledger);
+    renderFlowLedger(data.flow_ledger);
     renderMacroLedger(data.macro_surprise_ledger);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);

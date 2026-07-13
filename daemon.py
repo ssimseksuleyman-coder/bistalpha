@@ -389,6 +389,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import quality_ledger
     from bist_alpha import macro_surprise_ledger
     from bist_alpha import broker_bulletin_ledger
+    from bist_alpha import flow_ledger
     from bist_alpha import g1_account as g1_mod
     from bist_alpha import sectors as sectors_mod
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
@@ -493,6 +494,10 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         state["broker_bulletin_ledger"] = broker_bulletin_ledger.update(report, data)
     except Exception as e:
         state["broker_bulletin_ledger"] = {"error": str(e)}
+    try:
+        state["flow_ledger"] = flow_ledger.update(report, data)
+    except Exception as e:
+        state["flow_ledger"] = {"error": str(e)}
     for acc in ["A", "B", "F", "O"]:
         try:
             s = pf.load(acc, state_dir="portfolios")
