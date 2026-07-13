@@ -24,8 +24,12 @@ def _ledger_path() -> Path:
     return _repo_root() / "docs" / "state" / "quality_ledger.json"
 
 
-def _earnings_path() -> Path:
-    return _repo_root() / "data" / "omega" / "earnings_actuals_1Q26.json"
+def _kap_events_path() -> Path:
+    return _repo_root() / "docs" / "state" / "catalysts.json"
+
+
+def _local_official_path() -> Path:
+    return _repo_root() / "local" / "kap_financial_actuals.json"
 
 
 def _roe_shadow_path() -> Path:
@@ -33,19 +37,29 @@ def _roe_shadow_path() -> Path:
 
 
 def _source_meta():
-    payload = _load_json(_earnings_path(), {})
-    companies = payload.get("companies", []) if isinstance(payload, dict) else []
-    available = bool(companies)
-    meta = payload.get("_meta", {}) if isinstance(payload, dict) else {}
+    kap_payload = _load_json(_kap_events_path(), {})
+    kap_events = kap_payload.get("events", []) if isinstance(kap_payload, dict) else []
+    financial_events = [e for e in kap_events if _is_financial_disclosure(e)]
+    local_payload = _load_json(_local_official_path(), {})
+    local_companies = local_payload.get("companies", []) if isinstance(local_payload, dict) else []
+    local_meta = local_payload.get("_meta", {}) if isinstance(local_payload, dict) else {}
+    available = bool(financial_events or local_companies)
     return {
-        "source_name": meta.get("source"),
-        "source_file": str(_earnings_path().relative_to(_repo_root())),
-        "extracted_at": meta.get("extracted"),
-        "n_companies": meta.get("n_companies"),
+        "source_name": "KAP resmi finansal bildirimleri",
+        "source_file": _kap_events_path().relative_to(_repo_root()).as_posix(),
+        "local_metrics_file": _local_official_path().relative_to(_repo_root()).as_posix(),
+        "extracted_at": local_meta.get("extracted_at") or local_meta.get("extracted"),
+        "n_companies": len(local_companies) or None,
+        "kap_financial_events": len(financial_events),
         "data_available": available,
-        "source_status": "static_deniz_extract_not_kap_live" if available else "local_source_missing_or_invalid",
-        "public_repo_policy": "local_only_not_committed",
-        "kap_financial_parser": "pending",
+        "source_status": "kap_event_stream_active" if _kap_events_path().exists() else "kap_event_stream_missing",
+        "public_repo_policy": "official_events_public; detailed_metric_extracts_local_only",
+        "kap_financial_parser": "event_release_active_metrics_pending",
+        "opens_trade": False,
+        "third_party_bulletin_policy": (
+            "Ucuncu taraf bulten verisi deftere yazilmaz. En fazla alarm/yer-gosterici olabilir; "
+            "finansal gercekler KAP/sirket/BIST resmi kaynagindan yeniden dogrulanir."
+        ),
     }
 
 
@@ -126,6 +140,26 @@ def _metric(data, *names):
     return None
 
 
+def _is_financial_disclosure(event):
+    if not isinstance(event, dict):
+        return False
+    typ = str(event.get("type") or "").lower()
+    title = str(event.get("title") or "").lower()
+    if typ in {"bilanco", "finansal", "financial_report"}:
+        return True
+    keys = (
+        "finansal rapor",
+        "finansal tablo",
+        "bilanço",
+        "bilanco",
+        "faaliyet raporu",
+        "gelir tablosu",
+        "nakit akış",
+        "nakit akis",
+    )
+    return any(k in title for k in keys)
+
+
 def _quality_flags(event):
     flags = []
     roe = event.get("roe_pct")
@@ -146,46 +180,104 @@ def _quality_flags(event):
     return flags, missing
 
 
-def _earnings_events(prices):
-    payload = _load_json(_earnings_path(), {})
+def _event_from_official_row(row, payload, prices):
+    ticker = _norm_ticker(row.get("ticker"))
+    release_date = row.get("release_date") or row.get("date")
+    if not ticker or not release_date:
+        return None
+    entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, release_date)
+    event = {
+        "source_id": row.get("source_id") or "local_kap_financial_actuals",
+        "source": payload.get("_meta", {}).get("source", "KAP/company official financial extract"),
+        "source_tier": "primary",
+        "requires_kap_confirmation": False,
+        "kap_confirmed": True,
+        "opens_trade": False,
+        "ticker": ticker,
+        "release_date": str(release_date),
+        "entry_date": entry_date,
+        "entry_price": _round(entry),
+        "entry_pos": entry_pos,
+        "metric": row.get("metric", "net_kar"),
+        "result": row.get("result"),
+        "recommendation": row.get("recommendation") or row.get("recommendation_new"),
+        "surprise_pct": _round(row.get("surprise_pct"), 1),
+        "roe_pct": _round(row.get("roe_pct"), 1),
+        "profit_yoy_pct": _round(_metric(row, "profit_yoy_pct", "yoy_pct"), 1),
+        "profit_qoq_pct": _round(_metric(row, "profit_qoq_pct", "qoq_pct"), 1),
+        "revenue_mio": _round(_metric(row, "revenue_mio", "actual_revenue_mio_try", "actual_revenue_mio_usd", "actual_revenue_mio_eur"), 1),
+        "favok_mio": _round(_metric(row, "favok_mio", "actual_favok_mio_try", "actual_favok_mio_usd", "actual_favok_mio_eur"), 1),
+        "net_debt_ebitda": _round(row.get("net_debt_ebitda"), 2),
+        "target_price_change_pct": _round(row.get("target_price_change_pct"), 1),
+        "note": row.get("note"),
+        "official_source_url": row.get("official_source_url") or row.get("url"),
+        "financial_metrics_status": "official_metrics_loaded",
+    }
+    flags, missing = _quality_flags(event)
+    event["quality_flags"] = flags
+    event["missing_quality_fields"] = missing
+    return event
+
+
+def _local_official_events(prices):
+    payload = _load_json(_local_official_path(), {})
     companies = payload.get("companies", []) if isinstance(payload, dict) else []
     events = []
     for row in companies:
+        event = _event_from_official_row(row, payload, prices)
+        if event:
+            events.append(event)
+    return events
+
+
+def _kap_financial_events(prices):
+    payload = _load_json(_kap_events_path(), {})
+    rows = payload.get("events", []) if isinstance(payload, dict) else []
+    events = []
+    for row in rows:
+        if not _is_financial_disclosure(row):
+            continue
         ticker = _norm_ticker(row.get("ticker"))
-        release_date = row.get("release_date")
+        release_date = row.get("date") or row.get("release_date")
         if not ticker or not release_date:
             continue
         entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, release_date)
         event = {
-            "source_id": "deniz_earnings_actuals_1q26",
-            "source": payload.get("_meta", {}).get("source", "Deniz/Yatirim extracted earnings"),
-            "source_tier": "analyst_extract",
-            "requires_kap_confirmation": True,
-            "kap_confirmed": False,
+            "source_id": "kap_financial_disclosure",
+            "source": "KAP resmi finansal tablo bildirimi",
+            "source_tier": "primary",
+            "requires_kap_confirmation": False,
+            "kap_confirmed": True,
             "opens_trade": False,
             "ticker": ticker,
             "release_date": str(release_date),
             "entry_date": entry_date,
             "entry_price": _round(entry),
             "entry_pos": entry_pos,
-            "metric": row.get("metric", "net_kar"),
-            "result": row.get("result"),
-            "recommendation": row.get("recommendation") or row.get("recommendation_new"),
-            "surprise_pct": _round(row.get("surprise_pct"), 1),
-            "roe_pct": _round(row.get("roe_pct"), 1),
-            "profit_yoy_pct": _round(row.get("yoy_pct"), 1),
-            "profit_qoq_pct": _round(row.get("qoq_pct"), 1),
-            "revenue_mio": _round(_metric(row, "revenue_mio", "actual_revenue_mio_try", "actual_revenue_mio_usd", "actual_revenue_mio_eur"), 1),
-            "favok_mio": _round(_metric(row, "favok_mio", "actual_favok_mio_try", "actual_favok_mio_usd", "actual_favok_mio_eur"), 1),
+            "metric": "financial_report_release",
+            "result": "kap_finansal_tablo",
+            "recommendation": None,
+            "surprise_pct": None,
+            "roe_pct": None,
+            "profit_yoy_pct": None,
+            "profit_qoq_pct": None,
+            "revenue_mio": None,
+            "favok_mio": None,
             "net_debt_ebitda": None,
-            "target_price_change_pct": _round(row.get("target_price_change_pct"), 1),
-            "note": row.get("note"),
+            "target_price_change_pct": None,
+            "note": row.get("title"),
+            "official_source_url": row.get("url"),
+            "financial_metrics_status": "pending_table_parse",
         }
         flags, missing = _quality_flags(event)
         event["quality_flags"] = flags
         event["missing_quality_fields"] = missing
         events.append(event)
     return events
+
+
+def _official_quality_events(prices):
+    return _kap_financial_events(prices) + _local_official_events(prices)
 
 
 def _refresh_event(event, prices, as_of_pos):
@@ -267,7 +359,9 @@ def _summary(events, as_of):
     ret63 = [e.get("return_63d_pct") for e in events]
     mature21 = [e for e in events if e.get("return_21d_pct") is not None]
     confirmed = [e for e in events if e.get("kap_confirmed")]
-    decision = "kap_teyidi_bekliyor" if events and not confirmed else "olcum_devam"
+    decision = "resmi_finansal_olay_bekliyor" if not events else "olcum_devam"
+    if events and not confirmed:
+        decision = "kap_teyidi_bekliyor"
     if len(mature21) >= 20 and _avg(ret21) is not None and _avg(ret21) > 0 and (_hit(ret21) or 0) >= 50 and confirmed:
         decision = "izleme_degeri_var"
     return {
@@ -290,7 +384,10 @@ def _summary(events, as_of):
         "roe_shadow": _roe_shadow_summary(),
         "latest_candidates": sorted(events, key=lambda e: e.get("release_date") or "", reverse=True)[:10],
         "by_result": sorted(by_result, key=lambda x: x["result"]),
-        "note": "Temel kalite defteri olcer; KAP teyidi olmadan F motoruna emir uretmez.",
+        "note": (
+            "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla "
+            "dogrulanan veri kullanir. F motoruna emir uretmez."
+        ),
     }
 
 
@@ -301,7 +398,7 @@ def update(report, data, path=None, max_events=MAX_EVENTS):
     ledger_path = Path(path) if path else _ledger_path()
     existing = _load_json(ledger_path, {"events": []}).get("events", [])
     merged = {_event_key(e): e for e in existing}
-    for event in _earnings_events(prices):
+    for event in _official_quality_events(prices):
         old = merged.get(_event_key(event), {})
         if old.get("kap_confirmed") is True and event.get("kap_confirmed") is False:
             event["kap_confirmed"] = True
