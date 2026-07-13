@@ -289,6 +289,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Broker Bulten Defteri</h2>
+            <span class="stamp" id="brokerStamp"></span>
+          </div>
+          <div class="forward" id="brokerLedger"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>Macro Surprise Defteri</h2>
             <span class="stamp" id="macroStamp"></span>
           </div>
@@ -318,7 +326,6 @@
 <script src="health-logic.js"></script>
 <script>
 const el = id => document.getElementById(id);
-let denizFreshForDisplay = false;
 const esc = value => String(value == null ? '' : value)
   .replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
@@ -341,7 +348,6 @@ function actionClass(action) {
 function detailText(item) {
   const parts = [item.sector, item.display_signal || item.sm_signal].filter(Boolean);
   const side = item.yan_kaynak || {};
-  if (denizFreshForDisplay && side.deniz_skor != null) parts.push('Deniz:' + side.deniz_skor);
   if (side.hacim) parts.push(side.hacim);
   const foreignFlow = side.yabanci || side['yabanc\u0131'];
   const earnings = side.bilanco || side['bilan\u00e7o'];
@@ -499,7 +505,6 @@ function riskReason(item) {
   if (item.hedef_1 != null) bits.push('hedef ' + item.hedef_1);
   const side = item.yan_kaynak || {};
   if (side.fx_risk) bits.push('FX risk');
-  if (item.deniz_regime) bits.push('Deniz sektor: ' + item.deniz_regime);
   return bits.join(' | ') || 'risk alani hesaplanmadi';
 }
 
@@ -841,11 +846,11 @@ function renderOpportunityLedger(info) {
       `kapanis ${item.close_strength ?? '-'}`,
       `tepe ${item.from_high_pct ?? '-'}%`,
     ].join(' | ');
-    const deniz = item.deniz || {};
-    const denizText = `Deniz sektor ${deniz.sector_score ?? '-'} (${deniz.sector_regime || '-'})`;
+    const sectorContext = item.sector_context || {};
+    const sectorText = `sektor ${sectorContext.sector || item.sector || '-'} (${sectorContext.status || 'self_context_pending'})`;
     return `<div class="forward-row">
       <strong>${esc(item.ticker)}</strong>
-      <span>${esc(item.f_not_selected_reason || 'F disinda')} | <b class="${cls}">%${esc(ret ?? '-')}</b><br><span class="meta">${esc(tech)} | ${esc(denizText)} | katalizor ${item.catalyst_present ? 'var' : 'yok'}</span></span>
+      <span>${esc(item.f_not_selected_reason || 'F disinda')} | <b class="${cls}">%${esc(ret ?? '-')}</b><br><span class="meta">${esc(tech)} | ${esc(sectorText)} | katalizor ${item.catalyst_present ? 'var' : 'yok'}</span></span>
     </div>`;
   }).join('');
   el('opportunityStamp').textContent = info.decision || 'olcum';
@@ -976,6 +981,45 @@ function renderQualityLedger(info) {
   `;
 }
 
+function renderBrokerLedger(info) {
+  if (!info) {
+    el('brokerLedger').innerHTML = '<div class="empty">Broker bulten defteri henuz yok</div>';
+    return;
+  }
+  if (info.error) {
+    el('brokerLedger').innerHTML = `<div class="error">${esc(info.error)}</div>`;
+    return;
+  }
+  const avg21 = info.avg_21d_return_pct;
+  const cls21 = avg21 == null || Number(avg21) >= 0 ? 'profit' : 'loss';
+  const rows = (info.by_source || []).slice(0, 4).map(row => {
+    const cls = row.avg_21d_return_pct == null || Number(row.avg_21d_return_pct) >= 0 ? 'profit' : 'loss';
+    return `<div class="forward-row">
+      <strong>${esc(row.name)}</strong>
+      <span>n ${esc(row.n)} | 21g ${esc(row.matured_21d)} | <b class="${cls}">%${esc(row.avg_21d_return_pct ?? '-')}</b> | hit %${esc(row.hit_21d_pct ?? '-')}</span>
+    </div>`;
+  }).join('');
+  const sources = 'broker=2 | KAP/resmi=3 | sosyal=1 | duyum=0';
+  el('brokerStamp').textContent = info.decision || 'olcum';
+  el('brokerLedger').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">olay</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.unique_sources ?? 0)}</div><div class="forward-label">kaynak</div></div>
+    </div>
+    <div class="forward-row">
+      <strong>21g sonuc</strong>
+      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Kaynak puani</strong>
+      <span>${esc(sources)}</span>
+    </div>
+    ${rows || '<div class="empty">Local broker bulten olayi yok</div>'}
+    <div class="meta" style="padding-top:10px">${esc(info.public_detail_policy || 'Ham broker cagri ve hedefler local kalir.')}</div>
+  `;
+}
+
 function renderMacroLedger(info) {
   if (!info) {
     el('macroLedger').innerHTML = '<div class="empty">Macro Surprise defteri henuz yok</div>';
@@ -1076,6 +1120,7 @@ async function loadDashboard() {
     renderOpportunityLedger(data.opportunity_ledger);
     renderCatalystLedger(data.catalyst_ledger, data);
     renderQualityLedger(data.quality_ledger);
+    renderBrokerLedger(data.broker_bulletin_ledger);
     renderMacroLedger(data.macro_surprise_ledger);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
@@ -1086,7 +1131,7 @@ async function loadDashboard() {
     el('modeStamp').textContent = data.mode ? `Mod ${data.mode}` : '';
     el('statDate').textContent = datePart(data.timestamp) || data.generated_at?.slice(0, 10) || data.date || '-';
     el('statMode').textContent = data.mode || '-';
-    el('statRegime').textContent = data.market_regime?.name || data.deniz_regime || '-';
+    el('statRegime').textContent = data.market_regime?.name || '-';
     el('statDeniz').textContent = data.label || 'otomatik';
     el('statDeniz').title = data.timestamp ? `BIST Alpha raporu: ${fmtTime(data.timestamp)}` : '';
     el('statTop').textContent = (data.top10 || []).length;

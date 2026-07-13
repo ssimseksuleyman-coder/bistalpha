@@ -9,11 +9,10 @@ Kullanım:
   python daemon.py --once kapanis
 
 Akış (her tetiklemede):
-  1. Deniz bültenini otomatik çek (eksik #5)
-  2. Veriyi dinamik feed'den al (eksik #1)
-  3. Bakım çalıştır (eksik #6)
-  4. Sinyal raporu üret — top10 + al/sat/bekle/fırsat (eksik #2)
-  5. E-posta + Telegram gönder (eksik #2)
+  1. Veriyi dinamik feed'den al (eksik #1)
+  2. Bakım çalıştır (eksik #6)
+  3. Sinyal raporu üret — top10 + al/sat/bekle/fırsat (eksik #2)
+  4. E-posta + Telegram gönder (eksik #2)
   Zamanlama: scheduler 09:45/14:30/18:30 (eksik #3)
 """
 import argparse
@@ -128,7 +127,6 @@ def _operation_health(report, label, data, health, notify_status):
     """Dashboard icin operasyon ve veri guvenilirligi ozetini uretir."""
     delay = _report_delay(label)
     sla = _sla_diagnostics(label, delay)
-    deniz_info = report.get("deniz_bulletin") or {}
     pool = report.get("source_pool_count") or (data or {}).get("_source_pool_count")
     price_count = report.get("price_count")
     missing = None
@@ -161,11 +159,6 @@ def _operation_health(report, label, data, health, notify_status):
     email_ok = notify_status.get("email") if isinstance(notify_status, dict) else None
     if telegram_ok is False:
         core_status = "amber" if core_status == "green" else core_status
-    if deniz_info.get("available") is False:
-        core_status = "amber" if core_status == "green" else core_status
-    elif deniz_info.get("available") and not deniz_info.get("fresh", False):
-        core_status = "red"
-
     return {
         "label": label,
         "target_time": delay["target_time"],
@@ -187,7 +180,6 @@ def _operation_health(report, label, data, health, notify_status):
         "missing_symbol_pct": missing_pct,
         "missing_symbol_list": missing_list,
         "last_data_date": report.get("last_data_date"),
-        "deniz_bulletin": deniz_info,
         "data_cleaning": (data or {}).get("_data_cleaning", {}),
         "data_health": health or {},
         "verdict": core_status,
@@ -308,21 +300,11 @@ def run_cycle(label="manuel"):
     ts = datetime.now().strftime("%H:%M")
     print(f"\n=== DÖNGÜ '{label}' @ {ts} ===")
 
-    # 0) Telegram'dan manuel yüklenen veriyi al (Deniz bülten / endeks üyeliği / fiyat)
+    # 0) Telegram'dan manuel yüklenen veriyi al (endeks üyeliği / fiyat)
     selfheal.guarded(lambda: _telegram_ingest(), label="telegram veri alımı")
 
-    # 1) Deniz bültenini otomatik güncelle (eksik #5) — korumalı
-    bulletin = selfheal.guarded(
-        lambda: deniz_fetcher.auto_update(),
-        notify_fn=notifier.notify_all, label="Deniz çekme")
-    if not bulletin:
-        try:
-            from bist_alpha import deniz
-            bulletin = deniz.load_latest_snapshot()
-            if bulletin:
-                print(f"[daemon] Deniz yeni bulten yok; son snapshot kullaniliyor: {bulletin.get('date')}")
-        except Exception as e:
-            print(f"[daemon] Deniz snapshot fallback atlandi: {e}")
+    # 1) Third-party broker bulletins are measured separately and local-only.
+    # They are no longer part of the production report/operation gate.
 
     # 2) Dinamik veri (eksik #1) — self-heal: çökerse gömülü yedeğe düş
     data = selfheal.safe_feed()
@@ -366,7 +348,6 @@ def run_cycle(label="manuel"):
         except Exception:
             held_positions = {}
         report = reporter.generate_report(data, signals, mode=config.MODE,
-                                           deniz_bulletin=bulletin,
                                            held_positions=held_positions)
         report["shadow_cycle"] = shadow_result
         report["shadow_accounts"] = _shadow_summary(data)
@@ -407,6 +388,7 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     from bist_alpha import catalyst_ledger
     from bist_alpha import quality_ledger
     from bist_alpha import macro_surprise_ledger
+    from bist_alpha import broker_bulletin_ledger
     from bist_alpha import g1_account as g1_mod
     from bist_alpha import sectors as sectors_mod
     out_dir = os.path.join(os.path.dirname(__file__), "docs", "state")
@@ -443,12 +425,9 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         "dynamic_universe_method": (data or {}).get("_dynamic_universe_method"),
         "market_regime": report.get("market_regime"),
         "bist_data_ok": bool((data or {}).get("_bist_ok", False)),
-        "deniz_bulletin": report.get("deniz_bulletin"),
         "official_sources": {
             "kap": _kap_status(),
         },
-        # Legacy field kept in sync for older dashboard/state consumers.
-        "deniz_regime": (report.get("market_regime") or {}).get("name"),
         "top10": report.get("top10", []),
         "firsatlar": report.get("firsatlar", []),
         "watchlists": dashboard_watchlists,
@@ -510,6 +489,10 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         state["macro_surprise_ledger"] = macro_surprise_ledger.update(report, data)
     except Exception as e:
         state["macro_surprise_ledger"] = {"error": str(e)}
+    try:
+        state["broker_bulletin_ledger"] = broker_bulletin_ledger.update(report, data)
+    except Exception as e:
+        state["broker_bulletin_ledger"] = {"error": str(e)}
     for acc in ["A", "B", "F", "O"]:
         try:
             s = pf.load(acc, state_dir="portfolios")
@@ -576,18 +559,18 @@ def _write_dashboard_state(report, label, data=None, universe=None,
 
 def _run_bulten_only():
     """
-    Sadece Deniz bültenini indirir ve snapshot'a yazar.
-    10:15 cron'u için — tam rapor döngüsü çalıştırmadan bülteni günceller.
+    Sadece ucuncu taraf broker bultenini local snapshot'a yazar.
+    Tam rapor dongusu calistirmadan local karsilastirma kaynagini gunceller.
     """
     print(f"\n=== BÜLTEN İNDİRME @ {datetime.now().strftime('%H:%M')} ===")
     bulletin = selfheal.guarded(
         lambda: deniz_fetcher.auto_update(),
         notify_fn=notifier.notify_all,
-        label="Deniz bülten indirme")
+        label="broker bulten indirme")
     if bulletin:
         sektor_say = len(bulletin.get("sector_scores", {}))
         market = bulletin.get("market_score")
-        msg = (f"Deniz Bülteni {bulletin.get('date')} indirildi. "
+        msg = (f"Broker bulteni {bulletin.get('date')} indirildi. "
                f"XU100={market}, {sektor_say} sektör.")
         print(f"[daemon] {msg}")
         notifier.send_telegram(f"📥 {msg}")

@@ -30,14 +30,6 @@
     "xu21": 1.1
   },
   "bist_data_ok": true,
-  "deniz_bulletin": {
-    "available": false,
-    "date": null,
-    "age_days": null,
-    "fresh": false,
-    "status": "missing",
-    "market_score": null
-  },
   "official_sources": {
     "kap": {
       "status": "ok",
@@ -50,7 +42,6 @@
       "error": null
     }
   },
-  "deniz_regime": "mixed",
   "top10": [
     {
       "rank": 1,
@@ -1260,14 +1251,6 @@
       "DMLKTG"
     ],
     "last_data_date": "2026-07-13",
-    "deniz_bulletin": {
-      "available": false,
-      "date": null,
-      "age_days": null,
-      "fresh": false,
-      "status": "missing",
-      "market_score": null
-    },
     "data_cleaning": {},
     "data_health": {
       "timestamp": "2026-07-13 14:50",
@@ -3967,8 +3950,8 @@
         "catalyst_present": false,
         "catalyst_types": [],
         "catalyst_source_tiers": [],
-        "deniz": {
-          "sector_regime": "unknown",
+        "sector_context": {
+          "status": "self_sector_rs_pending",
           "role": "context_only"
         },
         "current_price": 91.55,
@@ -4013,8 +3996,8 @@
         "catalyst_present": false,
         "catalyst_types": [],
         "catalyst_source_tiers": [],
-        "deniz": {
-          "sector_regime": "unknown",
+        "sector_context": {
+          "status": "self_sector_rs_pending",
           "role": "context_only"
         },
         "current_price": 34.12,
@@ -4059,8 +4042,8 @@
         "catalyst_present": false,
         "catalyst_types": [],
         "catalyst_source_tiers": [],
-        "deniz": {
-          "sector_regime": "unknown",
+        "sector_context": {
+          "status": "self_sector_rs_pending",
           "role": "context_only"
         },
         "current_price": 80.0,
@@ -4603,5 +4586,65 @@
       ],
       "note": "Telegram shadow_accounts ile dashboard portfolio okumasi karsilastirildi."
     }
+  },
+  "broker_bulletin_ledger": {
+    "updated_at": "2026-07-13T00:00:00",
+    "as_of": null,
+    "input_files": 0,
+    "input_errors": [],
+    "tracked_events": 0,
+    "unique_sources": 0,
+    "unique_tickers_private": 0,
+    "matured_5d": 0,
+    "avg_5d_return_pct": null,
+    "hit_5d_pct": null,
+    "matured_21d": 0,
+    "avg_21d_return_pct": null,
+    "hit_21d_pct": null,
+    "matured_63d": 0,
+    "avg_63d_return_pct": null,
+    "hit_63d_pct": null,
+    "decision": "olcum_bekliyor",
+    "min_mature_events_for_decision": 20,
+    "by_source": [],
+    "by_type": [],
+    "source_registry": [
+      {
+        "id": "bizim",
+        "name": "Bizim Menkul Degerler",
+        "tier": "broker",
+        "score": 2,
+        "public_url": "https://www.bizimmenkul.com.tr",
+        "notes": "Daily/periodic research bulletins where publicly available."
+      },
+      {
+        "id": "deniz",
+        "name": "Deniz Yatirim",
+        "tier": "broker",
+        "score": 2,
+        "public_url": null,
+        "notes": "Local-only comparison source. Raw/derived data is not public."
+      },
+      {
+        "id": "icbc",
+        "name": "ICBC Turkey Yatirim",
+        "tier": "broker",
+        "score": 2,
+        "public_url": "https://www.icbcyatirim.com.tr",
+        "notes": "Daily/periodic research bulletins where publicly available."
+      },
+      {
+        "id": "tera",
+        "name": "Tera Yatirim",
+        "tier": "broker",
+        "score": 2,
+        "public_url": "https://www.terayatirim.com/research",
+        "notes": "Market outlook, suggestion list, company reports."
+      }
+    ],
+    "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay in local/ only.",
+    "detail_storage": "local/broker_bulletin_ledger_private.json",
+    "opens_trade": false,
+    "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   }
 }

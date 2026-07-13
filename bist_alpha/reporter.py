@@ -130,7 +130,7 @@ def _quarantine_text(item):
     return f" | teyit:{days}g"
 
 
-def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
+def generate_report(data, signals, date=None, mode=None,
                     held_positions=None, stopped_tickers=None):
     """
     Günlük sinyal raporu üretir.
@@ -144,10 +144,6 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         date = prices.index[-1]
     held = held_positions or set()
     stopped = stopped_tickers or set()
-    from . import deniz
-    deniz_status = deniz.bulletin_status(deniz_bulletin, as_of=date)
-    deniz_usable = deniz_bulletin if deniz_status.get("fresh") else None
-
     picks, sig_map, exceptions = select(data, signals, date, mode=mode)
     s, m252 = score(data, date)
 
@@ -165,10 +161,8 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         }
         row.update(_momentum_snapshot(data, t, date))
         row.update(_price_plan(data, t, date, held_positions=held_positions))
-        # yan_kaynak overlay KALDIRILDI: annotate_ticker'in TUM flag'leri (deniz_skor/yabanci/hacim/
-        # sezonsal/bilanco/fx_risk/sektor_uyari) Deniz-bulten-turevi (_meta.source=Deniz Yatirim) ->
-        # PUBLIC dashboard'a yazilmaz. Local cross-check: sidesource.annotate_ticker(t, sector) dogrudan
-        # cagrilir (Deniz-dosyalari local'de). per-pick Deniz-rejim + Faz-3'te self-uretilen sektor-RS eklenecek.
+        # Third-party overlays are not written to the public report.
+        # Broker bulletins are measured separately in broker_bulletin_ledger.
         rows.append(row)
 
     # FIRSAT listesi: pick olmayan ama GÜÇLÜ BİRİKİM + yüksek momentum
@@ -204,10 +198,8 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         "dynamic_universe_count": len(data.get("_dynamic_universe", [])) if data.get("_dynamic_universe") else None,
         "dynamic_universe_method": data.get("_dynamic_universe_method"),
         "market_regime": market_regime,
-        "deniz_bulletin": deniz_status,
         "top10": rows,
         "firsatlar": firsatlar,
-        "market_score_deniz": deniz_usable.get("market_score") if deniz_usable else None,
     }
 
 
@@ -223,28 +215,14 @@ def format_text(report):
         if pool_method:
             pool_note += f" ({pool_method})"
         L.append(f"Kaynak: {report['source']}{pool_note} | canlı veri: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')} | son veri: {report.get('last_data_date')}")
-    deniz_info = report.get("deniz_bulletin") or {}
-    if deniz_info.get("available"):
-        freshness = "guncel" if deniz_info.get("fresh") else "ESKI"
-        source_note = " | kaynak:snapshot" if deniz_info.get("loaded_from_snapshot") else ""
-        L.append(
-            f"Deniz bulten: {deniz_info.get('date')} | {freshness} | "
-            f"yas:{deniz_info.get('age_days')} gun{source_note}"
-        )
-        if deniz_info.get("fresh") and report.get("market_score_deniz") is not None:
-            L.append(f"Deniz market puanı: {report['market_score_deniz']}")
-        elif not deniz_info.get("fresh"):
-            L.append("Deniz puani/sector etiketi rapora katilmadi (bulten eski).")
-    else:
-        L.append("Deniz bulten: YOK (IMAP/klasor kontrol edilmeli)")
+    L.append("BIST Alpha bulten: sistem-uretimi | resmi KAP/sirket/BIST verileri defterlerde olculur")
     L.append("")
     L.append("TOP 10:")
     for r in report["top10"]:
         v = " 🎫" if r.get("visa") else ""
-        dz = f" [{r['deniz_regime']}]" if r.get("deniz_regime") else ""
         emoji = {"AL": "🟢", "SAT": "🔴", "BEKLE": "🟡", "FIRSAT": "⭐"}.get(r["action"], "")
         L.append(f" {r['rank']:2d}. {emoji} {r['ticker']:7s} {r['action']:6s} "
-                 f"M252:%{r['m252']}  {r.get('display_signal') or r['sm_signal']}{v}{dz}")
+                 f"M252:%{r['m252']}  {r.get('display_signal') or r['sm_signal']}{v}")
         L.append(f"        1H:%{r.get('m5')} | 1A:%{r.get('m21')} | 1Y:%{r.get('m252')}")
         L.append(f"        Fiyat:{r.get('mevcut_fiyat')} | Giriş:{r.get('giris_fiyati')} | "
                  f"Hedef:{r.get('hedef_1')}/{r.get('hedef_2')} | Stop:{r.get('stop')} | "
@@ -253,7 +231,6 @@ def format_text(report):
         ss = r.get("yan_kaynak")
         if ss:
             parts = []
-            if "deniz_skor" in ss: parts.append(f"Deniz:{ss['deniz_skor']:.0f}")
             if "yabancı" in ss: parts.append(ss["yabancı"])
             if "bilanço" in ss: parts.append(f"bilanço:{ss['bilanço']}")
             if "hacim" in ss: parts.append(ss["hacim"])

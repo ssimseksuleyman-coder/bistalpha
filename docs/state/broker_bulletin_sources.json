@@ -1,0 +1,34 @@
+{
+  "version": "2026-07-13",
+  "policy": "Broker bulletins are measured as secondary sources. Raw bulletin content, target prices, notes and per-ticker calls stay local.",
+  "sources": [
+    {
+      "id": "bizim",
+      "name": "Bizim Menkul Degerler",
+      "tier": "broker",
+      "public_url": "https://www.bizimmenkul.com.tr",
+      "notes": "Daily/periodic research bulletins where publicly available."
+    },
+    {
+      "id": "deniz",
+      "name": "Deniz Yatirim",
+      "tier": "broker",
+      "public_url": null,
+      "notes": "Local-only comparison source. Raw/derived data is not public."
+    },
+    {
+      "id": "icbc",
+      "name": "ICBC Turkey Yatirim",
+      "tier": "broker",
+      "public_url": "https://www.icbcyatirim.com.tr",
+      "notes": "Daily/periodic research bulletins where publicly available."
+    },
+    {
+      "id": "tera",
+      "name": "Tera Yatirim",
+      "tier": "broker",
+      "public_url": "https://www.terayatirim.com/research",
+      "notes": "Market outlook, suggestion list, company reports."
+    }
+  ]
+}

@@ -218,25 +218,13 @@ def _catalyst_info(report, ticker):
     }
 
 
-def _deniz_info(report, ticker, sector, date):
-    bulletin = report.get("deniz_bulletin") or {}
-    scores = bulletin.get("sector_scores") or {}
-    sector_score = _safe_float(scores.get(sector)) if sector else None
-    if sector_score is None:
-        sector_regime = "unknown"
-    elif sector_score < 40:
-        sector_regime = "weak"
-    elif sector_score >= 70:
-        sector_regime = "strong"
-    else:
-        sector_regime = "normal"
-    # Deniz turev-verisi PUBLIC repo'ya yazilmaz (lisans): ham market/sector/stock skoru DEGIL.
-    # Yalniz KABA rejim-etiketi kalir; Faz-3'te self-uretilen sektor-RS ile degisecek.
-    # Deniz yoksa sector_score=None -> sector_regime="unknown" (graceful, cokmeden).
+def _sector_context(report, ticker, sector, date):
     return {
-        "deniz": {
-            "sector_regime": sector_regime,
+        "sector_context": {
+            "sector": sector,
+            "status": "self_sector_rs_pending",
             "role": "context_only",
+            "note": "Broker/third-party sector scores are not used in the public opportunity ledger.",
         }
     }
 
@@ -284,7 +272,7 @@ def _current_item(report, data, date, item):
     }
     row.update(_range_profile(data, date, ticker))
     row.update(_catalyst_info(report, ticker))
-    row.update(_deniz_info(report, ticker, row.get("sector"), date))
+    row.update(_sector_context(report, ticker, row.get("sector"), date))
     return row
 
 
