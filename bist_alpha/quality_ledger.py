@@ -6,6 +6,9 @@ their forward returns, and keeps them separate from the F production motor.
 from __future__ import annotations
 
 import json
+import os
+import re
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -32,29 +35,101 @@ def _local_official_path() -> Path:
     return _repo_root() / "local" / "kap_financial_actuals.json"
 
 
+def _local_official_dir() -> Path:
+    override = os.environ.get("KAP_FINANCIAL_DIR")
+    return Path(override) if override else _repo_root() / "local" / "kap_financials"
+
+
 def _roe_shadow_path() -> Path:
     return _repo_root() / "reports" / "roe_shadow_ledger.json"
+
+
+HEADER_ALIASES = {
+    "ticker": {
+        "ticker", "symbol", "sembol", "kod", "hisse", "hisse_kodu", "pay_kodu", "borsa_kodu",
+        "sirket_kodu", "code",
+    },
+    "release_date": {
+        "release_date", "date", "tarih", "bildirim_tarihi", "kap_tarihi", "yayin_tarihi",
+        "aciklama_tarihi", "rapor_tarihi", "financial_release_date",
+    },
+    "period": {"period", "donem", "finansal_donem", "rapor_donemi"},
+    "roe_pct": {
+        "roe", "roe_pct", "ozsermaye_karliligi", "ozkaynak_karliligi",
+        "ozkaynak_getirisi", "return_on_equity",
+    },
+    "profit_yoy_pct": {
+        "profit_yoy", "profit_yoy_pct", "yoy", "yoy_pct", "net_kar_yoy",
+        "net_kar_degisim", "net_kar_buyumesi", "kar_yoy", "kar_buyumesi",
+    },
+    "profit_qoq_pct": {
+        "profit_qoq", "profit_qoq_pct", "qoq", "qoq_pct", "ceyreklik_degisim",
+        "net_kar_qoq",
+    },
+    "revenue_mio": {
+        "revenue", "revenue_mio", "satis", "satislar", "satis_geliri", "hasila",
+        "ciro", "net_satislar", "actual_revenue_mio_try",
+    },
+    "favok_mio": {
+        "favok", "favok_mio", "ebitda", "ebitda_mio", "fvaok", "actual_favok_mio_try",
+    },
+    "net_debt_ebitda": {
+        "net_debt_ebitda", "net_borc_favok", "net_borc_ebitda", "netborc_favok",
+        "net_borc_fvaok",
+    },
+    "surprise_pct": {
+        "surprise", "surprise_pct", "beklenti_sapmasi", "beklenti_farki",
+        "konsensus_sapmasi",
+    },
+    "target_price_change_pct": {
+        "target_price_change", "target_price_change_pct", "hedef_fiyat_degisim",
+        "hedef_degisim",
+    },
+    "result": {"result", "sonuc", "etiket", "quality_result"},
+    "metric": {"metric", "metrik", "ana_metrik"},
+    "recommendation": {"recommendation", "tavsiye", "oneriler", "karar"},
+    "official_source_url": {"official_source_url", "url", "kap_url", "source_url", "link"},
+    "note": {"note", "not", "aciklama", "title", "baslik"},
+}
+
+ALIASES_BY_HEADER = {
+    alias: canonical
+    for canonical, aliases in HEADER_ALIASES.items()
+    for alias in aliases
+}
+
+NUMERIC_FIELDS = {
+    "roe_pct", "profit_yoy_pct", "profit_qoq_pct", "revenue_mio", "favok_mio",
+    "net_debt_ebitda", "surprise_pct", "target_price_change_pct",
+}
 
 
 def _source_meta():
     kap_payload = _load_json(_kap_events_path(), {})
     kap_events = kap_payload.get("events", []) if isinstance(kap_payload, dict) else []
     financial_events = [e for e in kap_events if _is_financial_disclosure(e)]
-    local_payload = _load_json(_local_official_path(), {})
-    local_companies = local_payload.get("companies", []) if isinstance(local_payload, dict) else []
-    local_meta = local_payload.get("_meta", {}) if isinstance(local_payload, dict) else {}
+    local_sources = _load_local_official_payloads()
+    local_companies = [row for source in local_sources for row in source.get("companies", [])]
+    extract_times = [
+        source.get("_meta", {}).get("extracted_at") or source.get("_meta", {}).get("extracted")
+        for source in local_sources
+    ]
+    extract_times = [value for value in extract_times if value]
+    latest_extract = max(extract_times, default=None)
     available = bool(financial_events or local_companies)
     return {
         "source_name": "KAP resmi finansal bildirimleri",
         "source_file": _kap_events_path().relative_to(_repo_root()).as_posix(),
         "local_metrics_file": _local_official_path().relative_to(_repo_root()).as_posix(),
-        "extracted_at": local_meta.get("extracted_at") or local_meta.get("extracted"),
+        "local_metrics_dir": _display_path(_local_official_dir()),
+        "local_input_files": len(local_sources),
+        "extracted_at": latest_extract,
         "n_companies": len(local_companies) or None,
         "kap_financial_events": len(financial_events),
         "data_available": available,
         "source_status": "kap_event_stream_active" if _kap_events_path().exists() else "kap_event_stream_missing",
         "public_repo_policy": "official_events_public; detailed_metric_extracts_local_only",
-        "kap_financial_parser": "event_release_active_metrics_pending",
+        "kap_financial_parser": "local_official_json_csv_xlsx_active",
         "opens_trade": False,
         "third_party_bulletin_policy": (
             "Ucuncu taraf bulten verisi deftere yazilmaz. En fazla alarm/yer-gosterici olabilir; "
@@ -77,6 +152,124 @@ def _save_json(path: Path, payload):
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     tmp.replace(path)
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return path.relative_to(_repo_root()).as_posix()
+    except Exception:
+        return str(path)
+
+
+def _slug(value) -> str:
+    text = str(value or "").strip()
+    text = text.translate(str.maketrans({
+        "ı": "i", "İ": "i", "ş": "s", "Ş": "s", "ğ": "g", "Ğ": "g",
+        "ü": "u", "Ü": "u", "ö": "o", "Ö": "o", "ç": "c", "Ç": "c",
+    }))
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^a-zA-Z0-9]+", "_", text.lower()).strip("_")
+    return text
+
+
+def _coerce_number(value):
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if not text or text in {"-", "nan", "None"}:
+        return None
+    text = text.replace("%", "").replace("x", "").replace("X", "").strip()
+    if "," in text and "." in text:
+        text = text.replace(".", "").replace(",", ".")
+    elif "," in text:
+        text = text.replace(",", ".")
+    try:
+        return float(text)
+    except Exception:
+        return None
+
+
+def _normalize_row(row: dict) -> dict:
+    out = {}
+    for raw_key, value in (row or {}).items():
+        key = ALIASES_BY_HEADER.get(_slug(raw_key), _slug(raw_key))
+        if key in NUMERIC_FIELDS:
+            out[key] = _coerce_number(value)
+        elif key == "release_date" and hasattr(value, "date"):
+            out[key] = _date_text(value)
+        elif key == "ticker":
+            out[key] = _norm_ticker(value)
+        else:
+            out[key] = value
+    return out
+
+
+def _local_official_paths():
+    paths = []
+    legacy = _local_official_path()
+    if legacy.exists():
+        paths.append(legacy)
+    directory = _local_official_dir()
+    if directory.exists():
+        for pattern in ("*.json", "*.csv", "*.xlsx", "*.xls"):
+            paths.extend(sorted(directory.glob(pattern)))
+    seen = set()
+    unique = []
+    for path in paths:
+        key = str(path.resolve())
+        if key not in seen:
+            seen.add(key)
+            unique.append(path)
+    return unique
+
+
+def _read_local_official_file(path: Path):
+    meta = {
+        "source": "KAP/company official financial extract",
+        "source_file": _display_path(path),
+        "source_type": path.suffix.lower().lstrip(".") or "unknown",
+    }
+    rows = []
+    try:
+        if path.suffix.lower() == ".json":
+            payload = _load_json(path, {})
+            if isinstance(payload, list):
+                rows = payload
+            elif isinstance(payload, dict):
+                meta.update(payload.get("_meta", {}) or {})
+                rows = (
+                    payload.get("companies")
+                    or payload.get("rows")
+                    or payload.get("events")
+                    or []
+                )
+        elif path.suffix.lower() == ".csv":
+            try:
+                df = pd.read_csv(path, encoding="utf-8-sig")
+            except UnicodeDecodeError:
+                df = pd.read_csv(path, encoding="cp1254")
+            rows = df.to_dict(orient="records")
+        elif path.suffix.lower() in {".xlsx", ".xls"}:
+            df = pd.read_excel(path)
+            rows = df.to_dict(orient="records")
+    except Exception as e:
+        return {"_meta": {**meta, "error": str(e)}, "companies": []}
+    normalized = []
+    for row in rows:
+        if isinstance(row, dict):
+            normalized.append(_normalize_row(row))
+    return {"_meta": meta, "companies": normalized}
+
+
+def _load_local_official_payloads():
+    return [_read_local_official_file(path) for path in _local_official_paths()]
 
 
 def _round(value, digits=2):
@@ -187,14 +380,16 @@ def _event_from_official_row(row, payload, prices):
         return None
     entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, release_date)
     event = {
-        "source_id": row.get("source_id") or "local_kap_financial_actuals",
+        "source_id": row.get("source_id") or f"local_kap_financial_actuals:{payload.get('_meta', {}).get('source_file', 'manual')}",
         "source": payload.get("_meta", {}).get("source", "KAP/company official financial extract"),
+        "source_file": payload.get("_meta", {}).get("source_file"),
         "source_tier": "primary",
         "requires_kap_confirmation": False,
         "kap_confirmed": True,
         "opens_trade": False,
         "ticker": ticker,
         "release_date": str(release_date),
+        "period": row.get("period"),
         "entry_date": entry_date,
         "entry_price": _round(entry),
         "entry_pos": entry_pos,
@@ -220,13 +415,13 @@ def _event_from_official_row(row, payload, prices):
 
 
 def _local_official_events(prices):
-    payload = _load_json(_local_official_path(), {})
-    companies = payload.get("companies", []) if isinstance(payload, dict) else []
     events = []
-    for row in companies:
-        event = _event_from_official_row(row, payload, prices)
-        if event:
-            events.append(event)
+    for payload in _load_local_official_payloads():
+        companies = payload.get("companies", []) if isinstance(payload, dict) else []
+        for row in companies:
+            event = _event_from_official_row(row, payload, prices)
+            if event:
+                events.append(event)
     return events
 
 
