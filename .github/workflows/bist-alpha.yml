@@ -40,7 +40,6 @@ jobs:
         id: gate
         env:
           TZ: Europe/Istanbul
-          ALLOW_PUSH_REPORT: "1"
         run: python3 scripts/report_gate.py check
 
       - uses: actions/setup-python@v5
