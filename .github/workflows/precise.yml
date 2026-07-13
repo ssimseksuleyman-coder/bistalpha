@@ -20,7 +20,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: bist-alpha
+  # Uzun uyuyan precise job native/manual rapor kuyruğunu kilitlemesin.
+  # Çift rapor koruması report_runs.json üzerinden yapılır.
+  group: bist-alpha-precise
   cancel-in-progress: false
 
 jobs:
