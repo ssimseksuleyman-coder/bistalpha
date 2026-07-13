@@ -97,6 +97,10 @@ def due_slot(now: datetime | None = None) -> tuple[bool, str, str]:
         return True, "manuel", event
     if event == "push":
         if os.environ.get("ALLOW_PUSH_REPORT", "").lower() in {"1", "true", "yes"}:
+            sent = _load_state().get("sent", {})
+            key = _marker_key(now, "push")
+            if _record_blocks(sent.get(key), now):
+                return False, "push", f"already_sent:{key}"
             return True, "push", "push_allowed"
         return False, "", "push_ignored"
 

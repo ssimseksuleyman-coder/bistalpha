@@ -26,7 +26,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: bist-alpha
+  # Native fallback/manual rapor kendi kuyruğunda akar; precise workflow uzun uyur.
+  # Çift rapor koruması report_runs.json üzerinden yapılır.
+  group: bist-alpha-native
   cancel-in-progress: false
 
 jobs:
