@@ -19,9 +19,8 @@ local/
 # Kod public olabilir; lisansli/turev veri PDF gibi repoya commit edilmez.
 # deniz_inbox/ = ham Deniz PDF'leri (en hassas); kaza-git-add korumasi (history'de degil, sadece untracked).
 deniz_inbox/
-data/omega/earnings_actuals_1Q26.json
-data/omega/deniz_*.json
-data/omega/stock_scores_timeseries.json
+# data/omega/ = TUMU Deniz-bulten-turevi extract (_meta.source=Deniz Yatirim); hepsi local kalir.
+data/omega/*.json
 # Deniz gunluk bulten snapshot'lari (parse-edilmis tescilli veri) local kalir.
 deniz_snapshots/*
 # scanner_state.json = tarama-imleci (Deniz-arastirma DEGIL); cloud-fetch surdukce tracked kalir.

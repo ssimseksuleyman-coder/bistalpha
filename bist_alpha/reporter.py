@@ -165,14 +165,10 @@ def generate_report(data, signals, date=None, mode=None, deniz_bulletin=None,
         }
         row.update(_momentum_snapshot(data, t, date))
         row.update(_price_plan(data, t, date, held_positions=held_positions))
-        # per-pick Deniz-rejim (Deniz-turevi) PUBLIC'e yazilmaz; Faz-3'te self-uretilen sektor-RS ile eklenecek.
-        # Yan kaynak overlay (OMEGA istihbarati — Deniz-DISI bayraklar: yabanci/hacim/sezonsal)
-        from . import sidesource
-        ss = sidesource.annotate_ticker(t, get_sector(t), as_of=date)
-        if ss:
-            ss.pop("deniz_skor", None)  # ham Deniz per-hisse skoru public'e yazilmaz (acik-koruma, veri-yokluguna-guvenme)
-            if ss:
-                row["yan_kaynak"] = ss
+        # yan_kaynak overlay KALDIRILDI: annotate_ticker'in TUM flag'leri (deniz_skor/yabanci/hacim/
+        # sezonsal/bilanco/fx_risk/sektor_uyari) Deniz-bulten-turevi (_meta.source=Deniz Yatirim) ->
+        # PUBLIC dashboard'a yazilmaz. Local cross-check: sidesource.annotate_ticker(t, sector) dogrudan
+        # cagrilir (Deniz-dosyalari local'de). per-pick Deniz-rejim + Faz-3'te self-uretilen sektor-RS eklenecek.
         rows.append(row)
 
     # FIRSAT listesi: pick olmayan ama GÜÇLÜ BİRİKİM + yüksek momentum
