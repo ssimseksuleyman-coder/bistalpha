@@ -39,9 +39,9 @@ pip install -r requirements.txt    # requests eklendi (Telegram için)
 # E-posta
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_USER = "seninmail@gmail.com"
+SMTP_USER = "ornek@example.com"
 SMTP_PASS = "uygulama_sifresi"        # Gmail: uygulama şifresi
-MAIL_TO   = "alici@mail.com"
+MAIL_TO   = "alici@example.com"
 
 # Telegram (@BotFather'dan token, kendi chat_id'in)
 TELEGRAM_TOKEN   = "123456:ABC..."

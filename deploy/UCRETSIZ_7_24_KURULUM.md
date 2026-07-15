@@ -52,13 +52,13 @@ Repo → Settings → Secrets and variables → Actions → New secret:
 | Secret | Değer |
 |--------|-------|
 | SMTP_HOST | smtp.gmail.com |
-| SMTP_USER | seninmail@gmail.com |
+| SMTP_USER | ornek@example.com |
 | SMTP_PASS | (uygulama şifresi) |
-| MAIL_TO | alıcı@mail.com |
+| MAIL_TO | alici@example.com |
 | TELEGRAM_TOKEN | (BotFather token) |
 | TELEGRAM_CHAT_ID | (chat id) |
 | IMAP_HOST | imap.gmail.com |
-| IMAP_USER | seninmail@gmail.com |
+| IMAP_USER | ornek@example.com |
 | IMAP_PASS | (uygulama şifresi) |
 | DENIZ_SENDER | (Deniz e-posta adresi) |
 

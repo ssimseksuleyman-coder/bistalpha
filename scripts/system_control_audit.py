@@ -33,7 +33,9 @@ FORBIDDEN_PUBLIC_TERMS = [
 ]
 
 TOKEN_RE = re.compile(r"\b\d{8,12}:[A-Za-z0-9_-]{25,}\b")
-
+EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+WINDOWS_USER_PATH_RE = re.compile(r"(?i)\b[A-Z]:\\Users\\[^\\\s\"']+")
+UNIX_HOME_PATH_RE = re.compile(r"\B/(?:home|Users)/[^/\s\"']+")
 
 @dataclass
 class Check:
@@ -93,6 +95,27 @@ def public_files() -> list[Path]:
         p
         for p in PUBLIC_DIR.rglob("*")
         if p.is_file() and p.suffix.lower() in {".html", ".js", ".json", ".md"}
+    ]
+
+
+def scanned_text_files() -> list[Path]:
+    ignored_parts = {
+        ".git",
+        ".venv",
+        "__pycache__",
+        "local",
+        "deniz_inbox",
+        "logs",
+    }
+    ignored_suffixes = {".png", ".jpg", ".jpeg", ".gif", ".db", ".xlsx", ".xls", ".zip", ".pdf"}
+    generated_self_reports = {STATE_DIR / "system_control_audit.json"}
+    return [
+        p
+        for p in ROOT.rglob("*")
+        if p.is_file()
+        and p not in generated_self_reports
+        and p.suffix.lower() not in ignored_suffixes
+        and not any(part in ignored_parts for part in p.relative_to(ROOT).parts)
     ]
 
 
@@ -290,17 +313,8 @@ def check_json_state(checks: list[Check]) -> dict[str, Any]:
 
 
 def check_security(checks: list[Check]) -> None:
-    ignored_parts = {".git", ".venv", "__pycache__"}
-    tracked_like = [
-        p
-        for p in ROOT.rglob("*")
-        if p.is_file()
-        and not any(part in ignored_parts for part in p.relative_to(ROOT).parts)
-    ]
     token_hits = []
-    for path in tracked_like:
-        if path.suffix.lower() in {".png", ".db", ".xlsx", ".zip"}:
-            continue
+    for path in scanned_text_files():
         text = read_text(path)
         if TOKEN_RE.search(text):
             token_hits.append(rel(path))
@@ -325,6 +339,109 @@ def check_security(checks: list[Check]) -> None:
         "Private and licensed-data paths are ignored." if not missing else "Ignore policy missing private/licensed paths.",
         missing,
         "Keep licensed broker-derived data local; public repo may contain code and sanitized aggregates only.",
+    )
+
+
+def _walk_json(obj: Any, path: str = ""):
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            key_path = f"{path}.{key}" if path else str(key)
+            yield key_path, key, value
+            yield from _walk_json(value, key_path)
+    elif isinstance(obj, list):
+        for idx, value in enumerate(obj):
+            yield from _walk_json(value, f"{path}[{idx}]")
+
+
+def _state_value_is_sensitive(key: str, value: Any) -> bool:
+    lowered = str(key).lower()
+    if value in (None, "", "***"):
+        return False
+    if lowered == "email":
+        return isinstance(value, str) and bool(EMAIL_RE.search(value))
+    if lowered in {"source_file", "source_path", "attachment", "pdf_path"}:
+        if not isinstance(value, str):
+            return False
+        private_markers = ("local/", "deniz_inbox", "data/omega", ".pdf", ".xlsx", ".xls")
+        return (
+            any(marker in value for marker in private_markers)
+            or bool(WINDOWS_USER_PATH_RE.search(value))
+            or bool(UNIX_HOME_PATH_RE.search(value))
+        )
+    return lowered in {
+        "password",
+        "passwd",
+        "secret",
+        "token",
+        "api_key",
+        "apikey",
+        "chat_id",
+        "mail_to",
+        "raw_text",
+        "email_body",
+    }
+
+
+def check_privacy_controls(checks: list[Check]) -> None:
+    hits = []
+    for path in scanned_text_files():
+        text = read_text(path)
+        if TOKEN_RE.search(text):
+            hits.append(f"{rel(path)}: token-like literal")
+        emails = [
+            email
+            for email in EMAIL_RE.findall(text)
+            if not email.endswith("users.noreply.github.com")
+            and not email.endswith("example.com")
+        ]
+        if emails:
+            hits.append(f"{rel(path)}: email literal {', '.join(sorted(set(emails))[:3])}")
+        if WINDOWS_USER_PATH_RE.search(text) or UNIX_HOME_PATH_RE.search(text):
+            hits.append(f"{rel(path)}: personal absolute path")
+    add(
+        checks,
+        "Privacy / data minimization",
+        "PII, token and personal-path scan",
+        "fail" if hits else "pass",
+        "PII/token/local-user path found." if hits else "No PII, token-like secret or personal absolute path found in scanned files.",
+        hits[:30],
+        "Remove personal data from repo, rotate exposed secrets, and keep machine-specific paths local-only.",
+    )
+
+    state_hits = []
+    for path in sorted(STATE_DIR.glob("*.json")):
+        if path.name == "system_control_audit.json":
+            continue
+        obj, err = load_json(path)
+        if err:
+            continue
+        for key_path, key, value in _walk_json(obj):
+            if _state_value_is_sensitive(str(key), value):
+                state_hits.append(f"{rel(path)}::{key_path}")
+            if isinstance(value, str):
+                if TOKEN_RE.search(value) or EMAIL_RE.search(value):
+                    state_hits.append(f"{rel(path)}::{key_path} contains secret/PII-like value")
+                if WINDOWS_USER_PATH_RE.search(value) or UNIX_HOME_PATH_RE.search(value):
+                    state_hits.append(f"{rel(path)}::{key_path} contains personal path")
+    add(
+        checks,
+        "Privacy / data minimization",
+        "Public state sensitive-field scan",
+        "fail" if state_hits else "pass",
+        "Public state contains sensitive-looking fields." if state_hits else "Public state has no raw secret/PII/path fields.",
+        state_hits[:30],
+        "Public state should contain aggregate metrics and sanitized references only.",
+    )
+
+    policy = ROOT / "docs" / "GIZLILIK_KONTROL_POLITIKASI.md"
+    add(
+        checks,
+        "Privacy / data minimization",
+        "Privacy policy document",
+        "pass" if policy.exists() else "warn",
+        "Privacy control policy exists." if policy.exists() else "Privacy control policy is missing.",
+        [] if policy.exists() else [rel(policy)],
+        "Document what may be public, what must stay local, and how leaks are handled.",
     )
 
 
@@ -614,6 +731,7 @@ def check_monitoring_docs(checks: list[Check]) -> None:
         "docs/KAP_FINANSAL_TABLO_OTOMASYON.md",
         "docs/AKIS_GERI_ALIM_DEFTERI.md",
         "docs/BROKER_BULTEN_DEFTERI.md",
+        "docs/GIZLILIK_KONTROL_POLITIKASI.md",
         "docs/BAGIMLILIK_GUNCELLEME_POLITIKASI.md",
         "docs/DEGISIKLIK_YONETIMI.md",
     ]
@@ -735,6 +853,7 @@ def build_report() -> dict[str, Any]:
     check_public_hygiene(checks)
     parsed = check_json_state(checks)
     check_security(checks)
+    check_privacy_controls(checks)
     check_code_quality(checks)
     check_workflow(checks)
     check_dependency_management(checks)

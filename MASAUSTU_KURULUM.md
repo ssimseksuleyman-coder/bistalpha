@@ -19,7 +19,7 @@ Python varsa direkt aşağı geç.
 3. Çıkış konumu olarak Masaüstünü göster
 4. Çıkarınca `bist_alpha_system` adında klasör oluşur — **adını `BISTALPA` olarak değiştir** (sağ tık → Yeniden Adlandır)
 
-Şimdi `C:\Users\<senin_adın>\Desktop\BISTALPA\` klasörü var.
+Şimdi masaüstünde `BISTALPA` klasörü var.
 
 ### Adım 2 — Çift Tıkla
 1. BISTALPA klasörünü aç

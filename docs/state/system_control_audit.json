@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-15T12:56:01",
+  "generated_at": "2026-07-15T20:55:29",
   "overall": "yellow",
   "summary": {
-    "pass": 31,
+    "pass": 34,
     "warn": 3
   },
   "checks": [
@@ -103,6 +103,30 @@
       "summary": "Private and licensed-data paths are ignored.",
       "evidence": [],
       "action": "Keep licensed broker-derived data local; public repo may contain code and sanitized aggregates only."
+    },
+    {
+      "category": "Privacy / data minimization",
+      "control": "PII, token and personal-path scan",
+      "status": "pass",
+      "summary": "No PII, token-like secret or personal absolute path found in scanned files.",
+      "evidence": [],
+      "action": "Remove personal data from repo, rotate exposed secrets, and keep machine-specific paths local-only."
+    },
+    {
+      "category": "Privacy / data minimization",
+      "control": "Public state sensitive-field scan",
+      "status": "pass",
+      "summary": "Public state has no raw secret/PII/path fields.",
+      "evidence": [],
+      "action": "Public state should contain aggregate metrics and sanitized references only."
+    },
+    {
+      "category": "Privacy / data minimization",
+      "control": "Privacy policy document",
+      "status": "pass",
+      "summary": "Privacy control policy exists.",
+      "evidence": [],
+      "action": "Document what may be public, what must stay local, and how leaks are handled."
     },
     {
       "category": "Operational / code quality",
@@ -238,7 +262,7 @@
       "status": "pass",
       "summary": "Operation gate reports 'on_time'.",
       "evidence": [
-        "{'label': 'acilis', 'target_time': '09:45', 'delay_minutes': 0, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'acilis', 'gate_reason': '', 'target_time': '09:45', 'delay_minutes': 0}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'yahoo', 'fallback': False, 'price_count': 611, 'source_pool_count': 613, 'missing_symbols': 2, 'missing_symbol_pct': 0.33, 'missing_symbol_list': ['ALTINS1', 'DMLKTG'],"
+        "{'label': 'kapanis', 'target_time': '18:40', 'delay_minutes': 1, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'kapanis', 'gate_reason': '', 'target_time': '18:40', 'delay_minutes': 1}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'yahoo', 'fallback': False, 'price_count': 611, 'source_pool_count': 613, 'missing_symbols': 2, 'missing_symbol_pct': 0.33, 'missing_symbol_list': ['ALTINS1', 'DMLKTG'"
       ],
       "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
     },

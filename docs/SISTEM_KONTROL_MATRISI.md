@@ -29,6 +29,7 @@ bakım veya sadeleştirme gerektiren alanı işaret eder.
 | İzleme / geri bildirim | Health, Telegram, report_runs, ledger sonuçları | Panel mesajla çelişiyor | Metrik eksik | Tek kaynak dashboard/state; Telegram ondan üretir |
 | Bağlanmamış süreç | Çalışmayan veya bağlanmayan modülleri bulmak | Kritik modül hiç çağrılmıyor | Deneysel modül düşük referanslı | Ölçüm defteri ise belge, değilse kaldır |
 | Güvenlik / yasal uyum | Secret ve lisanslı/türev veri sızıntısı | Token veya broker-türev public | Ignore politikası eksik | Secret rotate, history purge gerekirse planlı yap |
+| Gizlilik / veri minimizasyonu | PII, kişisel yol, raw state ve gereksiz detay sızıntısını engellemek | Token/e-posta/kişisel yol public | Privacy policy veya state minimizasyon uyarısı | Ham veri local, public sadece özet/agrega |
 | Bağımlılık güncelleme | Üçüncü parti paket değişikliklerinin F'i bozmasını engellemek | Değişken dış kaynak veya manifest eksik | Sürümler gevşek aralıkta | Önce shadow/test, sonra bilinen-iyi pin |
 | Değişiklik yönetimi | Commit kapsamı, geri alma ve terfi disiplinini korumak | Workflow force-push veya state yolu belirsiz | Politika veya kapsam uyarısı | Küçük commit, audit, rollback notu |
 | Dokümantasyon | Kurulum, veri kaynağı, defter ve karar mantığı | Runbook yok | Doküman koddan geride | Değişiklikle birlikte kısa karar notu ekle |
