@@ -448,7 +448,13 @@ def check_monitoring_docs(checks: list[Check]) -> None:
 def check_orphans(checks: list[Check]) -> None:
     modules = {p.stem: p for p in (ROOT / "bist_alpha").glob("*.py") if p.stem != "__init__"}
     references: Counter[str] = Counter()
-    for path in py_files() + [p for p in ROOT.glob("*.md") if p.is_file()] + public_files():
+    generated_self_reports = {STATE_DIR / "system_control_audit.json"}
+    reference_files = (
+        py_files()
+        + [p for p in ROOT.glob("*.md") if p.is_file()]
+        + [p for p in public_files() if p not in generated_self_reports]
+    )
+    for path in reference_files:
         text = read_text(path)
         for name in modules:
             if name in text:
