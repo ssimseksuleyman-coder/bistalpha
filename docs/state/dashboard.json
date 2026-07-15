@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-15T14:30:56",
-  "label": "gunici",
+  "timestamp": "2026-07-15T18:41:27",
+  "label": "kapanis",
   "date": "2026-07-14",
   "mode": "F",
   "source": "yahoo",
@@ -17,18 +17,17 @@
   "source_pool_method": "tradingview_bist_scanner",
   "source_pool_fallback": false,
   "last_data_date": "2026-07-14",
-  "price_count": 610,
+  "price_count": 611,
   "missing_symbol_list": [
     "ALTINS1",
-    "BMSCH",
     "DMLKTG"
   ],
   "dynamic_universe_count": 100,
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "market_regime": {
-    "name": "unknown",
-    "xu5": null,
-    "xu21": null
+    "name": "mixed",
+    "xu5": -2.9,
+    "xu21": -2.5
   },
   "bist_data_ok": true,
   "official_sources": {
@@ -988,7 +987,7 @@
     ]
   },
   "catalyst_ledger": {
-    "updated_at": "2026-07-15T14:30:55",
+    "updated_at": "2026-07-15T18:41:26",
     "as_of": "2026-07-14",
     "source_count": 1,
     "tracked_events": 18,
@@ -1346,17 +1345,17 @@
     }
   },
   "operation_health": {
-    "label": "gunici",
-    "target_time": "14:30",
-    "delay_minutes": 0,
+    "label": "kapanis",
+    "target_time": "18:40",
+    "delay_minutes": 1,
     "sla": {
       "status": "on_time",
       "root_cause": "zamaninda",
       "event": "schedule",
-      "gate_label": "gunici",
+      "gate_label": "kapanis",
       "gate_reason": "",
-      "target_time": "14:30",
-      "delay_minutes": 0
+      "target_time": "18:40",
+      "delay_minutes": 1
     },
     "telegram": {
       "sent": true,
@@ -1368,19 +1367,18 @@
     },
     "source": "yahoo",
     "fallback": false,
-    "price_count": 610,
+    "price_count": 611,
     "source_pool_count": 613,
-    "missing_symbols": 3,
-    "missing_symbol_pct": 0.49,
+    "missing_symbols": 2,
+    "missing_symbol_pct": 0.33,
     "missing_symbol_list": [
       "ALTINS1",
-      "BMSCH",
       "DMLKTG"
     ],
     "last_data_date": "2026-07-14",
     "data_cleaning": {},
     "data_health": {
-      "timestamp": "2026-07-15 14:30",
+      "timestamp": "2026-07-15 18:41",
       "data_issues": [],
       "data_cleaning": {},
       "healthy": true,
@@ -1389,7 +1387,7 @@
       "temp_removed": 2
     },
     "verdict": "green",
-    "updated_at": "2026-07-15T14:30:56"
+    "updated_at": "2026-07-15T18:41:27"
   },
   "account_governance": {
     "F": {
@@ -2663,7 +2661,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-07-15T14:30:56",
+    "updated_at": "2026-07-15T18:41:27",
     "days_tracked": 28,
     "valid_days_tracked": 28,
     "invalid_snapshot_count": 0,
@@ -3963,7 +3961,7 @@
           }
         ],
         "first_generated_at": "2026-07-14 14:31",
-        "last_generated_at": "2026-07-15 14:30",
+        "last_generated_at": "2026-07-15 18:41",
         "as_of": "2026-07-14",
         "age_trading_days": 0,
         "avg_return_pct": 0.17,
@@ -3973,7 +3971,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-07-15T14:30:56",
+    "updated_at": "2026-07-15T18:41:27",
     "tracked_days": 28,
     "current_candidates": 11,
     "hot_missed_count": 23,
@@ -4058,7 +4056,7 @@
     "recent_hot": []
   },
   "opportunity_ledger": {
-    "updated_at": "2026-07-15T14:30:56",
+    "updated_at": "2026-07-15T18:41:27",
     "tracked_days": 3,
     "latest_date": "2026-07-14",
     "current_candidates": 2,
@@ -4178,10 +4176,10 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-07-15T14:30:57",
+    "updated_at": "2026-07-15T18:41:27",
     "tracked_days": 28,
     "latest_date": "2026-07-14",
-    "latest_regime": "unknown",
+    "latest_regime": "mixed",
     "latest_events": 35,
     "by_layer_regime": [
       {
@@ -4217,12 +4215,12 @@
         "label": "Sessiz Birikim",
         "role": "discovery",
         "regime": "mixed",
-        "n": 36,
-        "avg_return_pct": -5.27,
-        "hit_rate_pct": 30.6,
-        "captured_alpha_pct": 55.4,
+        "n": 41,
+        "avg_return_pct": -4.6,
+        "hit_rate_pct": 31.7,
+        "captured_alpha_pct": 56.64,
         "false_positive_loss_pct": 245.08,
-        "net_discovery_pct": -189.68,
+        "net_discovery_pct": -188.44,
         "hit_events": 4,
         "false_positive_events": 22
       },
@@ -4245,12 +4243,12 @@
         "label": "Sessiz Birikim",
         "role": "discovery",
         "regime": "unknown",
-        "n": 13,
-        "avg_return_pct": -2.23,
-        "hit_rate_pct": 23.1,
-        "captured_alpha_pct": 28.01,
+        "n": 8,
+        "avg_return_pct": -3.78,
+        "hit_rate_pct": 12.5,
+        "captured_alpha_pct": 26.77,
         "false_positive_loss_pct": 56.97,
-        "net_discovery_pct": -28.96,
+        "net_discovery_pct": -30.2,
         "hit_events": 1,
         "false_positive_events": 5
       },
@@ -4287,12 +4285,12 @@
         "label": "Donusum Radari",
         "role": "discovery",
         "regime": "mixed",
-        "n": 92,
-        "avg_return_pct": -5.83,
-        "hit_rate_pct": 26.1,
-        "captured_alpha_pct": 151.61,
-        "false_positive_loss_pct": 688.12,
-        "net_discovery_pct": -536.51,
+        "n": 98,
+        "avg_return_pct": -5.47,
+        "hit_rate_pct": 26.5,
+        "captured_alpha_pct": 153.9,
+        "false_positive_loss_pct": 689.79,
+        "net_discovery_pct": -535.89,
         "hit_events": 8,
         "false_positive_events": 52
       },
@@ -4315,12 +4313,12 @@
         "label": "Donusum Radari",
         "role": "discovery",
         "regime": "unknown",
-        "n": 14,
-        "avg_return_pct": -7.26,
-        "hit_rate_pct": 14.3,
-        "captured_alpha_pct": 2.29,
-        "false_positive_loss_pct": 103.93,
-        "net_discovery_pct": -101.64,
+        "n": 8,
+        "avg_return_pct": -12.78,
+        "hit_rate_pct": 0.0,
+        "captured_alpha_pct": 0.0,
+        "false_positive_loss_pct": 102.26,
+        "net_discovery_pct": -102.26,
         "hit_events": 0,
         "false_positive_events": 8
       },
@@ -4347,9 +4345,9 @@
         "label": "F Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 73,
-        "avg_return_pct": 26.54,
-        "hit_rate_pct": 87.7
+        "n": 76,
+        "avg_return_pct": 26.7,
+        "hit_rate_pct": 88.2
       },
       {
         "layer": "F_shadow",
@@ -4365,9 +4363,9 @@
         "label": "F Shadow",
         "role": "return",
         "regime": "unknown",
-        "n": 17,
-        "avg_return_pct": 30.33,
-        "hit_rate_pct": 94.1
+        "n": 14,
+        "avg_return_pct": 30.31,
+        "hit_rate_pct": 92.9
       },
       {
         "layer": "F_top10",
@@ -4392,9 +4390,9 @@
         "label": "F Top10",
         "role": "return",
         "regime": "mixed",
-        "n": 121,
-        "avg_return_pct": 8.8,
-        "hit_rate_pct": 73.6
+        "n": 131,
+        "avg_return_pct": 8.15,
+        "hit_rate_pct": 71.0
       },
       {
         "layer": "F_top10",
@@ -4410,9 +4408,9 @@
         "label": "F Top10",
         "role": "return",
         "regime": "unknown",
-        "n": 21,
-        "avg_return_pct": 8.37,
-        "hit_rate_pct": 57.1
+        "n": 11,
+        "avg_return_pct": 15.82,
+        "hit_rate_pct": 72.7
       },
       {
         "layer": "O_shadow",
@@ -4437,9 +4435,9 @@
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 73,
-        "avg_return_pct": 26.54,
-        "hit_rate_pct": 87.7
+        "n": 76,
+        "avg_return_pct": 26.7,
+        "hit_rate_pct": 88.2
       },
       {
         "layer": "O_shadow",
@@ -4455,9 +4453,9 @@
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "unknown",
-        "n": 17,
-        "avg_return_pct": 30.33,
-        "hit_rate_pct": 94.1
+        "n": 14,
+        "avg_return_pct": 30.31,
+        "hit_rate_pct": 92.9
       },
       {
         "layer": "peak_risks",
@@ -4492,13 +4490,13 @@
         "label": "Tepe Riski",
         "role": "risk",
         "regime": "mixed",
-        "n": 97,
-        "avg_return_pct": 4.51,
-        "hit_rate_pct": 52.6,
-        "saved_loss_pct": 322.8,
-        "opportunity_cost_pct": 760.7,
-        "net_saved_pct": -437.9,
-        "saved_events": 27,
+        "n": 105,
+        "avg_return_pct": 4.17,
+        "hit_rate_pct": 52.4,
+        "saved_loss_pct": 326.84,
+        "opportunity_cost_pct": 764.25,
+        "net_saved_pct": -437.41,
+        "saved_events": 28,
         "false_alarm_events": 33
       },
       {
@@ -4520,13 +4518,13 @@
         "label": "Tepe Riski",
         "role": "risk",
         "regime": "unknown",
-        "n": 17,
-        "avg_return_pct": 2.62,
-        "hit_rate_pct": 52.9,
-        "saved_loss_pct": 44.83,
-        "opportunity_cost_pct": 89.32,
-        "net_saved_pct": -44.49,
-        "saved_events": 4,
+        "n": 9,
+        "avg_return_pct": 5.0,
+        "hit_rate_pct": 55.6,
+        "saved_loss_pct": 40.79,
+        "opportunity_cost_pct": 85.77,
+        "net_saved_pct": -44.98,
+        "saved_events": 3,
         "false_alarm_events": 5
       }
     ],
@@ -4557,7 +4555,7 @@
         "swap_hit_rate_pct": null,
         "latest": {
           "date": "2026-07-14",
-          "regime": "unknown",
+          "regime": "mixed",
           "overlap_pct": 100.0,
           "swap_n": 0,
           "o_only_count": 0,
@@ -4578,7 +4576,7 @@
     }
   },
   "quality_ledger": {
-    "updated_at": "2026-07-15T14:30:57",
+    "updated_at": "2026-07-15T18:41:27",
     "as_of": "2026-07-14",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
@@ -4620,7 +4618,7 @@
     "note": "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla dogrulanan veri kullanir. F motoruna emir uretmez."
   },
   "macro_surprise_ledger": {
-    "updated_at": "2026-07-15T14:30:57",
+    "updated_at": "2026-07-15T18:41:27",
     "as_of": "2026-07-14",
     "tracked_events": 0,
     "source_count": 0,
@@ -4650,7 +4648,7 @@
     "note": "Macro Surprise defteri olcer; fiyat sinyalinden bagimsizdir ve F motoruna emir uretmez."
   },
   "broker_bulletin_ledger": {
-    "updated_at": "2026-07-15T14:30:57",
+    "updated_at": "2026-07-15T18:41:27",
     "as_of": "2026-07-14",
     "input_files": 0,
     "input_errors": [],
@@ -4710,7 +4708,7 @@
     "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   },
   "flow_ledger": {
-    "updated_at": "2026-07-15T14:30:57",
+    "updated_at": "2026-07-15T18:41:27",
     "as_of": "2026-07-14",
     "tracked_events": 0,
     "opens_trade": false,
