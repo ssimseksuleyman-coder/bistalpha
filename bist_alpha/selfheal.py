@@ -55,35 +55,6 @@ def _tag_source(data, source, primary, attempts):
     return data
 
 
-def safe_feed():
-    """
-    Birincil veri kaynağını dene; çökerse gömülü Excel'e (FileFeed) düş.
-    Yahoo/borsapy/API geçici çökerse sistem durmaz (rate-limit/ban/ToS koruması).
-    """
-    from . import datafeed, config
-    source = getattr(config, "DATA_SOURCE", "file")
-    if source == "file":
-        return datafeed.FileFeed().get_latest()
-    allow_fallback = getattr(config, "ALLOW_FILE_FALLBACK", False)
-    try:
-        feed = datafeed.get_feed()
-        data = with_retry(feed.get_latest, retries=3, delay=10,
-                          label=f"{source} veri çekme")
-        if data['prices'].shape[1] < 50 or data['prices'].empty:
-            raise ValueError("Veri yetersiz/boş")
-        return data
-    except Exception as e:
-        if not allow_fallback:
-            raise RuntimeError(
-                f"{source} canlı veri alınamadı; Excel yedeğine düşülmedi "
-                "(ALLOW_FILE_FALLBACK=0)."
-            ) from e
-        print(f"[selfheal] {source} çöktü ({e}) → gömülü Excel yedeğine düşülüyor")
-        data = datafeed.FileFeed().get_latest()
-        data['_source'] = f'file_fallback_from_{source}'
-        return data
-
-
 def validate_and_repair_state(account, state_dir="portfolios"):
     """
     Portföy JSON'unu doğrula. Bozuksa yedekle + sıfırla (veri kaybı önlenir).
@@ -147,8 +118,6 @@ def guarded(fn, notify_fn=None, label="döngü"):
         return None
 
 
-# Runtime override: keep the old function above for historical context, but use
-# the explicit fallback chain below.
 def safe_feed():
     """
     Fetch primary data; if it fails, try live-ish fallback before file fallback.

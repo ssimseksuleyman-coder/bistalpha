@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -107,6 +108,22 @@ def rel(path: Path) -> str:
         return str(path)
 
 
+def git_cmd(args: list[str]) -> tuple[int, str]:
+    try:
+        proc = subprocess.run(
+            ["git", *args],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=10,
+            check=False,
+        )
+        return proc.returncode, proc.stdout.strip()
+    except Exception as exc:  # pragma: no cover - diagnostic path
+        return 1, str(exc)
+
+
 def check_duplicates(checks: list[Check]) -> None:
     ignored_parts = {".git", ".venv", "__pycache__"}
     files = [
@@ -144,6 +161,45 @@ def check_duplicates(checks: list[Check]) -> None:
         root_scripts[:30],
         "Promote active scripts into scripts/ or bist_alpha/; move experiments to local/ after audit.",
     )
+
+    duplicate_functions = []
+    for path in py_files():
+        try:
+            tree = ast_parse_file(path)
+        except Exception:
+            continue
+        module_names = [
+            node.name
+            for node in tree.body
+            if node.__class__.__name__ in {"FunctionDef", "AsyncFunctionDef"}
+        ]
+        for name, count in Counter(module_names).items():
+            if count > 1:
+                duplicate_functions.append(f"{rel(path)}::<module>.{name} x{count}")
+        for cls in [node for node in tree.body if node.__class__.__name__ == "ClassDef"]:
+            method_names = [
+                node.name
+                for node in cls.body
+                if node.__class__.__name__ in {"FunctionDef", "AsyncFunctionDef"}
+            ]
+            for name, count in Counter(method_names).items():
+                if count > 1:
+                    duplicate_functions.append(f"{rel(path)}::{cls.name}.{name} x{count}")
+    add(
+        checks,
+        "Duplicate / redundant files",
+        "Duplicate function definitions",
+        "warn" if duplicate_functions else "pass",
+        "Same-file duplicate function definitions found." if duplicate_functions else "No same-file duplicate function definitions found.",
+        duplicate_functions[:20],
+        "Remove or rename shadowed definitions; a later definition silently overrides earlier code.",
+    )
+
+
+def ast_parse_file(path: Path):
+    import ast
+
+    return ast.parse(read_text(path).lstrip("\ufeff"), filename=str(path))
 
 
 def check_public_hygiene(checks: list[Check]) -> None:
@@ -341,6 +397,154 @@ def check_workflow(checks: list[Check]) -> None:
     )
 
 
+def check_dependency_management(checks: list[Check]) -> None:
+    req = ROOT / "requirements.txt"
+    if not req.exists():
+        add(
+            checks,
+            "Dependency / third-party updates",
+            "Requirements manifest",
+            "fail",
+            "requirements.txt is missing.",
+            [],
+            "Production dependencies must be explicit.",
+        )
+        return
+
+    active = []
+    for line in read_text(req).splitlines():
+        item = line.strip()
+        if not item or item.startswith("#") or item.startswith("-r "):
+            continue
+        active.append(item)
+
+    loose = [
+        item
+        for item in active
+        if "==" not in item and "~=" not in item and "@" not in item
+    ]
+    add(
+        checks,
+        "Dependency / third-party updates",
+        "Version pin discipline",
+        "warn" if loose else "pass",
+        f"{len(active)} active dependencies; {len(loose)} use non-exact ranges.",
+        loose[:20],
+        "For live reproducibility, test upgrades in shadow first and pin known-good versions after validation.",
+    )
+
+    risky_sources = [
+        item
+        for item in active
+        if item.startswith(("-e", "git+", "http://", "https://", "file:"))
+    ]
+    add(
+        checks,
+        "Dependency / third-party updates",
+        "Direct external dependency sources",
+        "fail" if risky_sources else "pass",
+        "Direct VCS/URL/local dependency sources found." if risky_sources else "No direct VCS/URL/local dependency sources in requirements.",
+        risky_sources[:20],
+        "Avoid mutable external dependency sources in production requirements.",
+    )
+
+    policy = ROOT / "docs" / "BAGIMLILIK_GUNCELLEME_POLITIKASI.md"
+    add(
+        checks,
+        "Dependency / third-party updates",
+        "Dependency update policy",
+        "pass" if policy.exists() else "warn",
+        "Dependency update policy exists." if policy.exists() else "Dependency update policy is missing.",
+        [] if policy.exists() else [rel(policy)],
+        "Document how third-party upgrades are tested, pinned, and rolled back.",
+    )
+
+
+def check_self_healing_monitoring(checks: list[Check]) -> None:
+    selfheal = read_text(ROOT / "bist_alpha" / "selfheal.py")
+    maintenance = read_text(ROOT / "bist_alpha" / "maintenance.py")
+    daemon = read_text(ROOT / "daemon.py")
+    workflow = read_text(ROOT / ".github" / "workflows" / "bist-alpha.yml")
+
+    primitives = {
+        "retry": "with_retry" in selfheal,
+        "fallback_chain": "DATA_FALLBACK_CHAIN" in selfheal and "DATA_FALLBACK_CHAIN" in workflow,
+        "guarded_daemon": "guarded(" in selfheal and "selfheal.guarded" in daemon,
+        "state_repair": "validate_and_repair_state" in selfheal,
+        "maintenance_loop": "run_maintenance" in maintenance and "maintenance.run_maintenance" in daemon,
+        "report_gate": "scripts/report_gate.py check" in workflow and "scripts/report_gate.py mark" in workflow,
+    }
+    missing = [name for name, ok in primitives.items() if not ok]
+    add(
+        checks,
+        "Automatic monitoring / self-healing",
+        "Runtime resilience primitives",
+        "fail" if missing else "pass",
+        "Retry, fallback, guarded daemon, state repair, maintenance and report gate are wired." if not missing else "Some resilience primitives are missing.",
+        missing,
+        "Self-healing may retry/fallback/repair, but must not silently change strategy logic.",
+    )
+
+    maintenance_checks = ["check_data_health", "rotate_snapshots", "rotate_logs", "clean_temp"]
+    missing_maintenance = [name for name in maintenance_checks if name not in maintenance]
+    add(
+        checks,
+        "Automatic monitoring / self-healing",
+        "Regular maintenance coverage",
+        "fail" if missing_maintenance else "pass",
+        "Data health, snapshot/log rotation and temp cleanup are covered." if not missing_maintenance else "Maintenance coverage incomplete.",
+        missing_maintenance,
+        "Maintenance must detect stale data, NaN/frozen prices and storage growth.",
+    )
+
+
+def check_change_management(checks: list[Check]) -> None:
+    code, branch = git_cmd(["branch", "--show-current"])
+    add(
+        checks,
+        "Version control / change management",
+        "Git branch visibility",
+        "pass" if code == 0 and branch else "warn",
+        f"Current branch: {branch or 'unknown'}.",
+        [],
+        "Run audit from a real Git checkout before deploy.",
+    )
+
+    workflow = read_text(ROOT / ".github" / "workflows" / "bist-alpha.yml")
+    force_push = "push --force" in workflow or "push -f" in workflow
+    add(
+        checks,
+        "Version control / change management",
+        "No automatic force-push",
+        "fail" if force_push else "pass",
+        "Workflow contains force-push." if force_push else "Workflow does not force-push automatically.",
+        [],
+        "Force-push is only for deliberate history sanitation with backup and explicit approval.",
+    )
+
+    has_state_commit = "git add -f portfolios/" in workflow and "git commit -m \"state" in workflow
+    add(
+        checks,
+        "Version control / change management",
+        "State commit discipline",
+        "pass" if has_state_commit else "warn",
+        "Workflow persists portfolio and dashboard state intentionally." if has_state_commit else "State commit path is not visible.",
+        [],
+        "State persistence must be explicit and scoped; avoid accidental data broad-add.",
+    )
+
+    policy = ROOT / "docs" / "DEGISIKLIK_YONETIMI.md"
+    add(
+        checks,
+        "Version control / change management",
+        "Change management policy",
+        "pass" if policy.exists() else "warn",
+        "Change management policy exists." if policy.exists() else "Change management policy is missing.",
+        [] if policy.exists() else [rel(policy)],
+        "Document required checks, commit scope, rollback and promotion gates.",
+    )
+
+
 def check_strategy_risk(checks: list[Check], parsed: dict[str, Any]) -> None:
     dash = parsed.get("dashboard.json")
     if isinstance(dash, dict):
@@ -410,6 +614,8 @@ def check_monitoring_docs(checks: list[Check]) -> None:
         "docs/KAP_FINANSAL_TABLO_OTOMASYON.md",
         "docs/AKIS_GERI_ALIM_DEFTERI.md",
         "docs/BROKER_BULTEN_DEFTERI.md",
+        "docs/BAGIMLILIK_GUNCELLEME_POLITIKASI.md",
+        "docs/DEGISIKLIK_YONETIMI.md",
     ]
     missing = [p for p in needed_docs if not (ROOT / p).exists()]
     add(
@@ -531,6 +737,9 @@ def build_report() -> dict[str, Any]:
     check_security(checks)
     check_code_quality(checks)
     check_workflow(checks)
+    check_dependency_management(checks)
+    check_self_healing_monitoring(checks)
+    check_change_management(checks)
     check_strategy_risk(checks, parsed)
     check_monitoring_docs(checks)
     check_orphans(checks)

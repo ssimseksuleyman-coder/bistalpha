@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-15T11:59:29",
+  "generated_at": "2026-07-15T12:56:01",
   "overall": "yellow",
   "summary": {
-    "pass": 22,
-    "warn": 2
+    "pass": 31,
+    "warn": 3
   },
   "checks": [
     {
@@ -37,6 +37,14 @@
         "taban_readiness.py"
       ],
       "action": "Promote active scripts into scripts/ or bist_alpha/; move experiments to local/ after audit."
+    },
+    {
+      "category": "Duplicate / redundant files",
+      "control": "Duplicate function definitions",
+      "status": "pass",
+      "summary": "No same-file duplicate function definitions found.",
+      "evidence": [],
+      "action": "Remove or rename shadowed definitions; a later definition silently overrides earlier code."
     },
     {
       "category": "Misleading / noisy outputs",
@@ -127,6 +135,86 @@
       "summary": "Workflow has Yahoo plus fallback chain.",
       "evidence": [],
       "action": "Keep fallback enabled so Yahoo outages do not kill the report."
+    },
+    {
+      "category": "Dependency / third-party updates",
+      "control": "Version pin discipline",
+      "status": "warn",
+      "summary": "7 active dependencies; 7 use non-exact ranges.",
+      "evidence": [
+        "pandas>=1.5",
+        "numpy>=1.23",
+        "openpyxl>=3.0",
+        "requests>=2.28",
+        "yfinance>=0.2",
+        "borsapy>=0.10",
+        "pdfplumber>=0.10"
+      ],
+      "action": "For live reproducibility, test upgrades in shadow first and pin known-good versions after validation."
+    },
+    {
+      "category": "Dependency / third-party updates",
+      "control": "Direct external dependency sources",
+      "status": "pass",
+      "summary": "No direct VCS/URL/local dependency sources in requirements.",
+      "evidence": [],
+      "action": "Avoid mutable external dependency sources in production requirements."
+    },
+    {
+      "category": "Dependency / third-party updates",
+      "control": "Dependency update policy",
+      "status": "pass",
+      "summary": "Dependency update policy exists.",
+      "evidence": [],
+      "action": "Document how third-party upgrades are tested, pinned, and rolled back."
+    },
+    {
+      "category": "Automatic monitoring / self-healing",
+      "control": "Runtime resilience primitives",
+      "status": "pass",
+      "summary": "Retry, fallback, guarded daemon, state repair, maintenance and report gate are wired.",
+      "evidence": [],
+      "action": "Self-healing may retry/fallback/repair, but must not silently change strategy logic."
+    },
+    {
+      "category": "Automatic monitoring / self-healing",
+      "control": "Regular maintenance coverage",
+      "status": "pass",
+      "summary": "Data health, snapshot/log rotation and temp cleanup are covered.",
+      "evidence": [],
+      "action": "Maintenance must detect stale data, NaN/frozen prices and storage growth."
+    },
+    {
+      "category": "Version control / change management",
+      "control": "Git branch visibility",
+      "status": "pass",
+      "summary": "Current branch: main.",
+      "evidence": [],
+      "action": "Run audit from a real Git checkout before deploy."
+    },
+    {
+      "category": "Version control / change management",
+      "control": "No automatic force-push",
+      "status": "pass",
+      "summary": "Workflow does not force-push automatically.",
+      "evidence": [],
+      "action": "Force-push is only for deliberate history sanitation with backup and explicit approval."
+    },
+    {
+      "category": "Version control / change management",
+      "control": "State commit discipline",
+      "status": "pass",
+      "summary": "Workflow persists portfolio and dashboard state intentionally.",
+      "evidence": [],
+      "action": "State persistence must be explicit and scoped; avoid accidental data broad-add."
+    },
+    {
+      "category": "Version control / change management",
+      "control": "Change management policy",
+      "status": "pass",
+      "summary": "Change management policy exists.",
+      "evidence": [],
+      "action": "Document required checks, commit scope, rollback and promotion gates."
     },
     {
       "category": "Strategic / algorithmic decisions",
