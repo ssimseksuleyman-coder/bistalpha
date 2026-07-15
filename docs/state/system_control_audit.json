@@ -1,0 +1,235 @@
+{
+  "generated_at": "2026-07-15T11:43:14",
+  "overall": "yellow",
+  "summary": {
+    "pass": 22,
+    "warn": 2
+  },
+  "checks": [
+    {
+      "category": "Duplicate / redundant files",
+      "control": "Duplicate basename scan",
+      "status": "pass",
+      "summary": "No notable duplicate basenames found.",
+      "evidence": [],
+      "action": "Keep only if each copy has a different role; otherwise merge or archive under local/."
+    },
+    {
+      "category": "Duplicate / redundant files",
+      "control": "Root script sprawl",
+      "status": "warn",
+      "summary": "15 root-level Python scripts found.",
+      "evidence": [
+        "analyze_stock.py",
+        "benchmark.py",
+        "canli_veri_kontrol.py",
+        "daemon.py",
+        "firsat_ledger.py",
+        "floor_lock_accounting.py",
+        "github_724_kontrol.py",
+        "ibs_reversal_ledger.py",
+        "precise_runner.py",
+        "roe_shadow.py",
+        "run_backtest.py",
+        "run_catalyst.py",
+        "selftest.py",
+        "shadow.py",
+        "taban_readiness.py"
+      ],
+      "action": "Promote active scripts into scripts/ or bist_alpha/; move experiments to local/ after audit."
+    },
+    {
+      "category": "Misleading / noisy outputs",
+      "control": "Public broker-label hygiene",
+      "status": "pass",
+      "summary": "Public docs/state are clean from legacy broker labels.",
+      "evidence": [],
+      "action": "Sanitize docs/state and rerun cloud workflow if any hit appears."
+    },
+    {
+      "category": "Misleading / noisy outputs",
+      "control": "Dashboard legacy-field check",
+      "status": "pass",
+      "summary": "Dashboard has no legacy public broker fields.",
+      "evidence": [],
+      "action": ""
+    },
+    {
+      "category": "Data integrity / validation",
+      "control": "State JSON parse",
+      "status": "pass",
+      "summary": "19 state JSON files parsed.",
+      "evidence": [],
+      "action": "Fix malformed generated state before trusting the panel."
+    },
+    {
+      "category": "Data integrity / validation",
+      "control": "Dashboard required fields",
+      "status": "pass",
+      "summary": "Dashboard schema has required fields.",
+      "evidence": [],
+      "action": ""
+    },
+    {
+      "category": "Data integrity / validation",
+      "control": "Live price coverage",
+      "status": "pass",
+      "summary": "Coverage 99.67% (611/613); missing 2.",
+      "evidence": [
+        "ALTINS1, DMLKTG"
+      ],
+      "action": "Investigate if coverage falls below 99% or missing list grows."
+    },
+    {
+      "category": "Security / legal compliance",
+      "control": "Secret token scan",
+      "status": "pass",
+      "summary": "No token-looking literals found in scanned files.",
+      "evidence": [],
+      "action": "Move secrets to GitHub Actions secrets and rotate exposed tokens."
+    },
+    {
+      "category": "Security / legal compliance",
+      "control": "Private/licensed-data ignore policy",
+      "status": "pass",
+      "summary": "Private and licensed-data paths are ignored.",
+      "evidence": [],
+      "action": "Keep licensed broker-derived data local; public repo may contain code and sanitized aggregates only."
+    },
+    {
+      "category": "Operational / code quality",
+      "control": "Python syntax compile",
+      "status": "pass",
+      "summary": "56 Python files compile.",
+      "evidence": [],
+      "action": "Fix syntax errors before deploy."
+    },
+    {
+      "category": "Operational / code quality",
+      "control": "Ledger daemon isolation",
+      "status": "pass",
+      "summary": "Dashboard ledgers are attached with daemon isolation.",
+      "evidence": [],
+      "action": "Every measurement ledger must fail closed into its own error field; F report must continue."
+    },
+    {
+      "category": "Application steps / live operations",
+      "control": "GitHub Actions 7/24 workflow",
+      "status": "pass",
+      "summary": "Cloud workflow has schedule, manual trigger, daemon run, and state persistence.",
+      "evidence": [],
+      "action": "Restore workflow pieces before relying on 7/24 operation."
+    },
+    {
+      "category": "Application steps / live operations",
+      "control": "Data-source fallback chain",
+      "status": "pass",
+      "summary": "Workflow has Yahoo plus fallback chain.",
+      "evidence": [],
+      "action": "Keep fallback enabled so Yahoo outages do not kill the report."
+    },
+    {
+      "category": "Strategic / algorithmic decisions",
+      "control": "F production role",
+      "status": "pass",
+      "summary": "F role is production.",
+      "evidence": [],
+      "action": "F must remain production; experimental accounts stay shadow/ledger until promoted."
+    },
+    {
+      "category": "Strategic / algorithmic decisions",
+      "control": "G1 shadow discipline",
+      "status": "pass",
+      "summary": "G1 account present with role 'shadow'.",
+      "evidence": [],
+      "action": "G1 measures re-entry regret; it must not replace F without promotion gates."
+    },
+    {
+      "category": "Risk / execution controls",
+      "control": "Operation gate",
+      "status": "pass",
+      "summary": "Operation gate reports 'on_time'.",
+      "evidence": [
+        "{'label': 'acilis', 'target_time': '09:45', 'delay_minutes': 0, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'acilis', 'gate_reason': '', 'target_time': '09:45', 'delay_minutes': 0}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'yahoo', 'fallback': False, 'price_count': 611, 'source_pool_count': 613, 'missing_symbols': 2, 'missing_symbol_pct': 0.33, 'missing_symbol_list': ['ALTINS1', 'DMLKTG'],"
+      ],
+      "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
+    },
+    {
+      "category": "Risk / execution controls",
+      "control": "Portfolio stop/value primitives",
+      "status": "pass",
+      "summary": "Portfolio has stop and valuation primitives.",
+      "evidence": [],
+      "action": ""
+    },
+    {
+      "category": "Documentation / knowledge management",
+      "control": "Core runbook coverage",
+      "status": "pass",
+      "summary": "Core operational docs are present.",
+      "evidence": [],
+      "action": "Keep setup, workflow, official-source, and ledger docs close to code."
+    },
+    {
+      "category": "User / interface management",
+      "control": "Dashboard and health UI files",
+      "status": "pass",
+      "summary": "Dashboard and health UI files are present.",
+      "evidence": [],
+      "action": ""
+    },
+    {
+      "category": "Monitoring / feedback controls",
+      "control": "Selftest and maintenance modules",
+      "status": "pass",
+      "summary": "Selftest, maintenance, and self-heal modules are present.",
+      "evidence": [],
+      "action": ""
+    },
+    {
+      "category": "Unconnected / orphan processes",
+      "control": "Low-reference module scan",
+      "status": "warn",
+      "summary": "1 low-reference module candidates.",
+      "evidence": [
+        "missed_log (bist_alpha/missed_log.py)"
+      ],
+      "action": "Review manually; low reference is not always wrong, but it should be intentional."
+    },
+    {
+      "category": "Edge cases / stress tests",
+      "control": "Stress and counterfactual tools",
+      "status": "pass",
+      "summary": "4 stress/counterfactual tools found.",
+      "evidence": [
+        "run_backtest.py",
+        "taban_readiness.py",
+        "floor_lock_accounting.py",
+        "ibs_reversal_ledger.py"
+      ],
+      "action": "Keep stress tools separate from production execution."
+    },
+    {
+      "category": "Backup / disaster recovery / live transition",
+      "control": "Persistent paper portfolio state",
+      "status": "pass",
+      "summary": "5 portfolio state files present.",
+      "evidence": [
+        "portfolios/portfolio_A.json",
+        "portfolios/portfolio_B.json",
+        "portfolios/portfolio_F.json",
+        "portfolios/portfolio_G1.json",
+        "portfolios/portfolio_O.json"
+      ],
+      "action": "State persistence is required for 7/24 shadow continuity."
+    },
+    {
+      "category": "Self-maintenance controls",
+      "control": "System can audit itself",
+      "status": "pass",
+      "summary": "Selftest, maintenance, and this control audit exist.",
+      "evidence": [],
+      "action": "Schedule this audit after major changes or before promotion decisions."
+    }
+  ]
+}
