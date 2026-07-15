@@ -1,6 +1,6 @@
 {
   "account": "G1",
-  "cash": 0.6696528070929308,
+  "cash": 0.5097223333562796,
   "positions": {
     "KTLEV": {
       "entry": 183.6999969482422,
@@ -19,6 +19,13 @@
       "peak": 14.859999656677246,
       "shares": 0.004009583415040273,
       "w": 0.12615445075617993
+    },
+    "DSTKF": {
+      "entry": 3457.5,
+      "peak": 3457.5,
+      "shares": 4.597856569609005e-05,
+      "w": 0.42681320112473736,
+      "origin": "reentry"
     }
   },
   "history": [
@@ -99,15 +106,17 @@
       "pnl_pct": -17.0,
       "giveback": 20.6,
       "was_reentry": false
+    },
+    {
+      "date": "2026-07-13",
+      "type": "REENTRY",
+      "ticker": "DSTKF",
+      "price": 3457.5,
+      "prev_exit": 3112.5,
+      "throttle": null
     }
   ],
-  "watch": {
-    "DSTKF": {
-      "exit": 3112.5,
-      "cash": 0.15993047373665123,
-      "w": 0.42681320112473736
-    }
-  },
+  "watch": {},
   "equity_daily": [
     1.0,
     0.9904,
@@ -154,12 +163,13 @@
     0.9624,
     0.9784,
     0.9443,
-    0.9437
+    0.9437,
+    0.9426
   ],
   "stats": {
     "buys": 5,
     "stops": 1,
-    "reentries": 0,
+    "reentries": 1,
     "reentry_restops": 0,
     "reentry_restop_loss": 0,
     "reentry_closed": 0,
@@ -167,7 +177,7 @@
     "reentry_total_pnl_pct": 0,
     "reentry_rebalance_loss_count": 0,
     "peak_value": 1.0,
-    "max_dd_pct": -5.631416235530717,
+    "max_dd_pct": -5.740789811615854,
     "reentry_throttled": 0,
     "reentry_paused": 0
   },
