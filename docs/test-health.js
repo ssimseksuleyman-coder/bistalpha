@@ -25,15 +25,15 @@ console.log("[1] Tamamen saglikli -> YESIL");
     source: "yahoo",
     source_pool_fallback: false,
     timestamp: "2026-06-29T09:45:00",
-    deniz_bulletin: { available: true, fresh: true, age_days: 1, status: "fresh" },
+    broker_bulletin: { available: true, fresh: true, age_days: 1, status: "fresh" },
     official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
   };
   const r = evaluate(d, MON_PM);
   check("verdict", r.verdict, "g");
-  check("deniz metriği yok", r.metrics.some(m => m.key === "deniz"), false);
+  check("broker metriği ayrı gösterilmez", r.metrics.some(m => m.key === "broker"), false);
 }
 
-console.log("\n[2] Cekirdek taze + Deniz backend stale -> YESIL");
+console.log("\n[2] Cekirdek taze + Broker backend stale -> YESIL");
 {
   const d = {
     last_data_date: "2026-06-29",
@@ -42,14 +42,14 @@ console.log("\n[2] Cekirdek taze + Deniz backend stale -> YESIL");
     source: "yahoo",
     source_pool_fallback: false,
     timestamp: "2026-06-29T08:00:00",
-    deniz_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
+    broker_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
     missing_symbol_list: ["ALTIN", "DMLKT"],
     official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
   };
   const r = evaluate(d, MON_PM);
   check("verdict", r.verdict, "g");
   check("coreWorst", r.coreWorst, "g");
-  check("deniz metriği yok", r.metrics.some(m => m.key === "deniz"), false);
+  check("broker metriği ayrı gösterilmez", r.metrics.some(m => m.key === "broker"), false);
   check("missing reason", r.metrics.find(m => m.key === "missing").reason, "eksik: ALTIN, DMLKT");
 }
 
@@ -62,7 +62,7 @@ console.log("\n[2b] Backend eski karar bilgi; metrikler esas -> SARI");
       source_pool_count: 607,
       price_count: 605,
       source: "yahoo",
-      deniz_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
+      broker_bulletin: { available: true, fresh: false, age_days: 46, status: "stale" },
       data_health: { data_issues: [] },
     },
     timestamp: "2026-06-29T08:00:00",
@@ -81,7 +81,7 @@ console.log("\n[3] Fiyat kapsama %90 -> KIRMIZI");
     source_pool_count: 600,
     source: "yahoo",
     timestamp: "2026-06-29T09:00:00",
-    deniz_bulletin: { available: true, fresh: true, age_days: 1 },
+    broker_bulletin: { available: true, fresh: true, age_days: 1 },
   };
   const r = evaluate(d, MON_PM);
   check("verdict", r.verdict, "r");
@@ -96,7 +96,7 @@ console.log("\n[4] Cuma raporu Pzt sabah/ogle cron davranisi");
     source_pool_count: 605,
     source: "yahoo",
     timestamp: "2026-06-26T20:13:00",
-    deniz_bulletin: { available: true, fresh: true, age_days: 1 },
+    broker_bulletin: { available: true, fresh: true, age_days: 1 },
   };
   check("Pzt sabah sari", evaluate(d, MON_AM).metrics.find(m => m.key === "report_age").status, "a");
   check("Pzt ogle kirmizi", evaluate(d, MON_PM).metrics.find(m => m.key === "report_age").status, "r");
@@ -110,7 +110,7 @@ console.log("\n[5] Hafta sonu sahte alarm yok");
     source_pool_count: 607,
     source: "yahoo",
     timestamp: "2026-06-26T18:40:00",
-    deniz_bulletin: { available: true, fresh: true, age_days: 1 },
+    broker_bulletin: { available: true, fresh: true, age_days: 1 },
   };
   const r = evaluate(d, SAT);
   check("cron yesil", r.metrics.find(m => m.key === "report_age").status, "g");
@@ -137,7 +137,7 @@ console.log("\n[7] SLA gecikme esikleri");
     source_pool_count: 607,
     source: "yahoo",
     timestamp: "2026-06-29T14:30:00",
-    deniz_bulletin: { available: true, fresh: true, age_days: 0 },
+    broker_bulletin: { available: true, fresh: true, age_days: 0 },
     operation_health: {
       target_time: "14:30",
       source: "yahoo",
@@ -146,7 +146,7 @@ console.log("\n[7] SLA gecikme esikleri");
       source_pool_count: 607,
       data_health: { data_issues: [] },
       telegram: { sent: true, status: "sent" },
-      deniz_bulletin: { available: true, fresh: true, age_days: 0 },
+      broker_bulletin: { available: true, fresh: true, age_days: 0 },
     },
   };
   const warn = JSON.parse(JSON.stringify(base));

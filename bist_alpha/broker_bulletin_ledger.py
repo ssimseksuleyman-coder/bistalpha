@@ -1,7 +1,7 @@
 """Broker bulletin ledger.
 
 Measurement-only layer for broker research notes (Tera, ICBC, Bizim Menkul,
-Deniz, etc.). Raw third-party calls stay local. The public dashboard receives
+and local broker extracts). Raw third-party calls stay local. The public dashboard receives
 only aggregate measurement so licensed/proprietary bulletin content is not
 republished.
 """
@@ -46,8 +46,8 @@ BROKER_SOURCES = {
         "public_url": "https://www.bizimmenkul.com.tr",
         "notes": "Daily/periodic research bulletins where publicly available.",
     },
-    "deniz": {
-        "name": "Deniz Yatirim",
+    "local_broker": {
+        "name": "Local Broker Extract",
         "tier": "broker",
         "public_url": None,
         "notes": "Local-only comparison source. Raw/derived data is not public.",
@@ -203,7 +203,7 @@ def _normalize_event(row, sources):
     elif "bizim" in source_id:
         source_id = "bizim"
     elif "deniz" in source_id:
-        source_id = "deniz"
+        source_id = "local_broker"
     source_meta = sources.get(source_id, {})
     tier = str(row.get("source_tier") or source_meta.get("tier") or "broker").lower()
     score = SOURCE_SCORE.get(tier, 1)

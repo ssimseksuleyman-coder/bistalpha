@@ -1,6 +1,6 @@
 # Broker Bulten Defteri
 
-Bu katman Tera, ICBC, Bizim Menkul, Deniz ve benzeri araci kurum bultenlerini
+Bu katman Tera, ICBC, Bizim Menkul ve benzeri araci kurum bultenlerini
 olcer. Islem motoru degildir; F motoruna emir uretmez.
 
 ## Disiplin
@@ -37,7 +37,7 @@ olcer. Islem motoru degildir; F motoruna emir uretmez.
 
 Alanlar:
 
-- `source_id`: `tera`, `icbc`, `bizim`, `deniz` veya yeni kaynak.
+- `source_id`: `tera`, `icbc`, `bizim`, `local_broker` veya yeni kaynak.
 - `date`: bulten/olay tarihi.
 - `type`: `suggestion_list`, `market_outlook`, `company_report`, `model_portfolio`, `target_revision`.
 - `ticker`: BIST kodu.

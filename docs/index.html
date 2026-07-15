@@ -220,7 +220,7 @@
             <div class="stat"><div class="stat-value" id="statDate">-</div><div class="stat-label">Rapor tarihi</div></div>
             <div class="stat"><div class="stat-value" id="statMode">-</div><div class="stat-label">Mod</div></div>
             <div class="stat"><div class="stat-value" id="statRegime">-</div><div class="stat-label">Piyasa rejimi</div></div>
-            <div class="stat"><div class="stat-value" id="statDeniz">-</div><div class="stat-label">BIST Alpha rapor</div></div>
+            <div class="stat"><div class="stat-value" id="statReport">-</div><div class="stat-label">BIST Alpha rapor</div></div>
             <div class="stat"><div class="stat-value" id="statTop">-</div><div class="stat-label">Oneri</div></div>
             <div class="stat"><div class="stat-value" id="statPos">-</div><div class="stat-label">A/B/F/O/G1 pozisyon</div></div>
             <div class="stat"><div class="stat-value" id="statSource">-</div><div class="stat-label">Kaynak</div></div>
@@ -1188,8 +1188,8 @@ async function loadDashboard() {
     el('statDate').textContent = datePart(data.timestamp) || data.generated_at?.slice(0, 10) || data.date || '-';
     el('statMode').textContent = data.mode || '-';
     el('statRegime').textContent = data.market_regime?.name || '-';
-    el('statDeniz').textContent = data.label || 'otomatik';
-    el('statDeniz').title = data.timestamp ? `BIST Alpha raporu: ${fmtTime(data.timestamp)}` : '';
+    el('statReport').textContent = data.label || 'otomatik';
+    el('statReport').title = data.timestamp ? `BIST Alpha raporu: ${fmtTime(data.timestamp)}` : '';
     el('statTop').textContent = (data.top10 || []).length;
     el('statPos').textContent = ['A','B','F','O','G1'].map(k => accounts[k]?.n_positions ?? '-').join('/');
     el('statSource').textContent = data.source || '-';

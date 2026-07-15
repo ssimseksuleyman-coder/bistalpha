@@ -94,6 +94,6 @@ Bir temel kalite filtresi ancak su sira ile ilerler:
 
 ## Lisans ve Gizlilik
 
-Deniz/Tera/ICBC/Bizim gibi araci kurum bultenlerinden turetilmis tablo public
+Lisansli araci kurum bultenlerinden turetilmis tablo public
 repo'ya konmaz. Resmi kurum ve sirketlerin kendi acikladigi veriler
 yeniden-KAP/sirket kaynagindan dogrulanarak local extract olarak kullanilir.
