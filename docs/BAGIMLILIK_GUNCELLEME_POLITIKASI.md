@@ -38,6 +38,41 @@ canlı tekrarlanabilirliği zayıflatır. Canlıda önerilen durum:
 - yeni sürümü önce shadow / audit ile ölç,
 - sorun varsa önceki pin'e dön.
 
+## Pin Hiyerarşisi
+
+Tüm paketler eşit kritik değildir. Öncelik sırası:
+
+| Paket | Rol | Kritik |
+|---|---|---|
+| `pandas` | veri çerçevesi, sinyal ve backtest akışı | Kırmızı |
+| `numpy` | backtest matematiği | Kırmızı |
+| `openpyxl` | `pandas.read_excel` altında FileFeed/Excel girdisi | Kırmızı |
+| `yfinance` | canlı Yahoo veri kaynağı | Sarı |
+| `requests`, `borsapy` | canlı/fallback veri yolları | Sarı |
+| `pdfplumber` | broker/PDF parse hattı | Geçici |
+
+`openpyxl` özellikle sessiz kritiktir: F'in backtest tabanı Excel FileFeed'den
+geldiği için Excel parse davranışı değişirse F'in girdisi de değişebilir.
+
+`yfinance` exact pinlenir, ama Yahoo API değiştikçe kontrollü yükseltme
+gerektirebilir. Bu yüzden canlı veri kapsamı ve fallback zinciri her yükseltmede
+kontrol edilir.
+
+`pdfplumber` yalnızca PDF parse ihtiyacı sürdüğü sürece tutulur. Broker/PDF hattı
+kapanırsa ölü bağımlılık olarak kaldırılır.
+
+## F Çapa Testi
+
+Pin değişikliği "kuruldu" diye tamam sayılmaz. Anlamlı regression kapısı:
+
+```powershell
+python run_backtest.py --mode F
+```
+
+Beklenen canlı/gömülü çapa: `Getiri : %301.07`, `Max DD : %-5.54`.
+Bu değer korunuyorsa pinlenen sürümler F'in ölçüldüğü ortamı sabitlemiştir.
+Fark varsa bağımlılık veya veri girdisi değişmiş demektir; commit edilmez.
+
 ## Geri Dönüş
 
 Bir güncelleme sonrası veri kapsamı düşer, panel yüklenmez veya rapor gecikirse:

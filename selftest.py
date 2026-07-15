@@ -2,7 +2,9 @@
 """
 SİSTEM ÖZ-DENETİM (self-test) — her an çalıştır, eksik kalmasın.
 
-  python selftest.py
+  python selftest.py                    # offline/deterministik smoke test
+  python selftest.py --mode live         # ag/canli veri kontrolleri dahil
+  python selftest.py --mode all          # live ile ayni, gelecek agir testler icin
 
 Kontrol eder:
   1. Tüm modüller import oluyor mu
@@ -15,18 +17,19 @@ Kontrol eder:
   8. Öz-iyileştirme / bakım / optimizatör çalışıyor mu
   9. 7/24 deploy (bilgisayar kapalıyken çalışma) doğru kurulu mu
   10. CLI'lar gerçekten çalışıyor mu (backtest/analyze/daemon)
-Çıkış kodu 0 = her şey tamam, 1 = eksik var.
+Çıkış kodu 0 = bloklayıcı hata yok, 1 = bloklayıcı hata var.
+`--strict` verilirse uyarılar da 1 döndürür.
 """
+import argparse
 import ast
 import os
 import sys
 import importlib
-import io
-import contextlib
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
 fails = []
+warnings = []
 
 # Windows konsol (cp1252) Türkçe/emoji karakterlerde UnicodeEncodeError verir -> utf-8'e sabitle.
 # Izole/kozmetik: yalniz bu script'in cikti-akisini etkiler; PYTHONIOENCODING gerekmeden calisir.
@@ -44,12 +47,32 @@ _WALK_SKIP = {".venv", "venv", "env", ".git", "__pycache__", "node_modules",
 
 def ok(msg): print(f"   \u2713 {msg}")
 def bad(msg): print(f"   \u2717 {msg}"); fails.append(msg)
-def warn(msg): print(f"   \u26a0 {msg}"); fails.append(msg)
+def warn(msg): print(f"   \u26a0 {msg}"); warnings.append(msg)
+
+
+def parse_args():
+    ap = argparse.ArgumentParser(description="BIST Alpha selftest")
+    ap.add_argument(
+        "--mode",
+        choices=["offline", "live", "all"],
+        default="offline",
+        help="offline=deterministik; live=ag ve canli veri kontrolleri dahil",
+    )
+    ap.add_argument(
+        "--strict",
+        action="store_true",
+        help="Uyarilari da cikis kodu 1 say. Varsayilan: yalniz bloklayici hatalar fail eder.",
+    )
+    return ap.parse_args()
 
 
 def main():
+    args = parse_args()
+    live_mode = args.mode in {"live", "all"}
+
     print("=" * 70)
     print("BIST ALPHA — SİSTEM ÖZ-DENETİM")
+    print(f"MOD: {args.mode} ({'canli/ag kontrolleri dahil' if live_mode else 'offline/deterministik smoke test'})")
     print("=" * 70)
 
     # 1. Modül import
@@ -170,8 +193,11 @@ def main():
     print("\n[8] Öz-iyileştirme / bakım / optimizatör")
     try:
         from bist_alpha import selfheal, maintenance, optimizer, config as cfg
-        d2 = selfheal.safe_feed()
-        ok(f"selfheal.safe_feed ({d2['prices'].shape[1]} hisse)")
+        if live_mode:
+            d2 = selfheal.safe_feed()
+            ok(f"selfheal.safe_feed ({d2['prices'].shape[1]} hisse)")
+        else:
+            ok("selfheal.safe_feed atlandı (offline; --mode live ile canlı veri denenir)")
         n = maintenance.clean_temp()
         ok(f"maintenance.clean_temp ({n} öğe temizlendi)")
         selfheal.validate_and_repair_state("A")
@@ -244,15 +270,21 @@ def main():
     # 10. CLI çalışma testi (TESPİT 5 — eksik kontrol tamamlandı)
     print("\n[10] CLI çalışma (gerçekten çalışıyor mu)")
     import subprocess
-    clis = [
-        ("run_backtest.py", ["--mode", "A"]),
-        ("analyze_stock.py", ["GARAN"]),
-        ("daemon.py", ["--optimize"]),
-    ]
+    clis = []
+    if live_mode:
+        clis.extend([
+            ("run_backtest.py", ["--mode", "A"]),
+            ("analyze_stock.py", ["GARAN"]),
+            ("daemon.py", ["--optimize"]),
+        ])
+    else:
+        ok("CLI gerçek çalıştırma atlandı (offline; parse ve A/B/F backtest zaten koştu)")
     for script, args in clis:
         try:
+            env = dict(os.environ)
+            env.setdefault("PYTHONIOENCODING", "utf-8")
             p = subprocess.run([sys.executable, script] + args,
-                               capture_output=True, timeout=180, text=True)
+                               capture_output=True, timeout=180, text=True, env=env)
             if p.returncode == 0:
                 ok(f"{script} {' '.join(args)}")
             else:
@@ -293,10 +325,17 @@ def main():
     # Sonuç
     print("\n" + "=" * 70)
     if fails:
-        print(f"SONUÇ: {len(fails)} EKSİK/SORUN bulundu ⚠")
+        print(f"SONUÇ: {len(fails)} BLOKLAYICI SORUN bulundu ✗")
         for f in fails:
             print(f"   - {f}")
         return 1
+    if warnings:
+        print(f"SONUÇ: bloklayıcı hata yok, {len(warnings)} UYARI var ⚠")
+        for w in warnings:
+            print(f"   - {w}")
+        if args.strict:
+            return 1
+        return 0
     print("SONUÇ: ✅ TÜM KONTROLLER GEÇTİ — eksik yok")
     return 0
 

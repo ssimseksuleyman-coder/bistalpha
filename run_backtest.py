@@ -18,7 +18,17 @@ from bist_alpha import backtest as bt_mod
 from bist_alpha import config
 
 
+def _configure_console():
+    """Windows cp1252 konsolda Turkce cikti UnicodeEncodeError vermesin."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
+
 def main():
+    _configure_console()
     ap = argparse.ArgumentParser(description="BIST Alpha v1.2 backtest")
     ap.add_argument("--data", default=config.DATA_PATH, help="Excel veri yolu")
     ap.add_argument("--mode", default=config.MODE, choices=["A", "B", "F"])

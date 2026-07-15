@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-15T20:55:29",
+  "generated_at": "2026-07-16T00:08:30",
   "overall": "yellow",
   "summary": {
-    "pass": 34,
-    "warn": 3
+    "pass": 35,
+    "warn": 2
   },
   "checks": [
     {
@@ -163,17 +163,9 @@
     {
       "category": "Dependency / third-party updates",
       "control": "Version pin discipline",
-      "status": "warn",
-      "summary": "7 active dependencies; 7 use non-exact ranges.",
-      "evidence": [
-        "pandas>=1.5",
-        "numpy>=1.23",
-        "openpyxl>=3.0",
-        "requests>=2.28",
-        "yfinance>=0.2",
-        "borsapy>=0.10",
-        "pdfplumber>=0.10"
-      ],
+      "status": "pass",
+      "summary": "7 active dependencies; 0 use non-exact ranges.",
+      "evidence": [],
       "action": "For live reproducibility, test upgrades in shadow first and pin known-good versions after validation."
     },
     {
