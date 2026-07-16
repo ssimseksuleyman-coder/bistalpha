@@ -70,6 +70,14 @@ arkasinda kalip kalmadigini kontrol eder:
 
 `FAIL` sonucu varsa repo private yapilmaz; once Access route/policy duzeltilir.
 
+## Uygulama Runbook'u
+
+Ekranda adim adim kurulum icin:
+
+```text
+docs/CLOUDFLARE_ACCESS_KURULUM.md
+```
+
 ## Degismez Kural
 
 Access ikinci katmandir. Sanitize birinci katman olarak kalir. Access var diye
