@@ -50,6 +50,26 @@ kopyalari, cache, fork veya arsivler icin tam silme garantisi yoktur.
 - Private repo sonrasi Cloudflare deploy alabiliyor.
 - Telegram, dashboard ve portfolio state ayni kaynak state ile tutarli.
 
+## Otomatik Erisim Kontrolu
+
+Cloudflare Access kurulduktan sonra anonim istemciyle kontrol:
+
+```powershell
+python scripts\cloudflare_access_check.py `
+  --base https://<cloudflare-pages-host>/ `
+  --retired https://ssimseksuleyman-coder.github.io/bistalpha/
+```
+
+Custom domain de varsa ikinci `--base` olarak eklenir. Script su yollarin login
+arkasinda kalip kalmadigini kontrol eder:
+
+- `/`
+- `/state/dashboard.json`
+- `/state/system_control_audit.json`
+- `/health.html`
+
+`FAIL` sonucu varsa repo private yapilmaz; once Access route/policy duzeltilir.
+
 ## Degismez Kural
 
 Access ikinci katmandir. Sanitize birinci katman olarak kalir. Access var diye
