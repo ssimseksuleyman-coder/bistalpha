@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-15T18:41:27",
-  "label": "kapanis",
+  "timestamp": "2026-07-16T09:45:42",
+  "label": "acilis",
   "date": "2026-07-14",
   "mode": "F",
   "source": "yahoo",
@@ -33,10 +33,10 @@
   "official_sources": {
     "kap": {
       "status": "ok",
-      "updated_at": "2026-07-14T20:34:29",
-      "added": 4,
-      "total_events": 18,
-      "latest_event_date": "2026-07-14",
+      "updated_at": "2026-07-15T20:38:09",
+      "added": 1,
+      "total_events": 19,
+      "latest_event_date": "2026-07-15",
       "opens_trade": false,
       "note": "KAP resmi kaynak defteri; olcer, F motoruna emir uretmez.",
       "error": null
@@ -987,7 +987,7 @@
     ]
   },
   "catalyst_ledger": {
-    "updated_at": "2026-07-15T18:41:26",
+    "updated_at": "2026-07-16T09:45:41",
     "as_of": "2026-07-14",
     "source_count": 1,
     "tracked_events": 18,
@@ -1345,17 +1345,17 @@
     }
   },
   "operation_health": {
-    "label": "kapanis",
-    "target_time": "18:40",
-    "delay_minutes": 1,
+    "label": "acilis",
+    "target_time": "09:45",
+    "delay_minutes": 0,
     "sla": {
       "status": "on_time",
       "root_cause": "zamaninda",
       "event": "schedule",
-      "gate_label": "kapanis",
+      "gate_label": "acilis",
       "gate_reason": "",
-      "target_time": "18:40",
-      "delay_minutes": 1
+      "target_time": "09:45",
+      "delay_minutes": 0
     },
     "telegram": {
       "sent": true,
@@ -1376,18 +1376,38 @@
       "DMLKTG"
     ],
     "last_data_date": "2026-07-14",
-    "data_cleaning": {},
+    "data_cleaning": {
+      "dropped_sparse_tail": true,
+      "threshold_pct": 50.0,
+      "dropped_dates": [
+        {
+          "date": "2026-07-15",
+          "nan_pct": 99.84
+        }
+      ],
+      "last_healthy_date": "2026-07-14"
+    },
     "data_health": {
-      "timestamp": "2026-07-15 18:41",
+      "timestamp": "2026-07-16 09:45",
       "data_issues": [],
-      "data_cleaning": {},
+      "data_cleaning": {
+        "dropped_sparse_tail": true,
+        "threshold_pct": 50.0,
+        "dropped_dates": [
+          {
+            "date": "2026-07-15",
+            "nan_pct": 99.84
+          }
+        ],
+        "last_healthy_date": "2026-07-14"
+      },
       "healthy": true,
       "snapshots_removed": 0,
       "logs_removed": 0,
       "temp_removed": 2
     },
     "verdict": "green",
-    "updated_at": "2026-07-15T18:41:27"
+    "updated_at": "2026-07-16T09:45:42"
   },
   "account_governance": {
     "F": {
@@ -2661,7 +2681,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "days_tracked": 28,
     "valid_days_tracked": 28,
     "invalid_snapshot_count": 0,
@@ -3961,7 +3981,7 @@
           }
         ],
         "first_generated_at": "2026-07-14 14:31",
-        "last_generated_at": "2026-07-15 18:41",
+        "last_generated_at": "2026-07-16 09:45",
         "as_of": "2026-07-14",
         "age_trading_days": 0,
         "avg_return_pct": 0.17,
@@ -3971,7 +3991,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "tracked_days": 28,
     "current_candidates": 11,
     "hot_missed_count": 23,
@@ -4056,7 +4076,7 @@
     "recent_hot": []
   },
   "opportunity_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "tracked_days": 3,
     "latest_date": "2026-07-14",
     "current_candidates": 2,
@@ -4176,7 +4196,7 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "tracked_days": 28,
     "latest_date": "2026-07-14",
     "latest_regime": "mixed",
@@ -4576,7 +4596,7 @@
     }
   },
   "quality_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "as_of": "2026-07-14",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
@@ -4618,7 +4638,7 @@
     "note": "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla dogrulanan veri kullanir. F motoruna emir uretmez."
   },
   "macro_surprise_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "as_of": "2026-07-14",
     "tracked_events": 0,
     "source_count": 0,
@@ -4648,7 +4668,7 @@
     "note": "Macro Surprise defteri olcer; fiyat sinyalinden bagimsizdir ve F motoruna emir uretmez."
   },
   "broker_bulletin_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "as_of": "2026-07-14",
     "input_files": 0,
     "input_errors": [],
@@ -4708,7 +4728,7 @@
     "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   },
   "flow_ledger": {
-    "updated_at": "2026-07-15T18:41:27",
+    "updated_at": "2026-07-16T09:45:42",
     "as_of": "2026-07-14",
     "tracked_events": 0,
     "opens_trade": false,
