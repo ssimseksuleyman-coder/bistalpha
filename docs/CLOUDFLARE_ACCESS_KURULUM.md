@@ -206,7 +206,7 @@ python scripts\cloudflare_access_check.py `
   --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
   --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
   --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
-  --sanitize-state docs/state/dashboard.json `
+  --sanitize-state docs/state `
   --mode normal `
   --write-gate local/security_gate.json
 ```
@@ -366,7 +366,7 @@ python scripts\cloudflare_access_check.py `
   --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
   --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
   --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
-  --sanitize-state docs/state/dashboard.json `
+  --sanitize-state docs/state `
   --write-gate local/security_gate.json
 ```
 
@@ -433,8 +433,7 @@ ve olcek gecisini kilitler.
 Tamam sayilmasi icin:
 
 - `scripts/cloudflare_access_check.py --base ... --write-gate ...` sonucu
-  `RESULT: OK`, `security_gate.privacy_ok=true` ve
-  `security_gate.live_fresh_ok=true`.
+  `RESULT: OK` ve `security_gate.privacy_ok=true`.
 - Ana sayfa ve direkt JSON URL'leri anonim erisimde 302/401/403 veya Access
   login isareti donduruyor; 200 ile dashboard/JSON donmuyor.
 - `*.pages.dev` ve varsa custom domain ayni testi geciyor.
@@ -447,5 +446,7 @@ Tamam sayilmasi icin:
 - Telegram/dashboard/state ayni state commit'i veya ayni `generated_at` ile
   tutarli.
 - Sanitizer aktif ve audit temiz.
+- Bu gizlilik gecisi `live_fresh_ok=null` iken de tamamlanabilir; tazelik
+  otomasyonu olcek/terfi kapisidir.
 - Olcek/terfi oncesi `live_fresh_ok` manuel beyanla degil, Cloudflare Access
   Service Token ile otomatik dogrulanir.
