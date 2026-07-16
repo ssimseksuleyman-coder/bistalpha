@@ -21,6 +21,9 @@ from . import config
 
 MAX_SNAPSHOTS = 120
 DECISION_MIN_21D = 20
+REVIEW_MIN_UNIQUE_21D_TICKERS = 30
+REVIEW_RELATIVE_MEDIAN_EDGE_PCT = 5.0
+REVIEW_MIN_REGIME_COUNT = 2
 
 
 def _repo_root() -> Path:
@@ -327,6 +330,16 @@ def _avg(values):
     return sum(vals) / len(vals) if vals else None
 
 
+def _median(values):
+    vals = sorted(float(v) for v in values if v is not None)
+    if not vals:
+        return None
+    mid = len(vals) // 2
+    if len(vals) % 2:
+        return vals[mid]
+    return (vals[mid - 1] + vals[mid]) / 2
+
+
 def _hit_rate(values):
     vals = [float(v) for v in values if v is not None]
     return sum(1 for v in vals if v > 0) / len(vals) * 100 if vals else None
@@ -335,17 +348,19 @@ def _hit_rate(values):
 def _summary(snapshots):
     events = [item for snap in snapshots for item in (snap.get("items", []) or [])]
     r5 = [e.get("return_5d_pct") for e in events if e.get("return_5d_pct") is not None]
-    r21 = [e.get("return_21d_pct") for e in events if e.get("return_21d_pct") is not None]
+    mature_21d_events = [e for e in events if e.get("return_21d_pct") is not None]
+    r21 = [e.get("return_21d_pct") for e in mature_21d_events]
+    unique_mature_21d = len({e.get("ticker") for e in mature_21d_events if e.get("ticker")})
     latest = snapshots[-1] if snapshots else {}
     latest_items = latest.get("items", []) or []
     entered = [e for e in events if e.get("entered_f_top10_later")]
     mature_21d = len(r21)
     if mature_21d < DECISION_MIN_21D:
         decision = "olcum_devam"
-    elif (_avg(r21) or 0) > 0 and (_hit_rate(r21) or 0) >= 55:
-        decision = "promising_watch_only"
+    elif unique_mature_21d < REVIEW_MIN_UNIQUE_21D_TICKERS:
+        decision = "unique_ticker_yetersiz"
     else:
-        decision = "no_promotion"
+        decision = "benchmark_gerekli"
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "tracked_days": len(snapshots),
@@ -357,16 +372,36 @@ def _summary(snapshots):
         "avg_5d_return_pct": _round(_avg(r5)),
         "hit_5d_pct": _round(_hit_rate(r5), 1),
         "matured_21d": mature_21d,
+        "unique_matured_21d_tickers": unique_mature_21d,
         "avg_21d_return_pct": _round(_avg(r21)),
+        "median_21d_return_pct": _round(_median(r21)),
         "hit_21d_pct": _round(_hit_rate(r21), 1),
         "entered_f_top10_later_count": len(entered),
         "entered_f_top10_later_pct": _round(len(entered) / len(events) * 100, 1) if events else None,
         "decision": decision,
         "min_mature_events_for_decision": DECISION_MIN_21D,
+        "review_policy": {
+            "unit_of_independence": "unique_ticker",
+            "min_unique_21d_tickers": REVIEW_MIN_UNIQUE_21D_TICKERS,
+            "requires_relative_benchmark": True,
+            "benchmark": "median_21d_vs_F_median_21d",
+            "required_median_edge_pct": REVIEW_RELATIVE_MEDIAN_EDGE_PCT,
+            "requires_regime_coverage": True,
+            "min_regime_count": REVIEW_MIN_REGIME_COUNT,
+            "absolute_return_gate_allowed": False,
+            "promotion_scope": "review_only_not_F_auto_change",
+        },
+        "benchmark_status": {
+            "f_median_21d_available": False,
+            "regime_coverage_available": False,
+            "denominator_available": False,
+            "note": "Firsat listesi yalniz kendi adaylarini olcer; F'in eledigi tum payda ayrica kurulmadan terfi kapisi sayilmaz.",
+        },
         "latest_candidates": latest_items[:5],
         "notes": [
             "FIRSAT is measurement-only; it does not open trades.",
             "Quality/macro fields stay pending until free official data is connected.",
+            "Decision gates are relative to F median and unique-ticker/regime coverage; absolute 21d return alone is not enough.",
         ],
     }
 

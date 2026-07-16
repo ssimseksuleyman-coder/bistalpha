@@ -21,6 +21,12 @@ from .signals import signal_for
 from .strategy import last_n_return
 
 
+HOT_RETURN_THRESHOLD_PCT = 15.0
+REVIEW_MIN_UNIQUE_TICKERS = 30
+REVIEW_RELATIVE_MEDIAN_EDGE_PCT = 5.0
+REVIEW_MIN_REGIME_COUNT = 2
+
+
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
@@ -321,7 +327,7 @@ def _refresh_snapshots(snapshots, data, as_of):
             if current and entry:
                 ret = (current / entry - 1) * 100
                 item["return_pct"] = _round(ret, 2)
-                if item["return_pct"] is not None and item["return_pct"] >= 15:
+                if item["return_pct"] is not None and item["return_pct"] >= HOT_RETURN_THRESHOLD_PCT:
                     hot.append({
                         "date": snap.get("date"),
                         "ticker": item.get("ticker"),
@@ -418,8 +424,31 @@ def update_missed_ledger(data, watchlists, report, date=None, max_snapshots=90):
         "tracked_days": len(snapshots),
         "current_candidates": len(current_items),
         "hot_missed_count": len(hot),
+        "hot_return_threshold_pct": HOT_RETURN_THRESHOLD_PCT,
         **diagnostics,
         "recent_hot": recent_hot,
+        "statistical_sample": {
+            "event_count": len(hot),
+            "unique_ticker_count": diagnostics.get("hot_unique_count"),
+            "independence_unit": "unique_ticker",
+            "note": "Ayni hissenin tekrar eden sicak olaylari bagimsiz ornek sayilmaz.",
+        },
+        "denominator_status": {
+            "status": "hot_only_denominator_missing",
+            "note": "Bu defter sadece sicak kacanlari toplar; F'in eledigi ve sonradan dusen/duz kalan tum payda burada yoktur.",
+        },
+        "review_policy": {
+            "eligible_for_promotion": False,
+            "reason": "Payda eksik ve sicak olaylar hindsight-secimli; tani/teshis icindir.",
+            "required_before_review": {
+                "all_rejected_universe_denominator": True,
+                "min_unique_tickers": REVIEW_MIN_UNIQUE_TICKERS,
+                "relative_to_f_median_21d": True,
+                "required_median_edge_pct": REVIEW_RELATIVE_MEDIAN_EDGE_PCT,
+                "min_regime_count": REVIEW_MIN_REGIME_COUNT,
+            },
+            "absolute_hot_return_gate_allowed": False,
+        },
     }
     ledger = {"summary": summary, "snapshots": snapshots}
     import os as _os
