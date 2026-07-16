@@ -19,10 +19,13 @@ FAIL means:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Iterable
-from urllib.parse import urljoin
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 
@@ -60,6 +63,15 @@ class Result:
     ok: bool
     status: str
     detail: str
+
+    def as_dict(self) -> dict:
+        return {
+            "label": self.label,
+            "url": self.url,
+            "ok": self.ok,
+            "status": self.status,
+            "detail": self.detail,
+        }
 
 
 def _get(url: str, timeout: float) -> requests.Response | None:
@@ -143,6 +155,51 @@ def check_retired(url: str, timeout: float) -> Result:
     return Result("retired", url, True, str(response.status_code), "not serving dashboard markers")
 
 
+def check_github_pages_api(url: str, timeout: float) -> Result:
+    response = _get(url, timeout)
+    if response is None:
+        return Result("github_pages_api", url, False, "ERR", "request failed; manual check required")
+    if response.status_code == 404:
+        return Result("github_pages_api", url, True, "404", "GitHub Pages API not found/disabled")
+    if response.status_code == 200:
+        return Result("github_pages_api", url, False, "200", "GitHub Pages API still returns config")
+    if response.status_code >= 500:
+        return Result("github_pages_api", url, False, str(response.status_code), "GitHub API server error")
+    return Result("github_pages_api", url, False, str(response.status_code), "unexpected API response; manual check required")
+
+
+def _with_page(url: str, page: int) -> str:
+    parts = urlparse(url)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    query.setdefault("per_page", "100")
+    query["page"] = str(page)
+    return urlunparse(parts._replace(query=urlencode(query)))
+
+
+def check_forks_api(url: str, timeout: float, max_pages: int = 20) -> Result:
+    total = 0
+    for page in range(1, max_pages + 1):
+        page_url = _with_page(url, page)
+        response = _get(page_url, timeout)
+        if response is None:
+            return Result("forks_api", url, False, "ERR", "request failed; manual check required")
+        if response.status_code != 200:
+            return Result("forks_api", url, False, str(response.status_code), "GitHub forks API unavailable")
+        try:
+            payload = response.json()
+        except ValueError:
+            return Result("forks_api", url, False, "200", "GitHub forks API returned non-JSON")
+        if not isinstance(payload, list):
+            return Result("forks_api", url, False, "200", "GitHub forks API returned unexpected payload")
+        total += len(payload)
+        link = response.headers.get("Link", "")
+        if 'rel="next"' not in link:
+            break
+    if total:
+        return Result("forks_api", url, False, "200", f"{total} fork(s) found")
+    return Result("forks_api", url, True, "200", "fork inventory empty")
+
+
 def _derive(base: str) -> list[str]:
     if not base.endswith("/"):
         base += "/"
@@ -165,12 +222,81 @@ def _print_results(results: Iterable[Result]) -> int:
     return failures
 
 
+def _none_if_empty(values: list[bool]) -> bool | None:
+    if not values:
+        return None
+    return all(values)
+
+
+def _security_gate(results: list[Result], args: argparse.Namespace) -> dict:
+    protected = [r for r in results if r.label == "protected"]
+    retired = [r for r in results if r.label == "retired"]
+    github_pages_api = [r for r in results if r.label == "github_pages_api"]
+    forks_api = [r for r in results if r.label == "forks_api"]
+    protected_html = [
+        r for r in protected
+        if "/state/" not in r.url and not r.url.lower().endswith(".json")
+    ]
+    protected_json = [
+        r for r in protected
+        if "/state/" in r.url or r.url.lower().endswith(".json")
+    ]
+    pages_dev = [r for r in protected if ".pages.dev" in r.url.lower()]
+
+    checks = {
+        "access_html_ok": _none_if_empty([r.ok for r in protected_html]),
+        "access_json_ok": _none_if_empty([r.ok for r in protected_json]),
+        "pages_dev_ok": _none_if_empty([r.ok for r in pages_dev]),
+        "github_pages_retired": _none_if_empty([r.ok for r in retired + github_pages_api]),
+        "fork_inventory_ok": True if args.fork_inventory_ok else _none_if_empty([r.ok for r in forks_api]),
+        "cloudflare_deploy_ok": True if args.cloudflare_deploy_ok else None,
+        "sanitize_ok": True if args.sanitize_ok else None,
+    }
+
+    failures = [r for r in results if not r.ok]
+    missing = [name for name, value in checks.items() if value is None]
+    if failures:
+        level = "red"
+    elif missing:
+        level = "yellow"
+    else:
+        level = "green"
+
+    return {
+        "privacy_ok": level == "green",
+        "level": level,
+        "mode": args.mode,
+        "last_check": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "check_source": "scripts/cloudflare_access_check.py",
+        "checks": checks,
+        "missing_checks": missing,
+        "results": [r.as_dict() for r in results],
+        "decision": "new_layer_promotion_allowed" if level == "green" else "no_new_layer_promotion",
+        "note": "Gizlilik kirmizi/sari iken yeni katman terfi ettirilmez.",
+    }
+
+
+def _write_gate(path: str, payload: dict) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(target)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", action="append", default=[], help="Protected Cloudflare base URL; derives key paths")
     parser.add_argument("--protected", action="append", default=[], help="Protected URL to test directly")
     parser.add_argument("--retired", action="append", default=[], help="Old URL expected to be blocked/retired")
+    parser.add_argument("--github-pages-api", help="GitHub Pages REST API URL expected to return 404")
+    parser.add_argument("--forks-api", help="GitHub forks REST API URL expected to return an empty paginated list")
     parser.add_argument("--timeout", type=float, default=10.0)
+    parser.add_argument("--mode", choices=("normal", "urgent", "manual"), default="manual")
+    parser.add_argument("--fork-inventory-ok", action="store_true", help="Mark fork inventory check as completed")
+    parser.add_argument("--cloudflare-deploy-ok", action="store_true", help="Mark post-private Cloudflare deploy check as completed")
+    parser.add_argument("--sanitize-ok", action="store_true", help="Mark sanitizer/audit check as completed")
+    parser.add_argument("--write-gate", help="Write docs/state/security_gate.json style output")
     args = parser.parse_args(argv)
 
     protected_urls: list[str] = []
@@ -186,8 +312,16 @@ def main(argv: list[str] | None = None) -> int:
         results.append(check_protected(url, args.timeout))
     for url in args.retired:
         results.append(check_retired(url, args.timeout))
+    if args.github_pages_api:
+        results.append(check_github_pages_api(args.github_pages_api, args.timeout))
+    if args.forks_api:
+        results.append(check_forks_api(args.forks_api, args.timeout))
 
     failures = _print_results(results)
+    gate = _security_gate(results, args)
+    if args.write_gate:
+        _write_gate(args.write_gate, gate)
+        print(f"\nSECURITY_GATE: {args.write_gate} ({gate['level']})")
     if failures:
         print(f"\nRESULT: FAIL ({failures} issue(s))")
         return 1

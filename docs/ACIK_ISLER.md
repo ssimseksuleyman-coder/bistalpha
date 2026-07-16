@@ -3,6 +3,8 @@
 Bu dosya F motorunu degistirmez. Amac, operasyonel karar ve bekleyen isleri
 repo icinde izlenebilir tutmaktir.
 
+## Infrastructure / Gizlilik
+
 ## P0 - Gizlilik Canli Gecis
 
 Durum: plan ve kontrol araci hazir; Cloudflare Pages + Access kurulum penceresi
@@ -30,6 +32,9 @@ Tamamlanma kriterleri:
 - Repo private.
 - Private sonrasi Cloudflare deploy testi basarili.
 - `scripts/cloudflare_access_check.py` sonucu `RESULT: OK`.
+- `docs/state/security_gate.json` icinde `level=green`.
+
+## Strategy / Veri Katmanlari
 
 ## P1 - Katman 8 / Yeni Veri Katmanlari
 

@@ -4,6 +4,8 @@ Amac: BIST Alpha dashboard ve state JSON dosyalarini public GitHub Pages yerine
 Cloudflare Access arkasinda yayinlamak.
 
 Bu runbook F motoruna, stratejiye, portfoy state'e veya sanitizer'a dokunmaz.
+Bu belge 30 gunluk strateji/modul-ekleme yasagi kapsaminda bir al-sat katmani
+degildir; erisim ve gizlilik altyapisi kararidir.
 
 ## Baglam
 
@@ -192,6 +194,26 @@ Script spec'i:
 - Protected URL icin `FAIL`: `5xx`; altyapi hatasi Access kaniti sayilmaz.
 - Anonymous testte `CF_Authorization` cookie beklenmez; bu cookie login
   sonrasina aittir.
+- `--github-pages-api` icin `404` beklenir; `200` aktif GitHub Pages config'i
+  demektir.
+- `--forks-api` paginated taranir; bos liste beklenir.
+
+Makine-dogrulanabilir komut:
+
+```powershell
+python scripts\cloudflare_access_check.py `
+  --base https://bistalpha.pages.dev/ `
+  --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
+  --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
+  --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
+  --mode urgent `
+  --sanitize-ok `
+  --write-gate docs/state/security_gate.json
+```
+
+Private sonrasi Cloudflare deploy testi de gectiyse `--cloudflare-deploy-ok`
+eklenir. Bu komut `docs/state/security_gate.json` uretir. `level=green` olmadan
+yeni katman terfisi yapilmaz.
 
 Basari kriteri:
 
@@ -239,6 +261,15 @@ Not: GitHub Pages kapatildiktan sonra eski `github.io` URL'i DNS/cache/CDN
 nedeniyle bir sure daha cevap verebilir. Bu, ayar basarisiz demek zorunda
 degildir; fakat dashboard veya JSON icerigi 24 saatten uzun gorunurse yeniden
 kontrol edilir.
+
+API dogrulamasi:
+
+```text
+GET https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages
+```
+
+Beklenen: GitHub Pages kapaliysa `404` veya yetki/visibility kaynakli erisim yok.
+`200` ile aktif Pages konfigi donerse eski yayin kaynagi hala aciktir.
 
 ## 7. Fork Kontrolu
 
@@ -293,6 +324,33 @@ Cloudflare -> Workers & Pages -> bistalpha -> Settings -> Builds & deployments
 
 Cloudflare Pages private repo'ya erisemiyorsa yeniden yetkilendirme yapilir.
 
+## 9b. Tutarlilik ve Canary
+
+Dashboard gorunuyor diye sistem canli sayilmaz; eski deployment da gorunebilir.
+Canli kabul icin:
+
+- Trivial commit push edilir.
+- 5 dakika icinde Cloudflare build log'u gorunur.
+- Dashboard timestamp yeni deployment sonrasina ilerler.
+- Telegram mesaji ve dashboard ayni `generated_at` veya ayni state commit'inden
+  uretilmis olur.
+- `docs/state/dashboard.json` hash'i, Cloudflare arkasinda login sonrasi gorulen
+  JSON ile eslesir.
+
+Gundelik canary:
+
+```powershell
+python scripts\cloudflare_access_check.py `
+  --base https://bistalpha.pages.dev/ `
+  --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
+  --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
+  --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
+  --write-gate docs/state/security_gate.json
+```
+
+Canary `red` ise yeni veri/strateji katmani terfi ettirilmez. Canary `yellow`
+ise eksik manuel kontroller tamamlanmadan terfi yoktur.
+
 ## 10. Security Gate State
 
 Gizlilik kirmizi/sari/yesil karari manuel hafizada kalmaz. Katman 8 ve yeni
@@ -327,15 +385,25 @@ docs/state/security_gate.json
 `privacy_ok=false` veya `level=red` ise yeni defter, Katman 8, shadow veya veri
 kaynagi production'a terfi etmez. F motoru mevcut haliyle korunur.
 
+`level=yellow` de terfi icin yeterli degildir; sadece acil kirmizi riskin
+kalktigini, fakat fork/deploy/sanitize gibi manuel kapilarin tamamlanmadigini
+gosterir.
+
 ## Kabul Durumu
 
 Tamam sayilmasi icin:
 
-- Cloudflare Pages deploy aliyor.
-- Ana sayfa login istiyor.
-- Direkt JSON URL'leri login istiyor.
-- `*.pages.dev` acikta degil.
-- Custom domain varsa o da Access arkasinda.
-- GitHub Pages eski yayin kaynagi kapali.
-- Private repo sonrasi Cloudflare deploy aliyor.
-- Sanitizer aktif kaldi.
+- `scripts/cloudflare_access_check.py --base ... --write-gate ...` sonucu
+  `RESULT: OK` ve `security_gate.level=green`.
+- Ana sayfa ve direkt JSON URL'leri anonim erisimde 302/401/403 veya Access
+  login isareti donduruyor; 200 ile dashboard/JSON donmuyor.
+- `*.pages.dev` ve varsa custom domain ayni testi geciyor.
+- `GET /repos/ssimseksuleyman-coder/bistalpha/pages` aktif Pages config'i
+  dondurmuyor.
+- Fork envanteri `?per_page=100` ve pagination kontroluyle temiz veya risk
+  kabul karari yazili.
+- Private repo sonrasi trivial commit 5 dakika icinde Cloudflare build log'u
+  uretiyor.
+- Telegram/dashboard/state ayni state commit'i veya ayni `generated_at` ile
+  tutarli.
+- Sanitizer aktif ve audit temiz.
