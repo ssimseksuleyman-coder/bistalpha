@@ -16,6 +16,9 @@ Bu runbook F motoruna, stratejiye, portfoy state'e veya sanitizer'a dokunmaz.
 - Access burada Cloudflare Zero Trust Access anlamina gelir; email OTP veya
   benzeri kimlik kapisi kullanilir.
 - `docs/` klasoru silinmez. Cloudflare Pages'in yayin kaynagi olarak kalir.
+- Bu runbook `docs/` icinde oldugu icin Access/private gecis tamamlanana kadar
+  kendisi de public kabul edilir. Secret, token, e-posta veya hassas state detayi
+  icermez; gecis tamamlaninca bu belge de Access/private arkasina girer.
 
 ## Degismez Kurallar
 
@@ -25,6 +28,12 @@ Bu runbook F motoruna, stratejiye, portfoy state'e veya sanitizer'a dokunmaz.
 - Cloudflare deploy testi gecmeden GitHub Pages kapatilmis sayilmaz.
 
 ## Gecis Modu Secimi
+
+Karar heuristigi:
+
+```text
+Suphe varsa Acil Gizlilik Modu secilir.
+```
 
 Normal mod, dashboard'un kesintisiz kalmasini onceler:
 
@@ -48,6 +57,10 @@ Acil gizlilik modu, public erisimi en hizli kesmeyi onceler:
 Acil modda dashboard kisa sure kaybolabilir. Normal modda public pencere daha
 uzundur ama sanitizer birinci katman olarak riski azaltir. Hassas veri sızıntısı
 suphesi varsa acil mod secilir.
+
+Bu gecis Katman 8 isleriyle paralel ilerleyebilir, fakat gizlilik supheliyse
+once bu gecis tamamlanir. Gizlilik kirmizi iken yeni veri/strateji katmani
+terfi ettirilmez.
 
 ## 1. Cloudflare Pages Projesi
 
@@ -168,12 +181,23 @@ python scripts\cloudflare_access_check.py `
 
 `FAIL` varsa repo private yapilmaz. Once Access route/policy duzeltilir.
 
+Basari kriteri:
+
+- Incognito tarayicida ana sayfa ve `docs/state/*.json` URL'leri Access login
+  ekranina duser.
+- `python scripts\cloudflare_access_check.py ...` sonucu `RESULT: OK` olur.
+- `curl -I` veya benzeri anonim HTTP kontrolde 200 ile dashboard/JSON icerigi
+  donmez; Access redirect, 401 veya 403 kabul edilebilir.
+- Arama motoru kontrolunde `site:bistalpha.pages.dev` sonucu beklenmez. Sonuc
+  varsa URL incelenir; dashboard veya JSON icerigi gorunuyorsa Access tekrar
+  duzeltilir.
+
 ## 6. GitHub Pages Kapatma
 
 Cloudflare Access testleri gecince GitHub Pages kapatilabilir:
 
 ```text
-GitHub repo -> Settings -> Pages -> Disable / None
+GitHub repo -> Settings -> Pages -> Source: None / Disable
 ```
 
 `docs/` klasoru silinmez.
@@ -188,6 +212,11 @@ Eski URL artik dashboard gostermemeli:
 https://ssimseksuleyman-coder.github.io/bistalpha/
 ```
 
+Not: GitHub Pages kapatildiktan sonra eski `github.io` URL'i DNS/cache/CDN
+nedeniyle bir sure daha cevap verebilir. Bu, ayar basarisiz demek zorunda
+degildir; fakat dashboard veya JSON icerigi 24 saatten uzun gorunurse yeniden
+kontrol edilir.
+
 ## 7. Fork Kontrolu
 
 Repo private yapilmadan once:
@@ -196,7 +225,20 @@ Repo private yapilmadan once:
 GitHub repo -> Insights -> Forks
 ```
 
+Opsiyonel API kontrolu:
+
+```text
+GET https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks
+```
+
+Response bos liste ise fork envanteri temiz kabul edilir. Bu envanter private
+gecisten once alinmalidir; private sonrasi public fork gorunurlugu ve API
+davranisi degisebilir.
+
 Fork varsa dur. Private gecis ve eski public veri riski yeniden degerlendirilir.
+Fork sahibi kendi fork'unu private yapmadikca o kopya disarida kalabilir.
+Gerekirse GitHub destek/DMCA/takedown sureci ayri hukuki karar olarak ele
+alinir.
 
 ## 8. Repo Private
 
@@ -217,6 +259,15 @@ mutlaka test et:
 2. Cloudflare Pages yeni deployment aliyor mu kontrol edilir.
 3. Dashboard timestamp donuk kalmiyor mu kontrol edilir.
 4. `scripts\cloudflare_access_check.py` tekrar kosulur.
+
+Build fail olursa GitHub App yetkisini kontrol et:
+
+```text
+GitHub -> Settings -> Applications -> Cloudflare Pages -> Repository access
+Cloudflare -> Workers & Pages -> bistalpha -> Settings -> Builds & deployments
+```
+
+Cloudflare Pages private repo'ya erisemiyorsa yeniden yetkilendirme yapilir.
 
 ## Kabul Durumu
 

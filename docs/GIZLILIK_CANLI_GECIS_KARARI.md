@@ -46,6 +46,9 @@ Hassas veri sızıntısı suphesi varsa acil gizlilik modu secilir: once fork
 kontrolu ve repo private, sonra Cloudflare Pages + Access kurulumu. Bu modda
 dashboard kisa sure kaybolabilir.
 
+Karar heuristigi: suphe varsa acil mod secilir. Gizlilik kirmizi iken dashboard
+rahatligi veya yeni katman terfisi oncelik almaz.
+
 ## Kabul Kriterleri
 
 - Sanitizer aktif ve audit temiz.
