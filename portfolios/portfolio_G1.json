@@ -1,10 +1,10 @@
 {
   "account": "G1",
-  "cash": 0.5097223333562796,
+  "cash": 0.6378041341373921,
   "positions": {
     "KTLEV": {
       "entry": 183.6999969482422,
-      "peak": 196.10000610351562,
+      "peak": 197.3000030517578,
       "shares": 0.0005395612146870039,
       "w": 0.21823327461877404
     },
@@ -19,13 +19,6 @@
       "peak": 14.859999656677246,
       "shares": 0.004009583415040273,
       "w": 0.12615445075617993
-    },
-    "DSTKF": {
-      "entry": 3457.5,
-      "peak": 3457.5,
-      "shares": 4.597856569609005e-05,
-      "w": 0.42681320112473736,
-      "origin": "reentry"
     }
   },
   "history": [
@@ -114,9 +107,25 @@
       "price": 3457.5,
       "prev_exit": 3112.5,
       "throttle": null
+    },
+    {
+      "date": "2026-07-16",
+      "type": "SELL",
+      "ticker": "DSTKF",
+      "price": 2802.5,
+      "reason": "stop",
+      "pnl_pct": -18.94,
+      "giveback": 18.94,
+      "was_reentry": true
     }
   ],
-  "watch": {},
+  "watch": {
+    "DSTKF": {
+      "exit": 2802.5,
+      "cash": 0.1280818007811126,
+      "w": 0.42681320112473736
+    }
+  },
   "equity_daily": [
     1.0,
     0.9904,
@@ -168,20 +177,21 @@
     0.9269,
     0.9269,
     0.9269,
-    0.9269
+    0.9269,
+    0.9132
   ],
   "stats": {
     "buys": 5,
-    "stops": 1,
+    "stops": 2,
     "reentries": 1,
-    "reentry_restops": 0,
-    "reentry_restop_loss": 0,
-    "reentry_closed": 0,
+    "reentry_restops": 1,
+    "reentry_restop_loss": 1,
+    "reentry_closed": 1,
     "reentry_wins": 0,
-    "reentry_total_pnl_pct": 0,
+    "reentry_total_pnl_pct": -18.944323933477946,
     "reentry_rebalance_loss_count": 0,
     "peak_value": 1.0,
-    "max_dd_pct": -7.313635036287813,
+    "max_dd_pct": -8.684094799918496,
     "reentry_throttled": 0,
     "reentry_paused": 0
   },
@@ -190,5 +200,7 @@
     "return_candidate",
     "drawdown_watch"
   ],
-  "reentry_recent": []
+  "reentry_recent": [
+    1
+  ]
 }

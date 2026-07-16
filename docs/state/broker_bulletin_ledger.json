@@ -1,7 +1,7 @@
 {
   "summary": {
-    "updated_at": "2026-07-16T09:46:45",
-    "as_of": "2026-07-14",
+    "updated_at": "2026-07-16T14:31:13",
+    "as_of": "2026-07-16",
     "input_files": 0,
     "input_errors": [],
     "tracked_events": 0,
@@ -17,6 +17,14 @@
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
     "decision": "olcum_bekliyor",
+    "readiness": {
+      "status": "empty",
+      "data_status": "local_broker_input_waiting",
+      "message": "Broker bulten sicili hazir; olcum icin local/broker_bulletins altinda public olmayan, local-only event extract bekleniyor.",
+      "next_step": "Ilk broker bulten extract dosyasini local klasore koy; public panel sadece agregayi gosterir.",
+      "opens_trade": false,
+      "promotion_gate": "closed_without_official_confirmation"
+    },
     "min_mature_events_for_decision": 20,
     "by_source": [],
     "by_type": [],

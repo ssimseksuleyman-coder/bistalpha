@@ -1,7 +1,7 @@
 {
   "summary": {
-    "updated_at": "2026-07-16T09:46:45",
-    "as_of": "2026-07-14",
+    "updated_at": "2026-07-16T14:31:13",
+    "as_of": "2026-07-16",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
       "source_file": "docs/state/catalysts.json",
@@ -31,6 +31,14 @@
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
     "decision": "resmi_finansal_olay_bekliyor",
+    "readiness": {
+      "status": "empty",
+      "data_status": "kap_event_stream_active_but_financial_metrics_missing",
+      "message": "KAP finansal tablo olay akisi izleniyor; ROE/kar/ciro/borcluluk gibi kalite metrikleri icin resmi KAP/sirket tablo parse veya local resmi extract bekleniyor.",
+      "next_step": "KAP finansal tablo parser veya resmi/local finansal extract dosyasi.",
+      "opens_trade": false,
+      "promotion_gate": "closed_until_official_metrics_and_mature_sample"
+    },
     "roe_shadow": {
       "records": 1,
       "matured": 0,

@@ -1,7 +1,7 @@
 {
   "summary": {
-    "updated_at": "2026-07-16T09:46:45",
-    "as_of": "2026-07-14",
+    "updated_at": "2026-07-16T14:31:13",
+    "as_of": "2026-07-16",
     "tracked_events": 0,
     "opens_trade": false,
     "matured_5d": 0,
@@ -17,6 +17,15 @@
     "local_input_files": 0,
     "local_input_dir": "local/flow_inputs",
     "decision": "akis_ve_geri_alim_verisi_bekliyor",
+    "readiness": {
+      "status": "empty",
+      "data_status": "kap_buyback_scanner_active_no_event_yet",
+      "message": "KAP geri alim taramasi aktif; yabanci/takas icin local-private akis dosyasi bekleniyor. Ham takas ve lisansli akis detaylari public repo'ya yazilmaz.",
+      "next_step": "KAP geri alim olayi geldikce otomatik olculur; yabanci/takas icin local/flow_inputs kullan.",
+      "known_contract": "docs/AKIS_GERI_ALIM_DEFTERI.md",
+      "opens_trade": false,
+      "promotion_gate": "closed_until_20_mature_21d_events"
+    },
     "latest_candidates": [],
     "by_type": [],
     "note": "Akis ve geri alim defteri olcer; KAP geri alim resmi, yabanci/takas local-private kaynakla izlenir. F motoruna emir uretmez.",
