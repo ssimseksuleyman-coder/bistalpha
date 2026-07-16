@@ -57,6 +57,19 @@ Audit şu sınıfları kontrol eder:
 - public state içinde hassas alan,
 - lisanslı/private path ignore politikası.
 
+## Canli Yayin Karari
+
+2026-07 karari: public GitHub Pages ana yayin yolu olmaktan cikarilir. Canli
+dashboard icin private repo + Cloudflare Pages + Cloudflare Access kullanilir.
+Detayli sira ve kabul kriterleri:
+
+```text
+docs/GIZLILIK_CANLI_GECIS_KARARI.md
+```
+
+Bu karar sanitizer'i gevsetmez. Access ikinci katmandir; ham veya lisansli/turev
+veri state dosyalarina yazilmaz.
+
 ## Prensip
 
 Ölçüm için gereken minimum veri public olur. Ham veri local kalır. F motoru

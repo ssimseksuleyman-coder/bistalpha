@@ -36,7 +36,12 @@ Dashboard JSON repo'ya commit edilir — repo **private** olsa bile **Pages site
 Hassas veri (gerçek pozisyon büyüklükleri, kimlik) dashboard'a sızmaz; sadece ticker
 ve görece sayılar görünür. Yine de paylaşmak istemiyorsan:
 - Pages'i kapalı tut, sadece local'de `python -m http.server -d docs 8000` ile bak
-- Veya repo'yu özel bir org'a koyup IP/auth korumalı host kullan (ücretsiz alternatif yok)
+- 2026-07 karari: private repo + Cloudflare Pages + Cloudflare Access kullan.
+  Access ana sayfayi ve `docs/state/dashboard.json` dogrudan URL'sini korumali.
+  Kurulum sirasi icin `docs/GIZLILIK_CANLI_GECIS_KARARI.md` dosyasina bak.
+
+Not: Cloudflare Access ikinci katmandir. Sanitizer kaldirilmaz; ham Deniz,
+broker, secret, local path veya lisansli/turev veri state dosyalarina yazilmaz.
 
 ## MOBİL UYUM
 Tek-dosya HTML, vanilla JS, framework yok. Mobile-first responsive tasarım, dark/light

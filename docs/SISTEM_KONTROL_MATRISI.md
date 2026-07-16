@@ -38,6 +38,23 @@ bakım veya sadeleştirme gerektiren alanı işaret eder.
 | Uç durum / stres | Taban, re-entry, bozuk veri, Yahoo kesintisi | Stres aracı yok | Araç var ama rapora bağlı değil | Ayrı defterde ölç, F'e bağlama |
 | Kendi bakımını yapma | Sistem kendi sağlığını ölçebiliyor mu | Selftest/audit yok | Audit var ama koşulmuyor | Büyük değişiklik öncesi/sonrası audit çalıştır |
 
+## Gizlilik Karari
+
+2026-07 karari: public GitHub Pages ana canli yayin yolu olmaktan cikarilir.
+Yeni hedef private repo + Cloudflare Pages + Cloudflare Access mimarisidir.
+
+- Sanitizer birinci katman olarak kalir.
+- Cloudflare Access ikinci katmandir; HTML ve dogrudan JSON URL'lerini korur.
+- Repo private yapilmadan once fork kontrolu gerekir.
+- Private sonrasi Cloudflare deploy yetkisi tekrar test edilir.
+- Purge yalnizca hukuki veya zorunlu gerekce dogarsa yeniden degerlendirilir.
+
+Detayli runbook:
+
+```text
+docs/GIZLILIK_CANLI_GECIS_KARARI.md
+```
+
 ## Terfi Disiplini
 
 1. F production motoru korunur.
