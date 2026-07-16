@@ -119,9 +119,8 @@ def _source_meta():
     available = bool(financial_events or local_companies)
     return {
         "source_name": "KAP resmi finansal bildirimleri",
-        "source_file": _kap_events_path().relative_to(_repo_root()).as_posix(),
-        "local_metrics_file": _local_official_path().relative_to(_repo_root()).as_posix(),
-        "local_metrics_dir": _display_path(_local_official_dir()),
+        "source_manifest": "public_kap_event_stream",
+        "local_metrics_source": "local_private",
         "local_input_files": len(local_sources),
         "extracted_at": latest_extract,
         "n_companies": len(local_companies) or None,
@@ -233,7 +232,7 @@ def _local_official_paths():
 def _read_local_official_file(path: Path):
     meta = {
         "source": "KAP/company official financial extract",
-        "source_file": _display_path(path),
+        "source_ref": "local_private",
         "source_type": path.suffix.lower().lstrip(".") or "unknown",
     }
     rows = []
@@ -380,9 +379,9 @@ def _event_from_official_row(row, payload, prices):
         return None
     entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, release_date)
     event = {
-        "source_id": row.get("source_id") or f"local_kap_financial_actuals:{payload.get('_meta', {}).get('source_file', 'manual')}",
+        "source_id": row.get("source_id") or "local_kap_financial_actuals:local_private",
         "source": payload.get("_meta", {}).get("source", "KAP/company official financial extract"),
-        "source_file": payload.get("_meta", {}).get("source_file"),
+        "source_ref": payload.get("_meta", {}).get("source_ref", "local_private"),
         "source_tier": "primary",
         "requires_kap_confirmation": False,
         "kap_confirmed": True,

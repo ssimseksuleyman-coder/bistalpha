@@ -57,7 +57,7 @@ Acil gizlilik modu, public erisimi en hizli kesmeyi onceler:
 6. Private sonrasi Cloudflare deploy testini gec.
 
 Acil modda dashboard kisa sure kaybolabilir. Normal modda public pencere daha
-uzundur ama sanitizer birinci katman olarak riski azaltir. Hassas veri sızıntısı
+uzundur ama sanitizer birinci katman olarak riski azaltir. Hassas veri sizintisi
 suphesi varsa acil mod secilir.
 
 Bu gecis Katman 8 isleriyle paralel ilerleyebilir, fakat gizlilik supheliyse
@@ -206,14 +206,15 @@ python scripts\cloudflare_access_check.py `
   --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
   --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
   --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
-  --mode urgent `
-  --sanitize-ok `
-  --write-gate docs/state/security_gate.json
+  --sanitize-state docs/state/dashboard.json `
+  --mode normal `
+  --write-gate local/security_gate.json
 ```
 
 Private sonrasi Cloudflare deploy testi de gectiyse `--cloudflare-deploy-ok`
-eklenir. Bu komut `docs/state/security_gate.json` uretir. `level=green` olmadan
-yeni katman terfisi yapilmaz.
+eklenir. Bu komut `local/security_gate.json` uretir. `level=green` olmadan yeni
+katman terfisi yapilmaz. `local/` git disidir; Access kurulmadan once gate
+durumu public yayinlanmaz.
 
 Basari kriteri:
 
@@ -248,7 +249,7 @@ GitHub repo -> Settings -> Pages -> Source: None / Disable
 `docs/` klasoru silinmez.
 
 Sadece `docs/` icinden dosya silmek gecmis commit'leri temizlemez. Hukuki veya
-zorunlu sızıntı gerekcesi varsa history temizligi ayri karar olarak ele alinir;
+zorunlu sizinti gerekcesi varsa history temizligi ayri karar olarak ele alinir;
 normal geciste purge ana yol degildir.
 
 Eski URL artik dashboard gostermemeli:
@@ -305,6 +306,11 @@ GitHub repo -> Settings -> General -> Danger Zone -> Change visibility
 
 Repo private yapilir.
 
+Not: Repo private olduktan sonra disaridan bagimsiz `raw.githubusercontent.com`
+ve GitHub Pages kontrolleri yapilamaz. Bundan sonra dogrulama, senin paylastigin
+komut ciktilari, ekran goruntuleri veya Access arkasindan alinan dosya ozetleri
+uzerinden ilerler. Bu gizlilik icin kabul edilen operasyonel bedeldir.
+
 ## 9. Private Sonrasi Deploy Testi
 
 Private gecisten sonra Cloudflare'in GitHub yetkisi sessizce bozulabilir. Bunu
@@ -345,7 +351,8 @@ python scripts\cloudflare_access_check.py `
   --retired https://ssimseksuleyman-coder.github.io/bistalpha/ `
   --github-pages-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/pages `
   --forks-api https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100 `
-  --write-gate docs/state/security_gate.json
+  --sanitize-state docs/state/dashboard.json `
+  --write-gate local/security_gate.json
 ```
 
 Canary `red` ise yeni veri/strateji katmani terfi ettirilmez. Canary `yellow`
@@ -360,7 +367,7 @@ veri/strateji terfileri su state'i okuyabilmelidir:
 {
   "privacy_ok": false,
   "level": "red",
-  "mode": "urgent",
+  "mode": "normal",
   "last_check": "2026-07-16T00:00:00+03:00",
   "checks": {
     "access_html_ok": false,
@@ -379,7 +386,7 @@ veri/strateji terfileri su state'i okuyabilmelidir:
 Hedef dosya:
 
 ```text
-docs/state/security_gate.json
+local/security_gate.json
 ```
 
 `privacy_ok=false` veya `level=red` ise yeni defter, Katman 8, shadow veya veri

@@ -42,7 +42,7 @@ Normal mod, dashboard kesintisini azaltmak icindir:
 9. Private sonrasi yeni bir Cloudflare deploy tetiklenir ve dashboard donmuyor mu
    kontrol edilir.
 
-Hassas veri sızıntısı suphesi varsa acil gizlilik modu secilir: once fork
+Hassas veri sizintisi suphesi varsa acil gizlilik modu secilir: once fork
 kontrolu ve repo private, sonra Cloudflare Pages + Access kurulumu. Bu modda
 dashboard kisa sure kaybolabilir.
 

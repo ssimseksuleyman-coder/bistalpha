@@ -19,8 +19,9 @@ docs/CLOUDFLARE_ACCESS_KURULUM.md
 Karar:
 
 - Suphe varsa Acil Gizlilik Modu.
+- Aktif sanitize sizintisi yoksa varsayilan uygulama Normal Mod'dur.
 - Gizlilik kirmizi iken yeni veri/strateji katmani terfi ettirilmez.
-- `docs/state/security_gate.json` ile privacy gate kaydi tutulur.
+- `local/security_gate.json` ile privacy gate kaydi tutulur.
 
 Tamamlanma kriterleri:
 
@@ -32,7 +33,7 @@ Tamamlanma kriterleri:
 - Repo private.
 - Private sonrasi Cloudflare deploy testi basarili.
 - `scripts/cloudflare_access_check.py` sonucu `RESULT: OK`.
-- `docs/state/security_gate.json` icinde `level=green`.
+- `local/security_gate.json` icinde `level=green`.
 
 ## Strategy / Veri Katmanlari
 

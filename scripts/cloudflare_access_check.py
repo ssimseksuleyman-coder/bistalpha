@@ -46,6 +46,23 @@ JSON_MARKERS = (
     '"last_data_date"',
 )
 
+SANITIZE_FORBIDDEN_KEYS = {
+    "deniz_bulletin",
+    "deniz_regime",
+    "market_score",
+    "market_score_deniz",
+    "source_file",
+    "yan_kaynak",
+}
+
+SANITIZE_FORBIDDEN_TEXT = (
+    "deniz",
+    "deniz yatirim",
+    "deniz yatırım",
+    "deniz_inbox",
+    "teknik_takip",
+)
+
 ACCESS_MARKERS = (
     "cloudflare access",
     "cloudflareaccess.com",
@@ -200,6 +217,43 @@ def check_forks_api(url: str, timeout: float, max_pages: int = 20) -> Result:
     return Result("forks_api", url, True, "200", "fork inventory empty")
 
 
+def _walk_json(value, path: str = "$"):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            yield f"{path}.{key}", key
+            yield from _walk_json(child, f"{path}.{key}")
+    elif isinstance(value, list):
+        for idx, child in enumerate(value):
+            yield from _walk_json(child, f"{path}[{idx}]")
+    elif isinstance(value, str):
+        yield path, value
+
+
+def check_sanitize_state(path: str) -> Result:
+    target = Path(path)
+    if not target.exists():
+        return Result("sanitize_state", path, False, "MISS", "state file missing")
+    try:
+        payload = json.loads(target.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return Result("sanitize_state", path, False, "ERR", f"JSON parse failed: {exc}")
+
+    hits: list[str] = []
+    for json_path, token in _walk_json(payload):
+        token_s = str(token)
+        token_l = token_s.lower()
+        if token_l in SANITIZE_FORBIDDEN_KEYS:
+            hits.append(f"{json_path} key={token_s}")
+        elif any(marker in token_l for marker in SANITIZE_FORBIDDEN_TEXT):
+            hits.append(f"{json_path} text={token_s[:80]}")
+        if len(hits) >= 10:
+            break
+
+    if hits:
+        return Result("sanitize_state", path, False, "DIRTY", "; ".join(hits))
+    return Result("sanitize_state", path, True, "OK", "no licensed/private markers found")
+
+
 def _derive(base: str) -> list[str]:
     if not base.endswith("/"):
         base += "/"
@@ -233,6 +287,7 @@ def _security_gate(results: list[Result], args: argparse.Namespace) -> dict:
     retired = [r for r in results if r.label == "retired"]
     github_pages_api = [r for r in results if r.label == "github_pages_api"]
     forks_api = [r for r in results if r.label == "forks_api"]
+    sanitize_state = [r for r in results if r.label == "sanitize_state"]
     protected_html = [
         r for r in protected
         if "/state/" not in r.url and not r.url.lower().endswith(".json")
@@ -250,7 +305,7 @@ def _security_gate(results: list[Result], args: argparse.Namespace) -> dict:
         "github_pages_retired": _none_if_empty([r.ok for r in retired + github_pages_api]),
         "fork_inventory_ok": True if args.fork_inventory_ok else _none_if_empty([r.ok for r in forks_api]),
         "cloudflare_deploy_ok": True if args.cloudflare_deploy_ok else None,
-        "sanitize_ok": True if args.sanitize_ok else None,
+        "sanitize_ok": True if args.sanitize_ok else _none_if_empty([r.ok for r in sanitize_state]),
     }
 
     failures = [r for r in results if not r.ok]
@@ -291,12 +346,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--retired", action="append", default=[], help="Old URL expected to be blocked/retired")
     parser.add_argument("--github-pages-api", help="GitHub Pages REST API URL expected to return 404")
     parser.add_argument("--forks-api", help="GitHub forks REST API URL expected to return an empty paginated list")
+    parser.add_argument("--sanitize-state", help="Local dashboard/state JSON to scan for licensed/private markers")
     parser.add_argument("--timeout", type=float, default=10.0)
     parser.add_argument("--mode", choices=("normal", "urgent", "manual"), default="manual")
     parser.add_argument("--fork-inventory-ok", action="store_true", help="Mark fork inventory check as completed")
     parser.add_argument("--cloudflare-deploy-ok", action="store_true", help="Mark post-private Cloudflare deploy check as completed")
-    parser.add_argument("--sanitize-ok", action="store_true", help="Mark sanitizer/audit check as completed")
-    parser.add_argument("--write-gate", help="Write docs/state/security_gate.json style output")
+    parser.add_argument("--sanitize-ok", action="store_true", help="Manual override; prefer --sanitize-state")
+    parser.add_argument("--write-gate", help="Write local/security_gate.json style output")
     args = parser.parse_args(argv)
 
     protected_urls: list[str] = []
@@ -304,8 +360,8 @@ def main(argv: list[str] | None = None) -> int:
         protected_urls.extend(_derive(base))
     protected_urls.extend(args.protected)
 
-    if not protected_urls and not args.retired:
-        parser.error("provide --base, --protected, or --retired")
+    if not any([protected_urls, args.retired, args.github_pages_api, args.forks_api, args.sanitize_state]):
+        parser.error("provide --base, --protected, --retired, --github-pages-api, --forks-api, or --sanitize-state")
 
     results: list[Result] = []
     for url in protected_urls:
@@ -316,6 +372,8 @@ def main(argv: list[str] | None = None) -> int:
         results.append(check_github_pages_api(args.github_pages_api, args.timeout))
     if args.forks_api:
         results.append(check_forks_api(args.forks_api, args.timeout))
+    if args.sanitize_state:
+        results.append(check_sanitize_state(args.sanitize_state))
 
     failures = _print_results(results)
     gate = _security_gate(results, args)
