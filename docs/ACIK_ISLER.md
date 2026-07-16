@@ -21,18 +21,30 @@ Kalan:
   ile kaba slippage ve fill davranisi olculecek; bu sinir biliniyor.
 - `--pf` hook: `taban_readiness` gercek hesap dosyasini okuyacak. Pilot
   baslayinca eklenir; F motorunu degistirmez.
-- `privacy_ok=true` pilot on-kosuludur.
-- `live_fresh_ok=true` pilot on-kosuludur ve pilot/gercek-para oncesi
-  Cloudflare Access Service Token ile otomatik dogrulanmalidir.
+
+Pilot (40k kalibrasyon) on-kosullari:
+
+- Broker secimi ve hesap akisi yazili.
+- Pilot sermaye transfer/limit karari tamam.
+- Emir oncesi manuel tazelik kontrolu: dashboard timestamp/hash + Telegram
+  ikinci kanal + son rapor saati.
+- Public state sanitize temiz; mutlak TL portfoy degeri, broker hesap detayi,
+  token veya lisansli/turev veri public cikmiyor.
+
+Olcek / terfi on-kosullari:
+
+- `privacy_ok=true`.
+- `live_fresh_ok=true` Cloudflare Access Service Token ile otomatik
+  dogrulaniyor.
+- C1 5/5 gercek fill penceresi tamam.
 
 Tamamlanma kriterleri:
 
-- Broker secimi ve pilot hesap akisi yazili.
-- Pilot sermaye transfer/limit karari tamam.
-- `privacy_ok=true` ve otomatik `live_fresh_ok=true`.
+- Pilot on-kosullari tamam ve ilk gercek fill kaydi alinmis.
 - Toplam 5 C1 penceresi gercek fill verisiyle kayitli; su an 2/5.
 - Taban/lock, slippage, fill, gecikme ve Telegram/dashboard tutarliligi C1
   defterine yaziliyor.
+- Olcege gecis icin `privacy_ok=true` ve otomatik `live_fresh_ok=true`.
 
 Not: Hicbir ek teknik mod veya defter bu kapiyi kapatmaz. Bu kapiyi yalnizca
 gercek fill verisi kapatir.
@@ -56,7 +68,7 @@ Karar:
 - Aktif sanitize sizintisi yoksa varsayilan uygulama Normal Mod'dur.
 - Gizlilik kirmizi iken yeni veri/strateji katmani terfi ettirilmez.
 - `privacy_ok` ve `live_fresh_ok` ayri kapilardir; koruma yesil olsa bile
-  tazelik bilinmiyorsa terfi/pilot gecisi yoktur.
+  tazelik bilinmiyorsa olcek/terfi gecisi yoktur.
 - `live_fresh_ok=null` kontrol edilmedi anlamina gelir; basarili veya taze
   kabul edilmez.
 - `local/security_gate.json` ile privacy gate kaydi tutulur.
@@ -74,8 +86,8 @@ Tamamlanma kriterleri:
 - `local/security_gate.json` icinde `privacy_ok=true`.
 - Paper donemde tazelik manuel login + timestamp/hash kontroluyle
   `live_fresh_ok=true` yapilabilir.
-- Pilot/gercek-para oncesi `live_fresh_ok=true` Cloudflare Access Service Token
-  ile otomatik dogrulanir.
+- Olcek/terfi oncesi `live_fresh_ok=true` Cloudflare Access Service Token ile
+  otomatik dogrulanir.
 
 ## Strategy / Veri Katmanlari
 

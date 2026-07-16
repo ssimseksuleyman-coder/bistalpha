@@ -221,11 +221,13 @@ Koruma ve tazelik ayri kapilardir:
 - `privacy_ok`: Access/private/sanitize/fork/deploy koruma sorusudur.
 - `live_fresh_ok`: Access arkasinda gorulen JSON'un yeni state ile eslestigi
   tazelik sorusudur.
-- `live_fresh_ok=null` bilinmiyor demektir; yesil sayilmaz ve terfi/pilot
-  icin yeterli degildir.
+- `live_fresh_ok=null` bilinmiyor demektir; yesil sayilmaz ve olcek/terfi icin
+  yeterli degildir.
 - Paper donemde tazelik manuel login + timestamp/hash kontroluyle
   `--live-fresh-ok` olarak isaretlenebilir.
-- Pilot/gercek-para oncesi tazelik kontrolu Cloudflare Access Service Token ile
+- 40k C1 pilotunda tazelik emir oncesi manuel login + timestamp/hash kontrolu
+  ve Telegram ikinci kanaliyla dogrulanabilir.
+- Olcek/terfi oncesi tazelik kontrolu Cloudflare Access Service Token ile
   otomatiklestirilmelidir. Token `local/` veya secret ortaminda kalir, repo'ya
   girmez.
 
@@ -421,9 +423,10 @@ kaynagi production'a terfi etmez. F motoru mevcut haliyle korunur.
 kalktigini, fakat fork/deploy/sanitize gibi manuel kapilarin tamamlanmadigini
 gosterir.
 
-`live_fresh_ok=true` degilse terfi/pilot gecisi yapilmaz. `null`, kontrol
+`live_fresh_ok=true` degilse olcek/terfi gecisi yapilmaz. `null`, kontrol
 edilmedi anlamina gelir; basarili veya taze kabul edilmez. Bu durum F motorunu
-durdurmaz, sadece yeni katman terfisini ve pilot gecisini kilitler.
+durdurmaz, 40k C1 pilotunu tek basina bloke etmez; sadece yeni katman terfisini
+ve olcek gecisini kilitler.
 
 ## Kabul Durumu
 
@@ -444,5 +447,5 @@ Tamam sayilmasi icin:
 - Telegram/dashboard/state ayni state commit'i veya ayni `generated_at` ile
   tutarli.
 - Sanitizer aktif ve audit temiz.
-- Pilot/gercek-para oncesi `live_fresh_ok` manuel beyanla degil, Cloudflare
-  Access Service Token ile otomatik dogrulanir.
+- Olcek/terfi oncesi `live_fresh_ok` manuel beyanla degil, Cloudflare Access
+  Service Token ile otomatik dogrulanir.
