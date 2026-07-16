@@ -4,6 +4,16 @@ Unauthenticated Cloudflare Access smoke check.
 
 This script does not log in. It verifies that protected dashboard URLs do not
 serve the dashboard or JSON state to an anonymous client.
+
+OK for protected URLs means:
+- 401/403, or
+- 3xx redirect to a Cloudflare Access login path/host, or
+- Access login page markers in the response body.
+
+FAIL means:
+- 200 serving dashboard or JSON markers,
+- 5xx infrastructure error,
+- any response that is not clearly an Access gate.
 """
 
 from __future__ import annotations
@@ -35,6 +45,7 @@ JSON_MARKERS = (
 
 ACCESS_MARKERS = (
     "cloudflare access",
+    "cloudflareaccess.com",
     "/cdn-cgi/access",
     "teams.cloudflare.com",
     "cf-access",
@@ -102,6 +113,8 @@ def check_protected(url: str, timeout: float) -> Result:
     response = _get(url, timeout)
     if response is None:
         return Result("protected", url, False, "ERR", "request failed; manual check required")
+    if response.status_code >= 500:
+        return Result("protected", url, False, str(response.status_code), "server error; Access not proven")
     if _is_access_response(response):
         return Result("protected", url, True, str(response.status_code), "Access gate detected")
     if _looks_like_public_dashboard(response):
@@ -119,6 +132,8 @@ def check_retired(url: str, timeout: float) -> Result:
     response = _get(url, timeout)
     if response is None:
         return Result("retired", url, False, "ERR", "request failed; manual check required")
+    if response.status_code >= 500:
+        return Result("retired", url, False, str(response.status_code), "server error; retired state not proven")
     if response.status_code in {401, 403, 404, 410, 451}:
         return Result("retired", url, True, str(response.status_code), "retired/blocked")
     if _is_access_response(response):

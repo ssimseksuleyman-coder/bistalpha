@@ -181,16 +181,39 @@ python scripts\cloudflare_access_check.py `
 
 `FAIL` varsa repo private yapilmaz. Once Access route/policy duzeltilir.
 
+Script spec'i:
+
+- Protected URL icin `OK`: `401`, `403`, veya Cloudflare Access login
+  hedefine giden `3xx` redirect.
+- Protected URL icin `OK`: response body/Location icinde
+  `cloudflareaccess.com`, `/cdn-cgi/access`, `cf-access` veya benzeri Access
+  isareti.
+- Protected URL icin `FAIL`: `200` ile dashboard HTML veya JSON state icerigi.
+- Protected URL icin `FAIL`: `5xx`; altyapi hatasi Access kaniti sayilmaz.
+- Anonymous testte `CF_Authorization` cookie beklenmez; bu cookie login
+  sonrasina aittir.
+
 Basari kriteri:
 
 - Incognito tarayicida ana sayfa ve `docs/state/*.json` URL'leri Access login
   ekranina duser.
 - `python scripts\cloudflare_access_check.py ...` sonucu `RESULT: OK` olur.
-- `curl -I` veya benzeri anonim HTTP kontrolde 200 ile dashboard/JSON icerigi
-  donmez; Access redirect, 401 veya 403 kabul edilebilir.
+- `curl.exe -I` veya benzeri anonim HTTP kontrolde 200 ile dashboard/JSON icerigi
+  donmez; Access redirect, 401 veya 403 kabul edilebilir. 500 kabul edilmez.
 - Arama motoru kontrolunde `site:bistalpha.pages.dev` sonucu beklenmez. Sonuc
   varsa URL incelenir; dashboard veya JSON icerigi gorunuyorsa Access tekrar
   duzeltilir.
+- Arama motoru sonucu cache kaynakli kalirsa Google Search Console URL Removal
+  Tool ile kaldirma talebi degerlendirilir.
+
+Ornek anonim HTTP kontrol:
+
+```powershell
+curl.exe -I https://bistalpha.pages.dev/state/dashboard.json
+```
+
+Beklenen: `302`/`303` ile Access login redirect'i veya `401`/`403`. `200` ile
+JSON gelirse koruma hatali, `5xx` gelirse altyapi hatasi vardir.
 
 ## 6. GitHub Pages Kapatma
 
@@ -228,12 +251,13 @@ GitHub repo -> Insights -> Forks
 Opsiyonel API kontrolu:
 
 ```text
-GET https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks
+GET https://api.github.com/repos/ssimseksuleyman-coder/bistalpha/forks?per_page=100
 ```
 
-Response bos liste ise fork envanteri temiz kabul edilir. Bu envanter private
-gecisten once alinmalidir; private sonrasi public fork gorunurlugu ve API
-davranisi degisebilir.
+Response bos liste ise fork envanteri temiz kabul edilir. `Link` header'inda
+`rel="next"` varsa sonraki sayfalar da cekilir. Bu envanter private gecisten
+once alinmalidir; private sonrasi public fork gorunurlugu ve API davranisi
+degisebilir.
 
 Fork varsa dur. Private gecis ve eski public veri riski yeniden degerlendirilir.
 Fork sahibi kendi fork'unu private yapmadikca o kopya disarida kalabilir.
@@ -256,7 +280,7 @@ Private gecisten sonra Cloudflare'in GitHub yetkisi sessizce bozulabilir. Bunu
 mutlaka test et:
 
 1. Kucuk bir dokuman commit'i push edilir veya Cloudflare'dan redeploy tetiklenir.
-2. Cloudflare Pages yeni deployment aliyor mu kontrol edilir.
+2. 5 dakika icinde Cloudflare Pages build log gorunuyor mu kontrol edilir.
 3. Dashboard timestamp donuk kalmiyor mu kontrol edilir.
 4. `scripts\cloudflare_access_check.py` tekrar kosulur.
 
@@ -268,6 +292,40 @@ Cloudflare -> Workers & Pages -> bistalpha -> Settings -> Builds & deployments
 ```
 
 Cloudflare Pages private repo'ya erisemiyorsa yeniden yetkilendirme yapilir.
+
+## 10. Security Gate State
+
+Gizlilik kirmizi/sari/yesil karari manuel hafizada kalmaz. Katman 8 ve yeni
+veri/strateji terfileri su state'i okuyabilmelidir:
+
+```json
+{
+  "privacy_ok": false,
+  "level": "red",
+  "mode": "urgent",
+  "last_check": "2026-07-16T00:00:00+03:00",
+  "checks": {
+    "access_html_ok": false,
+    "access_json_ok": false,
+    "pages_dev_ok": false,
+    "github_pages_retired": false,
+    "fork_inventory_ok": false,
+    "cloudflare_deploy_ok": false,
+    "sanitize_ok": true
+  },
+  "decision": "no_new_layer_promotion",
+  "note": "Gizlilik kirmizi iken yeni katman terfi ettirilmez."
+}
+```
+
+Hedef dosya:
+
+```text
+docs/state/security_gate.json
+```
+
+`privacy_ok=false` veya `level=red` ise yeni defter, Katman 8, shadow veya veri
+kaynagi production'a terfi etmez. F motoru mevcut haliyle korunur.
 
 ## Kabul Durumu
 

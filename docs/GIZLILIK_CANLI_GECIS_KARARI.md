@@ -87,6 +87,12 @@ Ekranda adim adim kurulum icin:
 docs/CLOUDFLARE_ACCESS_KURULUM.md
 ```
 
+Acik is kaydi:
+
+```text
+docs/ACIK_ISLER.md
+```
+
 ## Degismez Kural
 
 Access ikinci katmandir. Sanitize birinci katman olarak kalir. Access var diye
