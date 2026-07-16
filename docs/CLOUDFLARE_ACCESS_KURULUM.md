@@ -212,9 +212,22 @@ python scripts\cloudflare_access_check.py `
 ```
 
 Private sonrasi Cloudflare deploy testi de gectiyse `--cloudflare-deploy-ok`
-eklenir. Bu komut `local/security_gate.json` uretir. `level=green` olmadan yeni
-katman terfisi yapilmaz. `local/` git disidir; Access kurulmadan once gate
-durumu public yayinlanmaz.
+eklenir. Bu komut `local/security_gate.json` uretir. `privacy_ok=true` ve
+`live_fresh_ok=true` olmadan yeni katman terfisi yapilmaz. `local/` git disidir;
+Access kurulmadan once gate durumu public yayinlanmaz.
+
+Koruma ve tazelik ayri kapilardir:
+
+- `privacy_ok`: Access/private/sanitize/fork/deploy koruma sorusudur.
+- `live_fresh_ok`: Access arkasinda gorulen JSON'un yeni state ile eslestigi
+  tazelik sorusudur.
+- `live_fresh_ok=null` bilinmiyor demektir; yesil sayilmaz ve terfi/pilot
+  icin yeterli degildir.
+- Paper donemde tazelik manuel login + timestamp/hash kontroluyle
+  `--live-fresh-ok` olarak isaretlenebilir.
+- Pilot/gercek-para oncesi tazelik kontrolu Cloudflare Access Service Token ile
+  otomatiklestirilmelidir. Token `local/` veya secret ortaminda kalir, repo'ya
+  girmez.
 
 Basari kriteri:
 
@@ -358,6 +371,12 @@ python scripts\cloudflare_access_check.py `
 Canary `red` ise yeni veri/strateji katmani terfi ettirilmez. Canary `yellow`
 ise eksik manuel kontroller tamamlanmadan terfi yoktur.
 
+Anonim canary Access sonrasi icerigi okuyamaz; sadece korumayi dogrular.
+Bu yuzden tazelik ayri kontrol edilir. Login sonrasi `docs/state/dashboard.json`
+hash'i ve dashboard timestamp'i canli gorunen JSON ile eslesirse ayni komuta
+`--live-fresh-ok` eklenebilir. Bu bayrak unutulursa `live_fresh_ok=null` kalir
+ve sistem tazeligi bilinmiyor kabul eder.
+
 ## 10. Security Gate State
 
 Gizlilik kirmizi/sari/yesil karari manuel hafizada kalmaz. Katman 8 ve yeni
@@ -366,7 +385,10 @@ veri/strateji terfileri su state'i okuyabilmelidir:
 ```json
 {
   "privacy_ok": false,
+  "live_fresh_ok": null,
+  "promotion_ok": false,
   "level": "red",
+  "privacy_level": "red",
   "mode": "normal",
   "last_check": "2026-07-16T00:00:00+03:00",
   "checks": {
@@ -376,10 +398,13 @@ veri/strateji terfileri su state'i okuyabilmelidir:
     "github_pages_retired": false,
     "fork_inventory_ok": false,
     "cloudflare_deploy_ok": false,
-    "sanitize_ok": true
+    "sanitize_ok": true,
+    "live_fresh_ok": null
   },
+  "missing_freshness_checks": ["live_fresh_ok"],
   "decision": "no_new_layer_promotion",
-  "note": "Gizlilik kirmizi iken yeni katman terfi ettirilmez."
+  "note": "Gizlilik kirmizi iken yeni katman terfi ettirilmez.",
+  "freshness_note": "live_fresh_ok null ise tazelik bilinmiyor kabul edilir; yesil sayilmaz."
 }
 ```
 
@@ -396,12 +421,17 @@ kaynagi production'a terfi etmez. F motoru mevcut haliyle korunur.
 kalktigini, fakat fork/deploy/sanitize gibi manuel kapilarin tamamlanmadigini
 gosterir.
 
+`live_fresh_ok=true` degilse terfi/pilot gecisi yapilmaz. `null`, kontrol
+edilmedi anlamina gelir; basarili veya taze kabul edilmez. Bu durum F motorunu
+durdurmaz, sadece yeni katman terfisini ve pilot gecisini kilitler.
+
 ## Kabul Durumu
 
 Tamam sayilmasi icin:
 
 - `scripts/cloudflare_access_check.py --base ... --write-gate ...` sonucu
-  `RESULT: OK` ve `security_gate.level=green`.
+  `RESULT: OK`, `security_gate.privacy_ok=true` ve
+  `security_gate.live_fresh_ok=true`.
 - Ana sayfa ve direkt JSON URL'leri anonim erisimde 302/401/403 veya Access
   login isareti donduruyor; 200 ile dashboard/JSON donmuyor.
 - `*.pages.dev` ve varsa custom domain ayni testi geciyor.
@@ -414,3 +444,5 @@ Tamam sayilmasi icin:
 - Telegram/dashboard/state ayni state commit'i veya ayni `generated_at` ile
   tutarli.
 - Sanitizer aktif ve audit temiz.
+- Pilot/gercek-para oncesi `live_fresh_ok` manuel beyanla degil, Cloudflare
+  Access Service Token ile otomatik dogrulanir.

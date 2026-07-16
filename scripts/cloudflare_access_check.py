@@ -319,7 +319,7 @@ def _security_gate(results: list[Result], args: argparse.Namespace) -> dict:
     ]
     pages_dev = [r for r in protected if ".pages.dev" in r.url.lower()]
 
-    checks = {
+    privacy_checks = {
         "access_html_ok": _none_if_empty([r.ok for r in protected_html]),
         "access_json_ok": _none_if_empty([r.ok for r in protected_json]),
         "pages_dev_ok": _none_if_empty([r.ok for r in pages_dev]),
@@ -328,27 +328,37 @@ def _security_gate(results: list[Result], args: argparse.Namespace) -> dict:
         "cloudflare_deploy_ok": True if args.cloudflare_deploy_ok else None,
         "sanitize_ok": True if args.sanitize_ok else _none_if_empty([r.ok for r in sanitize_state]),
     }
+    live_fresh_ok = True if args.live_fresh_ok else None
+    checks = {**privacy_checks, "live_fresh_ok": live_fresh_ok}
 
     failures = [r for r in results if not r.ok]
-    missing = [name for name, value in checks.items() if value is None]
+    missing = [name for name, value in privacy_checks.items() if value is None]
+    missing_freshness = [] if live_fresh_ok is True else ["live_fresh_ok"]
     if failures:
         level = "red"
     elif missing:
         level = "yellow"
     else:
         level = "green"
+    privacy_ok = level == "green"
+    promotion_ok = privacy_ok and live_fresh_ok is True
 
     return {
-        "privacy_ok": level == "green",
+        "privacy_ok": privacy_ok,
+        "live_fresh_ok": live_fresh_ok,
+        "promotion_ok": promotion_ok,
         "level": level,
+        "privacy_level": level,
         "mode": args.mode,
         "last_check": datetime.now().astimezone().isoformat(timespec="seconds"),
         "check_source": "scripts/cloudflare_access_check.py",
         "checks": checks,
         "missing_checks": missing,
+        "missing_freshness_checks": missing_freshness,
         "results": [r.as_dict() for r in results],
-        "decision": "new_layer_promotion_allowed" if level == "green" else "no_new_layer_promotion",
+        "decision": "new_layer_promotion_allowed" if promotion_ok else "no_new_layer_promotion",
         "note": "Gizlilik kirmizi/sari iken yeni katman terfi ettirilmez.",
+        "freshness_note": "live_fresh_ok null ise tazelik bilinmiyor kabul edilir; yesil sayilmaz.",
     }
 
 
@@ -372,6 +382,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mode", choices=("normal", "urgent", "manual"), default="manual")
     parser.add_argument("--fork-inventory-ok", action="store_true", help="Mark fork inventory check as completed")
     parser.add_argument("--cloudflare-deploy-ok", action="store_true", help="Mark post-private Cloudflare deploy check as completed")
+    parser.add_argument("--live-fresh-ok", action="store_true", help="Mark manual authenticated freshness check as completed")
     parser.add_argument("--sanitize-ok", action="store_true", help="Manual override; prefer --sanitize-state")
     parser.add_argument("--write-gate", help="Write local/security_gate.json style output")
     args = parser.parse_args(argv)
