@@ -16,41 +16,126 @@
   "source_tiers": {
     "primary": {
       "score": 3,
-      "examples": ["KAP", "BIST", "SPK", "MKK"],
+      "examples": [
+        "third_party_public_source"
+      ],
       "rule": "Birincil kaynak. Yine de F motoruna otomatik emir uretmez."
     },
     "data_vendor": {
       "score": 2,
-      "examples": ["Stockeys", "Finnet", "Investing", "TradingView", "Bigpara"],
+      "examples": [
+        "third_party_public_source"
+      ],
       "rule": "Veri/filtre kaynagi. KAP veya resmi tabloyla teyit edilmeden terfi etmez."
     },
     "social": {
       "score": 1,
-      "examples": ["X", "StockeysPro/X", "analist paylasimi"],
+      "examples": [
+        "third_party_public_source"
+      ],
       "rule": "Erken radar. Tek basina islem sebebi degildir."
     },
     "rumor": {
       "score": 0,
-      "examples": ["duyum", "ucacak", "tavan", "hedef fiyat tek basina"],
+      "examples": [
+        "third_party_public_source"
+      ],
       "rule": "Katalizor degil; risk etiketi olarak izlenir."
     }
   },
   "positive_types": {
-    "temettu_verimi": ["temettu", "temettu verimi", "kar payi", "nakit temettu"],
-    "sermaye": ["bedelsiz", "bedelli", "sermaye artirimi", "bolunme"],
-    "geri_alim": ["geri alim", "pay geri alim", "pay alimi"],
-    "bilanco": ["bilanco", "net kar", "ciro", "favok", "ebitda", "marj", "beklenti ustu"],
-    "buyume_kalite": ["kar buyumesi", "satis buyumesi", "roe", "roic", "ozsermaye karliligi"],
-    "degerleme": ["fk", "f/k", "pd/dd", "fd/favok", "peg", "iskonto"],
-    "sirket_haberi": ["ihale", "sozlesme", "yeni is iliskisi", "yatirim", "tesvik", "kapasite artisi"],
-    "endeks": ["bist30", "bist50", "bist100", "msci", "ftse", "endekse dahil"],
-    "makro_sektor": ["ihracat", "doviz pozisyonu", "faiz", "petrol", "altin", "savunma", "bankacilik"]
+    "temettu_verimi": [
+      "temettu",
+      "temettu verimi",
+      "kar payi",
+      "nakit temettu"
+    ],
+    "sermaye": [
+      "bedelsiz",
+      "bedelli",
+      "sermaye artirimi",
+      "bolunme"
+    ],
+    "geri_alim": [
+      "geri alim",
+      "pay geri alim",
+      "pay alimi"
+    ],
+    "bilanco": [
+      "bilanco",
+      "net kar",
+      "ciro",
+      "favok",
+      "ebitda",
+      "marj",
+      "beklenti ustu"
+    ],
+    "buyume_kalite": [
+      "kar buyumesi",
+      "satis buyumesi",
+      "roe",
+      "roic",
+      "ozsermaye karliligi"
+    ],
+    "degerleme": [
+      "fk",
+      "f/k",
+      "pd/dd",
+      "fd/favok",
+      "peg",
+      "iskonto"
+    ],
+    "sirket_haberi": [
+      "ihale",
+      "sozlesme",
+      "yeni is iliskisi",
+      "yatirim",
+      "tesvik",
+      "kapasite artisi"
+    ],
+    "endeks": [
+      "bist30",
+      "bist50",
+      "bist100",
+      "msci",
+      "ftse",
+      "endekse dahil"
+    ],
+    "makro_sektor": [
+      "ihracat",
+      "doviz pozisyonu",
+      "faiz",
+      "petrol",
+      "altin",
+      "savunma",
+      "bankacilik"
+    ]
   },
   "risk_types": {
-    "tedbir": ["spk tedbir", "vbts", "brut takas", "kredili islem yasagi", "aciga satis yasagi"],
-    "hukuki": ["ceza", "vergi cezasi", "dava", "faaliyet durdurma"],
-    "sahiplik": ["ortak satisi", "patron satisi", "tahsisli sermaye artirimi"],
-    "finansal_stres": ["borc yapilandirma", "konkordato", "iflas", "likidite"]
+    "tedbir": [
+      "spk tedbir",
+      "vbts",
+      "brut takas",
+      "kredili islem yasagi",
+      "aciga satis yasagi"
+    ],
+    "hukuki": [
+      "ceza",
+      "vergi cezasi",
+      "dava",
+      "faaliyet durdurma"
+    ],
+    "sahiplik": [
+      "ortak satisi",
+      "patron satisi",
+      "tahsisli sermaye artirimi"
+    ],
+    "finansal_stres": [
+      "borc yapilandirma",
+      "konkordato",
+      "iflas",
+      "likidite"
+    ]
   },
   "blocked_as_positive": [
     "ucacak",
@@ -61,10 +146,7 @@
     "kesin al"
   ],
   "x_search_templates": [
-    "from:StockeysPro (\"temettu\" OR \"bedelsiz\" OR \"geri alim\" OR \"bilanco\" OR \"FAVOK\" OR \"PD/DD\" OR \"endeks\")",
-    "(\"BIST30\" OR \"BIST50\" OR \"BIST100\") (\"dahil\" OR \"cikarildi\" OR \"endeks\")",
-    "(\"yeni is iliskisi\" OR \"ihale\" OR \"sozlesme\") (\"KAP\" OR \"#KAP\")",
-    "(\"SPK tedbir\" OR \"VBTS\" OR \"brut takas\" OR \"kredili islem yasagi\")"
+    "third_party catalyst keywords; source identity private until Access"
   ],
   "source_status_rules": {
     "active_measurement": "Kaynak deftere olay uretmeye uygundur; yine de F motoruna emir uretmez.",
@@ -74,112 +156,14 @@
   },
   "source_registry": [
     {
-      "handle": "@StockeysPro",
-      "name": "StockeysPro / X",
       "tier": "data_vendor",
-      "status": "active_measurement",
-      "role": "oran ve tema radari",
-      "allowed_types": ["temettu_verimi", "degerleme", "bilanco", "buyume_kalite"],
-      "rule": "Tablo/oran iceren paylasimlar deftere girer; KAP teyidi olmadan terfi etmez."
+      "status": "watch_only",
+      "public_detail_policy": "identity withheld until Access"
     },
     {
-      "handle": "@Finnet",
-      "name": "Finnet",
-      "tier": "data_vendor",
-      "status": "approved_pending_event",
-      "role": "finansal tablo ve oran kalitesi",
-      "allowed_types": ["bilanco", "buyume_kalite", "degerleme"],
-      "rule": "Somut tablo/link varsa deftere girer."
-    },
-    {
-      "handle": "@Bigpara",
-      "name": "Bigpara",
-      "tier": "data_vendor",
-      "status": "approved_pending_event",
-      "role": "temel veri ve haber ozeti",
-      "allowed_types": ["bilanco", "sirket_haberi", "temettu_verimi"],
-      "rule": "Haber tek basina degil; hisse+katalizor+link varsa deftere girer."
-    },
-    {
-      "handle": "@InvestingcomTR",
-      "name": "Investing.com TR",
-      "tier": "data_vendor",
-      "status": "approved_pending_event",
-      "role": "makro, piyasa ve temel veri",
-      "allowed_types": ["makro_sektor", "bilanco", "degerleme"],
-      "rule": "Genel piyasa yorumu deftere girmez; hisseye bagli katalizor gerekir."
-    },
-    {
-      "handle": "@Midas_TR",
-      "name": "Midas",
-      "tier": "data_vendor",
-      "status": "approved_pending_event",
-      "role": "KAP ve temel analiz ozeti",
-      "allowed_types": ["bilanco", "sirket_haberi", "temettu_verimi"],
-      "rule": "Ozet kaynak; resmi KAP teyidi aranir."
-    },
-    {
-      "handle": "@borsagundem",
-      "name": "Borsa Gundem",
-      "tier": "social",
-      "status": "approved_pending_event",
-      "role": "haber radari",
-      "allowed_types": ["sirket_haberi", "tedbir", "hukuki"],
-      "rule": "Haber radari; olumlu/olumsuz ayrimi defterde risk etiketiyle tutulur."
-    },
-    {
-      "handle": "@ParasalAnaliz",
-      "name": "Parasal Analiz",
       "tier": "social",
       "status": "watch_only",
-      "role": "temel analiz yorumu",
-      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
-      "rule": "En az 10 somut, linkli olay gozlenmeden aktif olcume alinmaz."
-    },
-    {
-      "handle": "@Yatirimci_Profili",
-      "name": "Yatirimci Profili",
-      "tier": "social",
-      "status": "watch_only",
-      "role": "sirket bazli temel analiz",
-      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
-      "rule": "Yorumdan cok sayisal/kaynakli paylasim aranir."
-    },
-    {
-      "handle": "@TemelAnaliz",
-      "name": "Temel Analiz",
-      "tier": "social",
-      "status": "watch_only",
-      "role": "temel analiz filtresi",
-      "allowed_types": ["bilanco", "degerleme", "buyume_kalite"],
-      "rule": "Somut kaynak yoksa deftere girmez."
-    },
-    {
-      "handle": "@beyefendiborsa",
-      "name": "Beyefendi Borsa",
-      "tier": "social",
-      "status": "watch_only",
-      "role": "KAP ve sirket analizi",
-      "allowed_types": ["bilanco", "sirket_haberi", "degerleme"],
-      "rule": "KAP/link destekli paylasimlar aday olur."
-    },
-    {
-      "handle": "@erdeminan1967",
-      "name": "Erdem Inan",
-      "tier": "social",
-      "status": "watch_only",
-      "role": "fon portfoyleri ve uzun vade",
-      "allowed_types": ["sahiplik", "buyume_kalite", "degerleme"],
-      "rule": "Fon/portfoy degisimi deftere olay olarak alinabilir; yorum tek basina alinmaz."
-    },
-    {
-      "handle": "@Hisse_Onerileri",
-      "name": "Hisse Onerileri",
-      "tier": "rumor",
-      "status": "risk_only",
-      "role": "sosyal sinyal riski",
-      "allowed_types": ["tedbir"],
-      "rule": "Pozitif katalizor sayilmaz; pump/oneriden kaynaklanan risk etiketi olarak tutulur."
+      "public_detail_policy": "identity withheld until Access"
     }
   ]
 }

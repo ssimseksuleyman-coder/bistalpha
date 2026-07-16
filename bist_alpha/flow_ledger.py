@@ -180,7 +180,7 @@ def _local_paths():
 def _read_local_file(path: Path):
     meta = {
         "source": "local flow extract",
-        "source_file": _display_path(path),
+        "source_ref": "private_local",
         "source_type": path.suffix.lower().lstrip(".") or "unknown",
     }
     rows = []
@@ -297,9 +297,9 @@ def _local_flow_events(prices):
             source_tier = row.get("source_tier") or meta.get("source_tier") or "local_private"
             source_score = 2 if source_tier in {"licensed", "broker", "local_private"} else 1
             out.append({
-                "source_id": row.get("source_id") or f"{typ}:{meta.get('source_file', 'local')}",
-                "source": row.get("source") or meta.get("source") or "local flow extract",
-                "source_file": meta.get("source_file"),
+                "source_id": row.get("source_id") or f"{typ}:private_local",
+                "source": row.get("source") or meta.get("source") or "private local flow extract",
+                "source_ref": meta.get("source_ref", "private_local"),
                 "source_tier": source_tier,
                 "source_score": source_score,
                 "type": typ,
@@ -413,7 +413,7 @@ def _summary(events, as_of):
         "foreign_flow_events": len([e for e in events if e.get("type") == "foreign_flow"]),
         "takas_events": len([e for e in events if e.get("type") == "takas"]),
         "local_input_files": len(local_files),
-        "local_input_dir": _display_path(_local_flow_dir()),
+        "local_input_source": "private_local",
         "decision": decision,
         "readiness": {
             "status": "active" if events else "empty",
@@ -422,7 +422,7 @@ def _summary(events, as_of):
                 "KAP geri alim taramasi aktif; yabanci/takas icin local-private akis dosyasi bekleniyor. "
                 "Ham takas ve lisansli akis detaylari public repo'ya yazilmaz."
             ),
-            "next_step": "KAP geri alim olayi geldikce otomatik olculur; yabanci/takas icin local/flow_inputs kullan.",
+            "next_step": "KAP geri alim olayi geldikce otomatik olculur; yabanci/takas icin private input alani kullan.",
             "known_contract": "docs/AKIS_GERI_ALIM_DEFTERI.md",
             "opens_trade": False,
             "promotion_gate": "closed_until_20_mature_21d_events",
@@ -433,7 +433,7 @@ def _summary(events, as_of):
             "Akis ve geri alim defteri olcer; KAP geri alim resmi, yabanci/takas local-private "
             "kaynakla izlenir. F motoruna emir uretmez."
         ),
-        "public_detail_policy": "raw takas holder details and licensed flow extracts stay local-only",
+        "public_detail_policy": "raw takas holder details and licensed flow extracts stay private-only",
     }
 
 

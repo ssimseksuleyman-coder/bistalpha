@@ -339,21 +339,15 @@ def _public_summary(events, input_count, input_errors, as_of, sources):
             decision = "izleme_degeri_var_resmi_teyit_sartiyla"
         else:
             decision = "terfi_yok"
-    source_rows = []
-    for sid, src in sources.items():
-        source_rows.append({
-            "id": sid,
-            "name": src.get("name"),
-            "tier": src.get("tier", "broker"),
-            "score": SOURCE_SCORE.get(str(src.get("tier", "broker")).lower(), 2),
-            "public_url": src.get("public_url"),
-            "notes": src.get("notes"),
-        })
+    tier_counts = {}
+    for src in sources.values():
+        tier = str(src.get("tier", "broker")).lower()
+        tier_counts[tier] = tier_counts.get(tier, 0) + 1
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of": as_of,
         "input_files": input_count,
-        "input_errors": input_errors,
+        "input_error_count": len(input_errors),
         "tracked_events": len(events),
         "unique_sources": len({e.get("source_id") for e in events}),
         "unique_tickers_private": len({e.get("ticker") for e in events}),
@@ -371,19 +365,21 @@ def _public_summary(events, input_count, input_errors, as_of, sources):
             "status": "active" if events else "empty",
             "data_status": "local_broker_input_waiting" if not events else "measuring",
             "message": (
-                "Broker bulten sicili hazir; olcum icin local/broker_bulletins altinda "
-                "public olmayan, local-only event extract bekleniyor."
+                "Broker bulten sicili hazir; olcum icin public olmayan ozel event "
+                "extract bekleniyor."
             ),
-            "next_step": "Ilk broker bulten extract dosyasini local klasore koy; public panel sadece agregayi gosterir.",
+            "next_step": "Ilk broker bulten extract dosyasini private input alanina koy; public panel sadece agregayi gosterir.",
             "opens_trade": False,
             "promotion_gate": "closed_without_official_confirmation",
         },
         "min_mature_events_for_decision": 20,
         "by_source": _bucket_summary(events, "source_id"),
         "by_type": _bucket_summary(events, "bulletin_type"),
-        "source_registry": source_rows,
-        "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay in local/ only.",
-        "detail_storage": "local/broker_bulletin_ledger_private.json",
+        "source_registry_count": len(sources),
+        "source_registry_tiers": tier_counts,
+        "source_registry_policy": "Source identities and URLs are private until dashboard is behind Access.",
+        "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay private-only.",
+        "detail_storage": "private_local_ledger",
         "opens_trade": False,
         "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation.",
     }

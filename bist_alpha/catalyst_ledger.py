@@ -111,9 +111,59 @@ def _event_key(event):
     ])
 
 
+def _public_source_id(source) -> str:
+    tier = str(source.get("source_tier") or source.get("tier") or "").lower()
+    confidence = str(source.get("confidence") or source.get("source_confidence") or "").lower()
+    source_text = " ".join([
+        str(source.get("id") or ""),
+        str(source.get("source") or ""),
+        str(source.get("source_url") or ""),
+        str(source.get("label") or ""),
+    ]).lower()
+    if tier == "primary" or confidence in {"primary", "official"}:
+        return str(source.get("id") or "primary_source")
+    if any(token in source_text for token in ("stockeys", "x.com", "twitter")):
+        return "third_party_secondary_source"
+    return str(source.get("public_id") or source.get("id") or "third_party_source")
+
+
+def _public_label(source) -> str:
+    typ = str(source.get("type") or "catalyst")
+    confidence = str(source.get("confidence") or source.get("source_confidence") or "").lower()
+    source_text = " ".join([
+        str(source.get("source") or ""),
+        str(source.get("source_url") or ""),
+        str(source.get("label") or ""),
+    ]).lower()
+    if confidence in {"primary", "official"}:
+        return source.get("label") or typ
+    if any(token in source_text for token in ("stockeys", "x.com", "twitter")):
+        return f"third_party_{typ}_screen"
+    return source.get("label") or typ
+
+
+def _sanitize_public_event(event):
+    event = dict(event)
+    source_text = " ".join([
+        str(event.get("source_id") or ""),
+        str(event.get("source") or ""),
+        str(event.get("source_url") or ""),
+        str(event.get("label") or ""),
+    ]).lower()
+    if any(token in source_text for token in ("stockeys", "x.com", "twitter")):
+        event["source_id"] = "third_party_secondary_source"
+        event["source"] = "third_party_public_source"
+        event["source_url"] = None
+        event["label"] = f"third_party_{event.get('type') or 'catalyst'}_screen"
+        event["keywords"] = []
+        event["note"] = None
+        event["key"] = _event_key(event)
+    return event
+
+
 def _source_key(source, ticker):
     return "|".join([
-        str(source.get("id") or source.get("source") or "source"),
+        _public_source_id(source),
         str(source.get("type") or "catalyst"),
         str(source.get("date") or ""),
         ticker,
@@ -196,9 +246,9 @@ def _source_events(report, data, existing_events, sources, policy=None):
             entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, event_date)
             events.append({
                 "key": key,
-                "source_id": source.get("id"),
-                "source": source.get("source"),
-                "source_url": source.get("source_url"),
+                "source_id": _public_source_id(source),
+                "source": "primary_source" if quality["source_tier"] == "primary" else "third_party_public_source",
+                "source_url": source.get("source_url") if quality["source_tier"] == "primary" else None,
                 "source_confidence": source.get("confidence", "secondary"),
                 "source_tier": quality["source_tier"],
                 "source_score": quality["source_score"],
@@ -206,7 +256,7 @@ def _source_events(report, data, existing_events, sources, policy=None):
                 "requires_confirmation": quality["requires_confirmation"],
                 "risk_only": quality["risk_only"],
                 "type": source.get("type", "catalyst"),
-                "label": source.get("label") or source.get("type") or "catalyst",
+                "label": _public_label(source),
                 "event_date": str(event_date),
                 "ticker": ticker,
                 "entry_date": entry_date,
@@ -395,7 +445,8 @@ def update(report, data, path=None, sources_path=None, policy_path=None, max_eve
     events = list(merged.values())[-max_events:]
     as_of_pos = len(prices.index) - 1
     as_of = _date_text(prices.index[as_of_pos])
-    events = [_refresh_event(event, prices, as_of_pos) for event in events]
+    refreshed = [_sanitize_public_event(_refresh_event(event, prices, as_of_pos)) for event in events]
+    events = list({_event_key(event): event for event in refreshed}.values())
     events.sort(key=lambda e: (e.get("event_date") or "", e.get("source_id") or "", e.get("ticker") or ""))
     payload = {
         "summary": _summary(events, sources, as_of, policy),

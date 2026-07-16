@@ -171,7 +171,7 @@ def check_duplicates(checks: list[Check]) -> None:
         "warn" if notable else "pass",
         "Same-name files exist and should stay intentional." if notable else "No notable duplicate basenames found.",
         notable,
-        "Keep only if each copy has a different role; otherwise merge or archive under local/.",
+        "Keep only if each copy has a different role; otherwise merge or archive in private workspace.",
     )
 
     root_scripts = sorted(p.name for p in ROOT.glob("*.py"))
@@ -182,7 +182,7 @@ def check_duplicates(checks: list[Check]) -> None:
         "warn" if len(root_scripts) > 12 else "pass",
         f"{len(root_scripts)} root-level Python scripts found.",
         root_scripts[:30],
-        "Promote active scripts into scripts/ or bist_alpha/; move experiments to local/ after audit.",
+        "Promote active scripts into scripts/ or bist_alpha/; move experiments to private workspace after audit.",
     )
 
     duplicate_functions = []

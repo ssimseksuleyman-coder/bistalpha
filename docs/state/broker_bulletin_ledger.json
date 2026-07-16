@@ -3,7 +3,6 @@
     "updated_at": "2026-07-16T14:31:13",
     "as_of": "2026-07-16",
     "input_files": 0,
-    "input_errors": [],
     "tracked_events": 0,
     "unique_sources": 0,
     "unique_tickers_private": 0,
@@ -20,51 +19,20 @@
     "readiness": {
       "status": "empty",
       "data_status": "local_broker_input_waiting",
-      "message": "Broker bulten sicili hazir; olcum icin local/broker_bulletins altinda public olmayan, local-only event extract bekleniyor.",
-      "next_step": "Ilk broker bulten extract dosyasini local klasore koy; public panel sadece agregayi gosterir.",
+      "message": "Broker bulten sicili hazir; olcum icin public olmayan ozel event extract bekleniyor.",
+      "next_step": "Ilk broker bulten extract dosyasini private input alanina koy; public panel sadece agregayi gosterir.",
       "opens_trade": false,
       "promotion_gate": "closed_without_official_confirmation"
     },
     "min_mature_events_for_decision": 20,
     "by_source": [],
     "by_type": [],
-    "source_registry": [
-      {
-        "id": "bizim",
-        "name": "Bizim Menkul Degerler",
-        "tier": "broker",
-        "score": 2,
-        "public_url": "https://www.bizimmenkul.com.tr",
-        "notes": "Daily/periodic research bulletins where publicly available."
-      },
-      {
-        "id": "local_broker",
-        "name": "Local Broker Extract",
-        "tier": "broker",
-        "score": 2,
-        "public_url": null,
-        "notes": "Local-only comparison source. Raw/derived data is not public."
-      },
-      {
-        "id": "icbc",
-        "name": "ICBC Turkey Yatirim",
-        "tier": "broker",
-        "score": 2,
-        "public_url": "https://www.icbcyatirim.com.tr",
-        "notes": "Daily/periodic research bulletins where publicly available."
-      },
-      {
-        "id": "tera",
-        "name": "Tera Yatirim",
-        "tier": "broker",
-        "score": 2,
-        "public_url": "https://www.terayatirim.com/research",
-        "notes": "Market outlook, suggestion list, company reports."
-      }
-    ],
-    "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay in local/ only.",
-    "detail_storage": "local/broker_bulletin_ledger_private.json",
+    "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay private-only.",
+    "detail_storage": "private_local_ledger",
     "opens_trade": false,
-    "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
+    "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation.",
+    "input_error_count": 0,
+    "source_registry_count": 4,
+    "source_registry_policy": "Source identities and URLs are private until dashboard is behind Access."
   }
 }

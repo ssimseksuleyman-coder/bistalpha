@@ -61,6 +61,14 @@ SANITIZE_FORBIDDEN_TEXT = (
     "deniz yatırım",
     "deniz_inbox",
     "teknik_takip",
+    "local/",
+    "stockeys",
+    "bizim menkul",
+    "icbc turkey",
+    "tera yatirim",
+    "bizimmenkul.com.tr",
+    "icbcyatirim.com.tr",
+    "terayatirim.com",
 )
 
 ACCESS_MARKERS = (
@@ -233,8 +241,21 @@ def check_sanitize_state(path: str) -> Result:
     target = Path(path)
     if not target.exists():
         return Result("sanitize_state", path, False, "MISS", "state file missing")
+    if target.is_dir():
+        hits: list[str] = []
+        checked = 0
+        for child in sorted(target.glob("*.json")):
+            checked += 1
+            result = check_sanitize_state(str(child))
+            if not result.ok:
+                hits.append(f"{child.as_posix()}: {result.detail}")
+            if len(hits) >= 10:
+                break
+        if hits:
+            return Result("sanitize_state", path, False, "DIRTY", "; ".join(hits))
+        return Result("sanitize_state", path, True, "OK", f"checked {checked} JSON files")
     try:
-        payload = json.loads(target.read_text(encoding="utf-8"))
+        payload = json.loads(target.read_text(encoding="utf-8-sig"))
     except Exception as exc:
         return Result("sanitize_state", path, False, "ERR", f"JSON parse failed: {exc}")
 
