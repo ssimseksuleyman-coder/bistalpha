@@ -24,6 +24,8 @@ kopyalari, cache, fork veya arsivler icin tam silme garantisi yoktur.
 
 ## Uygulama Sirasi
 
+Normal mod, dashboard kesintisini azaltmak icindir:
+
 1. Sanitize kontrolleri korunur; hicbir hassas alan geri acilmaz.
 2. Cloudflare Pages repo `main` ve output `docs` ile kurulur.
 3. Ilk deploydan hemen sonra Cloudflare Access eklenir; deploy ile Access
@@ -39,6 +41,10 @@ kopyalari, cache, fork veya arsivler icin tam silme garantisi yoktur.
 8. Repo private yapilir.
 9. Private sonrasi yeni bir Cloudflare deploy tetiklenir ve dashboard donmuyor mu
    kontrol edilir.
+
+Hassas veri sızıntısı suphesi varsa acil gizlilik modu secilir: once fork
+kontrolu ve repo private, sonra Cloudflare Pages + Access kurulumu. Bu modda
+dashboard kisa sure kaybolabilir.
 
 ## Kabul Kriterleri
 

@@ -5,13 +5,49 @@ Cloudflare Access arkasinda yayinlamak.
 
 Bu runbook F motoruna, stratejiye, portfoy state'e veya sanitizer'a dokunmaz.
 
+## Baglam
+
+- Cloudflare Pages henuz kurulmamissa bu dosya kurulum sirasidir; mevcut canli
+  yayin GitHub Pages olabilir.
+- Yayinlanan kaynak `docs/` klasorudur. Dashboard HTML ve `docs/state/*.json`
+  dosyalari bu klasorden servis edilir.
+- Hedeflenen risk public web, arama motoru, dogrudan JSON URL erisimi ve repo
+  gecmisi/log gorunurlugudur.
+- Access burada Cloudflare Zero Trust Access anlamina gelir; email OTP veya
+  benzeri kimlik kapisi kullanilir.
+- `docs/` klasoru silinmez. Cloudflare Pages'in yayin kaynagi olarak kalir.
+
 ## Degismez Kurallar
 
 - `docs/` klasoru silinmez; Cloudflare Pages buradan yayin yapar.
 - Sanitizer gevsetilmez. Access ikinci katmandir.
-- Access testi tamamlanmadan repo private yapilmaz.
 - Private yapmadan once GitHub `Insights -> Forks` kontrol edilir.
 - Cloudflare deploy testi gecmeden GitHub Pages kapatilmis sayilmaz.
+
+## Gecis Modu Secimi
+
+Normal mod, dashboard'un kesintisiz kalmasini onceler:
+
+1. Cloudflare Pages kur.
+2. Hemen Access ekle.
+3. Access ve direkt JSON testlerini gec.
+4. GitHub Pages'i kapat.
+5. Fork kontrolu yap.
+6. Repo private yap.
+7. Private sonrasi Cloudflare deploy testini gec.
+
+Acil gizlilik modu, public erisimi en hizli kesmeyi onceler:
+
+1. Fork kontrolu yap.
+2. Repo private yap.
+3. Cloudflare Pages + Access'i kur.
+4. Access ve direkt JSON testlerini gec.
+5. GitHub Pages durumunu kontrol et.
+6. Private sonrasi Cloudflare deploy testini gec.
+
+Acil modda dashboard kisa sure kaybolabilir. Normal modda public pencere daha
+uzundur ama sanitizer birinci katman olarak riski azaltir. Hassas veri sızıntısı
+suphesi varsa acil mod secilir.
 
 ## 1. Cloudflare Pages Projesi
 
@@ -141,6 +177,10 @@ GitHub repo -> Settings -> Pages -> Disable / None
 ```
 
 `docs/` klasoru silinmez.
+
+Sadece `docs/` icinden dosya silmek gecmis commit'leri temizlemez. Hukuki veya
+zorunlu sızıntı gerekcesi varsa history temizligi ayri karar olarak ele alinir;
+normal geciste purge ana yol degildir.
 
 Eski URL artik dashboard gostermemeli:
 
