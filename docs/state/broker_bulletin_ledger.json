@@ -1,8 +1,9 @@
 {
   "summary": {
-    "updated_at": "2026-07-16T14:31:13",
+    "updated_at": "2026-07-16T18:41:14",
     "as_of": "2026-07-16",
     "input_files": 0,
+    "input_error_count": 0,
     "tracked_events": 0,
     "unique_sources": 0,
     "unique_tickers_private": 0,
@@ -27,12 +28,14 @@
     "min_mature_events_for_decision": 20,
     "by_source": [],
     "by_type": [],
+    "source_registry_count": 4,
+    "source_registry_tiers": {
+      "broker": 4
+    },
+    "source_registry_policy": "Source identities and URLs are private until dashboard is behind Access.",
     "public_detail_policy": "Raw broker calls, target prices, notes and per-ticker bulletin details stay private-only.",
     "detail_storage": "private_local_ledger",
     "opens_trade": false,
-    "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation.",
-    "input_error_count": 0,
-    "source_registry_count": 4,
-    "source_registry_policy": "Source identities and URLs are private until dashboard is behind Access."
+    "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   }
 }
