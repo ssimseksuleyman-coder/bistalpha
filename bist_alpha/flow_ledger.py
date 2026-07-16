@@ -242,11 +242,15 @@ def _kap_buyback_events(prices):
     rows = payload.get("events", []) if isinstance(payload, dict) else []
     events = []
     for row in rows:
-        typ = str(row.get("type") or "").lower()
+        typ = _slug(row.get("type") or "")
         title = str(row.get("title") or "")
         title_l = title.lower()
+        title_slug = _slug(title)
         is_buyback = typ == "geri_alim" or any(k in title_l for k in (
             "geri alim", "geri alım", "pay geri", "kendi pay",
+            "payların geri", "paylarin geri",
+        )) or any(k in title_slug for k in (
+            "geri_alim", "pay_geri", "kendi_pay", "paylarin_geri",
         ))
         if not is_buyback:
             continue
@@ -411,6 +415,18 @@ def _summary(events, as_of):
         "local_input_files": len(local_files),
         "local_input_dir": _display_path(_local_flow_dir()),
         "decision": decision,
+        "readiness": {
+            "status": "active" if events else "empty",
+            "data_status": "kap_buyback_scanner_active_no_event_yet" if not events else "measuring",
+            "message": (
+                "KAP geri alim taramasi aktif; yabanci/takas icin local-private akis dosyasi bekleniyor. "
+                "Ham takas ve lisansli akis detaylari public repo'ya yazilmaz."
+            ),
+            "next_step": "KAP geri alim olayi geldikce otomatik olculur; yabanci/takas icin local/flow_inputs kullan.",
+            "known_contract": "docs/AKIS_GERI_ALIM_DEFTERI.md",
+            "opens_trade": False,
+            "promotion_gate": "closed_until_20_mature_21d_events",
+        },
         "latest_candidates": sorted(events, key=lambda e: e.get("event_date") or "", reverse=True)[:10],
         "by_type": sorted(type_rows, key=lambda x: x["type"]),
         "note": (

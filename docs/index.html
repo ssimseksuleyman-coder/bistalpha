@@ -942,6 +942,21 @@ function renderCatalystLedger(info, data) {
   `;
 }
 
+function readinessBlock(info, fallback) {
+  const r = info?.readiness || {};
+  if (!r.message && !fallback) return '';
+  const status = r.status || (Number(info?.tracked_events || 0) > 0 ? 'active' : 'empty');
+  const badge = status === 'active' ? 'ok' : 'warn';
+  const title = status === 'active' ? 'Veri aktif' : 'Dürüst durum';
+  const message = r.message || fallback;
+  const next = r.next_step ? `<br><span class="meta">Sonraki adim: ${esc(r.next_step)}</span>` : '';
+  const gate = r.promotion_gate ? `<br><span class="meta">Terfi kapisi: ${esc(r.promotion_gate)}</span>` : '';
+  return `<div class="why" style="margin-bottom:10px">
+    <strong>${esc(title)} <span class="badge ${badge}">${esc(r.data_status || status)}</span></strong>
+    ${esc(message)}${next}${gate}
+  </div>`;
+}
+
 function renderQualityLedger(info) {
   if (!info) {
     el('qualityLedger').innerHTML = '<div class="empty">Temel kalite defteri henuz yok</div>';
@@ -967,6 +982,7 @@ function renderQualityLedger(info) {
   const roe = info.roe_shadow || {};
   el('qualityStamp').textContent = info.decision || 'olcum';
   el('qualityLedger').innerHTML = `
+    ${readinessBlock(info, 'KAP resmi finansal metrik bekleniyor; bu defter islem acmaz.')}
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">kalite olayi</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.kap_confirmed ?? 0)}</div><div class="forward-label">KAP teyitli</div></div>
@@ -1010,6 +1026,7 @@ function renderBrokerLedger(info) {
   const sources = 'broker=2 | KAP/resmi=3 | sosyal=1 | duyum=0';
   el('brokerStamp').textContent = info.decision || 'olcum';
   el('brokerLedger').innerHTML = `
+    ${readinessBlock(info, 'Broker bulten girdisi yok; kaynak sicili hazir ama olcum baslamadi.')}
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">olay</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
@@ -1056,6 +1073,7 @@ function renderFlowLedger(info) {
   }).join('');
   el('flowStamp').textContent = info.decision || 'olcum';
   el('flowLedger').innerHTML = `
+    ${readinessBlock(info, 'KAP geri alim taramasi aktif; henuz olay yok. Yabanci/takas local-private input bekler.')}
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">olay</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.kap_buyback_events ?? 0)}</div><div class="forward-label">KAP geri alim</div></div>
@@ -1101,6 +1119,7 @@ function renderMacroLedger(info) {
     </div>`).join('');
   el('macroStamp').textContent = info.decision || 'olcum';
   el('macroLedger').innerHTML = `
+    ${readinessBlock(info, 'Makro olay kaynagi yok; consensus olmadan surpiz hukmu verilmez.')}
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(info.tracked_events ?? 0)}</div><div class="forward-label">makro olay</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>

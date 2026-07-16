@@ -228,6 +228,17 @@ def _summary(events, as_of, sources):
         "avg_63d_market_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
         "decision": decision,
+        "readiness": {
+            "status": "active" if events else "empty",
+            "data_status": "macro_event_source_waiting" if not events else "measuring",
+            "message": (
+                "Makro defter hazir; kaynak/event gelmeden surpiz alpha hukmu yok. "
+                "Consensus yoksa olay sadece takvim/reaksiyon olcumu sayilir."
+            ),
+            "next_step": "docs/state/macro_surprise_sources.json icine resmi kaynakli olay ekle.",
+            "opens_trade": False,
+            "promotion_gate": "closed_until_mature_multi_regime_sample",
+        },
         "by_group": sorted(group_rows, key=lambda x: x["group"]),
         "latest_events": sorted(events, key=lambda e: e.get("date") or "", reverse=True)[:10],
         "event_types": EVENT_TYPES,

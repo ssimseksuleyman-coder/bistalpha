@@ -576,6 +576,17 @@ def _summary(events, as_of):
         "avg_63d_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
         "decision": decision,
+        "readiness": {
+            "status": "active" if events else "empty",
+            "data_status": "kap_event_stream_active_but_financial_metrics_missing",
+            "message": (
+                "KAP finansal tablo olay akisi izleniyor; ROE/kar/ciro/borcluluk gibi "
+                "kalite metrikleri icin resmi KAP/sirket tablo parse veya local resmi extract bekleniyor."
+            ),
+            "next_step": "KAP finansal tablo parser veya resmi/local finansal extract dosyasi.",
+            "opens_trade": False,
+            "promotion_gate": "closed_until_official_metrics_and_mature_sample",
+        },
         "roe_shadow": _roe_shadow_summary(),
         "latest_candidates": sorted(events, key=lambda e: e.get("release_date") or "", reverse=True)[:10],
         "by_result": sorted(by_result, key=lambda x: x["result"]),

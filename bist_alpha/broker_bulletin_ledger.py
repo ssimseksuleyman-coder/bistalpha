@@ -367,6 +367,17 @@ def _public_summary(events, input_count, input_errors, as_of, sources):
         "avg_63d_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
         "decision": decision,
+        "readiness": {
+            "status": "active" if events else "empty",
+            "data_status": "local_broker_input_waiting" if not events else "measuring",
+            "message": (
+                "Broker bulten sicili hazir; olcum icin local/broker_bulletins altinda "
+                "public olmayan, local-only event extract bekleniyor."
+            ),
+            "next_step": "Ilk broker bulten extract dosyasini local klasore koy; public panel sadece agregayi gosterir.",
+            "opens_trade": False,
+            "promotion_gate": "closed_without_official_confirmation",
+        },
         "min_mature_events_for_decision": 20,
         "by_source": _bucket_summary(events, "source_id"),
         "by_type": _bucket_summary(events, "bulletin_type"),
