@@ -92,6 +92,59 @@ def _format_trade_notice(result):
     return f"Tarih: {result.get('date')}\n\n" + "\n".join(lines)
 
 
+def _last_selection_date(state):
+    """history'deki son (initial_entry|rebalance) olayinin tarihi; yoksa None."""
+    for h in reversed(state.get("history") or []):
+        if h.get("event") in ("initial_entry", "rebalance"):
+            d = str(h.get("date") or "")[:10]
+            return d or None
+    return None
+
+
+def _trading_days_between(prices_index, start_date, end_date):
+    """prices index'ine gore start (haric) -> end (dahil) arasi ISLEM-GUNU; hesaplanamazsa None."""
+    if not start_date:
+        return None
+    try:
+        s = pd.Timestamp(start_date)
+        e = pd.Timestamp(end_date)
+    except Exception:
+        return None
+    i = int(prices_index.searchsorted(s))
+    j = int(prices_index.searchsorted(e))
+    if i >= len(prices_index) or j >= len(prices_index):
+        return None
+    return j - i
+
+
+def rebal_status(state, prices, date):
+    """
+    REBALANCE TAKVIMI — PORTFOY-DEMIRLI (bar-index DEGIL).
+
+    ESKI BUG: is_rebal = date in bt_mod._rebal_dates(prices) -> veri-penceresinin
+    252./282./312. INDEX'leri. Backtest'te pencere SABIT oldugu icin dogru calisir;
+    ama canlida pencere her gun KAYIYOR (yfinance rolling "2y") -> bugunun index'i
+    hep 252'den ~249 uzakta -> 249 %% 30 != 0 -> rebalance HIC tetiklenmedi
+    (06-05'ten 07-17'ye 0 kez; 3 bagimsiz kanit: modulo, dashboard, portfoy-gecmisi).
+    REBAL_GUN canlida "30 islem gunu gecti mi" degil "pencere 30'un katinda mi"
+    anlamina geliyordu — ayni sabit, iki farkli anlam.
+
+    DOGRU semantik: son secim-olayindan (initial_entry|rebalance) bu yana
+    REBAL_GUN ISLEM-GUNU gectiyse rebalance zamani.
+
+    Returns: (should_rebalance, initial_entry, elapsed, last_selection)
+    elapsed/last_selection sonuca yazilir -> takvim DASHBOARD'DA GORUNUR
+    (sessiz-hic-tetiklenmeme bir daha fark edilmeden kalmasin).
+    """
+    initial_entry = not state.get("positions") and not state.get("history")
+    if initial_entry:
+        return True, True, None, None
+    last_sel = _last_selection_date(state)
+    elapsed = _trading_days_between(prices.index, last_sel, date)
+    should = elapsed is not None and elapsed >= config.REBAL_GUN
+    return should, False, elapsed, last_sel
+
+
 def step(data, signals, date=None, slippage=None):
     """Tüm hesaplar için bir shadow adımı."""
     prices = data['prices']
@@ -101,8 +154,8 @@ def step(data, signals, date=None, slippage=None):
     row = prices.loc[date].dropna()
     prices_today = row.to_dict()
 
-    rebal_dates = bt_mod._rebal_dates(prices)
-    is_rebal = date in rebal_dates
+    # NOT: rebalance takvimi artik PORTFOY-DEMIRLI (bkz. rebal_status).
+    # Eski global bar-index tetikleyicisi (bt_mod._rebal_dates) canlida hic tetiklenmiyordu.
     trade_date = str(date.date()) if hasattr(date, "date") else str(date)
 
     results = {}
@@ -114,9 +167,9 @@ def step(data, signals, date=None, slippage=None):
             stop_trades = pf.close_positions(state, sells, prices_today,
                                              slippage=slippage, trade_date=trade_date)
             new_trades = list(stop_trades)
-            # 2) Rebalance
-            initial_entry = not state.get("positions") and not state.get("history")
-            should_rebalance = is_rebal or initial_entry
+            # 2) Rebalance — PORTFOY-DEMIRLI takvim (her hesap kendi gecmisinden sayar)
+            should_rebalance, initial_entry, rebal_elapsed, last_selection = rebal_status(
+                state, prices, date)
             if should_rebalance:
                 if mode == "O":
                     picks, sig_map, exc = omega_mod.select(data, signals, date)
@@ -140,6 +193,10 @@ def step(data, signals, date=None, slippage=None):
                 "stop_trades": stop_trades,
                 "rebalance": should_rebalance,
                 "initial_entry": initial_entry,
+                # Takvim GORUNURLUGU — sessiz "hic tetiklenmedi" bir daha gizli kalmasin.
+                "last_selection": last_selection,
+                "rebal_elapsed": rebal_elapsed,
+                "rebal_due_in": (config.REBAL_GUN - rebal_elapsed) if rebal_elapsed is not None else None,
                 "new_trades": new_trades,
                 "last_event": state.get("history", [])[-1] if state.get("history") else None,
             }
@@ -165,7 +222,8 @@ def step(data, signals, date=None, slippage=None):
             reason="gec-katilim cold-start, F'e senkron (bugunku fiyat)")
         g1_should_rebalance = True
     else:
-        g1_should_rebalance = is_rebal
+        # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
+        g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
         g1_state, g1_events = g1_mod.step(
             data, signals, g1_state, date, prices_today, g1_should_rebalance,
             slippage=slippage)
@@ -192,8 +250,10 @@ def step(data, signals, date=None, slippage=None):
     except Exception as e:
         print(f"[shadow] G1 tradelog yazilamadi: {e}")
     results["G1"] = g1_info
+    # Cycle-duzeyi bayrak: artik global bar-index yok -> hesaplardan turet.
+    any_rebal = any(r.get("rebalance") for r in results.values() if isinstance(r, dict))
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
-            "rebalance": is_rebal, "accounts": results}
+            "rebalance": any_rebal, "accounts": results}
 
 
 def status():
