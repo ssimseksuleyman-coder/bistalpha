@@ -62,7 +62,7 @@ COLS = [
     ("Getiri %",      "ret",     ">9",  "%"),
     ("Max DD %",      "dd",      ">9",  "%"),
     ("Sharpe",        "sharpe",  ">8",  ""),
-    ("Calmar",        "calmar",  ">8",  ""),
+    ("Calmar_y",      "calmar_annual", ">8", ""),
     ("Stop #",        "n_stops", ">7",  ""),
     ("Süre(s)",       "elapsed", ">8",  ""),
 ]

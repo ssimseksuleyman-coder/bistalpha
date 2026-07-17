@@ -56,11 +56,11 @@ def main():
         return
 
     if args.compare:
-        print(f"\n{'Mode':6s} {'Getiri':>9s} {'MaxDD':>8s} {'Sharpe':>7s} {'Calmar':>7s} {'Stop':>5s}")
+        print(f"\n{'Mode':6s} {'Getiri':>9s} {'MaxDD':>8s} {'Sharpe':>7s} {'Calmar_y':>8s} {'Stop':>5s}")
         print("-" * 50)
         for m in ["A", "B", "F"]:
             r = bt_mod.run(data, signals, mode=m, slippage=args.slippage)
-            print(f"{m:6s} %{r['ret']:>7.1f} %{r['dd']:>6.2f} {r['sharpe']:>6.2f} {r['calmar']:>6.2f} {r['n_stops']:>5d}")
+            print(f"{m:6s} %{r['ret']:>7.1f} %{r['dd']:>6.2f} {r['sharpe']:>6.2f} {r['calmar_annual']:>7.2f} {r['n_stops']:>5d}")
         return
 
     r = bt_mod.run(data, signals, mode=args.mode, slippage=args.slippage)
@@ -68,7 +68,8 @@ def main():
     print(f"  Getiri : %{r['ret']}")
     print(f"  Max DD : %{r['dd']}")
     print(f"  Sharpe : {r['sharpe']}")
-    print(f"  Calmar : {r['calmar']}")
+    print(f"  Calmar : {r['calmar_annual']}  (YILLIK getiri/DD — karar metrigi)")
+    print(f"           {r['calmar_total']}  (toplam/DD — eski formul, {r['years']} yillik backtest)")
     print(f"  Stop # : {r['n_stops']}")
 
 

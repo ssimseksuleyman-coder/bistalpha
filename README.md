@@ -70,11 +70,14 @@ python run_backtest.py --picks --mode F
 
 ### Beklenen çıktı (referans — tek rejim veri)
 ```
-Mode   Getiri    MaxDD  Sharpe  Calmar  Stop
-A      %289.4   %-6.61   ...    43.78
-B      %268.8   %-8.14   ...    33.03
-F      %301.1   %-5.54   ...    54.32
+Mode      Getiri    MaxDD  Sharpe Calmar_y  Stop
+A      %  289.4 % -6.61   7.70   44.42    55
+B      %  268.8 % -8.14   6.95   33.51    55
+F      %  301.1 % -5.54   7.34   55.12    56
 ```
+
+`Calmar_y` yillik getiri / maxDD karar metrigi; `calmar_total` eski toplam
+getiri / maxDD formulu olarak sadece karsilastirma icin tutulur.
 
 ---
 

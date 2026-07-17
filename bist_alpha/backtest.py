@@ -24,7 +24,8 @@ def run(data, signals, mode=None, slippage=0.0, verbose=False):
     Backtest çalıştırır.
     mode: "A"/"B"/"F" (None -> config.MODE)
     slippage: her alım/satımda ek kayma (round-trip = 2x)
-    Returns: dict (ret, dd, sharpe, calmar, n_stops, equity_curve)
+    Returns: dict (ret, ann_ret_pct, years, dd, sharpe,
+                   calmar_annual, calmar_total, n_stops, equity_curve)
     """
     mode = mode or config.MODE
     prices = data['prices']
@@ -120,11 +121,21 @@ def _metrics(v, n_stops):
     dd = ((v - peak) / peak * 100).min()
     dr = np.diff(v) / v[:-1]
     sharpe = dr.mean() / dr.std() * np.sqrt(252) if dr.std() > 0 else 0.0
+    # Yillik getiri (CAGR) — cok-yillik backtest'te toplam-getiriyi yillige cevir.
+    years = len(v) / 252.0
+    ann_ret = ((float(v[-1]) ** (1.0 / years)) - 1) * 100 if years > 0 and v[-1] > 0 else 0.0
     return {
-        'ret': round(float(ret), 2),
+        'ret': round(float(ret), 2),            # TOPLAM getiri (%)
+        'ann_ret_pct': round(float(ann_ret), 2),  # YILLIK getiri (CAGR, %)
+        'years': round(float(years), 2),
         'dd': round(float(dd), 2),
-        'sharpe': round(float(sharpe), 2),
-        'calmar': round(float(abs(ret / dd)), 2) if dd != 0 else 0.0,
+        'sharpe': round(float(sharpe), 2),      # NOT: risksiz-getiri DUSULMEDI (TRY'de absolut deger yaniltir)
+        # ISIM AYRIMI (bilincli): eski 'calmar' TOPLAM-getiri/DD idi; span'e gore
+        # yillik Calmar'dan ayrisabilir. Bu yuzden belirsiz 'calmar' anahtari yok.
+        # calmar_annual = standart Calmar (YILLIK getiri/maxDD) = KARAR metrigi.
+        # calmar_total  = eski formul, acik-adlandirildi (gecmis kayitlarla karsilastirma icin).
+        'calmar_annual': round(float(abs(ann_ret / dd)), 2) if dd != 0 else 0.0,
+        'calmar_total': round(float(abs(ret / dd)), 2) if dd != 0 else 0.0,
         'n_stops': int(n_stops),
         'equity_curve': v.tolist(),
     }

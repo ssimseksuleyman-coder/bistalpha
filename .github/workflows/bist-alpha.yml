@@ -38,6 +38,19 @@ jobs:
       - uses: actions/checkout@v4
       - name: En son state'i al
         run: git pull --rebase --autostash || true
+
+      - uses: actions/setup-python@v5
+        if: github.event_name != 'schedule'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+        if: github.event_name != 'schedule'
+
+      - name: Kendi kendini test etme ve F golden-master
+        if: github.event_name != 'schedule'
+        run: python3 selftest.py
+
       - name: Planli tetik kapisi
         id: gate
         env:

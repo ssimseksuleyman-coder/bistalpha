@@ -72,12 +72,12 @@ def walk_forward(data, mode="F", train_days=252, test_days=63, slippage=0.0, ver
             "train_ret":    r_train['ret'],
             "train_dd":     r_train['dd'],
             "train_sharpe": r_train['sharpe'],
-            "train_calmar": r_train['calmar'],
+            "train_calmar_annual": r_train['calmar_annual'],
             # Test metrikleri
             "test_ret":    r_test['ret'],
             "test_dd":     r_test['dd'],
             "test_sharpe": r_test['sharpe'],
-            "test_calmar": r_test['calmar'],
+            "test_calmar_annual": r_test['calmar_annual'],
             # Degradasyon
             "degrade_sharpe_pct": round(degrade_sharpe, 1) if degrade_sharpe is not None else None,
             "degrade_ret_pct":    round(degrade_ret,    1) if degrade_ret    is not None else None,

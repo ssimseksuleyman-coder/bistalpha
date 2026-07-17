@@ -149,29 +149,44 @@ def main():
             ok(fl)
 
     # 6. Backtest (TESPİT 4 — statik sapma düzeltildi)
-    print("\n[6] Backtest A/B/F")
+    print("\n[6] Backtest A/B/F + F golden-master (DOKUNULMAZ koruması)")
     try:
-        from bist_alpha import data as dm, signals as sm, backtest as bm, config as cfg
-        src = getattr(cfg, "DATA_SOURCE", "file")
+        from bist_alpha import data as dm, signals as sm, backtest as bm
+        # load_data() HER ZAMAN donmus Excel'i okur; config.DATA_SOURCE canli-daemon
+        # feed'ini secer, bu backtest'i DEGIL -> kontrol DATA_SOURCE'a gate'lenMEZ.
+        # (Eski kod src=="file" ile gate'liyordu; varsayilan "yahoo" oldugundan
+        #  aralik-kontrolu hic calismiyordu = olu koruma.)
         d = dm.load_data()
         sig = sm.compute_signals(d)
         ranges = {"A": (260, 320), "B": (240, 300), "F": (275, 335)}
+        results = {}
         for mode in ["A", "B", "F"]:
             r = bm.run(d, sig, mode=mode)
             if not r:
                 bad(f"{mode}: backtest çalışmadı")
                 continue
-            if src == "file":
-                lo, hi = ranges[mode]
-                if lo <= r["ret"] <= hi:
-                    ok(f"{mode}: %{r['ret']} (gömülü veri beklenen {lo}-{hi})")
-                else:
-                    bad(f"{mode}: %{r['ret']} gömülü veri aralığı dışı")
+            results[mode] = r
+            lo, hi = ranges[mode]
+            if lo <= r["ret"] <= hi:
+                ok(f"{mode}: %{r['ret']} (donmuş veri beklenen {lo}-{hi})")
             else:
-                if -50 <= r["ret"] <= 500:
-                    ok(f"{mode}: %{r['ret']} (canlı veri — sabit aralık denetlenmez)")
-                else:
-                    warn(f"{mode}: %{r['ret']} canlı veride şüpheli")
+                bad(f"{mode}: %{r['ret']} donmuş veri aralığı dışı")
+
+        # --- F GOLDEN-MASTER — DOKUNULMAZ'in tek otomatik korumasi ---
+        # Donmus Excel + sabit config => deterministik. Bu sayilar oynadiysa F'in
+        # secim/stop davranisi DEGISMISTIR. Kirmizi = "kasitli mi, kaza mi?" sorusu.
+        # Tolerans 0.05: platform float-sapmasina bagisik; gercek F-degisimi
+        # (farkli pick/agirlik) puan mertebesinde oynar -> yakalanir.
+        gm = results.get("F")
+        if gm:
+            E_RET, E_DD, E_STOPS = 301.07, -5.54, 56
+            if (abs(gm["ret"] - E_RET) < 0.05 and abs(gm["dd"] - E_DD) < 0.05
+                    and gm["n_stops"] == E_STOPS):
+                ok(f"F golden-master KORUNDU: ret={gm['ret']} dd={gm['dd']} stops={gm['n_stops']}")
+            else:
+                bad(f"F GOLDEN-MASTER SAPTI → ret={gm['ret']} (bkl {E_RET}), "
+                    f"dd={gm['dd']} (bkl {E_DD}), stops={gm['n_stops']} (bkl {E_STOPS}) "
+                    f"— F davranışı değişti: KASITLI mı?")
     except Exception as e:
         bad(f"backtest hatası: {e}")
 
