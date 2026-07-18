@@ -105,6 +105,20 @@ jobs:
           PY
           python3 scripts/report_gate.py mark "${{ steps.gate.outputs.label }}"
 
+      # SEVIYE-2 BEKCI: daemon -> tarayici. Tarayici sessizce olurse ya da
+      # kosup YANLIS calisirsa (hep-GREEN, bos yazma, uye dusurme) burada
+      # AKTIF sinyal cikar -- "insan gelmeyen mesaji fark etsin" modeline
+      # birakilmaz. continue-on-error: alarm Telegram'dan gider, daemon'un
+      # KENDI yesil/kirmizi sinyali kirletilmez ("daemon kirmizi" = daemon bozuk
+      # anlamini korusun). Rapor adimi coksa bile calissin -> always().
+      - name: Bekci — liveness tarayicisi canli + tutarli mi
+        if: always() && steps.gate.outputs.run == 'true'
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/liveness_watchdog.py
+
       - name: Portfoy state commit (kalicilik)
         if: always() && steps.gate.outputs.run == 'true'
         env:
