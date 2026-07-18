@@ -31,9 +31,52 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "state" / "liveness.json"
 
-# Hafta-sonu toleransi: daemon yalniz hafta-ici kosar (cron 1-5).
-# Cuma 18:40 -> Pazartesi 06:45 ~= 60 saat. 72h esigi hafta-sonu yanlis-alarmini onler.
-WEEKEND_TOLERANT_HOURS = 72
+# ---------------------------------------------------------------------------
+# TAKVIM-FARKINDA BAYATLIK (2026-07-18 revizyon)
+#
+# ESKI: sabit 72h ("son kosudan N saat"). IKI YONDE de yanlisti:
+#   - Hafta-ici bir kirilmayi ~2 GUN gizliyordu (Pzt sabahi dusen daemon Carsamba
+#     gorunurdu).
+#   - Hafta-sonu icin gevsetilmisti, yani gevseklik yapisal degil kaba-ayardi.
+#
+# YENI: "bir sonraki BEKLENEN kosu" hesabi. Uye-basina takvim (hafta-gunu + slot
+# saatleri, UTC). Kacirilan-slot SAYILIR:
+#   0 kacik -> GREEN | 1 kacik -> YELLOW (gecici olabilir) | >=2 -> RED (durdu)
+# Hafta-sonu YAPISAL olarak atlanir (o gunlerde slot tanimli degil) -> Cumartesi
+# bayat-dashboard dogru sekilde GREEN kalir (yanlis-alarm yok), ama hafta-ici
+# 2 slot kacinca ayni gun RED olur.
+#
+# TZ: tum hesap UTC (bkz _age_hours TZ notu). GitHub cron gecikmesi gozlemlendi
+# (6:45 cron -> 08:56 kosu) -> grace saatleri o gecikmeye toleransli.
+# ---------------------------------------------------------------------------
+SCHEDULES = {
+    # daemon (bist-alpha.yml + precise.yml) hafta-ici ~3 slot; gozlenen gecikme ~2h
+    "daemon_cycle": {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (7, 12, 16), "grace_h": 4},
+    # catalyst.yml: '10 16 * * 1-5' -> gunluk tek slot
+    "kap_daily":    {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (16,),       "grace_h": 6},
+}
+
+
+def _missed_slots(last_run, now, sched):
+    """
+    last_run'dan bu yana KACIRILAN zamanlanmis slot sayisi.
+    Hafta-sonu/tatil yapisal olarak atlanir (o gunler weekdays'te yok).
+    grace: GitHub cron gecikmesine tolerans (slot + grace gecmeden 'kacti' sayilmaz).
+    """
+    cutoff = now - timedelta(hours=sched["grace_h"])
+    if last_run >= cutoff:
+        return 0
+    n = 0
+    day = last_run.date()
+    end = cutoff.date()
+    while day <= end:
+        if day.weekday() in sched["weekdays"]:
+            for h in sched["slots_utc"]:
+                slot = datetime(day.year, day.month, day.day, h)
+                if last_run < slot <= cutoff:
+                    n += 1
+        day += timedelta(days=1)
+    return n
 
 # ---------------------------------------------------------------------------
 # REGISTRY — hangi mekanizma canli olmali, damgasini nereye yazmali.
@@ -46,7 +89,7 @@ REGISTRY = {
         "expected": "active",
         "file": "docs/state/kap_status.json",
         "ts_keys": ["updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "kap_daily",   # catalyst.yml: '10 16 * * 1-5' (gunluk tek slot)
         "ok_key": "status",
         "ok_value": "ok",
         "note": "catalyst_feed -> KAP scrape; gunluk 16:10 UTC cron (catalyst.yml)",
@@ -55,8 +98,8 @@ REGISTRY = {
         "kind": "producer",
         "expected": "active",
         "file": "docs/state/dashboard.json",
-        "ts_keys": ["date", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "ts_keys": ["timestamp", "updated_at", "date"],
+        "schedule": "daemon_cycle",
         "ok_key": "bist_data_ok",
         "ok_value": True,
         "note": "yfinance/datafeed; daemon her dongude",
@@ -66,7 +109,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/forward_test.json",
         "ts_keys": ["updated_at", "summary.updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["tracked_count", "days_tracked"],
         "input_paths": [],
     },
@@ -77,7 +120,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/performance_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.latest_events"],
         "input_paths": [],
     },
@@ -85,7 +128,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/opportunity_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.total_events"],
         "input_paths": [],
     },
@@ -93,7 +136,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/catalyst_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["docs/state/catalysts.json"],
     },
@@ -101,7 +144,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # buyback-event henuz gelmedi
         "file": "docs/state/flow_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         # SADECE OZEL girdi. Paylasilan ust-akis (catalysts.json) buraya KONMAZ:
         # "girdi var" != "ILGILI girdi var" -> ilk surumde catalysts.json'i (25 event,
@@ -114,7 +157,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # KAP finansal parser YAZILMADI
         "file": "docs/state/quality_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["local/kap_financials", "local/kap_financial_actuals.json"],
     },
@@ -122,7 +165,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # sources.json'a event girilmedi
         "file": "docs/state/macro_surprise_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["docs/state/macro_surprise_sources.json"],
     },
@@ -130,7 +173,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # private input hic konmadi
         "file": "docs/state/broker_bulletin_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["local/broker_bulletins"],
     },
@@ -138,7 +181,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/missed_opportunities.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
-        "max_age_hours": WEEKEND_TOLERANT_HOURS,
+        "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.hot_missed_count"],
         "input_paths": [],
     },
@@ -173,6 +216,13 @@ def _age_hours(ts):
     sisirir (TR'de +3h) -> 72h esiginde gercekte 69h olan is BAYAT sanilir =
     yanlis-KIRMIZI = alarm-korlugu. CI'da (UTC runner) tesadufen dogru calisir,
     yani bug YALNIZ local'de gorunur, CI'da GIZLI kalir. -> utcnow kullan.
+
+    COZUNURLUK NOTU (2026-07-18, slot-esigi kurulurken bulundu): tarih-only
+    damga ("2026-07-17") 00:00 sayilirsa, o GUNUN kendi slotlari (07/12/16)
+    "kacmis" gorunur -> sahte-KIRMIZI. Gercek kosu 18:40'ta olmustu. Cozum:
+    saat bilinmiyorsa GUN-SONU'na yorumla (en-lehte okuma) -> gun-ici sahte-
+    kacik uretmez, ama COK-GUNLUK cokme yine yakalanir (kayma <24h).
+    Kayit-defterinde her zaman once SAAT-HASSAS alani yaz (ts_keys sirasi).
     """
     if not ts:
         return None
@@ -181,7 +231,9 @@ def _age_hours(ts):
     for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
             dt = datetime.strptime(s[:len(now.strftime(fmt))], fmt)
-            return (now - dt).total_seconds() / 3600.0
+            if fmt == "%Y-%m-%d":
+                dt = dt.replace(hour=23, minute=59, second=59)
+            return max(0.0, (now - dt).total_seconds() / 3600.0)
         except ValueError:
             continue
     return None
@@ -247,10 +299,21 @@ def check(name, cfg):
     if age is None:
         row.update(status="RED", reason=f"damga cozulemedi: {ts!r}")
         return row
-    if age > cfg["max_age_hours"]:
+    # --- TAKVIM-FARKINDA BAYATLIK: kacirilan SLOT say (sabit saat esigi DEGIL) ---
+    sched = SCHEDULES[cfg["schedule"]]
+    last_dt = datetime.utcnow() - timedelta(hours=age)
+    missed = _missed_slots(last_dt, datetime.utcnow(), sched)
+    row["schedule"] = cfg["schedule"]
+    row["missed_slots"] = missed
+    who = "kaynak" if cfg["kind"] == "producer" else "daemon/defter"
+    if missed >= 2:
         row.update(status="RED",
-                   reason=f"BAYAT: {age:.0f}h > {cfg['max_age_hours']}h "
-                          f"({'kaynak durdu' if cfg['kind']=='producer' else 'daemon/defter durdu'})")
+                   reason=f"{missed} zamanlanmis slot KACTI ({who} durdu) "
+                          f"[{cfg['schedule']}, yas {age:.0f}h]")
+        return row
+    if missed == 1:
+        row.update(status="YELLOW",
+                   reason=f"1 slot kacti — gecici olabilir, izle [{cfg['schedule']}, yas {age:.0f}h]")
         return row
 
     # Uretici: ok-alani da olculmus olmali
