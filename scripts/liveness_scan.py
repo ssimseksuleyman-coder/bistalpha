@@ -164,14 +164,24 @@ def _first(d, keys):
 
 
 def _age_hours(ts):
-    """ISO ya da YYYY-MM-DD damgasini saat-yasina cevirir."""
+    """
+    ISO ya da YYYY-MM-DD damgasini saat-yasina cevirir.
+
+    TZ NOTU (2026-07-18 bulundu, gercek bug): tum damgalar CLOUD'da (GitHub
+    Actions = UTC) uretiliyor -> naive ama fiilen UTC. Karsilastirmayi
+    datetime.now() (LOCAL) ile yapmak, local makinede yasi TZ-offset kadar
+    sisirir (TR'de +3h) -> 72h esiginde gercekte 69h olan is BAYAT sanilir =
+    yanlis-KIRMIZI = alarm-korlugu. CI'da (UTC runner) tesadufen dogru calisir,
+    yani bug YALNIZ local'de gorunur, CI'da GIZLI kalir. -> utcnow kullan.
+    """
     if not ts:
         return None
     s = str(ts).strip()
+    now = datetime.utcnow()
     for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
-            dt = datetime.strptime(s[:len(datetime.now().strftime(fmt))], fmt)
-            return (datetime.now() - dt).total_seconds() / 3600.0
+            dt = datetime.strptime(s[:len(now.strftime(fmt))], fmt)
+            return (now - dt).total_seconds() / 3600.0
         except ValueError:
             continue
     return None
@@ -281,7 +291,9 @@ def main():
     yellow = [r for r in rows if r["status"] == "YELLOW"]
     payload = {
         # Tarayicinin KENDI damgasi — "izleyeni izleyen yok" regresyonu burada durur.
-        "updated_at": datetime.now().isoformat(timespec="seconds"),
+        # UTC (naive): tum uretici damgalari CI/UTC; ayni eksende olsun (bkz _age_hours TZ notu).
+        "updated_at": datetime.utcnow().isoformat(timespec="seconds"),
+        "tz": "UTC",
         "scanner": "scripts/liveness_scan.py",
         "verdict": "RED" if red else ("YELLOW" if yellow else "GREEN"),
         "red_count": len(red), "yellow_count": len(yellow), "total": len(rows),
