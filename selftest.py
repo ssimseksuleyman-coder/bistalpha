@@ -113,14 +113,28 @@ def main():
             bad(f"{s}: {e}")
 
     # 4. Veri
+    # BLOKLAYICI = yalnizca repoda OLMASI GEREKEN veri (golden-master girdisi).
+    # LOCAL-ONLY = Deniz-musluğu (2026-07-17) sonrasi kasitli repoda-degil:
+    #   data/omega/*  -> tumu Deniz-bulten-turevi (lisans) -> gitignore + rm --cached
+    #   deniz_inbox/  -> ham Deniz PDF'leri -> gitignore (kaza-git-add korumasi)
+    # Bunlari bad() saymak CI'i kirmisti: gizlilik-onlemi, golden-master'in (DOKUNULMAZ
+    # korumasi) hic calisamamasina yol acti — iki guvenlik-onlemi cakisti. Assert artik
+    # gercege kalibre: yoklari BEKLENEN (local'de varsa bilgi, yoksa uyari-degil).
     print("\n[4] Veri bütünlüğü")
-    for path, desc in [("data/Tarihsel_Fiyat_Bilgileri.xlsx", "ana veri"),
-                       ("data/omega", "OMEGA yan-kaynak"),
+    if os.path.exists("data/Tarihsel_Fiyat_Bilgileri.xlsx"):
+        ok("ana veri (golden-master girdisi): data/Tarihsel_Fiyat_Bilgileri.xlsx")
+    else:
+        bad("ana veri YOK: data/Tarihsel_Fiyat_Bilgileri.xlsx (golden-master kosamaz)")
+    for path, desc in [("data/omega", "OMEGA yan-kaynak"),
                        ("deniz_inbox", "Deniz bülten")]:
         if os.path.exists(path):
-            ok(f"{desc}: {path}")
+            ok(f"{desc}: {path} (local'de var)")
         else:
-            bad(f"{desc} YOK: {path}")
+            # "ok" DEGIL "bilincli-atlandi": gerekce alani tasinsin, yoksa gelecekte
+            # bu satir "kontrol gecti" diye okunur ve BASKA bir sebeple yok olsa da susar.
+            ok(f"ATLANDI (bilinçli) — {desc}: {path} repoda YOK. "
+               f"Gerekçe: Deniz-musluğu 2026-07-17, lisanslı-türev → local-only. "
+               f"Bu yol repoda BEKLENMİYOR; assert kaldırıldı, silinmedi.")
 
     # Sektör kapsamı (eşleme eksikliği yanlış sonuç üretir)
     try:
