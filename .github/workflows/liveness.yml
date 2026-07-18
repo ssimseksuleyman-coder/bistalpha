@@ -1,0 +1,91 @@
+name: liveness
+
+# "Yoklugun imzasi yok" panzehiri — zamanlanmis her mekanizmanin son-kosu denetimi.
+# IZOLE: daemon'dan ayri, F/A/B/O/G1'e sifir dokunus, yalniz docs/state/liveness.json yazar.
+#
+# HEARTBEAT TASARIMI (kritik): RED-yoksa-sus DEGIL. Her kosuda Telegram atar.
+# Sebep: "alarm gelmiyor" iki sey olabilir -> (a) her sey yesil (iyi),
+# (b) TARAYICI OLDU (kotu). Heartbeat olmadan ikisi ayirt edilemez ve tarayici
+# kendi izledigi hatanin kurbani olur (sessizce durur, sen "yesil" sanirsin).
+# Heartbeat ile: SESSIZLIK = tarayici-oldu sinyali.
+
+on:
+  schedule:
+    - cron: '0 17 * * 1-5'   # hafta-ici 17:00 UTC (20:00 TR) — tum ureticiler kostuktan SONRA
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/liveness_scan.py'
+      - '.github/workflows/liveness.yml'
+
+concurrency:
+  group: liveness
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Liveness taramasi (stdlib-only, bagimlilik yok)
+        id: scan
+        run: |
+          set -o pipefail
+          OUT=$(python scripts/liveness_scan.py 2>&1) || SCAN_RED=1
+          echo "$OUT"
+          HEALTH=$(echo "$OUT" | grep -oE 'HEALTH:.*' | tail -1 || echo "HEALTH: yok")
+          echo "health=$HEALTH" >> $GITHUB_OUTPUT
+          echo "red=${SCAN_RED:-0}" >> $GITHUB_OUTPUT
+          # Kirmizi satirlari mesaja koy (ilk 5)
+          REDLINES=$(echo "$OUT" | grep -E '^\s*!!' | head -5 | sed 's/^[[:space:]]*//' || true)
+          {
+            echo "redlines<<EOF"
+            echo "${REDLINES:-yok}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: liveness.json commit
+        run: |
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/state/liveness.json
+          if git diff --cached --quiet; then
+            echo "Degisiklik yok — commit atlaniyor."
+          else
+            git commit -m "liveness $(date -u +%F_%H%M) [${{ steps.scan.outputs.health }}]"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push origin "${GITHUB_REF_NAME}" || echo "push atlandi (catisma) — sonraki kosu self-heal"
+          fi
+
+      - name: Telegram — HER kosuda (alarm ya da heartbeat)
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then
+            echo "Telegram secret'lari yok — mesaj atlaniyor."; exit 0
+          fi
+          NL=$'\n'
+          if [ "${{ steps.scan.outputs.red }}" = "1" ]; then
+            MSG="🔴 LIVENESS ALARM ($(date -u +%F))${NL}${{ steps.scan.outputs.health }}"
+            MSG="${MSG}${NL}${NL}KIRMIZI:${NL}${{ steps.scan.outputs.redlines }}"
+            MSG="${MSG}${NL}${NL}Bir zamanlanmis is DURMUS olabilir — dashboard > Canlilik blogunu kontrol et."
+          else
+            # HEARTBEAT: yesil/sari da bildirilir ki SESSIZLIK = tarayici-oldu olsun.
+            MSG="🟢 liveness heartbeat ($(date -u +%F)) — ${{ steps.scan.outputs.health }}"
+            MSG="${MSG}${NL}(Bu mesaj kesilirse TARAYICI durmustur; sessizlik = alarm.)"
+          fi
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" -d text="$MSG" > /dev/null || echo "Telegram gonderilemedi"

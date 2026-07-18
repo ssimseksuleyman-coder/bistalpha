@@ -313,6 +313,14 @@
 
         <div class="card" style="margin-top:14px">
           <div class="card-head">
+            <h2>Canlilik (Liveness)</h2>
+            <span class="stamp" id="livenessStamp"></span>
+          </div>
+          <div class="forward" id="liveness"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
             <h2>IBS Tepki Radari</h2>
             <span class="stamp" id="ibsStamp"></span>
           </div>
@@ -1142,6 +1150,35 @@ function statBox(label, stat) {
   </div>`;
 }
 
+function renderLiveness(info) {
+  // "Yoklugun imzasi yok" panzehiri: her zamanlanmis is icin son-kosu + gecikme.
+  // Tarayici kendi damgasini da yazar -> bu blok bosalirsa TARAYICI olmustur.
+  if (!info) {
+    el('liveness').innerHTML = '<div class="empty">liveness.json yok — tarayici hic kosmadi mi?</div>';
+    el('livenessStamp').textContent = 'yok';
+    return;
+  }
+  const v = info.verdict || '-';
+  el('livenessStamp').textContent = v.toLowerCase();
+  const icon = { RED: '!!', YELLOW: '??', GREEN: 'OK' };
+  const order = { RED: 0, YELLOW: 1, GREEN: 2 };
+  const rows = (info.checks || []).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+  const scanAge = info.updated_at ? fmtTime(info.updated_at) : '-';
+  el('liveness').innerHTML = `
+    <div class="forward-grid">
+      <div class="forward-box"><div class="forward-value">${esc(v)}</div><div class="forward-label">karar</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.red_count ?? '-')}</div><div class="forward-label">kirmizi</div></div>
+      <div class="forward-box"><div class="forward-value">${esc(info.yellow_count ?? '-')} / ${esc(info.total ?? '-')}</div><div class="forward-label">sari / toplam</div></div>
+    </div>
+    <div class="meta" style="padding-top:10px">Tarayici son kosu: ${esc(scanAge)} (${esc(info.scanner || '-')})</div>
+    ${rows.map(r => `
+      <div class="forward-row">
+        <strong>${esc(icon[r.status] || '')} ${esc(r.name)}</strong>
+        <span>${esc(r.age_hours != null ? r.age_hours + 'h' : '-')} | ${esc(r.reason || '')}</span>
+      </div>`).join('')}
+  `;
+}
+
 function renderIbsRadar(info) {
   if (!info) {
     el('ibsRadar').innerHTML = '<div class="empty">IBS backtest ozeti henuz yok</div>';
@@ -1185,6 +1222,13 @@ async function loadDashboard() {
     } catch (_) {
       ibsInfo = null;
     }
+    let livenessInfo = null;
+    try {
+      const lvResponse = await fetch('state/liveness.json?ts=' + Date.now(), { cache: 'no-store' });
+      if (lvResponse.ok) livenessInfo = await lvResponse.json();
+    } catch (_) {
+      livenessInfo = null;
+    }
     const accounts = data.accounts || {};
     renderTop(data.top10 || []);
     renderDecisionCards(data);
@@ -1197,6 +1241,7 @@ async function loadDashboard() {
     renderBrokerLedger(data.broker_bulletin_ledger);
     renderFlowLedger(data.flow_ledger);
     renderMacroLedger(data.macro_surprise_ledger);
+    renderLiveness(livenessInfo);
     renderIbsRadar(ibsInfo);
     renderAccounts(accounts);
     renderOperationGate(data);
