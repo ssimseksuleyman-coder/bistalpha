@@ -14,6 +14,36 @@ katmanları ayrılır, terfi kanıta bağlanır.
 | Operasyon | workflow, fallback, bakım, audit | Orta | Küçük commit, geri dönüş planı |
 | Dokümantasyon | runbook, politika | Düşük | Kodla aynı niyeti taşımalı |
 
+## Doğrulama Yasası — ground-truth'a bak, ara-göstergeye değil
+
+**Her doğrulama ground-truth'a bakmalıdır. Ara-gösterge kanıt değildir.**
+
+| Ara-gösterge (kanıt DEĞİL) | Ground-truth (kanıt) |
+|---|---|
+| `exit` kodu, `$?`, "komut başarılı döndü" | İşin fiilen bıraktığı iz: dosya, kayıt, uzak SHA |
+| CI job `conclusion` (`success`/`cancelled`) | Yayınlanan çıktının içeriği |
+| Dashboard/rapor özet alanı (`rebalance: true`) | Ham state (`portfolio_F.json` history olayları) |
+| `status`/`ok` bayrağı | Bayrağı üreten hesabın girdisi |
+| Tarih alanı (`date`, gün çözünürlüğü) | Saat-hassas damga (`timestamp`) |
+| "Testler geçti" | Testin o kod yolunu gerçekten çalıştırdığı (mutasyon: bozunca kızarıyor mu) |
+| Yerel saat (`datetime.now()`) | Damganın yazıldığı eksen (UTC) |
+
+**Neden yasa:** ara-gösterge, gerçeğin *proxy*'sidir; gerçek değişince proxy sessizce yanlışlanır ve **yanlış-güven** üretir. Bu, sessiz-bug'ın doğuş koşuludur — ve tespit edilemez, çünkü gösterge "iyi" demeye devam eder.
+
+**2026-07-17/18 oturumunda aynı sınıf altı kez tekrarladı:**
+1. **Rebalance-bug** — `REBAL_GUN=30` "işlem günü" sanıldı, fiilen "bar-index % 30" idi; dashboard özeti `rebalance: false` diyordu, gerçeği `portfolio_F.json` history'sindeki **sıfır rebalance olayı** söyledi. Canlı F 6 hafta hiç çalışmadı.
+2. **TZ** — `datetime.now()` (yerel) ile UTC damgalar karşılaştırıldı; yaş +3h şişti. Ground-truth = damganın yazıldığı eksen.
+3. **`$?`** — tarayıcı v1 doğrulamasında geçersiz exit-kodu testi.
+4. **Push** — `push exit=0` yazdı ama push reddedilmişti (`$?` boru hattındaki `tail`'i okuyordu); gerçeği `origin/main`'in **fiili SHA'sı** söyledi.
+5. **`market_data`** — `date` (gün, 00:00 sayılıyor) okundu, `timestamp` (18:40:40) mevcuttu; sahte "3 slot kaçtı" alarmı üretti.
+6. **CI `cancelled`** — `conclusion` alanı "kırık" gibi okundu; gerçeği **yayınlanan sayfanın içeriği** söyledi (eşzamanlılık supersede'i, kırılma değil).
+
+**Uygulama kuralları:**
+- Bir şeyi "çalışıyor/düzeldi" demeden önce, işin **bıraktığı izi** oku — çalıştığını iddia eden alanı değil.
+- Bir denetim yazarken sor: *bu kontrol neye bakıyor — gerçeğe mi, gerçeğin özetine mi?*
+- Zamanlanmış her davranış için "son ne zaman çalıştı / gecikti mi" **ham kayıttan** doğrulanır.
+- Detektör kurarken test çift yönlüdür: bozunca kırmızı **ve** sağlamken yeşil.
+
 ## Commit Öncesi Kontrol
 
 ```powershell
