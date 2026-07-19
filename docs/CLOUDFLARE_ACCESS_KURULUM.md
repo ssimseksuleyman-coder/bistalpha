@@ -107,6 +107,95 @@ Email: kendi e-posta adresin
 Login method: One-time PIN / email OTP
 ```
 
+## 2b. Pinger icin Access-muafiyeti (AYNI ANDA tanimla)
+
+Access policy kurulurken bu muafiyet **ayni anda** tanimlanmalidir. Sonraya
+birakilirsa repo-disi pinger public-URL varsayan eski tasariyla kurulur.
+
+**Neden gerekli.** Korelasyonlu ariza (Actions kesintisi, faturalama,
+60-gun-auto-disable) hem daemon'u hem tarayiciyi susturur; o durumda bagiran son
+hat repo-disi pinger'dir (bkz. `scripts/liveness_watchdog.py` basligi ve
+izleme-topolojisi). Pinger'in isi **icerik-tazeligi** olcmektir: damga ilerliyor
+mu. Access arkasinda anonim istek 302/403 doner; pinger "kapi cevap veriyor"
+gorup susar. Bu, ara-gostergeyi (HTTP durumu) ground-truth (icerik damgasi)
+sanmaktir -- bkz. `DEGISIKLIK_YONETIMI.md` "Dogrulama Yasasi". Izleyenin
+kendisi de yasaya tabidir; en tehlikeli yer burasidir, cunku pinger tam olarak
+her seyin oldugu anda calisir.
+
+**Karar: service-token DEGIL, tek-dosya bypass.** Service-token (
+`CF-Access-Client-Id`/`Secret`) tam icerik okur ama token'i ucuncu-taraf pinger
+servisine (UptimeRobot vb.) koymayi ve token-yonetimini getirir. Bypass'ta
+token yoktur, ucuncu-tarafa CF kimligi verilmez, ve pinger dogru seyi olcer.
+
+```text
+Policy: Bypass
+Path:   /state/liveness.json      <-- TEK DOSYA (klasor DEGIL)
+```
+
+Pinger `updated_at` alanini okur ve ilerlemedigini gorurse bagirir. HTTP durumu
+degil, **damga** olculur.
+
+**Muaf-yol daima meta-only kalmalidir (sanitize kuralinin bypass surumu).**
+2026-07-18 dogrulamasi (`state/liveness.json`, 4304 bayt):
+
+- Temiz: hisse kodu YOK, `shares`/pozisyon YOK, Deniz izi YOK, getiri/nakit YOK.
+- Ama ictedir: **15 ic dosya yolu** (`local/broker_bulletins`,
+  `local/kap_financials`, `local/flow_inputs` dahil) ve **planlanan-ozellik
+  rosteri**. Yani "yalniz damga + verdict" degil; yapisal ifsa vardir.
+- Bu dosya **bugun zaten public**; bypass yeni delik acmaz, mevcut maruziyeti
+  kapatmamayi secer.
+
+**Acik karar noktasi (gecis aninda ver):**
+
+1. *Duz bypass* — `state/liveness.json` oldugu gibi muaf. Basit; yukaridaki
+   yapisal ifsa (ozellikle `local/broker_bulletins`) acik kalir.
+2. *Daraltilmis nabiz (SECILDI 2026-07-18)* — tarayici ayrica `state/pulse.json`
+   yazsin: yalniz `{updated_at, tz, verdict, red_count, total}`. Muafiyet
+   **yalniz ona** verilir; `liveness.json` Access arkasina girer. Ifsa
+   bugunkunden **daha az** olur ve pinger yine ground-truth okur. Maliyet:
+   tarayiciya birkac satir.
+
+   Secim gerekcesi: (a) minimal-yuzey -- bypass bir Access-deligidir, dar olani
+   iyidir; (b) Access'in amaciyla tutarli -- muaf-yolu bugunku public seviyede
+   dondurmak gecisi yarim birakir; (c) ayri-artefakt/ayri-amac -- `liveness.json`
+   insan icin (dashboard, 11 uye, tam teshis), `pulse.json` makine icin (tek
+   damga). **Dar sema yapisal korumadir:** biri ileride `liveness.json`'a
+   pozisyon eklerse duz-bypass onu sizdirirdi; `pulse.json`'in sabit 5 alani
+   buna kapalidir.
+
+### Gecis aninda DORDU BIRLIKTE (tek seferde)
+
+Access kurulmadan hicbiri yazilmaz -- kullanilmayan artefakt uretmek "sahte-alan"
+sinifidir (gorunurluk ekliyormus gibi yapip islevsiz kalmak).
+
+1. `pulse.json` -- dar sema, 5 alan.
+2. Bypass -- yalniz `/state/pulse.json` (klasor DEGIL, `liveness.json` DEGIL).
+3. Pinger -- asagidaki damga-ilerleme kontrolu.
+4. **`pulse.json` liveness-registry'ye eklenir** (`scripts/liveness_scan.py`
+   REGISTRY). Gerekcesi: pinger `pulse.json`'a bakacak, peki ona kim bakiyor?
+   Tarayici `pulse.json` yazmayi bir bug yuzunden durdurursa, dosya ulasilabilir
+   kalir ama fosillesir. Registry uyeligi o bosluğu kapatir; ek olarak
+   `liveness_watchdog.py` B-kontrollerine `pulse.updated_at ~= liveness.updated_at`
+   capraz-kontrolu eklenebilir (iki artefakt ayrisirsa yazma yolu bozuk demektir).
+
+**Pinger'in kontrolu -- VARLIK degil, ILERLEME:**
+
+```text
+YANLIS: GET /state/pulse.json -> 200 mu?          (ara-gosterge)
+DOGRU : pulse.updated_at > son_gordugum_damga ?   (ground-truth)
+```
+
+Duragan-taze-damga (fosil ama ulasilabilir) = **KIRMIZI**. Pinger son gordugu
+damgayi saklamali ve ilerlemedigi surece bagirmalidir. Bu, "302 degil damga"
+ilkesinin tam uygulamasi ve `pulse.json`'i da Dogrulama Yasasi'na tabi kilar --
+izleme zincirinin her halkasi ayni kurala uyar, yoksa yasa bir kat asagida
+tekrar delinir.
+
+Hangisi secilirse secilsin: **muaf dosyanin icerigi her degisiklikte yeniden
+denetlenir.** Biri oraya pozisyon/ticker eklerse bypass onu sizdirir. Bu, Faz-5
+sorusunun ("bu degisiklik hangi kontrolun varsayimini curutuyor?") bu yoldaki
+kalici uygulamasidir.
+
 ## 3. Pages.dev Host Kontrolu
 
 Cloudflare'da production ve preview hostlari ayri davranabilir. Bu yuzden Access
