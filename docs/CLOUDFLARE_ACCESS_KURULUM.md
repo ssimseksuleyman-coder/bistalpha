@@ -196,6 +196,79 @@ denetlenir.** Biri oraya pozisyon/ticker eklerse bypass onu sizdirir. Bu, Faz-5
 sorusunun ("bu degisiklik hangi kontrolun varsayimini curutuyor?") bu yoldaki
 kalici uygulamasidir.
 
+## 2c. PWA — Access KURULDUKTAN SONRA (simdi degil)
+
+Panel bugun mobilde calisiyor (`viewport` meta + `@media` kurali var); eksik olan
+`manifest.json` + service worker. Bunlar eklenince ana ekrana ikon, tam ekran,
+uygulama hissi -- native app'in ise yarayan kisminin cogu, backend/store/imza
+olmadan. **Native app onerilmiyor:** app bir ISTEMCIDIR; gizlilik ve erisim
+UC NOKTANIN ozelligidir. Public JSON onunde native app, tarayici kadar aciktir;
+Access arkasinda ise app'in login'i icin yine bir kimlik katmani gerekir --
+yani Access'in verdigi sey. Ek maliyet (99 USD/yil, store/imza, suresi dolan
+provisioning = sessiz aciImama) tek-kullanicili pilotta orantisiz.
+
+**PWA "sifir yeni hat"tir ama "sifir yeni VARSAYIM" degildir.** Asagidaki dort
+kural, Faz-5 sorusunun bu gecise uygulanmasindan cikti.
+
+### 1) `/state/*` NETWORK-ONLY — veri asla cache'lenmez, kabuk cache'lenir
+
+Ilk oneri "network-first" idi; **yetersiz oldugu icin duzeltildi**. Network-first
+yine bir cache tutar, yani (a) bayat veri servis etme ihtimali sifirlanmaz,
+(b) pozisyon/`shares` kopyasi cihazda kalir -- Access agi kapatir, **cihazdaki
+cache'i kapatmaz**; oturum bittikten sonra bile kaybolan/paylasilan cihazda
+devtools ile okunabilir. Kural: **kabuk (`index.html`/CSS/JS) cache'lenir,
+`/state/*` hic cache'lenmez.**
+
+Yan fayda: cevrimdisiyken panel veri gostermez, "baglanti yok" der. Dogrusu
+budur -- bir alim-satim panelinin cevrimdisi eski pozisyon gostermesi,
+gostermemesinden tehlikelidir.
+
+### 2) CONTENT-TYPE GUARD — Access'te `fetch` BASARILI doner
+
+Access oturumu dolunca `state/*.json` istegi temiz `401` vermez: Cloudflare login
+sayfasina **302** atar, `fetch()` yonlendirmeyi izler ve **HTTP 200 + HTML** ile
+cozulur.
+
+```text
+response.ok        -> true          (ARA-GOSTERGE)
+govde              -> login HTML'i  (GROUND-TRUTH: veri degil)
+```
+
+Guard'siz sonuc: SW bunu basarili sanip cache'e yazar (cache zehirlenmesi),
+`JSON.parse` patlar, hata yutulursa ekranda **eski sayilar durur** -- fosil
+veriye taze diye bakmak, pozisyon ekraninda. Kural: `content-type`
+`application/json` degilse **veri sayma**, "oturum dustu, yeniden giris yap"
+goster. Damgaya bakmadan once TURE bak.
+
+### 3) SW SURUM KILIDI — SW veriyi taze tutar ama kendini bayat tutabilir
+
+Service worker eski kabugu suresiz pinleyebilir (native app'in "surum kaymasi"
+kusurunun PWA hali; meta-seviye ama gercek). Kural: `skipWaiting` +
+`clients.claim` + **surumlu cache adi** + `activate`'te eski cache'leri sil.
+
+### 4) `schema_version` ACIK ALAN — surume de bak
+
+SW-pin + sema degisimi = **eski JS yeni veriyi sessizce yanlis okur** (fosilin
+daha sinsi hali: veri taze, yorum bayat). Sema kaymasi ayri bir risk degil,
+SW-surum-kilidinin sonucudur; ama acik alan ucuz sigortadir.
+
+- Ureten taraf: `dashboard.json` ve `pulse.json`'a `schema_version` yazilir
+  (uretici kod degisikligi -- Faz-5 sorusu ona da sorulur: hangi tuketici bu
+  semayi varsayiyor?).
+- Tuketen taraf: `if (data.schema_version !== EXPECTED)` -> "guncelle" goster,
+  veriyi cizme.
+
+Bu, guard kuralinin sema surumu: **ture bak (content-type), surume de bak
+(schema_version).**
+
+### Kodlama zamani: Access SONRASI
+
+Simdi SW yazilmaz. Login-302 senaryosu **Access olmadan test edilemez**; test
+edilmemis cache mantigi canliya cikip Access'le ilk kez orada karsilasir. Ayrica
+kullanilmayan artefakt uretmek "sahte-alan" sinifidir. Sira: Access kurulur ->
+SW + content-type guard + network-only + schema_version **birlikte**, Access
+arkasinda test edilerek.
+
 ## 3. Pages.dev Host Kontrolu
 
 Cloudflare'da production ve preview hostlari ayri davranabilir. Bu yuzden Access
