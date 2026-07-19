@@ -261,6 +261,33 @@ SW-surum-kilidinin sonucudur; ama acik alan ucuz sigortadir.
 Bu, guard kuralinin sema surumu: **ture bak (content-type), surume de bak
 (schema_version).**
 
+Simetri: tuketici "hangi semayi bekliyorum" sorar (CALISMA aninda), uretici
+"hangi tuketici bu semayi varsayiyor" sorar (DEGISIKLIK aninda). Iki farkli
+zaman, iki farkli koruma; sema kaymasi ancak ikisi birlikte kapanir.
+
+#### F-YAKINLIK KISITI (bu runbook'un F'e degen TEK maddesi)
+
+Bu belge bastan sona altyapidir (erisim, log, cache) ve hicbir bolumu F koduna
+dokunmaz. **`schema_version` tek istisnadir**: yazimi reporter/daemon gerektirir,
+daemon ise orkestrasyon katmanidir. Istisna, kural kadar acik yazilmazsa uc hafta
+sonra biri "schema_version ekleyeyim" deyip `select()` icine bir surum-dali koyar
+ve F-izolasyonu sessizce delinir. Kisit:
+
+- **Yalnizca cikti-serializasyonuna girer.** `select` / `score` / `stop` /
+  parametrelere **dokunmaz**.
+- **Saf metadata: karar-mantigina GIRMEZ.** Bir string alandir; hesaba, esige,
+  siralamaya, filtreye girmez. Yazilir ve okunur, **karar vermez**. Ileride
+  "schema_version'a gore farkli davran" (surum-bagimli mantik) onerilirse bu
+  kisit onu da reddeder.
+- **Tetikleyici refleks:** "daemon'a dokunuyor" cumlesi F-yakinlik kontrolunu
+  baslatir. Koruma zaten mevcut -- golden-master (`selftest.py [6]`,
+  ret 301.07 / dd -5.54 / stops 56) her push'ta kosar; yanlis yere sizan bir
+  surum-dali orada kirmizi verir. Yazili olmasi gereken koruma degil,
+  **tetikleyici**.
+
+Uc kat: Faz-5 halkasi soruyu sorar, bu kisit cevabi sabitler, golden-master
+ihlali yakalar.
+
 ### Kodlama zamani: Access SONRASI
 
 Simdi SW yazilmaz. Login-302 senaryosu **Access olmadan test edilemez**; test
