@@ -1,10 +1,10 @@
 {
   "summary": {
-    "updated_at": "2026-07-17T18:40:40",
+    "updated_at": "2026-07-20T09:45:30",
     "tracked_days": 30,
     "latest_date": "2026-07-17",
     "latest_regime": "sideways",
-    "latest_events": 34,
+    "latest_events": 48,
     "by_layer_regime": [
       {
         "layer": "quiet_accumulation",
@@ -178,9 +178,9 @@
         "label": "F Shadow",
         "role": "return",
         "regime": "sideways",
-        "n": 17,
-        "avg_return_pct": 26.31,
-        "hit_rate_pct": 94.1
+        "n": 24,
+        "avg_return_pct": 18.64,
+        "hit_rate_pct": 66.7
       },
       {
         "layer": "F_shadow",
@@ -268,9 +268,9 @@
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "sideways",
-        "n": 17,
-        "avg_return_pct": 26.31,
-        "hit_rate_pct": 94.1
+        "n": 24,
+        "avg_return_pct": 18.64,
+        "hit_rate_pct": 66.7
       },
       {
         "layer": "O_shadow",
@@ -354,14 +354,14 @@
     ],
     "shadow_comparison": {
       "F_shadow": {
-        "n": 181,
-        "avg_return_pct": 23.9,
-        "hit_rate_pct": 82.9
+        "n": 188,
+        "avg_return_pct": 23.01,
+        "hit_rate_pct": 79.8
       },
       "O_shadow": {
-        "n": 181,
-        "avg_return_pct": 23.9,
-        "hit_rate_pct": 82.9
+        "n": 188,
+        "avg_return_pct": 23.01,
+        "hit_rate_pct": 79.8
       },
       "O_minus_F": {
         "n": 0,
@@ -22385,6 +22385,74 @@
           "label": "F Shadow",
           "role": "return",
           "metric": "forward_return_hit_rate",
+          "ticker": "ALKLC",
+          "entry_price": 393.25,
+          "current_price": 393.25,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 0.000305,
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "DSTKF",
+          "entry_price": 2522.5,
+          "current_price": 2522.5,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 2.9e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "GUNDG",
+          "entry_price": 2100.0,
+          "current_price": 2100.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 5.7e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "HEDEF",
+          "entry_price": 195.0,
+          "current_price": 195.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 0.000616,
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
           "ticker": "IEYHO",
           "entry_price": 117.2,
           "current_price": 157.6,
@@ -22394,7 +22462,7 @@
           "signal": "F",
           "tags": [],
           "account": "F",
-          "shares": 0.000874,
+          "shares": 0.000762,
           "verdict": "hit"
         },
         {
@@ -22411,8 +22479,42 @@
           "signal": "F",
           "tags": [],
           "account": "F",
-          "shares": 0.00069,
+          "shares": 0.000381,
           "verdict": "hit"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "ODINE",
+          "entry_price": 2100.0,
+          "current_price": 2100.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 8.6e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "OZATD",
+          "entry_price": 2695.0,
+          "current_price": 2695.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 6.7e-05,
+          "verdict": "flat"
         },
         {
           "layer": "F_shadow",
@@ -22428,8 +22530,93 @@
           "signal": "F",
           "tags": [],
           "account": "F",
-          "shares": 0.005128,
+          "shares": 0.00811,
           "verdict": "hit"
+        },
+        {
+          "layer": "F_shadow",
+          "label": "F Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "SELEC",
+          "entry_price": 261.0,
+          "current_price": 261.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "F shadow portfoy",
+          "signal": "F",
+          "tags": [],
+          "account": "F",
+          "shares": 0.00046,
+          "verdict": "flat"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "ALKLC",
+          "entry_price": 393.25,
+          "current_price": 393.25,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 0.000305,
+          "verdict": "flat"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "DSTKF",
+          "entry_price": 2522.5,
+          "current_price": 2522.5,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 2.9e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "GUNDG",
+          "entry_price": 2100.0,
+          "current_price": 2100.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 5.7e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "HEDEF",
+          "entry_price": 195.0,
+          "current_price": 195.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 0.000616,
+          "verdict": "flat"
         },
         {
           "layer": "O_shadow",
@@ -22445,7 +22632,7 @@
           "signal": "O",
           "tags": [],
           "account": "O",
-          "shares": 0.000874,
+          "shares": 0.000762,
           "verdict": "hit"
         },
         {
@@ -22462,8 +22649,42 @@
           "signal": "O",
           "tags": [],
           "account": "O",
-          "shares": 0.00069,
+          "shares": 0.000381,
           "verdict": "hit"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "ODINE",
+          "entry_price": 2100.0,
+          "current_price": 2100.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 8.6e-05,
+          "verdict": "flat"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "OZATD",
+          "entry_price": 2695.0,
+          "current_price": 2695.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 6.7e-05,
+          "verdict": "flat"
         },
         {
           "layer": "O_shadow",
@@ -22479,11 +22700,28 @@
           "signal": "O",
           "tags": [],
           "account": "O",
-          "shares": 0.005128,
+          "shares": 0.00811,
           "verdict": "hit"
+        },
+        {
+          "layer": "O_shadow",
+          "label": "OMEGA Shadow",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "SELEC",
+          "entry_price": 261.0,
+          "current_price": 261.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-07-17",
+          "reason": "O shadow portfoy",
+          "signal": "O",
+          "tags": [],
+          "account": "O",
+          "shares": 0.00046,
+          "verdict": "flat"
         }
       ],
-      "last_generated_at": "2026-07-17T18:40:40"
+      "last_generated_at": "2026-07-20T09:45:30"
     }
   ]
 }

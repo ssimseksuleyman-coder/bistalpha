@@ -1,21 +1,56 @@
 {
   "account": "O",
-  "cash": 0.8874450818922032,
+  "cash": 0.0053246704913531145,
   "positions": {
+    "GUNDG": {
+      "entry": 2100.0,
+      "peak": 2100.0,
+      "shares": 5.715718692912501e-05
+    },
+    "HEDEF": {
+      "entry": 195.0,
+      "peak": 195.0,
+      "shares": 0.0006155389361598078
+    },
     "KTLEV": {
-      "entry": 148.5,
-      "peak": 198.3000030517578,
-      "shares": 0.0006900621333611024
+      "entry": 189.1999969482422,
+      "peak": 189.1999969482422,
+      "shares": 0.0003806451199383416
+    },
+    "ODINE": {
+      "entry": 2100.0,
+      "peak": 2100.0,
+      "shares": 8.573578039368752e-05
+    },
+    "OZATD": {
+      "entry": 2695.0,
+      "peak": 2695.0,
+      "shares": 6.68071016054708e-05
     },
     "IEYHO": {
-      "entry": 117.19999694824219,
-      "peak": 160.1999969482422,
-      "shares": 0.0008743534937921401
+      "entry": 157.60000610351562,
+      "peak": 157.60000610351562,
+      "shares": 0.0007616122328848373
+    },
+    "ALKLC": {
+      "entry": 393.25,
+      "peak": 393.25,
+      "shares": 0.0003052259187569295
+    },
+    "DSTKF": {
+      "entry": 2522.5,
+      "peak": 2522.5,
+      "shares": 2.8550269784221014e-05
     },
     "PEKGY": {
-      "entry": 11.989999771118164,
-      "peak": 14.859999656677246,
-      "shares": 0.005127984758646939
+      "entry": 14.800000190734863,
+      "peak": 14.800000190734863,
+      "shares": 0.008110141284072692
+    },
+    "SELEC": {
+      "entry": 261.0,
+      "peak": 261.0,
+      "shares": 0.00045988541207341965
     }
   },
   "history": [
@@ -216,6 +251,118 @@
           "shares": 6.6e-05,
           "reason": "stop",
           "pnl_pct": 54.19
+        }
+      ]
+    },
+    {
+      "date": "2026-07-17",
+      "event": "rebalance",
+      "total": 1.2296,
+      "n_pos": 10,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "KTLEV",
+          "price": 189.2,
+          "shares": 0.00069,
+          "reason": "rebalance",
+          "pnl_pct": 27.41
+        },
+        {
+          "type": "SELL",
+          "ticker": "IEYHO",
+          "price": 157.6,
+          "shares": 0.000874,
+          "reason": "rebalance",
+          "pnl_pct": 34.47
+        },
+        {
+          "type": "SELL",
+          "ticker": "PEKGY",
+          "price": 14.8,
+          "shares": 0.005128,
+          "reason": "rebalance",
+          "pnl_pct": 23.44
+        },
+        {
+          "type": "BUY",
+          "ticker": "GUNDG",
+          "price": 2100.0,
+          "shares": 5.7e-05,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "HEDEF",
+          "price": 195.0,
+          "shares": 0.000616,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "KTLEV",
+          "price": 189.2,
+          "shares": 0.000381,
+          "weight": 0.6,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "ODINE",
+          "price": 2100.0,
+          "shares": 8.6e-05,
+          "weight": 1.5,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "OZATD",
+          "price": 2695.0,
+          "shares": 6.7e-05,
+          "weight": 1.5,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "IEYHO",
+          "price": 157.6,
+          "shares": 0.000762,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "ALKLC",
+          "price": 393.25,
+          "shares": 0.000305,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "DSTKF",
+          "price": 2522.5,
+          "shares": 2.9e-05,
+          "weight": 0.6,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "PEKGY",
+          "price": 14.8,
+          "shares": 0.00811,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "SELEC",
+          "price": 261.0,
+          "shares": 0.00046,
+          "weight": 1.0,
+          "reason": "rebalance"
         }
       ]
     }
