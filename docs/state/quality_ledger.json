@@ -1,7 +1,7 @@
 {
   "summary": {
-    "updated_at": "2026-07-20T18:40:57",
-    "as_of": "2026-07-20",
+    "updated_at": "2026-07-21T09:46:21",
+    "as_of": "2026-07-17",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
       "source_manifest": "public_kap_event_stream",
@@ -9,16 +9,16 @@
       "local_input_files": 0,
       "extracted_at": null,
       "n_companies": null,
-      "kap_financial_events": 0,
-      "data_available": false,
+      "kap_financial_events": 3,
+      "data_available": true,
       "source_status": "kap_event_stream_active",
       "public_repo_policy": "official_events_public; detailed_metric_extracts_local_only",
       "kap_financial_parser": "local_official_json_csv_xlsx_active",
       "opens_trade": false,
       "third_party_bulletin_policy": "Ucuncu taraf bulten verisi deftere yazilmaz. En fazla alarm/yer-gosterici olabilir; finansal gercekler KAP/sirket/BIST resmi kaynagindan yeniden dogrulanir."
     },
-    "tracked_events": 0,
-    "kap_confirmed": 0,
+    "tracked_events": 1,
+    "kap_confirmed": 1,
     "opens_trade": false,
     "matured_5d": 0,
     "matured_21d": 0,
@@ -29,9 +29,9 @@
     "hit_21d_pct": null,
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
-    "decision": "resmi_finansal_olay_bekliyor",
+    "decision": "olcum_devam",
     "readiness": {
-      "status": "empty",
+      "status": "active",
       "data_status": "kap_event_stream_active_but_financial_metrics_missing",
       "message": "KAP finansal tablo olay akisi izleniyor; ROE/kar/ciro/borcluluk gibi kalite metrikleri icin resmi KAP/sirket tablo parse veya local resmi extract bekleniyor.",
       "next_step": "KAP finansal tablo parser veya resmi/local finansal extract dosyasi.",
@@ -44,9 +44,93 @@
       "avg_edge_pct": null,
       "note": "ROE shadow is isolated; it measures, does not trade."
     },
-    "latest_candidates": [],
-    "by_result": [],
+    "latest_candidates": [
+      {
+        "source_id": "kap_financial_disclosure",
+        "source": "KAP resmi finansal tablo bildirimi",
+        "source_tier": "primary",
+        "requires_kap_confirmation": false,
+        "kap_confirmed": true,
+        "opens_trade": false,
+        "ticker": "TURSG",
+        "release_date": "2026-07-20",
+        "entry_date": null,
+        "entry_price": null,
+        "entry_pos": null,
+        "metric": "financial_report_release",
+        "result": "kap_finansal_tablo",
+        "recommendation": null,
+        "surprise_pct": null,
+        "roe_pct": null,
+        "profit_yoy_pct": null,
+        "profit_qoq_pct": null,
+        "revenue_mio": null,
+        "favok_mio": null,
+        "net_debt_ebitda": null,
+        "target_price_change_pct": null,
+        "note": "Faaliyet Raporu (Konsolide Olmayan)",
+        "official_source_url": "",
+        "financial_metrics_status": "pending_table_parse",
+        "quality_flags": [],
+        "missing_quality_fields": [
+          "roe_pct",
+          "profit_yoy_pct",
+          "revenue_mio",
+          "net_debt_ebitda"
+        ],
+        "current_price": 6.56,
+        "status": "missing_price",
+        "current_return_pct": null
+      }
+    ],
+    "by_result": [
+      {
+        "result": "kap_finansal_tablo",
+        "n": 1,
+        "mature_21d": 0,
+        "avg_21d_return_pct": null,
+        "hit_21d_pct": null
+      }
+    ],
     "note": "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla dogrulanan veri kullanir. F motoruna emir uretmez."
   },
-  "events": []
+  "events": [
+    {
+      "source_id": "kap_financial_disclosure",
+      "source": "KAP resmi finansal tablo bildirimi",
+      "source_tier": "primary",
+      "requires_kap_confirmation": false,
+      "kap_confirmed": true,
+      "opens_trade": false,
+      "ticker": "TURSG",
+      "release_date": "2026-07-20",
+      "entry_date": null,
+      "entry_price": null,
+      "entry_pos": null,
+      "metric": "financial_report_release",
+      "result": "kap_finansal_tablo",
+      "recommendation": null,
+      "surprise_pct": null,
+      "roe_pct": null,
+      "profit_yoy_pct": null,
+      "profit_qoq_pct": null,
+      "revenue_mio": null,
+      "favok_mio": null,
+      "net_debt_ebitda": null,
+      "target_price_change_pct": null,
+      "note": "Faaliyet Raporu (Konsolide Olmayan)",
+      "official_source_url": "",
+      "financial_metrics_status": "pending_table_parse",
+      "quality_flags": [],
+      "missing_quality_fields": [
+        "roe_pct",
+        "profit_yoy_pct",
+        "revenue_mio",
+        "net_debt_ebitda"
+      ],
+      "current_price": 6.56,
+      "status": "missing_price",
+      "current_return_pct": null
+    }
+  ]
 }
