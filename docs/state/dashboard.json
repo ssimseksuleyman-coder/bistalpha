@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-07-21T09:46:20",
-  "label": "acilis",
-  "date": "2026-07-17",
+  "timestamp": "2026-07-21T14:30:57",
+  "label": "gunici",
+  "date": "2026-07-21",
   "mode": "F",
   "source": "yahoo",
   "source_base": "yahoo",
@@ -16,7 +16,7 @@
   "source_pool_count": 614,
   "source_pool_method": "tradingview_bist_scanner",
   "source_pool_fallback": false,
-  "last_data_date": "2026-07-17",
+  "last_data_date": "2026-07-21",
   "price_count": 612,
   "missing_symbol_list": [
     "ALTINS1",
@@ -25,9 +25,9 @@
   "dynamic_universe_count": 100,
   "dynamic_universe_method": "likidite_fiyat_x_hacim",
   "market_regime": {
-    "name": "sideways",
-    "xu5": -0.9,
-    "xu21": -3.1
+    "name": "mixed",
+    "xu5": -0.3,
+    "xu21": -4.6
   },
   "bist_data_ok": true,
   "official_sources": {
@@ -45,215 +45,206 @@
   "top10": [
     {
       "rank": 1,
-      "ticker": "GUNDG",
-      "sector": "XU100",
-      "skor": 1534.7,
-      "m252": 3027.3,
+      "ticker": "HEDEF",
+      "sector": "XHOLD",
+      "skor": 1602.0,
+      "m252": 3132.7,
       "sm_signal": "Birikim",
       "action": "AL",
       "display_signal": "Birikim",
       "visa": false,
-      "m5": 7.1,
-      "m21": 59.1,
-      "mevcut_fiyat": 2100.0,
-      "giris_fiyati": 2100.0,
-      "hedef_1": 2142.0,
-      "hedef_2": 2184.0,
-      "stop": 1828.35,
-      "risk_pct": 12.9,
-      "potansiyel_pct": 2.0
+      "m5": 18.1,
+      "m21": 74.7,
+      "mevcut_fiyat": 227.5,
+      "giris_fiyati": 195.0,
+      "hedef_1": 233.67,
+      "hedef_2": 239.83,
+      "stop": 204.75,
+      "risk_pct": -5.0,
+      "potansiyel_pct": 2.7
     },
     {
       "rank": 2,
-      "ticker": "HEDEF",
-      "sector": "XHOLD",
-      "skor": 1469.5,
-      "m252": 2894.8,
+      "ticker": "GUNDG",
+      "sector": "XU100",
+      "skor": 1600.6,
+      "m252": 3160.6,
       "sm_signal": "Birikim",
       "action": "AL",
       "display_signal": "Birikim",
       "visa": false,
       "m5": 3.7,
-      "m21": 53.5,
-      "mevcut_fiyat": 195.0,
-      "giris_fiyati": 195.0,
-      "hedef_1": 196.6,
-      "hedef_2": 198.2,
-      "stop": 182.32,
-      "risk_pct": 6.5,
-      "potansiyel_pct": 0.8
+      "m21": 65.2,
+      "mevcut_fiyat": 2152.0,
+      "giris_fiyati": 2100.0,
+      "hedef_1": 2207.67,
+      "hedef_2": 2263.33,
+      "stop": 1829.2,
+      "risk_pct": 12.9,
+      "potansiyel_pct": 2.6
     },
     {
       "rank": 3,
-      "ticker": "KTLEV",
-      "sector": "XUTEK",
-      "skor": 1023.5,
-      "m252": 2030.6,
-      "sm_signal": "Nötr",
-      "action": "BEKLE",
-      "display_signal": "Nötr",
-      "visa": false,
-      "m5": -0.4,
-      "m21": 1.7,
-      "mevcut_fiyat": 189.2,
-      "giris_fiyati": 189.2,
-      "hedef_1": 195.4,
-      "hedef_2": 201.6,
-      "stop": 163.88,
-      "risk_pct": 13.4,
-      "potansiyel_pct": 3.3
-    },
-    {
-      "rank": 4,
       "ticker": "ODINE",
       "sector": "XUTEK",
-      "skor": 878.4,
-      "m252": 1724.5,
+      "skor": 903.0,
+      "m252": 1770.9,
       "sm_signal": "GÜÇLÜ_BİRİKİM",
       "action": "AL",
       "display_signal": "GÜÇLÜ_BİRİKİM",
       "visa": false,
-      "m5": 6.1,
-      "m21": 30.5,
-      "mevcut_fiyat": 2100.0,
+      "m5": 6.3,
+      "m21": 29.2,
+      "mevcut_fiyat": 2189.0,
       "giris_fiyati": 2100.0,
-      "hedef_1": 2122.67,
-      "hedef_2": 2145.33,
-      "stop": 1850.45,
-      "risk_pct": 11.9,
+      "hedef_1": 2212.0,
+      "hedef_2": 2235.0,
+      "stop": 1860.65,
+      "risk_pct": 11.4,
       "potansiyel_pct": 1.1
+    },
+    {
+      "rank": 4,
+      "ticker": "KTLEV",
+      "sector": "XUTEK",
+      "skor": 864.3,
+      "m252": 1728.9,
+      "sm_signal": "Nötr",
+      "action": "BEKLE",
+      "display_signal": "Nötr",
+      "visa": false,
+      "m5": -12.2,
+      "m21": -6.3,
+      "mevcut_fiyat": 172.1,
+      "giris_fiyati": 189.2,
+      "hedef_1": 176.63,
+      "hedef_2": 181.17,
+      "stop": 163.88,
+      "risk_pct": 13.4,
+      "potansiyel_pct": 2.6
     },
     {
       "rank": 5,
       "ticker": "OZATD",
       "sector": "XU100",
-      "skor": 621.3,
-      "m252": 1180.9,
+      "skor": 621.0,
+      "m252": 1183.8,
       "sm_signal": "GÜÇLÜ_BİRİKİM",
       "action": "AL",
       "display_signal": "GÜÇLÜ_BİRİKİM",
       "visa": false,
-      "m5": 33.7,
-      "m21": 61.9,
-      "mevcut_fiyat": 2695.0,
+      "m5": 16.0,
+      "m21": 85.1,
+      "mevcut_fiyat": 2800.0,
       "giris_fiyati": 2695.0,
-      "hedef_1": 2788.33,
-      "hedef_2": 2881.67,
-      "stop": 2358.75,
-      "risk_pct": 12.5,
-      "potansiyel_pct": 3.5
+      "hedef_1": 2937.5,
+      "hedef_2": 3075.0,
+      "stop": 2380.0,
+      "risk_pct": 11.7,
+      "potansiyel_pct": 4.9
     },
     {
       "rank": 6,
       "ticker": "IEYHO",
       "sector": "XHOLD",
-      "skor": 577.2,
-      "m252": 1134.1,
+      "skor": 620.3,
+      "m252": 1220.5,
       "sm_signal": "DAĞITIM",
       "action": "BEKLE",
       "display_signal": "DAĞITIM",
       "visa": false,
-      "m5": -0.9,
-      "m21": 21.4,
-      "mevcut_fiyat": 157.6,
+      "m5": 1.3,
+      "m21": 18.9,
+      "mevcut_fiyat": 161.5,
       "giris_fiyati": 157.6,
-      "hedef_1": 160.27,
-      "hedef_2": 162.93,
+      "hedef_1": 163.03,
+      "hedef_2": 164.57,
       "stop": 137.28,
       "risk_pct": 12.9,
-      "potansiyel_pct": 1.7
+      "potansiyel_pct": 0.9
     },
     {
       "rank": 7,
       "ticker": "ALKLC",
       "sector": "XUSIN",
-      "skor": 300.6,
-      "m252": 586.9,
+      "skor": 302.7,
+      "m252": 594.5,
       "sm_signal": "DAĞITIM",
       "action": "BEKLE",
       "display_signal": "DAĞITIM",
       "visa": false,
-      "m5": 4.0,
-      "m21": 16.1,
-      "mevcut_fiyat": 393.25,
+      "m5": 0.9,
+      "m21": 18.0,
+      "mevcut_fiyat": 400.75,
       "giris_fiyati": 393.25,
-      "hedef_1": 399.25,
-      "hedef_2": 405.25,
+      "hedef_1": 404.83,
+      "hedef_2": 408.92,
       "stop": 340.85,
       "risk_pct": 13.3,
-      "potansiyel_pct": 1.5
+      "potansiyel_pct": 1.0
     },
     {
       "rank": 8,
       "ticker": "DSTKF",
       "sector": "XFINK",
-      "skor": 203.1,
-      "m252": 414.8,
-      "sm_signal": "Nötr",
-      "action": "BEKLE",
-      "display_signal": "Nötr",
-      "visa": false,
-      "m5": -34.3,
-      "m21": -17.9,
-      "mevcut_fiyat": 2522.5,
-      "giris_fiyati": 2522.5,
-      "hedef_1": 2724.3,
-      "hedef_2": 2900.88,
-      "stop": 2144.12,
-      "risk_pct": 15.0,
-      "potansiyel_pct": 8.0
-    },
-    {
-      "rank": 9,
-      "ticker": "PEKGY",
-      "sector": "XGMYO",
-      "skor": 152.4,
-      "m252": 290.5,
+      "skor": 158.8,
+      "m252": 338.6,
       "sm_signal": "DAĞITIM",
       "action": "BEKLE",
       "display_signal": "DAĞITIM",
       "visa": false,
-      "m5": 0.7,
-      "m21": 12.5,
-      "mevcut_fiyat": 14.8,
-      "giris_fiyati": 14.8,
-      "hedef_1": 14.94,
-      "hedef_2": 15.07,
-      "stop": 12.75,
-      "risk_pct": 13.9,
-      "potansiyel_pct": 0.9
+      "m5": -30.2,
+      "m21": -34.2,
+      "mevcut_fiyat": 2171.0,
+      "giris_fiyati": 2522.5,
+      "hedef_1": 2308.67,
+      "hedef_2": 2446.33,
+      "stop": 2144.12,
+      "risk_pct": 15.0,
+      "potansiyel_pct": 6.3
+    },
+    {
+      "rank": 9,
+      "ticker": "EUPWR",
+      "sector": "XELKT",
+      "skor": 129.3,
+      "m252": 239.8,
+      "sm_signal": "Nötr",
+      "action": "BEKLE",
+      "display_signal": "Nötr",
+      "visa": false,
+      "m5": 16.6,
+      "m21": 8.7,
+      "mevcut_fiyat": 105.6,
+      "giris_fiyati": 105.6,
+      "hedef_1": 107.95,
+      "hedef_2": 110.3,
+      "stop": 89.76,
+      "risk_pct": 15.0,
+      "potansiyel_pct": 2.2
     },
     {
       "rank": 10,
-      "ticker": "SELEC",
-      "sector": "XUHIZ",
-      "skor": 137.2,
-      "m252": 161.4,
-      "sm_signal": "Birikim",
-      "action": "AL",
-      "display_signal": "Birikim",
+      "ticker": "PEKGY",
+      "sector": "XGMYO",
+      "skor": 122.3,
+      "m252": 228.9,
+      "sm_signal": "Nötr",
+      "action": "BEKLE",
+      "display_signal": "Nötr",
       "visa": false,
-      "m5": 29.2,
-      "m21": 59.0,
-      "mevcut_fiyat": 261.0,
-      "giris_fiyati": 261.0,
-      "hedef_1": 272.33,
-      "hedef_2": 283.67,
-      "stop": 228.86,
-      "risk_pct": 12.3,
-      "potansiyel_pct": 4.3
+      "m5": 1.8,
+      "m21": 9.8,
+      "mevcut_fiyat": 15.03,
+      "giris_fiyati": 14.8,
+      "hedef_1": 15.11,
+      "hedef_2": 15.18,
+      "stop": 12.78,
+      "risk_pct": 13.7,
+      "potansiyel_pct": 0.5
     }
   ],
-  "firsatlar": [
-    {
-      "ticker": "OZRDN",
-      "sector": "XU100",
-      "m252": 255.5,
-      "sm_signal": "GÜÇLÜ_BİRİKİM",
-      "m5": -3.9,
-      "m21": -2.0
-    }
-  ],
+  "firsatlar": [],
   "watchlists": {
     "transformation": [
       {
@@ -261,23 +252,23 @@
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XUTEK",
-        "score": 208.0,
-        "price": 17.86,
-        "m5": 23.6,
-        "m21": 39.5,
-        "m252": -18.6,
-        "rank_1y": 112,
-        "rank_1a": 12,
-        "rank_1h": 6,
-        "acceleration": 106,
-        "volume_ratio": 0.82,
+        "score": 220.0,
+        "price": 18.71,
+        "m5": 21.5,
+        "m21": 46.7,
+        "m252": -18.1,
+        "rank_1y": 113,
+        "rank_1a": 11,
+        "rank_1h": 1,
+        "acceleration": 112,
+        "volume_ratio": 0.85,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": false,
         "range_high": 31.98,
         "range_low": 5.34,
-        "from_high_pct": -44.2,
-        "from_low_pct": 234.5,
+        "from_high_pct": -41.5,
+        "from_low_pct": 250.4,
         "tags": [
           {
             "label": "sektor_cap_dolu",
@@ -285,7 +276,118 @@
             "note": "Top10 icinde sektor kotasi dolu"
           }
         ],
-        "watch_days": 4,
+        "watch_days": 5,
+        "quarantine_status": "teyitli_izleme"
+      },
+      {
+        "ticker": "BIGTK",
+        "kind": "donusum",
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+        "sector": "XU100",
+        "score": 199.0,
+        "price": 318.75,
+        "m5": 15.3,
+        "m21": 49.6,
+        "m252": -31.5,
+        "rank_1y": 120,
+        "rank_1a": 10,
+        "rank_1h": 13,
+        "acceleration": 110,
+        "volume_ratio": 0.89,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
+        "radar_only": true,
+        "range_high": 578.0,
+        "range_low": 205.1,
+        "from_high_pct": -44.9,
+        "from_low_pct": 55.4,
+        "tags": [
+          {
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
+          },
+          {
+            "label": "karantina_1_3_gun",
+            "severity": "info",
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "KRDMA",
+        "kind": "donusum",
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+        "sector": "XU100",
+        "score": 152.0,
+        "price": 47.34,
+        "m5": 15.4,
+        "m21": 19.6,
+        "m252": 26.4,
+        "rank_1y": 74,
+        "rank_1a": 26,
+        "rank_1h": 12,
+        "acceleration": 62,
+        "volume_ratio": 1.3,
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "display_signal": "GÜÇLÜ_BİRİKİM",
+        "radar_only": false,
+        "range_high": 47.34,
+        "range_low": 23.48,
+        "from_high_pct": 0.0,
+        "from_low_pct": 101.6,
+        "tags": [
+          {
+            "label": "zirveye_yakin",
+            "severity": "warn",
+            "note": "52 haftalik tepeye cok yakin"
+          },
+          {
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
+          },
+          {
+            "label": "karantina_1_3_gun",
+            "severity": "info",
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "MOGAN",
+        "kind": "donusum",
+        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+        "sector": "XU100",
+        "score": 130.0,
+        "price": 18.29,
+        "m5": 18.4,
+        "m21": 39.6,
+        "m252": 93.1,
+        "rank_1y": 39,
+        "rank_1a": 13,
+        "rank_1h": 4,
+        "acceleration": 35,
+        "volume_ratio": 1.25,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
+        "radar_only": false,
+        "range_high": 18.85,
+        "range_low": 8.05,
+        "from_high_pct": -3.0,
+        "from_low_pct": 127.2,
+        "tags": [
+          {
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
+          }
+        ],
+        "watch_days": 3,
         "quarantine_status": "teyitli_izleme"
       },
       {
@@ -293,171 +395,81 @@
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XGIDA",
-        "score": 204.0,
-        "price": 17.5,
-        "m5": 31.0,
-        "m21": 28.2,
-        "m252": -31.0,
-        "rank_1y": 119,
-        "rank_1a": 19,
-        "rank_1h": 3,
-        "acceleration": 116,
-        "volume_ratio": 0.62,
-        "sm_signal": "DAĞITIM",
-        "display_signal": "DAĞITIM",
+        "score": 129.0,
+        "price": 16.27,
+        "m5": 0.7,
+        "m21": 19.2,
+        "m252": -34.0,
+        "rank_1y": 121,
+        "rank_1a": 27,
+        "rank_1h": 78,
+        "acceleration": 94,
+        "volume_ratio": 0.79,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
         "radar_only": false,
         "range_high": 27.64,
         "range_low": 13.02,
-        "from_high_pct": -36.7,
-        "from_low_pct": 34.4,
-        "tags": [
-          {
-            "label": "dagitim_bilgi",
-            "severity": "warn",
-            "note": "eleme degil; tepe/yorulma etiketi"
-          }
-        ],
-        "watch_days": 4,
+        "from_high_pct": -41.1,
+        "from_low_pct": 25.0,
+        "tags": [],
+        "watch_days": 5,
         "quarantine_status": "teyitli_izleme"
-      },
-      {
-        "ticker": "MOGAN",
-        "kind": "donusum",
-        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-        "sector": "XU100",
-        "score": 137.0,
-        "price": 18.3,
-        "m5": 28.2,
-        "m21": 49.0,
-        "m252": 89.2,
-        "rank_1y": 38,
-        "rank_1a": 11,
-        "rank_1h": 5,
-        "acceleration": 33,
-        "volume_ratio": 1.05,
-        "sm_signal": "Birikim",
-        "display_signal": "Birikim",
-        "radar_only": false,
-        "range_high": 18.3,
-        "range_low": 8.05,
-        "from_high_pct": 0.0,
-        "from_low_pct": 127.3,
-        "tags": [
-          {
-            "label": "zirveye_yakin",
-            "severity": "warn",
-            "note": "52 haftalik tepeye cok yakin"
-          },
-          {
-            "label": "sektor_cap_dolu",
-            "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
-          },
-          {
-            "label": "karantina_1_3_gun",
-            "severity": "info",
-            "note": "yeni radar adayi; teyit bekliyor"
-          }
-        ],
-        "watch_days": 2,
-        "quarantine_status": "karantina"
       },
       {
         "ticker": "KOCMT",
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XU100",
-        "score": 121.0,
-        "price": 4.07,
-        "m5": 8.8,
-        "m21": 60.2,
-        "m252": 59.8,
-        "rank_1y": 47,
-        "rank_1a": 7,
-        "rank_1h": 24,
-        "acceleration": 40,
-        "volume_ratio": 0.73,
+        "score": 129.0,
+        "price": 4.58,
+        "m5": 12.8,
+        "m21": 85.4,
+        "m252": 76.0,
+        "rank_1y": 44,
+        "rank_1a": 5,
+        "rank_1h": 17,
+        "acceleration": 39,
+        "volume_ratio": 0.58,
         "sm_signal": "Nötr",
         "display_signal": "Nötr",
         "radar_only": false,
         "range_high": 4.94,
         "range_low": 2.4,
-        "from_high_pct": -17.6,
-        "from_low_pct": 69.6,
+        "from_high_pct": -7.3,
+        "from_low_pct": 90.8,
         "tags": [
           {
             "label": "sektor_cap_dolu",
             "severity": "info",
             "note": "Top10 icinde sektor kotasi dolu"
-          },
-          {
-            "label": "karantina_1_3_gun",
-            "severity": "info",
-            "note": "yeni radar adayi; teyit bekliyor"
           }
         ],
-        "watch_days": 2,
-        "quarantine_status": "karantina"
+        "watch_days": 3,
+        "quarantine_status": "teyitli_izleme"
       },
       {
-        "ticker": "GENIL",
-        "kind": "donusum",
-        "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-        "sector": "XHOLD",
-        "score": 102.0,
-        "price": 9.24,
-        "m5": 1.5,
-        "m21": 9.3,
-        "m252": -19.6,
-        "rank_1y": 116,
-        "rank_1a": 38,
-        "rank_1h": 64,
-        "acceleration": 78,
-        "volume_ratio": 0.95,
-        "sm_signal": "Nötr",
-        "display_signal": "Nötr",
-        "radar_only": false,
-        "range_high": 14.46,
-        "range_low": 7.17,
-        "from_high_pct": -36.1,
-        "from_low_pct": 28.9,
-        "tags": [
-          {
-            "label": "sektor_cap_dolu",
-            "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
-          },
-          {
-            "label": "karantina_1_3_gun",
-            "severity": "info",
-            "note": "yeni radar adayi; teyit bekliyor"
-          }
-        ],
-        "watch_days": 1,
-        "quarantine_status": "karantina"
-      },
-      {
-        "ticker": "AKSA",
+        "ticker": "TUPRS",
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
         "sector": "XKMYA",
-        "score": 89.0,
-        "price": 12.37,
-        "m5": 5.2,
-        "m21": 16.2,
-        "m252": 28.3,
-        "rank_1y": 69,
-        "rank_1a": 28,
-        "rank_1h": 36,
-        "acceleration": 41,
-        "volume_ratio": 0.9,
-        "sm_signal": "Nötr",
-        "display_signal": "Nötr",
-        "radar_only": true,
-        "range_high": 12.54,
-        "range_low": 9.4,
-        "from_high_pct": -1.4,
-        "from_low_pct": 31.6,
+        "score": 125.0,
+        "price": 311.25,
+        "m5": 15.0,
+        "m21": 35.6,
+        "m252": 91.4,
+        "rank_1y": 40,
+        "rank_1a": 15,
+        "rank_1h": 14,
+        "acceleration": 26,
+        "volume_ratio": 1.1,
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "display_signal": "GÜÇLÜ_BİRİKİM",
+        "radar_only": false,
+        "range_high": 311.25,
+        "range_low": 160.0,
+        "from_high_pct": 0.0,
+        "from_low_pct": 94.5,
         "tags": [
           {
             "label": "zirveye_yakin",
@@ -474,135 +486,199 @@
         "quarantine_status": "karantina"
       },
       {
-        "ticker": "KRDMD",
+        "ticker": "SELEC",
         "kind": "donusum",
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-        "sector": "XMANA",
-        "score": 89.0,
-        "price": 42.76,
-        "m5": 13.2,
-        "m21": 9.6,
-        "m252": 59.4,
-        "rank_1y": 48,
-        "rank_1a": 37,
-        "rank_1h": 16,
-        "acceleration": 32,
-        "volume_ratio": 0.92,
-        "sm_signal": "DAĞITIM",
-        "display_signal": "DAĞITIM",
+        "sector": "XUHIZ",
+        "score": 113.0,
+        "price": 241.2,
+        "m5": 10.1,
+        "m21": 150.1,
+        "m252": 139.5,
+        "rank_1y": 30,
+        "rank_1a": 1,
+        "rank_1h": 27,
+        "acceleration": 29,
+        "volume_ratio": 0.93,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
         "radar_only": false,
-        "range_high": 44.92,
-        "range_low": 23.82,
-        "from_high_pct": -4.8,
-        "from_low_pct": 79.5,
+        "range_high": 261.0,
+        "range_low": 67.2,
+        "from_high_pct": -7.6,
+        "from_low_pct": 258.9,
         "tags": [
-          {
-            "label": "dagitim_bilgi",
-            "severity": "warn",
-            "note": "eleme degil; tepe/yorulma etiketi"
-          },
           {
             "label": "karantina_1_3_gun",
             "severity": "info",
             "note": "yeni radar adayi; teyit bekliyor"
           }
         ],
-        "watch_days": 2,
+        "watch_days": 1,
         "quarantine_status": "karantina"
       }
     ],
     "quiet_accumulation": [
       {
-        "ticker": "AKSEN",
+        "ticker": "KRDMA",
         "kind": "sessiz_birikim",
         "reason": "birikim + hacim artisi, henuz Top 10 degil",
-        "sector": "XELKT",
-        "score": 90.9,
-        "price": 106.0,
-        "m5": 15.1,
-        "m21": 32.8,
-        "m252": 179.1,
-        "rank_1y": 21,
-        "rank_1a": 17,
+        "sector": "XU100",
+        "score": 94.6,
+        "price": 47.34,
+        "m5": 15.4,
+        "m21": 19.6,
+        "m252": 26.4,
+        "rank_1y": 74,
+        "rank_1a": 26,
         "rank_1h": 12,
-        "acceleration": 9,
-        "volume_ratio": 1.78,
+        "acceleration": 62,
+        "volume_ratio": 1.3,
         "sm_signal": "GÜÇLÜ_BİRİKİM",
         "display_signal": "GÜÇLÜ_BİRİKİM",
         "radar_only": false,
-        "range_high": 106.0,
-        "range_low": 35.56,
+        "range_high": 47.34,
+        "range_low": 23.48,
         "from_high_pct": 0.0,
-        "from_low_pct": 198.1,
+        "from_low_pct": 101.6,
         "tags": [
           {
             "label": "zirveye_yakin",
             "severity": "warn",
             "note": "52 haftalik tepeye cok yakin"
-          }
-        ],
-        "watch_days": 4,
-        "quarantine_status": "teyitli_izleme"
-      },
-      {
-        "ticker": "KRDMA",
-        "kind": "sessiz_birikim",
-        "reason": "birikim + hacim artisi, henuz Top 10 degil",
-        "sector": "XU100",
-        "score": 83.5,
-        "price": 41.18,
-        "m5": 4.2,
-        "m21": 5.5,
-        "m252": 4.3,
-        "rank_1y": 95,
-        "rank_1a": 48,
-        "rank_1h": 43,
-        "acceleration": 52,
-        "volume_ratio": 1.7,
-        "sm_signal": "GÜÇLÜ_BİRİKİM",
-        "display_signal": "GÜÇLÜ_BİRİKİM",
-        "radar_only": false,
-        "range_high": 42.7,
-        "range_low": 23.48,
-        "from_high_pct": -3.6,
-        "from_low_pct": 75.4,
-        "tags": [
+          },
           {
             "label": "sektor_cap_dolu",
             "severity": "info",
             "note": "Top10 icinde sektor kotasi dolu"
           }
         ],
-        "watch_days": 4,
+        "watch_days": 5,
         "quarantine_status": "teyitli_izleme"
       },
       {
-        "ticker": "LIDER",
+        "ticker": "AYGAZ",
         "kind": "sessiz_birikim",
         "reason": "birikim + hacim artisi, henuz Top 10 degil",
-        "sector": "XU100",
-        "score": 53.5,
-        "price": 111.7,
-        "m5": 15.6,
-        "m21": -8.7,
-        "m252": 146.0,
-        "rank_1y": 29,
-        "rank_1a": 97,
-        "rank_1h": 10,
-        "acceleration": 19,
+        "sector": "XKMYA",
+        "score": 67.7,
+        "price": 277.0,
+        "m5": 11.7,
+        "m21": 21.2,
+        "m252": 81.0,
+        "rank_1y": 43,
+        "rank_1a": 24,
+        "rank_1h": 22,
+        "acceleration": 21,
         "volume_ratio": 1.3,
-        "sm_signal": "GÜÇLÜ_BİRİKİM",
-        "display_signal": "GÜÇLÜ_BİRİKİM",
+        "sm_signal": "Birikim",
+        "display_signal": "Birikim",
         "radar_only": true,
-        "range_high": 150.1,
-        "range_low": 41.7,
-        "from_high_pct": -25.6,
-        "from_low_pct": 167.9,
+        "range_high": 291.0,
+        "range_low": 159.0,
+        "from_high_pct": -4.8,
+        "from_low_pct": 74.2,
         "tags": [
           {
-            "label": "sektor_cap_dolu",
+            "label": "karantina_1_3_gun",
             "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "SOKM",
+        "kind": "sessiz_birikim",
+        "reason": "birikim + hacim artisi, henuz Top 10 degil",
+        "sector": "XGIDA",
+        "score": 58.0,
+        "price": 52.75,
+        "m5": 8.1,
+        "m21": 8.8,
+        "m252": 43.0,
+        "rank_1y": 61,
+        "rank_1a": 43,
+        "rank_1h": 33,
+        "acceleration": 28,
+        "volume_ratio": 1.26,
+        "sm_signal": "Birikim",
+        "display_signal": "Birikim",
+        "radar_only": true,
+        "range_high": 70.0,
+        "range_low": 35.1,
+        "from_high_pct": -24.6,
+        "from_low_pct": 50.3,
+        "tags": [
+          {
+            "label": "karantina_1_3_gun",
+            "severity": "info",
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "TURSG",
+        "kind": "sessiz_birikim",
+        "reason": "birikim + hacim artisi, henuz Top 10 degil",
+        "sector": "XSGRT",
+        "score": 51.2,
+        "price": 6.83,
+        "m5": 2.6,
+        "m21": 8.8,
+        "m252": 43.0,
+        "rank_1y": 60,
+        "rank_1a": 42,
+        "rank_1h": 60,
+        "acceleration": 18,
+        "volume_ratio": 1.17,
+        "sm_signal": "Birikim",
+        "display_signal": "Birikim",
+        "radar_only": false,
+        "range_high": 7.44,
+        "range_low": 4.36,
+        "from_high_pct": -8.2,
+        "from_low_pct": 56.5,
+        "tags": [
+          {
+            "label": "karantina_1_3_gun",
+            "severity": "info",
+            "note": "yeni radar adayi; teyit bekliyor"
+          }
+        ],
+        "watch_days": 1,
+        "quarantine_status": "karantina"
+      },
+      {
+        "ticker": "CWENE",
+        "kind": "sessiz_birikim",
+        "reason": "birikim + hacim artisi, henuz Top 10 degil",
+        "sector": "XELKT",
+        "score": 42.9,
+        "price": 40.06,
+        "m5": 2.7,
+        "m21": 8.1,
+        "m252": 157.6,
+        "rank_1y": 25,
+        "rank_1a": 47,
+        "rank_1h": 59,
+        "acceleration": -22,
+        "volume_ratio": 1.24,
+        "sm_signal": "Birikim",
+        "display_signal": "Birikim",
+        "radar_only": false,
+        "range_high": 43.0,
+        "range_low": 15.45,
+        "from_high_pct": -6.8,
+        "from_low_pct": 159.3,
+        "tags": [
+          {
+            "label": "ivme_yavasliyor",
+            "severity": "warn",
+            "note": "1Y liderligi var ama 1H sirasi geri"
           },
           {
             "label": "karantina_1_3_gun",
@@ -616,27 +692,27 @@
     ],
     "peak_risks": [
       {
-        "ticker": "BIGEN",
+        "ticker": "TRHOL",
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XU100",
-        "score": 242.9,
-        "price": 104.0,
-        "m5": 6.1,
-        "m21": 90.0,
-        "m252": 784.4,
-        "rank_1y": 8,
-        "rank_1a": 2,
-        "rank_1h": 30,
-        "acceleration": 6,
-        "volume_ratio": 2.88,
+        "score": 255.1,
+        "price": 1758.0,
+        "m5": 16.4,
+        "m21": 3.7,
+        "m252": 880.5,
+        "rank_1y": 7,
+        "rank_1a": 60,
+        "rank_1h": 8,
+        "acceleration": -1,
+        "volume_ratio": 0.75,
         "sm_signal": "Nötr",
         "display_signal": "Nötr",
         "radar_only": true,
-        "range_high": 105.6,
-        "range_low": 8.49,
-        "from_high_pct": -1.5,
-        "from_low_pct": 1125.0,
+        "range_high": 1776.0,
+        "range_low": 170.1,
+        "from_high_pct": -1.0,
+        "from_low_pct": 933.5,
         "tags": [
           {
             "label": "zirveye_yakin",
@@ -644,9 +720,39 @@
             "note": "52 haftalik tepeye cok yakin"
           },
           {
-            "label": "ivme_yavasliyor",
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
+          }
+        ]
+      },
+      {
+        "ticker": "BIGEN",
+        "kind": "tepe_riski",
+        "reason": "guc var ama alim icin risk etiketi tasiyor",
+        "sector": "XU100",
+        "score": 238.6,
+        "price": 110.9,
+        "m5": 15.5,
+        "m21": 106.1,
+        "m252": 803.1,
+        "rank_1y": 8,
+        "rank_1a": 3,
+        "rank_1h": 11,
+        "acceleration": 5,
+        "volume_ratio": 1.95,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
+        "radar_only": false,
+        "range_high": 110.9,
+        "range_low": 8.49,
+        "from_high_pct": 0.0,
+        "from_low_pct": 1206.2,
+        "tags": [
+          {
+            "label": "zirveye_yakin",
             "severity": "warn",
-            "note": "1Y liderligi var ama 1H sirasi geri"
+            "note": "52 haftalik tepeye cok yakin"
           },
           {
             "label": "sektor_cap_dolu",
@@ -660,29 +766,24 @@
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XU100",
-        "score": 172.0,
-        "price": 145.5,
-        "m5": 6.2,
-        "m21": 29.4,
-        "m252": 440.1,
+        "score": 162.1,
+        "price": 137.0,
+        "m5": 1.5,
+        "m21": 22.8,
+        "m252": 430.6,
         "rank_1y": 10,
-        "rank_1a": 18,
-        "rank_1h": 29,
-        "acceleration": -8,
-        "volume_ratio": 0.7,
+        "rank_1a": 22,
+        "rank_1h": 68,
+        "acceleration": -12,
+        "volume_ratio": 0.89,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": false,
         "range_high": 145.5,
         "range_low": 21.5,
-        "from_high_pct": 0.0,
-        "from_low_pct": 576.7,
+        "from_high_pct": -5.8,
+        "from_low_pct": 537.2,
         "tags": [
-          {
-            "label": "zirveye_yakin",
-            "severity": "warn",
-            "note": "52 haftalik tepeye cok yakin"
-          },
           {
             "label": "ivme_yavasliyor",
             "severity": "warn",
@@ -700,73 +801,28 @@
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XU100",
-        "score": 169.7,
-        "price": 100.1,
-        "m5": 4.6,
-        "m21": 18.1,
-        "m252": 433.6,
+        "score": 145.4,
+        "price": 96.65,
+        "m5": -10.5,
+        "m21": 0.7,
+        "m252": 352.1,
         "rank_1y": 11,
-        "rank_1a": 26,
-        "rank_1h": 41,
-        "acceleration": -15,
-        "volume_ratio": 1.88,
-        "sm_signal": "DAĞITIM",
-        "display_signal": "DAĞITIM",
+        "rank_1a": 72,
+        "rank_1h": 125,
+        "acceleration": -61,
+        "volume_ratio": 1.31,
+        "sm_signal": "Nötr",
+        "display_signal": "Nötr",
         "radar_only": true,
         "range_high": 121.9,
         "range_low": 13.8,
-        "from_high_pct": -17.9,
-        "from_low_pct": 625.4,
+        "from_high_pct": -20.7,
+        "from_low_pct": 600.4,
         "tags": [
           {
             "label": "ivme_yavasliyor",
             "severity": "warn",
             "note": "1Y liderligi var ama 1H sirasi geri"
-          },
-          {
-            "label": "dagitim_bilgi",
-            "severity": "warn",
-            "note": "eleme degil; tepe/yorulma etiketi"
-          },
-          {
-            "label": "sektor_cap_dolu",
-            "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
-          }
-        ]
-      },
-      {
-        "ticker": "MANAS",
-        "kind": "tepe_riski",
-        "reason": "guc var ama alim icin risk etiketi tasiyor",
-        "sector": "XU100",
-        "score": 145.0,
-        "price": 34.24,
-        "m5": 15.4,
-        "m21": 36.0,
-        "m252": 320.1,
-        "rank_1y": 13,
-        "rank_1a": 14,
-        "rank_1h": 11,
-        "acceleration": 2,
-        "volume_ratio": 1.07,
-        "sm_signal": "DAĞITIM",
-        "display_signal": "DAĞITIM",
-        "radar_only": false,
-        "range_high": 34.24,
-        "range_low": 6.44,
-        "from_high_pct": 0.0,
-        "from_low_pct": 431.7,
-        "tags": [
-          {
-            "label": "zirveye_yakin",
-            "severity": "warn",
-            "note": "52 haftalik tepeye cok yakin"
-          },
-          {
-            "label": "dagitim_bilgi",
-            "severity": "warn",
-            "note": "eleme degil; tepe/yorulma etiketi"
           },
           {
             "label": "sektor_cap_dolu",
@@ -780,23 +836,23 @@
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XU100",
-        "score": 139.3,
-        "price": 91.0,
-        "m5": -0.1,
-        "m21": 38.7,
-        "m252": 296.7,
-        "rank_1y": 14,
-        "rank_1a": 13,
-        "rank_1h": 80,
+        "score": 132.0,
+        "price": 90.3,
+        "m5": 1.2,
+        "m21": 42.0,
+        "m252": 295.0,
+        "rank_1y": 13,
+        "rank_1a": 12,
+        "rank_1h": 72,
         "acceleration": 1,
-        "volume_ratio": 0.58,
+        "volume_ratio": 0.64,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": false,
         "range_high": 97.3,
         "range_low": 20.16,
-        "from_high_pct": -6.5,
-        "from_low_pct": 351.4,
+        "from_high_pct": -7.2,
+        "from_low_pct": 347.9,
         "tags": [
           {
             "label": "ivme_yavasliyor",
@@ -807,11 +863,46 @@
             "label": "sektor_cap_dolu",
             "severity": "info",
             "note": "Top10 icinde sektor kotasi dolu"
+          }
+        ]
+      },
+      {
+        "ticker": "MANAS",
+        "kind": "tepe_riski",
+        "reason": "guc var ama alim icin risk etiketi tasiyor",
+        "sector": "XU100",
+        "score": 129.7,
+        "price": 34.34,
+        "m5": 16.4,
+        "m21": 28.9,
+        "m252": 248.6,
+        "rank_1y": 14,
+        "rank_1a": 18,
+        "rank_1h": 9,
+        "acceleration": 5,
+        "volume_ratio": 1.25,
+        "sm_signal": "DAĞITIM",
+        "display_signal": "DAĞITIM",
+        "radar_only": false,
+        "range_high": 34.34,
+        "range_low": 6.44,
+        "from_high_pct": 0.0,
+        "from_low_pct": 433.2,
+        "tags": [
+          {
+            "label": "zirveye_yakin",
+            "severity": "warn",
+            "note": "52 haftalik tepeye cok yakin"
           },
           {
-            "label": "aylik_pump_soguyor",
+            "label": "dagitim_bilgi",
             "severity": "warn",
-            "note": "1A guclu ama 1H negatif"
+            "note": "eleme degil; tepe/yorulma etiketi"
+          },
+          {
+            "label": "sektor_cap_dolu",
+            "severity": "info",
+            "note": "Top10 icinde sektor kotasi dolu"
           }
         ]
       },
@@ -820,23 +911,23 @@
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
         "sector": "XU100",
-        "score": 123.3,
-        "price": 13.03,
-        "m5": -1.3,
-        "m21": 25.5,
-        "m252": 226.6,
-        "rank_1y": 16,
-        "rank_1a": 22,
-        "rank_1h": 89,
-        "acceleration": -6,
-        "volume_ratio": 1.01,
+        "score": 119.1,
+        "price": 13.1,
+        "m5": -2.4,
+        "m21": 26.9,
+        "m252": 215.3,
+        "rank_1y": 18,
+        "rank_1a": 19,
+        "rank_1h": 105,
+        "acceleration": -1,
+        "volume_ratio": 0.73,
         "sm_signal": "Birikim",
         "display_signal": "Birikim",
         "radar_only": false,
         "range_high": 13.81,
         "range_low": 2.85,
-        "from_high_pct": -5.6,
-        "from_low_pct": 356.8,
+        "from_high_pct": -5.1,
+        "from_low_pct": 359.2,
         "tags": [
           {
             "label": "ivme_yavasliyor",
@@ -856,27 +947,27 @@
         ]
       },
       {
-        "ticker": "ASTOR",
+        "ticker": "CVKMD",
         "kind": "tepe_riski",
         "reason": "guc var ama alim icin risk etiketi tasiyor",
-        "sector": "XUTEK",
-        "score": 117.8,
-        "price": 286.5,
-        "m5": -12.0,
-        "m21": -9.6,
-        "m252": 179.2,
-        "rank_1y": 20,
-        "rank_1a": 99,
-        "rank_1h": 129,
-        "acceleration": -79,
-        "volume_ratio": 1.08,
+        "sector": "XMADN",
+        "score": 114.4,
+        "price": 37.76,
+        "m5": -1.8,
+        "m21": -10.4,
+        "m252": 196.9,
+        "rank_1y": 19,
+        "rank_1a": 106,
+        "rank_1h": 103,
+        "acceleration": -84,
+        "volume_ratio": 1.13,
         "sm_signal": "DAĞITIM",
         "display_signal": "DAĞITIM",
         "radar_only": false,
-        "range_high": 363.5,
-        "range_low": 88.5,
-        "from_high_pct": -21.2,
-        "from_low_pct": 223.7,
+        "range_high": 47.8,
+        "range_low": 12.36,
+        "from_high_pct": -21.0,
+        "from_low_pct": 205.5,
         "tags": [
           {
             "label": "ivme_yavasliyor",
@@ -889,49 +980,9 @@
             "note": "eleme degil; tepe/yorulma etiketi"
           },
           {
-            "label": "sektor_cap_dolu",
-            "severity": "info",
-            "note": "Top10 icinde sektor kotasi dolu"
-          },
-          {
             "label": "duseni_tutma_riski",
             "severity": "warn",
             "note": "kisa ve orta vade guc yok"
-          }
-        ]
-      },
-      {
-        "ticker": "SKBNK",
-        "kind": "tepe_riski",
-        "reason": "guc var ama alim icin risk etiketi tasiyor",
-        "sector": "XBANK",
-        "score": 112.5,
-        "price": 19.63,
-        "m5": 1.9,
-        "m21": 53.7,
-        "m252": 217.6,
-        "rank_1y": 17,
-        "rank_1a": 9,
-        "rank_1h": 58,
-        "acceleration": 8,
-        "volume_ratio": 0.76,
-        "sm_signal": "Birikim",
-        "display_signal": "Birikim",
-        "radar_only": false,
-        "range_high": 19.63,
-        "range_low": 5.65,
-        "from_high_pct": 0.0,
-        "from_low_pct": 247.4,
-        "tags": [
-          {
-            "label": "zirveye_yakin",
-            "severity": "warn",
-            "note": "52 haftalik tepeye cok yakin"
-          },
-          {
-            "label": "ivme_yavasliyor",
-            "severity": "warn",
-            "note": "1Y liderligi var ama 1H sirasi geri"
           }
         ]
       }
@@ -939,20 +990,11 @@
     "radar_universe_count": 150,
     "trade_universe_count": 100,
     "radar_note": "Top10/F motoru 100 evrenle kalir; radar 150 hisseyi izleme amacli tarar.",
-    "firsatlar": [
-      {
-        "ticker": "OZRDN",
-        "sector": "XU100",
-        "m252": 255.5,
-        "sm_signal": "GÜÇLÜ_BİRİKİM",
-        "m5": -3.9,
-        "m21": -2.0
-      }
-    ]
+    "firsatlar": []
   },
   "catalyst_ledger": {
-    "updated_at": "2026-07-21T09:46:19",
-    "as_of": "2026-07-17",
+    "updated_at": "2026-07-21T14:30:56",
+    "as_of": "2026-07-21",
     "source_count": 1,
     "tracked_events": 18,
     "latest_source_id": "third_party_secondary_source",
@@ -963,7 +1005,7 @@
     "open_21d": 18,
     "matured_5d": 18,
     "matured_21d": 0,
-    "avg_current_return_pct": 0.12,
+    "avg_current_return_pct": 0.57,
     "avg_5d_return_pct": 0.12,
     "hit_5d_pct": 44.4,
     "avg_21d_return_pct": null,
@@ -989,8 +1031,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 20.22,
-        "current_return_pct": 2.87,
-        "age_trading_days": 5,
+        "current_return_pct": 9.1,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -998,8 +1040,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 73.5,
-        "current_return_pct": -9.52,
-        "age_trading_days": 5,
+        "current_return_pct": -9.32,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1007,8 +1049,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 371.0,
-        "current_return_pct": 4.04,
-        "age_trading_days": 5,
+        "current_return_pct": 6.13,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1016,8 +1058,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 20.5,
-        "current_return_pct": -0.59,
-        "age_trading_days": 5,
+        "current_return_pct": -2.68,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1025,8 +1067,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 91.05,
-        "current_return_pct": -0.38,
-        "age_trading_days": 5,
+        "current_return_pct": 0.0,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1034,8 +1076,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 41.52,
-        "current_return_pct": 1.97,
-        "age_trading_days": 5,
+        "current_return_pct": 4.38,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1043,8 +1085,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 82.0,
-        "current_return_pct": 1.95,
-        "age_trading_days": 5,
+        "current_return_pct": -1.16,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1052,8 +1094,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 133.7,
-        "current_return_pct": -5.16,
-        "age_trading_days": 5,
+        "current_return_pct": -6.88,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1061,8 +1103,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 14.34,
-        "current_return_pct": -4.6,
-        "age_trading_days": 5,
+        "current_return_pct": -9.07,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1070,8 +1112,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 188.0,
-        "current_return_pct": 4.79,
-        "age_trading_days": 5,
+        "current_return_pct": 6.49,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1079,8 +1121,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 639.0,
-        "current_return_pct": -0.55,
-        "age_trading_days": 5,
+        "current_return_pct": -0.94,
+        "age_trading_days": 7,
         "f_overlap": false
       },
       {
@@ -1088,8 +1130,8 @@
         "type": "temettu_verimi",
         "source_tier": "data_vendor",
         "entry_price": 93.6,
-        "current_return_pct": -5.56,
-        "age_trading_days": 5,
+        "current_return_pct": -5.13,
+        "age_trading_days": 7,
         "f_overlap": false
       }
     ],
@@ -1105,19 +1147,19 @@
     "note": "Olcum katmani; F motoruna emir uretmez. Ikincil sosyal kaynaklar KAP/temel veri ile dogrulanmadan terfi etmez."
   },
   "shadow_cycle": {
-    "date": "2026-07-17",
+    "date": "2026-07-21",
     "rebalance": false,
     "accounts": {
       "A": {
-        "value": 1.2011,
+        "value": 1.2043,
         "n_pos": 10,
         "sells": [],
         "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
         "last_selection": "2026-07-17",
-        "rebal_elapsed": 0,
-        "rebal_due_in": 30,
+        "rebal_elapsed": 2,
+        "rebal_due_in": 28,
         "new_trades": [],
         "last_event": {
           "date": "2026-07-17",
@@ -1233,15 +1275,15 @@
         }
       },
       "B": {
-        "value": 1.2296,
+        "value": 1.2487,
         "n_pos": 10,
         "sells": [],
         "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
         "last_selection": "2026-07-17",
-        "rebal_elapsed": 0,
-        "rebal_due_in": 30,
+        "rebal_elapsed": 2,
+        "rebal_due_in": 28,
         "new_trades": [],
         "last_event": {
           "date": "2026-07-17",
@@ -1357,15 +1399,15 @@
         }
       },
       "F": {
-        "value": 1.2296,
+        "value": 1.2487,
         "n_pos": 10,
         "sells": [],
         "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
         "last_selection": "2026-07-17",
-        "rebal_elapsed": 0,
-        "rebal_due_in": 30,
+        "rebal_elapsed": 2,
+        "rebal_due_in": 28,
         "new_trades": [],
         "last_event": {
           "date": "2026-07-17",
@@ -1481,15 +1523,15 @@
         }
       },
       "O": {
-        "value": 1.2296,
+        "value": 1.2487,
         "n_pos": 10,
         "sells": [],
         "stop_trades": [],
         "rebalance": false,
         "initial_entry": false,
         "last_selection": "2026-07-17",
-        "rebal_elapsed": 0,
-        "rebal_due_in": 30,
+        "rebal_elapsed": 2,
+        "rebal_due_in": 28,
         "new_trades": [],
         "last_event": {
           "date": "2026-07-17",
@@ -1611,9 +1653,9 @@
           "return_candidate",
           "drawdown_watch"
         ],
-        "value": 0.8815,
-        "return_pct": -11.85,
-        "max_dd_pct": -11.97,
+        "value": 0.8758,
+        "return_pct": -12.42,
+        "max_dd_pct": -12.42,
         "n_positions": 3,
         "n_watch": 1,
         "buys": 5,
@@ -1628,7 +1670,7 @@
         "reentry_avg_pnl_pct": -18.95,
         "reentry_win_rate": 0.0,
         "reentry_rebalance_loss_count": 0,
-        "g1_vs_f_return_pct": -34.81,
+        "g1_vs_f_return_pct": -37.29,
         "promotion_gates": {
           "beats_f": false,
           "dd_ok": false,
@@ -1641,13 +1683,13 @@
             {
               "key": "g1_vs_f_return_pct",
               "label": "G1/F getiri farki",
-              "value": -34.81,
+              "value": -37.29,
               "unit": "%"
             },
             {
               "key": "max_dd_pct",
               "label": "Max DD (gunluk)",
-              "value": -11.97,
+              "value": -12.42,
               "unit": "%"
             },
             {
@@ -1702,17 +1744,17 @@
     }
   },
   "operation_health": {
-    "label": "acilis",
-    "target_time": "09:45",
-    "delay_minutes": 1,
+    "label": "gunici",
+    "target_time": "14:30",
+    "delay_minutes": 0,
     "sla": {
       "status": "on_time",
       "root_cause": "zamaninda",
       "event": "schedule",
-      "gate_label": "acilis",
+      "gate_label": "gunici",
       "gate_reason": "",
-      "target_time": "09:45",
-      "delay_minutes": 1
+      "target_time": "14:30",
+      "delay_minutes": 0
     },
     "telegram": {
       "sent": true,
@@ -1732,39 +1774,19 @@
       "ALTINS1",
       "DMLKTG"
     ],
-    "last_data_date": "2026-07-17",
-    "data_cleaning": {
-      "dropped_sparse_tail": true,
-      "threshold_pct": 50.0,
-      "dropped_dates": [
-        {
-          "date": "2026-07-20",
-          "nan_pct": 99.67
-        }
-      ],
-      "last_healthy_date": "2026-07-17"
-    },
+    "last_data_date": "2026-07-21",
+    "data_cleaning": {},
     "data_health": {
-      "timestamp": "2026-07-21 09:46",
+      "timestamp": "2026-07-21 14:30",
       "data_issues": [],
-      "data_cleaning": {
-        "dropped_sparse_tail": true,
-        "threshold_pct": 50.0,
-        "dropped_dates": [
-          {
-            "date": "2026-07-20",
-            "nan_pct": 99.67
-          }
-        ],
-        "last_healthy_date": "2026-07-17"
-      },
+      "data_cleaning": {},
       "healthy": true,
       "snapshots_removed": 0,
       "logs_removed": 0,
       "temp_removed": 2
     },
     "verdict": "green",
-    "updated_at": "2026-07-21T09:46:20"
+    "updated_at": "2026-07-21T14:30:57"
   },
   "account_governance": {
     "F": {
@@ -1792,97 +1814,97 @@
     "A": {
       "n_positions": 10,
       "cash": 0.0049,
-      "value": 1.2011,
-      "return_pct": 20.11,
+      "value": 1.2043,
+      "return_pct": 20.43,
       "positions": [
         {
           "ticker": "GUNDG",
           "entry": 2100.0,
-          "peak": 2151.0,
-          "current": 2100.0,
-          "stop": 1828.35,
-          "pnl_pct": 0.0,
+          "peak": 2152.0,
+          "current": 2152.0,
+          "stop": 1829.2,
+          "pnl_pct": 2.48,
           "shares": 5.7e-05
         },
         {
           "ticker": "HEDEF",
           "entry": 195.0,
-          "peak": 214.5,
-          "current": 195.0,
-          "stop": 182.32,
-          "pnl_pct": 0.0,
+          "peak": 227.5,
+          "current": 227.5,
+          "stop": 204.75,
+          "pnl_pct": 16.67,
           "shares": 0.000613
         },
         {
           "ticker": "KTLEV",
           "entry": 189.2,
           "peak": 192.8,
-          "current": 189.2,
+          "current": 172.1,
           "stop": 163.88,
-          "pnl_pct": 0.0,
+          "pnl_pct": -9.04,
           "shares": 0.000632
         },
         {
           "ticker": "ODINE",
           "entry": 2100.0,
-          "peak": 2177.0,
-          "current": 2100.0,
-          "stop": 1850.45,
-          "pnl_pct": 0.0,
+          "peak": 2189.0,
+          "current": 2189.0,
+          "stop": 1860.65,
+          "pnl_pct": 4.24,
           "shares": 5.7e-05
         },
         {
           "ticker": "OZATD",
           "entry": 2695.0,
-          "peak": 2775.0,
-          "current": 2695.0,
-          "stop": 2358.75,
-          "pnl_pct": 0.0,
+          "peak": 2800.0,
+          "current": 2800.0,
+          "stop": 2380.0,
+          "pnl_pct": 3.9,
           "shares": 4.4e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 157.6,
           "peak": 161.5,
-          "current": 157.6,
+          "current": 161.5,
           "stop": 137.28,
-          "pnl_pct": 0.0,
+          "pnl_pct": 2.47,
           "shares": 0.000759
         },
         {
           "ticker": "ALKLC",
           "entry": 393.25,
           "peak": 401.0,
-          "current": 393.25,
+          "current": 400.75,
           "stop": 340.85,
-          "pnl_pct": 0.0,
+          "pnl_pct": 1.91,
           "shares": 0.000304
         },
         {
           "ticker": "DSTKF",
           "entry": 2522.5,
           "peak": 2522.5,
-          "current": 2522.5,
+          "current": 2171.0,
           "stop": 2144.12,
-          "pnl_pct": 0.0,
+          "pnl_pct": -13.93,
           "shares": 4.7e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 14.8,
-          "peak": 15.0,
-          "current": 14.8,
-          "stop": 12.75,
-          "pnl_pct": 0.0,
+          "peak": 15.03,
+          "current": 15.03,
+          "stop": 12.78,
+          "pnl_pct": 1.55,
           "shares": 0.008083
         },
         {
           "ticker": "SELEC",
           "entry": 261.0,
           "peak": 269.25,
-          "current": 261.0,
+          "current": 241.2,
           "stop": 228.86,
-          "pnl_pct": 0.0,
+          "pnl_pct": -7.59,
           "shares": 0.000458
         }
       ],
@@ -2328,97 +2350,97 @@
     "B": {
       "n_positions": 10,
       "cash": 0.0053,
-      "value": 1.2296,
-      "return_pct": 22.96,
+      "value": 1.2487,
+      "return_pct": 24.87,
       "positions": [
         {
           "ticker": "GUNDG",
           "entry": 2100.0,
-          "peak": 2151.0,
-          "current": 2100.0,
-          "stop": 1828.35,
-          "pnl_pct": 0.0,
+          "peak": 2152.0,
+          "current": 2152.0,
+          "stop": 1829.2,
+          "pnl_pct": 2.48,
           "shares": 5.7e-05
         },
         {
           "ticker": "HEDEF",
           "entry": 195.0,
-          "peak": 214.5,
-          "current": 195.0,
-          "stop": 182.32,
-          "pnl_pct": 0.0,
+          "peak": 227.5,
+          "current": 227.5,
+          "stop": 204.75,
+          "pnl_pct": 16.67,
           "shares": 0.000616
         },
         {
           "ticker": "KTLEV",
           "entry": 189.2,
           "peak": 192.8,
-          "current": 189.2,
+          "current": 172.1,
           "stop": 163.88,
-          "pnl_pct": 0.0,
+          "pnl_pct": -9.04,
           "shares": 0.000381
         },
         {
           "ticker": "ODINE",
           "entry": 2100.0,
-          "peak": 2177.0,
-          "current": 2100.0,
-          "stop": 1850.45,
-          "pnl_pct": 0.0,
+          "peak": 2189.0,
+          "current": 2189.0,
+          "stop": 1860.65,
+          "pnl_pct": 4.24,
           "shares": 8.6e-05
         },
         {
           "ticker": "OZATD",
           "entry": 2695.0,
-          "peak": 2775.0,
-          "current": 2695.0,
-          "stop": 2358.75,
-          "pnl_pct": 0.0,
+          "peak": 2800.0,
+          "current": 2800.0,
+          "stop": 2380.0,
+          "pnl_pct": 3.9,
           "shares": 6.7e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 157.6,
           "peak": 161.5,
-          "current": 157.6,
+          "current": 161.5,
           "stop": 137.28,
-          "pnl_pct": 0.0,
+          "pnl_pct": 2.47,
           "shares": 0.000762
         },
         {
           "ticker": "ALKLC",
           "entry": 393.25,
           "peak": 401.0,
-          "current": 393.25,
+          "current": 400.75,
           "stop": 340.85,
-          "pnl_pct": 0.0,
+          "pnl_pct": 1.91,
           "shares": 0.000305
         },
         {
           "ticker": "DSTKF",
           "entry": 2522.5,
           "peak": 2522.5,
-          "current": 2522.5,
+          "current": 2171.0,
           "stop": 2144.12,
-          "pnl_pct": 0.0,
+          "pnl_pct": -13.93,
           "shares": 2.9e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 14.8,
-          "peak": 15.0,
-          "current": 14.8,
-          "stop": 12.75,
-          "pnl_pct": 0.0,
+          "peak": 15.03,
+          "current": 15.03,
+          "stop": 12.78,
+          "pnl_pct": 1.55,
           "shares": 0.00811
         },
         {
           "ticker": "SELEC",
           "entry": 261.0,
           "peak": 269.25,
-          "current": 261.0,
+          "current": 241.2,
           "stop": 228.86,
-          "pnl_pct": 0.0,
+          "pnl_pct": -7.59,
           "shares": 0.00046
         }
       ],
@@ -2864,97 +2886,97 @@
     "F": {
       "n_positions": 10,
       "cash": 0.0053,
-      "value": 1.2296,
-      "return_pct": 22.96,
+      "value": 1.2487,
+      "return_pct": 24.87,
       "positions": [
         {
           "ticker": "GUNDG",
           "entry": 2100.0,
-          "peak": 2151.0,
-          "current": 2100.0,
-          "stop": 1828.35,
-          "pnl_pct": 0.0,
+          "peak": 2152.0,
+          "current": 2152.0,
+          "stop": 1829.2,
+          "pnl_pct": 2.48,
           "shares": 5.7e-05
         },
         {
           "ticker": "HEDEF",
           "entry": 195.0,
-          "peak": 214.5,
-          "current": 195.0,
-          "stop": 182.32,
-          "pnl_pct": 0.0,
+          "peak": 227.5,
+          "current": 227.5,
+          "stop": 204.75,
+          "pnl_pct": 16.67,
           "shares": 0.000616
         },
         {
           "ticker": "KTLEV",
           "entry": 189.2,
           "peak": 192.8,
-          "current": 189.2,
+          "current": 172.1,
           "stop": 163.88,
-          "pnl_pct": 0.0,
+          "pnl_pct": -9.04,
           "shares": 0.000381
         },
         {
           "ticker": "ODINE",
           "entry": 2100.0,
-          "peak": 2177.0,
-          "current": 2100.0,
-          "stop": 1850.45,
-          "pnl_pct": 0.0,
+          "peak": 2189.0,
+          "current": 2189.0,
+          "stop": 1860.65,
+          "pnl_pct": 4.24,
           "shares": 8.6e-05
         },
         {
           "ticker": "OZATD",
           "entry": 2695.0,
-          "peak": 2775.0,
-          "current": 2695.0,
-          "stop": 2358.75,
-          "pnl_pct": 0.0,
+          "peak": 2800.0,
+          "current": 2800.0,
+          "stop": 2380.0,
+          "pnl_pct": 3.9,
           "shares": 6.7e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 157.6,
           "peak": 161.5,
-          "current": 157.6,
+          "current": 161.5,
           "stop": 137.28,
-          "pnl_pct": 0.0,
+          "pnl_pct": 2.47,
           "shares": 0.000762
         },
         {
           "ticker": "ALKLC",
           "entry": 393.25,
           "peak": 401.0,
-          "current": 393.25,
+          "current": 400.75,
           "stop": 340.85,
-          "pnl_pct": 0.0,
+          "pnl_pct": 1.91,
           "shares": 0.000305
         },
         {
           "ticker": "DSTKF",
           "entry": 2522.5,
           "peak": 2522.5,
-          "current": 2522.5,
+          "current": 2171.0,
           "stop": 2144.12,
-          "pnl_pct": 0.0,
+          "pnl_pct": -13.93,
           "shares": 2.9e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 14.8,
-          "peak": 15.0,
-          "current": 14.8,
-          "stop": 12.75,
-          "pnl_pct": 0.0,
+          "peak": 15.03,
+          "current": 15.03,
+          "stop": 12.78,
+          "pnl_pct": 1.55,
           "shares": 0.00811
         },
         {
           "ticker": "SELEC",
           "entry": 261.0,
           "peak": 269.25,
-          "current": 261.0,
+          "current": 241.2,
           "stop": 228.86,
-          "pnl_pct": 0.0,
+          "pnl_pct": -7.59,
           "shares": 0.00046
         }
       ],
@@ -3400,97 +3422,97 @@
     "O": {
       "n_positions": 10,
       "cash": 0.0053,
-      "value": 1.2296,
-      "return_pct": 22.96,
+      "value": 1.2487,
+      "return_pct": 24.87,
       "positions": [
         {
           "ticker": "GUNDG",
           "entry": 2100.0,
-          "peak": 2151.0,
-          "current": 2100.0,
-          "stop": 1828.35,
-          "pnl_pct": 0.0,
+          "peak": 2152.0,
+          "current": 2152.0,
+          "stop": 1829.2,
+          "pnl_pct": 2.48,
           "shares": 5.7e-05
         },
         {
           "ticker": "HEDEF",
           "entry": 195.0,
-          "peak": 214.5,
-          "current": 195.0,
-          "stop": 182.32,
-          "pnl_pct": 0.0,
+          "peak": 227.5,
+          "current": 227.5,
+          "stop": 204.75,
+          "pnl_pct": 16.67,
           "shares": 0.000616
         },
         {
           "ticker": "KTLEV",
           "entry": 189.2,
           "peak": 192.8,
-          "current": 189.2,
+          "current": 172.1,
           "stop": 163.88,
-          "pnl_pct": 0.0,
+          "pnl_pct": -9.04,
           "shares": 0.000381
         },
         {
           "ticker": "ODINE",
           "entry": 2100.0,
-          "peak": 2177.0,
-          "current": 2100.0,
-          "stop": 1850.45,
-          "pnl_pct": 0.0,
+          "peak": 2189.0,
+          "current": 2189.0,
+          "stop": 1860.65,
+          "pnl_pct": 4.24,
           "shares": 8.6e-05
         },
         {
           "ticker": "OZATD",
           "entry": 2695.0,
-          "peak": 2775.0,
-          "current": 2695.0,
-          "stop": 2358.75,
-          "pnl_pct": 0.0,
+          "peak": 2800.0,
+          "current": 2800.0,
+          "stop": 2380.0,
+          "pnl_pct": 3.9,
           "shares": 6.7e-05
         },
         {
           "ticker": "IEYHO",
           "entry": 157.6,
           "peak": 161.5,
-          "current": 157.6,
+          "current": 161.5,
           "stop": 137.28,
-          "pnl_pct": 0.0,
+          "pnl_pct": 2.47,
           "shares": 0.000762
         },
         {
           "ticker": "ALKLC",
           "entry": 393.25,
           "peak": 401.0,
-          "current": 393.25,
+          "current": 400.75,
           "stop": 340.85,
-          "pnl_pct": 0.0,
+          "pnl_pct": 1.91,
           "shares": 0.000305
         },
         {
           "ticker": "DSTKF",
           "entry": 2522.5,
           "peak": 2522.5,
-          "current": 2522.5,
+          "current": 2171.0,
           "stop": 2144.12,
-          "pnl_pct": 0.0,
+          "pnl_pct": -13.93,
           "shares": 2.9e-05
         },
         {
           "ticker": "PEKGY",
           "entry": 14.8,
-          "peak": 15.0,
-          "current": 14.8,
-          "stop": 12.75,
-          "pnl_pct": 0.0,
+          "peak": 15.03,
+          "current": 15.03,
+          "stop": 12.78,
+          "pnl_pct": 1.55,
           "shares": 0.00811
         },
         {
           "ticker": "SELEC",
           "entry": 261.0,
           "peak": 269.25,
-          "current": 261.0,
+          "current": 241.2,
           "stop": 228.86,
-          "pnl_pct": 0.0,
+          "pnl_pct": -7.59,
           "shares": 0.00046
         }
       ],
@@ -3940,9 +3962,9 @@
         "return_candidate",
         "drawdown_watch"
       ],
-      "value": 0.8815,
-      "return_pct": -11.85,
-      "max_dd_pct": -11.97,
+      "value": 0.8758,
+      "return_pct": -12.42,
+      "max_dd_pct": -12.42,
       "n_positions": 3,
       "n_watch": 1,
       "buys": 5,
@@ -3957,7 +3979,7 @@
       "reentry_avg_pnl_pct": -18.95,
       "reentry_win_rate": 0.0,
       "reentry_rebalance_loss_count": 0,
-      "g1_vs_f_return_pct": -34.81,
+      "g1_vs_f_return_pct": -37.29,
       "promotion_gates": {
         "beats_f": false,
         "dd_ok": false,
@@ -3970,13 +3992,13 @@
           {
             "key": "g1_vs_f_return_pct",
             "label": "G1/F getiri farki",
-            "value": -34.81,
+            "value": -37.29,
             "unit": "%"
           },
           {
             "key": "max_dd_pct",
             "label": "Max DD (gunluk)",
-            "value": -11.97,
+            "value": -12.42,
             "unit": "%"
           },
           {
@@ -4022,9 +4044,9 @@
           "ticker": "KTLEV",
           "entry": 183.7,
           "peak": 198.3,
-          "current": 189.2,
+          "current": 172.1,
           "stop": 168.56,
-          "pnl_pct": 2.99,
+          "pnl_pct": -6.31,
           "shares": 0.00054,
           "origin": "rebalance"
         },
@@ -4032,19 +4054,19 @@
           "ticker": "IEYHO",
           "entry": 152.0,
           "peak": 161.5,
-          "current": 157.6,
+          "current": 161.5,
           "stop": 137.28,
-          "pnl_pct": 3.68,
+          "pnl_pct": 6.25,
           "shares": 0.000684,
           "origin": "rebalance"
         },
         {
           "ticker": "PEKGY",
           "entry": 14.29,
-          "peak": 15.0,
-          "current": 14.8,
-          "stop": 12.75,
-          "pnl_pct": 3.57,
+          "peak": 15.03,
+          "current": 15.03,
+          "stop": 12.78,
+          "pnl_pct": 5.18,
           "shares": 0.00401,
           "origin": "rebalance"
         }
@@ -4155,60 +4177,60 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-07-21T09:46:20",
-    "days_tracked": 31,
-    "valid_days_tracked": 31,
+    "updated_at": "2026-07-21T14:30:57",
+    "days_tracked": 32,
+    "valid_days_tracked": 32,
     "invalid_snapshot_count": 0,
-    "latest_date": "2026-07-17",
-    "latest_avg_return_pct": 0.05,
-    "latest_hit_rate_pct": 50.0,
+    "latest_date": "2026-07-21",
+    "latest_avg_return_pct": 0.0,
+    "latest_hit_rate_pct": 0.0,
     "latest_age_trading_days": 0,
     "tracked_count": 10,
-    "latest_valid_date": "2026-07-17",
-    "latest_valid_avg_return_pct": 0.05,
-    "latest_valid_hit_rate_pct": 50.0,
+    "latest_valid_date": "2026-07-21",
+    "latest_valid_avg_return_pct": 0.0,
+    "latest_valid_hit_rate_pct": 0.0,
     "latest_valid_age_trading_days": 0,
     "latest_valid_tracked_count": 10,
     "primary_cohort": {
       "age_ge_days": 5,
-      "snapshots": 26,
-      "avg_return_pct": 10.5,
-      "hit_rate_pct": 73.85,
-      "avg_tracked_count": 9.31
+      "snapshots": 28,
+      "avg_return_pct": 10.19,
+      "hit_rate_pct": 69.64,
+      "avg_tracked_count": 9.36
     },
     "mature_cohorts": [
       {
         "age_ge_days": 1,
-        "snapshots": 29,
-        "avg_return_pct": 9.48,
-        "hit_rate_pct": 72.07,
-        "avg_tracked_count": 9.38
+        "snapshots": 31,
+        "avg_return_pct": 9.24,
+        "hit_rate_pct": 69.68,
+        "avg_tracked_count": 9.42
       },
       {
         "age_ge_days": 5,
-        "snapshots": 26,
-        "avg_return_pct": 10.5,
-        "hit_rate_pct": 73.85,
-        "avg_tracked_count": 9.31
+        "snapshots": 28,
+        "avg_return_pct": 10.19,
+        "hit_rate_pct": 69.64,
+        "avg_tracked_count": 9.36
       },
       {
         "age_ge_days": 10,
-        "snapshots": 21,
-        "avg_return_pct": 12.07,
-        "hit_rate_pct": 73.33,
-        "avg_tracked_count": 9.14
+        "snapshots": 23,
+        "avg_return_pct": 12.24,
+        "hit_rate_pct": 70.87,
+        "avg_tracked_count": 9.22
       },
       {
         "age_ge_days": 21,
-        "snapshots": 10,
-        "avg_return_pct": 14.18,
-        "hit_rate_pct": 69.0,
-        "avg_tracked_count": 9.1
+        "snapshots": 12,
+        "avg_return_pct": 13.66,
+        "hit_rate_pct": 70.83,
+        "avg_tracked_count": 9.25
       },
       {
         "age_ge_days": 30,
-        "snapshots": 1,
-        "avg_return_pct": 20.98,
+        "snapshots": 3,
+        "avg_return_pct": 19.32,
         "hit_rate_pct": 70.0,
         "avg_tracked_count": 10.0
       }
@@ -4217,195 +4239,19 @@
       "rank_min": 1,
       "rank_max": 7,
       "min_age_days": 1,
-      "n": 191,
-      "avg_return_pct": 14.94,
-      "hit_rate_pct": 82.2
+      "n": 205,
+      "avg_return_pct": 13.66,
+      "hit_rate_pct": 76.6
     },
     "tail8_10_shadow": {
       "rank_min": 8,
       "rank_max": 10,
       "min_age_days": 1,
-      "n": 81,
-      "avg_return_pct": -1.88,
-      "hit_rate_pct": 42.0
+      "n": 87,
+      "avg_return_pct": -0.46,
+      "hit_rate_pct": 47.1
     },
     "recent": [
-      {
-        "date": "2026-07-08",
-        "generated_at": "2026-07-08 14:32",
-        "mode": "F",
-        "source": "yahoo",
-        "last_data_date": "2026-07-08",
-        "items": [
-          {
-            "rank": 1,
-            "ticker": "GUNDG",
-            "action": "AL",
-            "signal": "GÜÇLÜ_BİRİKİM",
-            "sector": "XU100",
-            "entry_price": 1975.0,
-            "m5": 15.6,
-            "m21": 53.5,
-            "m252": 3205.8,
-            "target_1": 2056.67,
-            "target_2": 2113.33,
-            "stop": 1700.0,
-            "current_price": 2100.0,
-            "return_pct": 6.33
-          },
-          {
-            "rank": 2,
-            "ticker": "KTLEV",
-            "action": "AL",
-            "signal": "Birikim",
-            "sector": "XUTEK",
-            "entry_price": 185.0,
-            "m5": 7.4,
-            "m21": 18.1,
-            "m252": 2236.2,
-            "target_1": 192.5,
-            "target_2": 196.0,
-            "stop": 185.25,
-            "current_price": 189.2,
-            "return_pct": 2.27
-          },
-          {
-            "rank": 3,
-            "ticker": "ODINE",
-            "action": "AL",
-            "signal": "GÜÇLÜ_BİRİKİM",
-            "sector": "XUTEK",
-            "entry_price": 1927.0,
-            "m5": 0.6,
-            "m21": 38.6,
-            "m252": 1722.2,
-            "target_1": 2022.33,
-            "target_2": 2076.67,
-            "stop": 1672.8,
-            "current_price": 2100.0,
-            "return_pct": 8.98
-          },
-          {
-            "rank": 4,
-            "ticker": "IEYHO",
-            "action": "BEKLE",
-            "signal": "Üst_fitil_UYARI",
-            "sector": "XHOLD",
-            "entry_price": 157.1,
-            "m5": 4.6,
-            "m21": 27.9,
-            "m252": 1012.9,
-            "target_1": 157.4,
-            "target_2": 159.0,
-            "stop": 150.29,
-            "current_price": 157.6,
-            "return_pct": 0.32
-          },
-          {
-            "rank": 5,
-            "ticker": "DSTKF",
-            "action": "BEKLE",
-            "signal": "Üst_fitil_UYARI",
-            "sector": "XFINK",
-            "entry_price": 3857.5,
-            "m5": 1.9,
-            "m21": 49.8,
-            "m252": 903.9,
-            "target_1": 3922.5,
-            "target_2": 4025.0,
-            "stop": 3247.0,
-            "current_price": 2522.5,
-            "return_pct": -34.61
-          },
-          {
-            "rank": 6,
-            "ticker": "OZATD",
-            "action": "AL",
-            "signal": "Birikim",
-            "sector": "XU100",
-            "entry_price": 1894.0,
-            "m5": 14.3,
-            "m21": 26.3,
-            "m252": 915.0,
-            "target_1": 1958.0,
-            "target_2": 2019.0,
-            "stop": 1612.45,
-            "current_price": 2695.0,
-            "return_pct": 42.29
-          },
-          {
-            "rank": 7,
-            "ticker": "ALKLC",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XUSIN",
-            "entry_price": 378.5,
-            "m5": 10.9,
-            "m21": 10.9,
-            "m252": 559.7,
-            "target_1": 393.5,
-            "target_2": 409.0,
-            "stop": 321.3,
-            "current_price": 393.25,
-            "return_pct": 3.9
-          },
-          {
-            "rank": 8,
-            "ticker": "PEKGY",
-            "action": "AL",
-            "signal": "Birikim",
-            "sector": "XGMYO",
-            "entry_price": 14.6,
-            "m5": 2.8,
-            "m21": 20.8,
-            "m252": 557.0,
-            "target_1": 14.66,
-            "target_2": 14.81,
-            "stop": 13.22,
-            "current_price": 14.8,
-            "return_pct": 1.37
-          },
-          {
-            "rank": 9,
-            "ticker": "SKBNK",
-            "action": "AL",
-            "signal": "GÜÇLÜ_BİRİKİM",
-            "sector": "XBANK",
-            "entry_price": 18.97,
-            "m5": 15.2,
-            "m21": 47.8,
-            "m252": 184.5,
-            "target_1": 19.8,
-            "target_2": 20.16,
-            "stop": 16.52,
-            "current_price": 19.63,
-            "return_pct": 3.48
-          },
-          {
-            "rank": 10,
-            "ticker": "CVKMD",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XMADN",
-            "entry_price": 38.42,
-            "m5": -3.6,
-            "m21": -10.3,
-            "m252": 221.3,
-            "target_1": 39.05,
-            "target_2": 40.31,
-            "stop": 32.11,
-            "current_price": 38.56,
-            "return_pct": 0.36
-          }
-        ],
-        "first_generated_at": "2026-07-08 14:32",
-        "last_generated_at": "2026-07-10 10:07",
-        "as_of": "2026-07-17",
-        "age_trading_days": 7,
-        "avg_return_pct": 3.47,
-        "hit_rate_pct": 90.0,
-        "tracked_count": 10
-      },
       {
         "date": "2026-07-10",
         "generated_at": "2026-07-10 14:31",
@@ -4426,8 +4272,8 @@
             "target_1": 2066.33,
             "target_2": 2172.67,
             "stop": 1666.0,
-            "current_price": 2100.0,
-            "return_pct": 7.09
+            "current_price": 2152.0,
+            "return_pct": 9.74
           },
           {
             "rank": 2,
@@ -4442,8 +4288,8 @@
             "target_1": 196.6,
             "target_2": 203.2,
             "stop": 186.2,
-            "current_price": 189.2,
-            "return_pct": -2.07
+            "current_price": 172.1,
+            "return_pct": -10.92
           },
           {
             "rank": 3,
@@ -4458,8 +4304,8 @@
             "target_1": 2007.0,
             "target_2": 2034.0,
             "stop": 1683.0,
-            "current_price": 2100.0,
-            "return_pct": 8.08
+            "current_price": 2189.0,
+            "return_pct": 12.66
           },
           {
             "rank": 4,
@@ -4474,8 +4320,8 @@
             "target_1": 160.27,
             "target_2": 161.53,
             "stop": 152.19,
-            "current_price": 157.6,
-            "return_pct": -1.5
+            "current_price": 161.5,
+            "return_pct": 0.94
           },
           {
             "rank": 5,
@@ -4490,8 +4336,8 @@
             "target_1": 2064.0,
             "target_2": 2112.0,
             "stop": 1713.6,
-            "current_price": 2695.0,
-            "return_pct": 34.41
+            "current_price": 2800.0,
+            "return_pct": 39.65
           },
           {
             "rank": 6,
@@ -4506,8 +4352,8 @@
             "target_1": 3913.33,
             "target_2": 3986.67,
             "stop": 3264.0,
-            "current_price": 2522.5,
-            "return_pct": -33.92
+            "current_price": 2171.0,
+            "return_pct": -43.13
           },
           {
             "rank": 7,
@@ -4522,8 +4368,8 @@
             "target_1": 385.83,
             "target_2": 393.67,
             "stop": 321.3,
-            "current_price": 393.25,
-            "return_pct": 2.01
+            "current_price": 400.75,
+            "return_pct": 3.96
           },
           {
             "rank": 8,
@@ -4538,8 +4384,8 @@
             "target_1": 14.88,
             "target_2": 15.05,
             "stop": 13.28,
-            "current_price": 14.8,
-            "return_pct": 0.27
+            "current_price": 15.03,
+            "return_pct": 1.83
           },
           {
             "rank": 9,
@@ -4554,8 +4400,8 @@
             "target_1": 39.24,
             "target_2": 39.94,
             "stop": 32.76,
-            "current_price": 38.56,
-            "return_pct": 0.16
+            "current_price": 37.76,
+            "return_pct": -1.92
           },
           {
             "rank": 10,
@@ -4570,16 +4416,16 @@
             "target_1": 19.94,
             "target_2": 20.61,
             "stop": 16.38,
-            "current_price": 19.63,
-            "return_pct": 4.53
+            "current_price": 16.12,
+            "return_pct": -14.16
           }
         ],
         "first_generated_at": "2026-07-10 14:31",
         "last_generated_at": "2026-07-14 09:45",
-        "as_of": "2026-07-17",
-        "age_trading_days": 5,
-        "avg_return_pct": 1.91,
-        "hit_rate_pct": 70.0,
+        "as_of": "2026-07-21",
+        "age_trading_days": 7,
+        "avg_return_pct": -0.14,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -4602,8 +4448,8 @@
             "target_1": 2078.33,
             "target_2": 2136.67,
             "stop": 1717.0,
-            "current_price": 2100.0,
-            "return_pct": 5.9
+            "current_price": 2152.0,
+            "return_pct": 8.52
           },
           {
             "rank": 2,
@@ -4618,8 +4464,8 @@
             "target_1": 200.23,
             "target_2": 204.47,
             "stop": 186.3,
-            "current_price": 189.2,
-            "return_pct": 1.61
+            "current_price": 172.1,
+            "return_pct": -7.57
           },
           {
             "rank": 3,
@@ -4634,8 +4480,8 @@
             "target_1": 2084.0,
             "target_2": 2117.0,
             "stop": 1743.35,
-            "current_price": 2100.0,
-            "return_pct": 6.11
+            "current_price": 2189.0,
+            "return_pct": 10.61
           },
           {
             "rank": 4,
@@ -4650,8 +4496,8 @@
             "target_1": 160.8,
             "target_2": 162.1,
             "stop": 152.19,
-            "current_price": 157.6,
-            "return_pct": -1.62
+            "current_price": 161.5,
+            "return_pct": 0.81
           },
           {
             "rank": 5,
@@ -4666,8 +4512,8 @@
             "target_1": 2284.33,
             "target_2": 2351.67,
             "stop": 1884.45,
-            "current_price": 2695.0,
-            "return_pct": 23.45
+            "current_price": 2800.0,
+            "return_pct": 28.26
           },
           {
             "rank": 6,
@@ -4682,8 +4528,8 @@
             "target_1": 3710.83,
             "target_2": 3964.17,
             "stop": 2938.88,
-            "current_price": 2522.5,
-            "return_pct": -27.04
+            "current_price": 2171.0,
+            "return_pct": -37.21
           },
           {
             "rank": 7,
@@ -4698,8 +4544,8 @@
             "target_1": 385.92,
             "target_2": 390.08,
             "stop": 324.49,
-            "current_price": 393.25,
-            "return_pct": 4.03
+            "current_price": 400.75,
+            "return_pct": 6.02
           },
           {
             "rank": 8,
@@ -4714,8 +4560,8 @@
             "target_1": 14.84,
             "target_2": 14.95,
             "stop": 13.37,
-            "current_price": 14.8,
-            "return_pct": 1.37
+            "current_price": 15.03,
+            "return_pct": 2.95
           },
           {
             "rank": 9,
@@ -4730,8 +4576,8 @@
             "target_1": 38.13,
             "target_2": 38.57,
             "stop": 32.05,
-            "current_price": 38.56,
-            "return_pct": 1.37
+            "current_price": 37.76,
+            "return_pct": -0.74
           },
           {
             "rank": 10,
@@ -4746,16 +4592,16 @@
             "target_1": 19.14,
             "target_2": 19.75,
             "stop": 15.74,
-            "current_price": 19.63,
-            "return_pct": 5.99
+            "current_price": 16.12,
+            "return_pct": -12.96
           }
         ],
         "first_generated_at": "2026-07-13 14:50",
         "last_generated_at": "2026-07-15 09:45",
-        "as_of": "2026-07-17",
-        "age_trading_days": 4,
-        "avg_return_pct": 2.12,
-        "hit_rate_pct": 80.0,
+        "as_of": "2026-07-21",
+        "age_trading_days": 6,
+        "avg_return_pct": -0.13,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -4778,8 +4624,8 @@
             "target_1": 2145.33,
             "target_2": 2202.67,
             "stop": 1774.8,
-            "current_price": 2100.0,
-            "return_pct": 1.55
+            "current_price": 2152.0,
+            "return_pct": 4.06
           },
           {
             "rank": 2,
@@ -4794,8 +4640,8 @@
             "target_1": 200.57,
             "target_2": 206.33,
             "stop": 165.58,
-            "current_price": 195.0,
-            "return_pct": 0.41
+            "current_price": 227.5,
+            "return_pct": 17.15
           },
           {
             "rank": 3,
@@ -4810,8 +4656,8 @@
             "target_1": 200.7,
             "target_2": 203.1,
             "stop": 188.39,
-            "current_price": 189.2,
-            "return_pct": -4.11
+            "current_price": 172.1,
+            "return_pct": -12.77
           },
           {
             "rank": 4,
@@ -4826,8 +4672,8 @@
             "target_1": 2113.67,
             "target_2": 2137.33,
             "stop": 1776.5,
-            "current_price": 2100.0,
-            "return_pct": 1.5
+            "current_price": 2189.0,
+            "return_pct": 5.8
           },
           {
             "rank": 5,
@@ -4842,8 +4688,8 @@
             "target_1": 2640.33,
             "target_2": 2705.67,
             "stop": 2188.75,
-            "current_price": 2695.0,
-            "return_pct": 9.24
+            "current_price": 2800.0,
+            "return_pct": 13.5
           },
           {
             "rank": 6,
@@ -4858,8 +4704,8 @@
             "target_1": 161.63,
             "target_2": 163.27,
             "stop": 152.19,
-            "current_price": 157.6,
-            "return_pct": -1.44
+            "current_price": 161.5,
+            "return_pct": 1.0
           },
           {
             "rank": 7,
@@ -4874,8 +4720,8 @@
             "target_1": 410.33,
             "target_2": 422.17,
             "stop": 338.72,
-            "current_price": 393.25,
-            "return_pct": -0.69
+            "current_price": 400.75,
+            "return_pct": 1.2
           },
           {
             "rank": 8,
@@ -4890,8 +4736,8 @@
             "target_1": 3026.7,
             "target_2": 3222.87,
             "stop": 2382.12,
-            "current_price": 2522.5,
-            "return_pct": -9.99
+            "current_price": 2171.0,
+            "return_pct": -22.53
           },
           {
             "rank": 9,
@@ -4906,8 +4752,8 @@
             "target_1": 14.91,
             "target_2": 15.03,
             "stop": 13.37,
-            "current_price": 14.8,
-            "return_pct": -0.4
+            "current_price": 15.03,
+            "return_pct": 1.14
           },
           {
             "rank": 10,
@@ -4922,16 +4768,16 @@
             "target_1": 248.2,
             "target_2": 255.5,
             "stop": 204.76,
-            "current_price": 261.0,
-            "return_pct": 8.34
+            "current_price": 241.2,
+            "return_pct": 0.12
           }
         ],
         "first_generated_at": "2026-07-16 14:31",
         "last_generated_at": "2026-07-16 18:41",
-        "as_of": "2026-07-17",
-        "age_trading_days": 1,
-        "avg_return_pct": 0.44,
-        "hit_rate_pct": 50.0,
+        "as_of": "2026-07-21",
+        "age_trading_days": 3,
+        "avg_return_pct": 0.87,
+        "hit_rate_pct": 80.0,
         "tracked_count": 10
       },
       {
@@ -4954,8 +4800,8 @@
             "target_1": 2109.67,
             "target_2": 2143.33,
             "stop": 1764.6,
-            "current_price": 2100.0,
-            "return_pct": 2.94
+            "current_price": 2152.0,
+            "return_pct": 5.49
           },
           {
             "rank": 2,
@@ -4970,8 +4816,8 @@
             "target_1": 195.57,
             "target_2": 198.53,
             "stop": 163.71,
-            "current_price": 195.0,
-            "return_pct": 1.25
+            "current_price": 227.5,
+            "return_pct": 18.12
           },
           {
             "rank": 3,
@@ -4986,8 +4832,8 @@
             "target_1": 199.27,
             "target_2": 202.43,
             "stop": 188.39,
-            "current_price": 189.2,
-            "return_pct": -3.42
+            "current_price": 172.1,
+            "return_pct": -12.15
           },
           {
             "rank": 4,
@@ -5002,8 +4848,8 @@
             "target_1": 2154.0,
             "target_2": 2248.0,
             "stop": 1751.0,
-            "current_price": 2100.0,
-            "return_pct": 1.5
+            "current_price": 2189.0,
+            "return_pct": 5.8
           },
           {
             "rank": 5,
@@ -5018,8 +4864,8 @@
             "target_1": 2457.67,
             "target_2": 2502.33,
             "stop": 2051.05,
-            "current_price": 2695.0,
-            "return_pct": 12.9
+            "current_price": 2800.0,
+            "return_pct": 17.3
           },
           {
             "rank": 6,
@@ -5034,8 +4880,8 @@
             "target_1": 161.13,
             "target_2": 162.77,
             "stop": 152.19,
-            "current_price": 157.6,
-            "return_pct": -1.5
+            "current_price": 161.5,
+            "return_pct": 0.94
           },
           {
             "rank": 7,
@@ -5050,8 +4896,8 @@
             "target_1": 402.25,
             "target_2": 407.5,
             "stop": 337.45,
-            "current_price": 393.25,
-            "return_pct": -0.32
+            "current_price": 400.75,
+            "return_pct": 1.58
           },
           {
             "rank": 8,
@@ -5066,8 +4912,8 @@
             "target_1": 3361.5,
             "target_2": 3579.37,
             "stop": 2645.62,
-            "current_price": 2522.5,
-            "return_pct": -18.96
+            "current_price": 2171.0,
+            "return_pct": -30.25
           },
           {
             "rank": 9,
@@ -5082,8 +4928,8 @@
             "target_1": 14.92,
             "target_2": 15.07,
             "stop": 13.37,
-            "current_price": 14.8,
-            "return_pct": -0.4
+            "current_price": 15.03,
+            "return_pct": 1.14
           },
           {
             "rank": 10,
@@ -5098,16 +4944,16 @@
             "target_1": 39.1,
             "target_2": 39.76,
             "stop": 32.67,
-            "current_price": 38.56,
-            "return_pct": -0.21
+            "current_price": 37.76,
+            "return_pct": -2.28
           }
         ],
         "first_generated_at": "2026-07-14 14:31",
         "last_generated_at": "2026-07-17 09:45",
-        "as_of": "2026-07-17",
-        "age_trading_days": 3,
-        "avg_return_pct": -0.62,
-        "hit_rate_pct": 40.0,
+        "as_of": "2026-07-21",
+        "age_trading_days": 5,
+        "avg_return_pct": 0.57,
+        "hit_rate_pct": 70.0,
         "tracked_count": 10
       },
       {
@@ -5130,8 +4976,8 @@
             "target_1": 222.83,
             "target_2": 231.17,
             "stop": 182.32,
-            "current_price": 195.0,
-            "return_pct": 0.0
+            "current_price": 227.5,
+            "return_pct": 16.67
           },
           {
             "rank": 2,
@@ -5146,8 +4992,8 @@
             "target_1": 2186.67,
             "target_2": 2223.33,
             "stop": 1828.35,
-            "current_price": 2100.0,
-            "return_pct": -2.37
+            "current_price": 2152.0,
+            "return_pct": 0.05
           },
           {
             "rank": 3,
@@ -5162,8 +5008,8 @@
             "target_1": 190.33,
             "target_2": 200.07,
             "stop": 163.88,
-            "current_price": 189.2,
-            "return_pct": -1.87
+            "current_price": 172.1,
+            "return_pct": -10.74
           },
           {
             "rank": 4,
@@ -5178,8 +5024,8 @@
             "target_1": 2218.0,
             "target_2": 2266.0,
             "stop": 1850.45,
-            "current_price": 2100.0,
-            "return_pct": -3.54
+            "current_price": 2189.0,
+            "return_pct": 0.55
           },
           {
             "rank": 5,
@@ -5194,8 +5040,8 @@
             "target_1": 2891.33,
             "target_2": 3007.67,
             "stop": 2358.75,
-            "current_price": 2695.0,
-            "return_pct": 4.15
+            "current_price": 2800.0,
+            "return_pct": 8.21
           },
           {
             "rank": 6,
@@ -5210,8 +5056,8 @@
             "target_1": 164.53,
             "target_2": 167.57,
             "stop": 137.28,
-            "current_price": 157.6,
-            "return_pct": -2.23
+            "current_price": 161.5,
+            "return_pct": 0.19
           },
           {
             "rank": 7,
@@ -5226,8 +5072,8 @@
             "target_1": 405.0,
             "target_2": 409.0,
             "stop": 340.85,
-            "current_price": 393.25,
-            "return_pct": -1.87
+            "current_price": 400.75,
+            "return_pct": 0.0
           },
           {
             "rank": 8,
@@ -5242,8 +5088,8 @@
             "target_1": 2421.67,
             "target_2": 2572.33,
             "stop": 2144.12,
-            "current_price": 2522.5,
-            "return_pct": 11.07
+            "current_price": 2171.0,
+            "return_pct": -4.4
           },
           {
             "rank": 9,
@@ -5258,8 +5104,8 @@
             "target_1": 15.08,
             "target_2": 15.16,
             "stop": 12.75,
-            "current_price": 14.8,
-            "return_pct": -0.2
+            "current_price": 15.03,
+            "return_pct": 1.35
           },
           {
             "rank": 10,
@@ -5274,16 +5120,16 @@
             "target_1": 272.67,
             "target_2": 290.33,
             "stop": 228.86,
-            "current_price": 261.0,
-            "return_pct": -3.06
+            "current_price": 241.2,
+            "return_pct": -10.42
           }
         ],
         "first_generated_at": "2026-07-20 14:30",
         "last_generated_at": "2026-07-20 18:40",
-        "as_of": "2026-07-17",
-        "age_trading_days": 0,
-        "avg_return_pct": 0.01,
-        "hit_rate_pct": 20.0,
+        "as_of": "2026-07-21",
+        "age_trading_days": 1,
+        "avg_return_pct": 0.15,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -5306,8 +5152,8 @@
             "target_1": 2142.0,
             "target_2": 2184.0,
             "stop": 1828.35,
-            "current_price": 2100.0,
-            "return_pct": 0.19
+            "current_price": 2152.0,
+            "return_pct": 2.67
           },
           {
             "rank": 2,
@@ -5322,8 +5168,8 @@
             "target_1": 196.6,
             "target_2": 198.2,
             "stop": 182.32,
-            "current_price": 195.0,
-            "return_pct": 0.15
+            "current_price": 227.5,
+            "return_pct": 16.85
           },
           {
             "rank": 3,
@@ -5338,8 +5184,8 @@
             "target_1": 195.4,
             "target_2": 201.6,
             "stop": 163.88,
-            "current_price": 189.2,
-            "return_pct": -2.07
+            "current_price": 172.1,
+            "return_pct": -10.92
           },
           {
             "rank": 4,
@@ -5354,8 +5200,8 @@
             "target_1": 2122.67,
             "target_2": 2145.33,
             "stop": 1850.45,
-            "current_price": 2100.0,
-            "return_pct": 0.14
+            "current_price": 2189.0,
+            "return_pct": 4.39
           },
           {
             "rank": 5,
@@ -5370,8 +5216,8 @@
             "target_1": 2788.33,
             "target_2": 2881.67,
             "stop": 2358.75,
-            "current_price": 2695.0,
-            "return_pct": 1.6
+            "current_price": 2800.0,
+            "return_pct": 5.56
           },
           {
             "rank": 6,
@@ -5386,8 +5232,8 @@
             "target_1": 160.27,
             "target_2": 162.93,
             "stop": 137.28,
-            "current_price": 157.6,
-            "return_pct": -0.69
+            "current_price": 161.5,
+            "return_pct": 1.76
           },
           {
             "rank": 7,
@@ -5402,8 +5248,8 @@
             "target_1": 399.25,
             "target_2": 405.25,
             "stop": 340.85,
-            "current_price": 393.25,
-            "return_pct": -1.56
+            "current_price": 400.75,
+            "return_pct": 0.31
           },
           {
             "rank": 8,
@@ -5418,8 +5264,8 @@
             "target_1": 2724.3,
             "target_2": 2900.88,
             "stop": 2144.12,
-            "current_price": 2522.5,
-            "return_pct": 0.0
+            "current_price": 2171.0,
+            "return_pct": -13.93
           },
           {
             "rank": 9,
@@ -5434,8 +5280,8 @@
             "target_1": 14.94,
             "target_2": 15.07,
             "stop": 12.75,
-            "current_price": 14.8,
-            "return_pct": 0.0
+            "current_price": 15.03,
+            "return_pct": 1.55
           },
           {
             "rank": 10,
@@ -5450,60 +5296,234 @@
             "target_1": 272.33,
             "target_2": 283.67,
             "stop": 228.86,
-            "current_price": 261.0,
-            "return_pct": 2.76
+            "current_price": 241.2,
+            "return_pct": -5.04
           }
         ],
         "first_generated_at": "2026-07-17 14:31",
         "last_generated_at": "2026-07-21 09:46",
-        "as_of": "2026-07-17",
+        "as_of": "2026-07-21",
+        "age_trading_days": 2,
+        "avg_return_pct": 0.32,
+        "hit_rate_pct": 70.0,
+        "tracked_count": 10
+      },
+      {
+        "date": "2026-07-21",
+        "generated_at": "2026-07-21 14:30",
+        "mode": "F",
+        "source": "yahoo",
+        "last_data_date": "2026-07-21",
+        "items": [
+          {
+            "rank": 1,
+            "ticker": "HEDEF",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XHOLD",
+            "entry_price": 227.5,
+            "m5": 18.1,
+            "m21": 74.7,
+            "m252": 3132.7,
+            "target_1": 233.67,
+            "target_2": 239.83,
+            "stop": 204.75,
+            "current_price": 227.5,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 2,
+            "ticker": "GUNDG",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XU100",
+            "entry_price": 2152.0,
+            "m5": 3.7,
+            "m21": 65.2,
+            "m252": 3160.6,
+            "target_1": 2207.67,
+            "target_2": 2263.33,
+            "stop": 1829.2,
+            "current_price": 2152.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 3,
+            "ticker": "ODINE",
+            "action": "AL",
+            "signal": "GÜÇLÜ_BİRİKİM",
+            "sector": "XUTEK",
+            "entry_price": 2189.0,
+            "m5": 6.3,
+            "m21": 29.2,
+            "m252": 1770.9,
+            "target_1": 2212.0,
+            "target_2": 2235.0,
+            "stop": 1860.65,
+            "current_price": 2189.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 4,
+            "ticker": "KTLEV",
+            "action": "BEKLE",
+            "signal": "Nötr",
+            "sector": "XUTEK",
+            "entry_price": 172.1,
+            "m5": -12.2,
+            "m21": -6.3,
+            "m252": 1728.9,
+            "target_1": 176.63,
+            "target_2": 181.17,
+            "stop": 163.88,
+            "current_price": 172.1,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 5,
+            "ticker": "OZATD",
+            "action": "AL",
+            "signal": "GÜÇLÜ_BİRİKİM",
+            "sector": "XU100",
+            "entry_price": 2800.0,
+            "m5": 16.0,
+            "m21": 85.1,
+            "m252": 1183.8,
+            "target_1": 2937.5,
+            "target_2": 3075.0,
+            "stop": 2380.0,
+            "current_price": 2800.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 6,
+            "ticker": "IEYHO",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XHOLD",
+            "entry_price": 161.5,
+            "m5": 1.3,
+            "m21": 18.9,
+            "m252": 1220.5,
+            "target_1": 163.03,
+            "target_2": 164.57,
+            "stop": 137.28,
+            "current_price": 161.5,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 7,
+            "ticker": "ALKLC",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XUSIN",
+            "entry_price": 400.75,
+            "m5": 0.9,
+            "m21": 18.0,
+            "m252": 594.5,
+            "target_1": 404.83,
+            "target_2": 408.92,
+            "stop": 340.85,
+            "current_price": 400.75,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 8,
+            "ticker": "DSTKF",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XFINK",
+            "entry_price": 2171.0,
+            "m5": -30.2,
+            "m21": -34.2,
+            "m252": 338.6,
+            "target_1": 2308.67,
+            "target_2": 2446.33,
+            "stop": 2144.12,
+            "current_price": 2171.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 9,
+            "ticker": "EUPWR",
+            "action": "BEKLE",
+            "signal": "Nötr",
+            "sector": "XELKT",
+            "entry_price": 105.6,
+            "m5": 16.6,
+            "m21": 8.7,
+            "m252": 239.8,
+            "target_1": 107.95,
+            "target_2": 110.3,
+            "stop": 89.76,
+            "current_price": 105.6,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 10,
+            "ticker": "PEKGY",
+            "action": "BEKLE",
+            "signal": "Nötr",
+            "sector": "XGMYO",
+            "entry_price": 15.03,
+            "m5": 1.8,
+            "m21": 9.8,
+            "m252": 228.9,
+            "target_1": 15.11,
+            "target_2": 15.18,
+            "stop": 12.78,
+            "current_price": 15.03,
+            "return_pct": 0.0
+          }
+        ],
+        "as_of": "2026-07-21",
         "age_trading_days": 0,
-        "avg_return_pct": 0.05,
-        "hit_rate_pct": 50.0,
+        "avg_return_pct": 0.0,
+        "hit_rate_pct": 0.0,
         "tracked_count": 10
       }
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-07-21T09:46:20",
-    "tracked_days": 31,
-    "current_candidates": 10,
-    "hot_missed_count": 47,
+    "updated_at": "2026-07-21T14:30:57",
+    "tracked_days": 32,
+    "current_candidates": 13,
+    "hot_missed_count": 54,
     "hot_return_threshold_pct": 15.0,
-    "hot_unique_count": 8,
+    "hot_unique_count": 11,
     "hot_by_kind": {
-      "transformation": 32,
-      "quiet_accumulation": 15
+      "transformation": 41,
+      "quiet_accumulation": 13
     },
     "hot_by_ticker": [
       {
         "ticker": "SELEC",
-        "count": 11,
-        "max_return_pct": 92.34,
-        "avg_return_pct": 42.9,
+        "count": 8,
+        "max_return_pct": 77.75,
+        "avg_return_pct": 40.08,
         "first_date": "2026-06-16",
-        "last_date": "2026-07-14",
+        "last_date": "2026-07-08",
         "kinds": {
-          "transformation": 11
+          "transformation": 8
         }
       },
       {
         "ticker": "EFOR",
-        "count": 12,
-        "max_return_pct": 44.38,
-        "avg_return_pct": 28.8,
+        "count": 15,
+        "max_return_pct": 51.25,
+        "avg_return_pct": 31.46,
         "first_date": "2026-06-05",
         "last_date": "2026-07-14",
         "kinds": {
-          "transformation": 11,
-          "quiet_accumulation": 1
+          "transformation": 13,
+          "quiet_accumulation": 2
         }
       },
       {
         "ticker": "CELHA",
         "count": 7,
-        "max_return_pct": 41.3,
-        "avg_return_pct": 34.34,
+        "max_return_pct": 38.81,
+        "avg_return_pct": 31.97,
         "first_date": "2026-06-19",
         "last_date": "2026-06-29",
         "kinds": {
@@ -5511,32 +5531,22 @@
         }
       },
       {
-        "ticker": "SKBNK",
+        "ticker": "TUPRS",
         "count": 9,
-        "max_return_pct": 34.91,
-        "avg_return_pct": 23.61,
-        "first_date": "2026-06-15",
-        "last_date": "2026-07-01",
+        "max_return_pct": 25.81,
+        "avg_return_pct": 20.03,
+        "first_date": "2026-07-03",
+        "last_date": "2026-07-13",
         "kinds": {
-          "quiet_accumulation": 9
-        }
-      },
-      {
-        "ticker": "AKFIS",
-        "count": 1,
-        "max_return_pct": 25.78,
-        "avg_return_pct": 25.78,
-        "first_date": "2026-06-26",
-        "last_date": "2026-06-26",
-        "kinds": {
-          "quiet_accumulation": 1
+          "quiet_accumulation": 4,
+          "transformation": 5
         }
       },
       {
         "ticker": "TEHOL",
         "count": 2,
-        "max_return_pct": 24.09,
-        "avg_return_pct": 23.94,
+        "max_return_pct": 25.48,
+        "avg_return_pct": 25.33,
         "first_date": "2026-06-16",
         "last_date": "2026-06-17",
         "kinds": {
@@ -5544,10 +5554,44 @@
         }
       },
       {
+        "ticker": "AKFIS",
+        "count": 1,
+        "max_return_pct": 24.81,
+        "avg_return_pct": 24.81,
+        "first_date": "2026-06-26",
+        "last_date": "2026-06-26",
+        "kinds": {
+          "quiet_accumulation": 1
+        }
+      },
+      {
+        "ticker": "KRDMA",
+        "count": 5,
+        "max_return_pct": 21.32,
+        "avg_return_pct": 17.22,
+        "first_date": "2026-06-05",
+        "last_date": "2026-07-14",
+        "kinds": {
+          "quiet_accumulation": 4,
+          "transformation": 1
+        }
+      },
+      {
+        "ticker": "KOCMT",
+        "count": 1,
+        "max_return_pct": 20.21,
+        "avg_return_pct": 20.21,
+        "first_date": "2026-07-01",
+        "last_date": "2026-07-01",
+        "kinds": {
+          "transformation": 1
+        }
+      },
+      {
         "ticker": "MOGAN",
         "count": 3,
-        "max_return_pct": 18.06,
-        "avg_return_pct": 16.92,
+        "max_return_pct": 18.0,
+        "avg_return_pct": 16.85,
         "first_date": "2026-07-06",
         "last_date": "2026-07-08",
         "kinds": {
@@ -5555,44 +5599,51 @@
         }
       },
       {
-        "ticker": "TUPRS",
+        "ticker": "GESAN",
         "count": 2,
-        "max_return_pct": 16.92,
-        "avg_return_pct": 16.73,
-        "first_date": "2026-07-03",
-        "last_date": "2026-07-06",
+        "max_return_pct": 17.39,
+        "avg_return_pct": 16.2,
+        "first_date": "2026-06-08",
+        "last_date": "2026-07-03",
         "kinds": {
-          "quiet_accumulation": 2
+          "transformation": 2
         }
       }
     ],
     "recent_window_days": 5,
-    "recent_hot_events": 2,
+    "recent_hot_events": 3,
     "recent_hot_unique_count": 2,
     "recent_hot_unique": [
       "EFOR",
-      "SELEC"
+      "KRDMA"
     ],
     "regime_signal": "rotasyon_izle",
     "recent_hot": [
       {
+        "date": "2026-07-16",
+        "ticker": "KRDMA",
+        "kind": "quiet_accumulation",
+        "return_pct": 15.07,
+        "reason": "birikim + hacim artisi, henuz Top 10 degil"
+      },
+      {
         "date": "2026-07-14",
         "ticker": "EFOR",
         "kind": "transformation",
-        "return_pct": 15.97,
+        "return_pct": 21.49,
         "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
       },
       {
         "date": "2026-07-14",
-        "ticker": "SELEC",
-        "kind": "transformation",
-        "return_pct": 19.18,
-        "reason": "1Y orta/zayif, 1A-1H hizlaniyor"
+        "ticker": "KRDMA",
+        "kind": "quiet_accumulation",
+        "return_pct": 15.41,
+        "reason": "birikim + hacim artisi, henuz Top 10 degil"
       }
     ],
     "statistical_sample": {
-      "event_count": 47,
-      "unique_ticker_count": 8,
+      "event_count": 54,
+      "unique_ticker_count": 11,
       "independence_unit": "unique_ticker",
       "note": "Ayni hissenin tekrar eden sicak olaylari bagimsiz ornek sayilmaz."
     },
@@ -5614,15 +5665,15 @@
     }
   },
   "opportunity_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "tracked_days": 6,
-    "latest_date": "2026-07-17",
-    "current_candidates": 1,
+    "updated_at": "2026-07-21T14:30:57",
+    "tracked_days": 7,
+    "latest_date": "2026-07-21",
+    "current_candidates": 0,
     "total_events": 7,
     "unique_tickers": 4,
-    "matured_5d": 4,
-    "avg_5d_return_pct": -1.85,
-    "hit_5d_pct": 50.0,
+    "matured_5d": 6,
+    "avg_5d_return_pct": -5.16,
+    "hit_5d_pct": 33.3,
     "matured_21d": 0,
     "unique_matured_21d_tickers": 0,
     "avg_21d_return_pct": null,
@@ -5649,56 +5700,7 @@
       "denominator_available": false,
       "note": "Firsat listesi yalniz kendi adaylarini olcer; F'in eledigi tum payda ayrica kurulmadan terfi kapisi sayilmaz."
     },
-    "latest_candidates": [
-      {
-        "ticker": "OZRDN",
-        "entry_date": "2026-07-17",
-        "entry_price": 31.78,
-        "sector": "XU100",
-        "source_layer": "firsat",
-        "source_label": "FIRSAT",
-        "reason": "strong_accumulation_not_f_pick",
-        "f_not_selected_reason": "sector_cap_or_slot_full",
-        "sm_signal": "GÜÇLÜ_BİRİKİM",
-        "m5": -3.9,
-        "m21": -2.0,
-        "m252": 255.5,
-        "volume_ratio": 1.11,
-        "upper_wick": 0.468,
-        "close_strength": 0.225,
-        "quality": {
-          "status": "pending_official_free_data",
-          "kap_confirmed": null,
-          "quality_score": null
-        },
-        "macro": {
-          "status": "pending_macro_surprise_ledger",
-          "support": null
-        },
-        "range_high": 38.68,
-        "range_low": 8.74,
-        "from_high_pct": -17.8,
-        "near_high": false,
-        "from_low_pct": 263.6,
-        "catalyst_present": false,
-        "catalyst_types": [],
-        "catalyst_source_tiers": [],
-        "sector_context": {
-          "sector": "XU100",
-          "status": "self_sector_rs_pending",
-          "role": "context_only",
-          "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
-        },
-        "current_price": 31.78,
-        "age_trading_days": 0,
-        "current_return_pct": 0.0,
-        "return_5d_pct": null,
-        "return_21d_pct": null,
-        "entered_f_top10_later": false,
-        "entered_f_top10_date": null,
-        "status": "open"
-      }
-    ],
+    "latest_candidates": [],
     "notes": [
       "FIRSAT is measurement-only; it does not open trades.",
       "Quality/macro fields stay pending until free official data is connected.",
@@ -5706,11 +5708,11 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "tracked_days": 31,
-    "latest_date": "2026-07-17",
-    "latest_regime": "sideways",
-    "latest_events": 48,
+    "updated_at": "2026-07-21T14:30:57",
+    "tracked_days": 32,
+    "latest_date": "2026-07-21",
+    "latest_regime": "mixed",
+    "latest_events": 51,
     "by_layer_regime": [
       {
         "layer": "quiet_accumulation",
@@ -5718,13 +5720,13 @@
         "role": "discovery",
         "regime": "bear",
         "n": 23,
-        "avg_return_pct": -3.36,
-        "hit_rate_pct": 26.1,
-        "captured_alpha_pct": 120.08,
-        "false_positive_loss_pct": 197.4,
-        "net_discovery_pct": -77.32,
-        "hit_events": 5,
-        "false_positive_events": 15
+        "avg_return_pct": -5.84,
+        "hit_rate_pct": 30.4,
+        "captured_alpha_pct": 76.78,
+        "false_positive_loss_pct": 211.21,
+        "net_discovery_pct": -134.43,
+        "hit_events": 3,
+        "false_positive_events": 16
       },
       {
         "layer": "quiet_accumulation",
@@ -5732,27 +5734,27 @@
         "role": "discovery",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": -2.96,
+        "avg_return_pct": -2.89,
         "hit_rate_pct": 27.8,
-        "captured_alpha_pct": 150.18,
-        "false_positive_loss_pct": 256.62,
-        "net_discovery_pct": -106.44,
-        "hit_events": 6,
-        "false_positive_events": 22
+        "captured_alpha_pct": 154.33,
+        "false_positive_loss_pct": 258.38,
+        "net_discovery_pct": -104.05,
+        "hit_events": 8,
+        "false_positive_events": 21
       },
       {
         "layer": "quiet_accumulation",
         "label": "Sessiz Birikim",
         "role": "discovery",
         "regime": "mixed",
-        "n": 48,
-        "avg_return_pct": -3.5,
-        "hit_rate_pct": 29.2,
-        "captured_alpha_pct": 110.3,
-        "false_positive_loss_pct": 278.52,
-        "net_discovery_pct": -168.22,
+        "n": 53,
+        "avg_return_pct": -1.44,
+        "hit_rate_pct": 32.1,
+        "captured_alpha_pct": 175.76,
+        "false_positive_loss_pct": 252.29,
+        "net_discovery_pct": -76.53,
         "hit_events": 8,
-        "false_positive_events": 26
+        "false_positive_events": 24
       },
       {
         "layer": "quiet_accumulation",
@@ -5760,13 +5762,13 @@
         "role": "discovery",
         "regime": "sideways",
         "n": 16,
-        "avg_return_pct": -2.15,
+        "avg_return_pct": -2.46,
         "hit_rate_pct": 43.8,
-        "captured_alpha_pct": 52.61,
-        "false_positive_loss_pct": 87.01,
-        "net_discovery_pct": -34.4,
+        "captured_alpha_pct": 50.23,
+        "false_positive_loss_pct": 89.62,
+        "net_discovery_pct": -39.39,
         "hit_events": 3,
-        "false_positive_events": 6
+        "false_positive_events": 7
       },
       {
         "layer": "quiet_accumulation",
@@ -5774,13 +5776,13 @@
         "role": "discovery",
         "regime": "unknown",
         "n": 8,
-        "avg_return_pct": -1.38,
-        "hit_rate_pct": 25.0,
-        "captured_alpha_pct": 35.63,
-        "false_positive_loss_pct": 46.66,
-        "net_discovery_pct": -11.03,
-        "hit_events": 1,
-        "false_positive_events": 5
+        "avg_return_pct": -2.19,
+        "hit_rate_pct": 37.5,
+        "captured_alpha_pct": 24.39,
+        "false_positive_loss_pct": 41.94,
+        "net_discovery_pct": -17.55,
+        "hit_events": 2,
+        "false_positive_events": 4
       },
       {
         "layer": "transformation",
@@ -5788,12 +5790,12 @@
         "role": "discovery",
         "regime": "bear",
         "n": 39,
-        "avg_return_pct": -3.96,
-        "hit_rate_pct": 28.2,
-        "captured_alpha_pct": 230.3,
-        "false_positive_loss_pct": 384.71,
-        "net_discovery_pct": -154.41,
-        "hit_events": 9,
+        "avg_return_pct": -3.41,
+        "hit_rate_pct": 33.3,
+        "captured_alpha_pct": 252.35,
+        "false_positive_loss_pct": 385.43,
+        "net_discovery_pct": -133.08,
+        "hit_events": 10,
         "false_positive_events": 24
       },
       {
@@ -5802,27 +5804,27 @@
         "role": "discovery",
         "regime": "bull",
         "n": 40,
-        "avg_return_pct": 1.41,
+        "avg_return_pct": 0.44,
         "hit_rate_pct": 27.5,
-        "captured_alpha_pct": 447.62,
-        "false_positive_loss_pct": 391.3,
-        "net_discovery_pct": 56.32,
+        "captured_alpha_pct": 405.03,
+        "false_positive_loss_pct": 387.46,
+        "net_discovery_pct": 17.57,
         "hit_events": 11,
-        "false_positive_events": 25
+        "false_positive_events": 27
       },
       {
         "layer": "transformation",
         "label": "Donusum Radari",
         "role": "discovery",
         "regime": "mixed",
-        "n": 106,
-        "avg_return_pct": -2.65,
-        "hit_rate_pct": 29.2,
-        "captured_alpha_pct": 475.83,
-        "false_positive_loss_pct": 756.68,
-        "net_discovery_pct": -280.85,
-        "hit_events": 24,
-        "false_positive_events": 59
+        "n": 114,
+        "avg_return_pct": -0.4,
+        "hit_rate_pct": 36.0,
+        "captured_alpha_pct": 657.14,
+        "false_positive_loss_pct": 702.94,
+        "net_discovery_pct": -45.8,
+        "hit_events": 32,
+        "false_positive_events": 57
       },
       {
         "layer": "transformation",
@@ -5830,13 +5832,13 @@
         "role": "discovery",
         "regime": "sideways",
         "n": 31,
-        "avg_return_pct": -1.45,
+        "avg_return_pct": -0.7,
         "hit_rate_pct": 48.4,
-        "captured_alpha_pct": 126.85,
-        "false_positive_loss_pct": 171.66,
-        "net_discovery_pct": -44.81,
+        "captured_alpha_pct": 147.29,
+        "false_positive_loss_pct": 169.01,
+        "net_discovery_pct": -21.72,
         "hit_events": 9,
-        "false_positive_events": 13
+        "false_positive_events": 11
       },
       {
         "layer": "transformation",
@@ -5844,11 +5846,11 @@
         "role": "discovery",
         "regime": "unknown",
         "n": 8,
-        "avg_return_pct": -12.62,
+        "avg_return_pct": -12.65,
         "hit_rate_pct": 0.0,
         "captured_alpha_pct": 0.0,
-        "false_positive_loss_pct": 100.94,
-        "net_discovery_pct": -100.94,
+        "false_positive_loss_pct": 101.24,
+        "net_discovery_pct": -101.24,
         "hit_events": 0,
         "false_positive_events": 8
       },
@@ -5858,8 +5860,8 @@
         "role": "return",
         "regime": "bear",
         "n": 38,
-        "avg_return_pct": 21.55,
-        "hit_rate_pct": 76.3
+        "avg_return_pct": 20.63,
+        "hit_rate_pct": 68.4
       },
       {
         "layer": "F_shadow",
@@ -5867,17 +5869,17 @@
         "role": "return",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": 24.41,
-        "hit_rate_pct": 83.3
+        "avg_return_pct": 22.69,
+        "hit_rate_pct": 72.2
       },
       {
         "layer": "F_shadow",
         "label": "F Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 86,
-        "avg_return_pct": 21.01,
-        "hit_rate_pct": 73.3
+        "n": 96,
+        "avg_return_pct": 18.19,
+        "hit_rate_pct": 77.1
       },
       {
         "layer": "F_shadow",
@@ -5885,8 +5887,8 @@
         "role": "return",
         "regime": "sideways",
         "n": 24,
-        "avg_return_pct": 18.64,
-        "hit_rate_pct": 66.7
+        "avg_return_pct": 17.1,
+        "hit_rate_pct": 79.2
       },
       {
         "layer": "F_shadow",
@@ -5894,8 +5896,8 @@
         "role": "return",
         "regime": "unknown",
         "n": 14,
-        "avg_return_pct": 26.69,
-        "hit_rate_pct": 85.7
+        "avg_return_pct": 26.09,
+        "hit_rate_pct": 78.6
       },
       {
         "layer": "F_top10",
@@ -5903,8 +5905,8 @@
         "role": "return",
         "regime": "bear",
         "n": 50,
-        "avg_return_pct": 15.1,
-        "hit_rate_pct": 74.0
+        "avg_return_pct": 16.03,
+        "hit_rate_pct": 68.0
       },
       {
         "layer": "F_top10",
@@ -5912,17 +5914,17 @@
         "role": "return",
         "regime": "bull",
         "n": 50,
-        "avg_return_pct": 8.95,
-        "hit_rate_pct": 64.0
+        "avg_return_pct": 9.26,
+        "hit_rate_pct": 66.0
       },
       {
         "layer": "F_top10",
         "label": "F Top10",
         "role": "return",
         "regime": "mixed",
-        "n": 141,
-        "avg_return_pct": 7.39,
-        "hit_rate_pct": 68.1
+        "n": 151,
+        "avg_return_pct": 6.56,
+        "hit_rate_pct": 61.6
       },
       {
         "layer": "F_top10",
@@ -5930,8 +5932,8 @@
         "role": "return",
         "regime": "sideways",
         "n": 40,
-        "avg_return_pct": 7.29,
-        "hit_rate_pct": 62.5
+        "avg_return_pct": 8.15,
+        "hit_rate_pct": 75.0
       },
       {
         "layer": "F_top10",
@@ -5939,7 +5941,7 @@
         "role": "return",
         "regime": "unknown",
         "n": 11,
-        "avg_return_pct": 15.1,
+        "avg_return_pct": 16.32,
         "hit_rate_pct": 72.7
       },
       {
@@ -5948,8 +5950,8 @@
         "role": "return",
         "regime": "bear",
         "n": 38,
-        "avg_return_pct": 21.55,
-        "hit_rate_pct": 76.3
+        "avg_return_pct": 20.63,
+        "hit_rate_pct": 68.4
       },
       {
         "layer": "O_shadow",
@@ -5957,17 +5959,17 @@
         "role": "return",
         "regime": "bull",
         "n": 36,
-        "avg_return_pct": 24.41,
-        "hit_rate_pct": 83.3
+        "avg_return_pct": 22.69,
+        "hit_rate_pct": 72.2
       },
       {
         "layer": "O_shadow",
         "label": "OMEGA Shadow",
         "role": "return",
         "regime": "mixed",
-        "n": 86,
-        "avg_return_pct": 21.01,
-        "hit_rate_pct": 73.3
+        "n": 96,
+        "avg_return_pct": 18.19,
+        "hit_rate_pct": 77.1
       },
       {
         "layer": "O_shadow",
@@ -5975,8 +5977,8 @@
         "role": "return",
         "regime": "sideways",
         "n": 24,
-        "avg_return_pct": 18.64,
-        "hit_rate_pct": 66.7
+        "avg_return_pct": 17.1,
+        "hit_rate_pct": 79.2
       },
       {
         "layer": "O_shadow",
@@ -5984,8 +5986,8 @@
         "role": "return",
         "regime": "unknown",
         "n": 14,
-        "avg_return_pct": 26.69,
-        "hit_rate_pct": 85.7
+        "avg_return_pct": 26.09,
+        "hit_rate_pct": 78.6
       },
       {
         "layer": "peak_risks",
@@ -5993,13 +5995,13 @@
         "role": "risk",
         "regime": "bear",
         "n": 40,
-        "avg_return_pct": 9.28,
-        "hit_rate_pct": 50.0,
-        "saved_loss_pct": 178.56,
-        "opportunity_cost_pct": 549.56,
-        "net_saved_pct": -371.0,
-        "saved_events": 19,
-        "false_alarm_events": 19
+        "avg_return_pct": 11.37,
+        "hit_rate_pct": 52.5,
+        "saved_loss_pct": 155.61,
+        "opportunity_cost_pct": 610.58,
+        "net_saved_pct": -454.97,
+        "saved_events": 17,
+        "false_alarm_events": 18
       },
       {
         "layer": "peak_risks",
@@ -6007,27 +6009,27 @@
         "role": "risk",
         "regime": "bull",
         "n": 40,
-        "avg_return_pct": 12.78,
-        "hit_rate_pct": 50.0,
-        "saved_loss_pct": 253.65,
-        "opportunity_cost_pct": 764.97,
-        "net_saved_pct": -511.32,
-        "saved_events": 20,
-        "false_alarm_events": 18
+        "avg_return_pct": 14.49,
+        "hit_rate_pct": 55.0,
+        "saved_loss_pct": 223.31,
+        "opportunity_cost_pct": 803.07,
+        "net_saved_pct": -579.76,
+        "saved_events": 15,
+        "false_alarm_events": 20
       },
       {
         "layer": "peak_risks",
         "label": "Tepe Riski",
         "role": "risk",
         "regime": "mixed",
-        "n": 113,
-        "avg_return_pct": 8.13,
-        "hit_rate_pct": 68.1,
-        "saved_loss_pct": 261.46,
-        "opportunity_cost_pct": 1180.11,
-        "net_saved_pct": -918.65,
-        "saved_events": 25,
-        "false_alarm_events": 64
+        "n": 121,
+        "avg_return_pct": 9.19,
+        "hit_rate_pct": 66.9,
+        "saved_loss_pct": 246.82,
+        "opportunity_cost_pct": 1358.6,
+        "net_saved_pct": -1111.78,
+        "saved_events": 23,
+        "false_alarm_events": 60
       },
       {
         "layer": "peak_risks",
@@ -6035,12 +6037,12 @@
         "role": "risk",
         "regime": "sideways",
         "n": 32,
-        "avg_return_pct": 3.97,
-        "hit_rate_pct": 46.9,
-        "saved_loss_pct": 79.87,
-        "opportunity_cost_pct": 207.02,
-        "net_saved_pct": -127.15,
-        "saved_events": 9,
+        "avg_return_pct": 3.41,
+        "hit_rate_pct": 50.0,
+        "saved_loss_pct": 116.74,
+        "opportunity_cost_pct": 225.88,
+        "net_saved_pct": -109.14,
+        "saved_events": 12,
         "false_alarm_events": 13
       },
       {
@@ -6049,25 +6051,25 @@
         "role": "risk",
         "regime": "unknown",
         "n": 9,
-        "avg_return_pct": 5.65,
-        "hit_rate_pct": 44.4,
-        "saved_loss_pct": 30.18,
-        "opportunity_cost_pct": 81.03,
-        "net_saved_pct": -50.85,
-        "saved_events": 3,
-        "false_alarm_events": 4
+        "avg_return_pct": 8.72,
+        "hit_rate_pct": 66.7,
+        "saved_loss_pct": 26.67,
+        "opportunity_cost_pct": 105.13,
+        "net_saved_pct": -78.46,
+        "saved_events": 2,
+        "false_alarm_events": 6
       }
     ],
     "shadow_comparison": {
       "F_shadow": {
-        "n": 198,
-        "avg_return_pct": 21.85,
-        "hit_rate_pct": 75.8
+        "n": 208,
+        "avg_return_pct": 19.82,
+        "hit_rate_pct": 75.0
       },
       "O_shadow": {
-        "n": 198,
-        "avg_return_pct": 21.85,
-        "hit_rate_pct": 75.8
+        "n": 208,
+        "avg_return_pct": 19.82,
+        "hit_rate_pct": 75.0
       },
       "O_minus_F": {
         "n": 0,
@@ -6084,8 +6086,8 @@
         "divergence_edge_pct": null,
         "swap_hit_rate_pct": null,
         "latest": {
-          "date": "2026-07-17",
-          "regime": "sideways",
+          "date": "2026-07-21",
+          "regime": "mixed",
           "overlap_pct": 100.0,
           "swap_n": 0,
           "o_only_count": 0,
@@ -6106,8 +6108,8 @@
     }
   },
   "quality_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "as_of": "2026-07-17",
+    "updated_at": "2026-07-21T14:30:57",
+    "as_of": "2026-07-21",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
       "source_manifest": "public_kap_event_stream",
@@ -6160,9 +6162,9 @@
         "opens_trade": false,
         "ticker": "TURSG",
         "release_date": "2026-07-20",
-        "entry_date": null,
-        "entry_price": null,
-        "entry_pos": null,
+        "entry_date": "2026-07-20",
+        "entry_price": 6.65,
+        "entry_pos": 506,
         "metric": "financial_report_release",
         "result": "kap_finansal_tablo",
         "recommendation": null,
@@ -6184,9 +6186,13 @@
           "revenue_mio",
           "net_debt_ebitda"
         ],
-        "current_price": 6.56,
-        "status": "missing_price",
-        "current_return_pct": null
+        "current_price": 6.83,
+        "status": "open",
+        "current_return_pct": 2.71,
+        "age_trading_days": 1,
+        "return_5d_pct": null,
+        "return_21d_pct": null,
+        "return_63d_pct": null
       }
     ],
     "by_result": [
@@ -6201,8 +6207,8 @@
     "note": "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla dogrulanan veri kullanir. F motoruna emir uretmez."
   },
   "macro_surprise_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "as_of": "2026-07-17",
+    "updated_at": "2026-07-21T14:30:57",
+    "as_of": "2026-07-21",
     "tracked_events": 0,
     "source_count": 0,
     "opens_trade": false,
@@ -6239,8 +6245,8 @@
     "note": "Macro Surprise defteri olcer; fiyat sinyalinden bagimsizdir ve F motoruna emir uretmez."
   },
   "broker_bulletin_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "as_of": "2026-07-17",
+    "updated_at": "2026-07-21T14:30:57",
+    "as_of": "2026-07-21",
     "input_files": 0,
     "input_error_count": 0,
     "tracked_events": 0,
@@ -6278,8 +6284,8 @@
     "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   },
   "flow_ledger": {
-    "updated_at": "2026-07-21T09:46:21",
-    "as_of": "2026-07-17",
+    "updated_at": "2026-07-21T14:30:57",
+    "as_of": "2026-07-21",
     "tracked_events": 0,
     "opens_trade": false,
     "matured_5d": 0,
@@ -6323,10 +6329,10 @@
           "value_diff": 0.0,
           "return_diff_pct": 0.0,
           "position_diff": 0,
-          "report_value": 1.2011,
-          "dashboard_value": 1.2011,
-          "report_return_pct": 20.11,
-          "dashboard_return_pct": 20.11
+          "report_value": 1.2043,
+          "dashboard_value": 1.2043,
+          "report_return_pct": 20.43,
+          "dashboard_return_pct": 20.43
         },
         {
           "account": "B",
@@ -6334,10 +6340,10 @@
           "value_diff": 0.0,
           "return_diff_pct": 0.0,
           "position_diff": 0,
-          "report_value": 1.2296,
-          "dashboard_value": 1.2296,
-          "report_return_pct": 22.96,
-          "dashboard_return_pct": 22.96
+          "report_value": 1.2487,
+          "dashboard_value": 1.2487,
+          "report_return_pct": 24.87,
+          "dashboard_return_pct": 24.87
         },
         {
           "account": "F",
@@ -6345,10 +6351,10 @@
           "value_diff": 0.0,
           "return_diff_pct": 0.0,
           "position_diff": 0,
-          "report_value": 1.2296,
-          "dashboard_value": 1.2296,
-          "report_return_pct": 22.96,
-          "dashboard_return_pct": 22.96
+          "report_value": 1.2487,
+          "dashboard_value": 1.2487,
+          "report_return_pct": 24.87,
+          "dashboard_return_pct": 24.87
         },
         {
           "account": "O",
@@ -6356,10 +6362,10 @@
           "value_diff": 0.0,
           "return_diff_pct": 0.0,
           "position_diff": 0,
-          "report_value": 1.2296,
-          "dashboard_value": 1.2296,
-          "report_return_pct": 22.96,
-          "dashboard_return_pct": 22.96
+          "report_value": 1.2487,
+          "dashboard_value": 1.2487,
+          "report_return_pct": 24.87,
+          "dashboard_return_pct": 24.87
         }
       ],
       "note": "Telegram shadow_accounts ile dashboard portfolio okumasi karsilastirildi."
