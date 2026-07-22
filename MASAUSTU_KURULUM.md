@@ -37,10 +37,13 @@ python run_backtest.py --compare
 ```
 Şunu görmelisin:
 ```
-A      %  289.4 % -6.61   ...    43.78
-B      %  268.8 % -8.14   ...    33.03
-F      %  301.1 % -5.54   ...    54.32
+Mode      Getiri    MaxDD  Sharpe Calmar_y  Stop
+A      %  289.4 % -6.61   7.70   44.42    55
+B      %  268.8 % -8.14   6.95   33.51    55
+F      %  301.1 % -5.54   7.34   55.12    56
 ```
+`Calmar_y` yıllık getiri / maxDD karar metriğidir; eski toplam getiri / maxDD
+formülü artık kodda `calmar_total` adıyla açıkça ayrılmıştır.
 Bu çıktıyı görüyorsan **sistem çalışıyor.**
 
 ---
