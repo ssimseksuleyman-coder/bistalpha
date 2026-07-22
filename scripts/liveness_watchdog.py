@@ -34,7 +34,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from liveness_scan import REGISTRY, _age_hours, _missed_slots  # noqa: E402
+from liveness_scan import (  # noqa: E402
+    REGISTRY, PRODUCER_TZ_OFFSET_H, _age_hours, _missed_slots,
+)
+
+# EKSEN NOTU (2026-07-22): liveness.json'i TARAYICI yazar (liveness.yml'de TZ yok
+# -> utcnow -> UTC) => ofset 0. dashboard.json'i DAEMON yazar (precise.yml'de
+# TZ: Europe/Istanbul -> datetime.now() -> TR) => ofset +3. Ayni fonksiyona iki
+# FARKLI eksen giriyor; karistirilirsa capraz-kontrol 3h yaniltir.
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVENESS = ROOT / "docs" / "state" / "liveness.json"
@@ -105,7 +112,8 @@ def check():
     if DASHBOARD.exists():
         try:
             db = json.loads(DASHBOARD.read_text(encoding="utf-8"))
-            db_age = _age_hours(db.get("timestamp") or db.get("date"))
+            db_age = _age_hours(db.get("timestamp") or db.get("date"),
+                                PRODUCER_TZ_OFFSET_H)   # daemon damgasi = TR ekseni
             if db_age is not None and db_age > ANCIENT_DAYS * 24 and verdict != "RED":
                 _fail(problems, "B3/CELISKI",
                       f"tarayici '{verdict}' diyor ama dashboard {db_age/24:.1f} GUN bayat "

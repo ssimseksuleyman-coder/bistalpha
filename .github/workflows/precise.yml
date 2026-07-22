@@ -55,6 +55,23 @@ jobs:
           DENIZ_SOURCE: scanner
         run: python3 precise_runner.py
 
+      # SEVIYE-2 BEKCI: daemon -> tarayici capraz-kontrolu.
+      # BURADA olmali: daemon'u fiilen kosturan workflow bu (precise_runner.py).
+      # 2026-07-22 bulgusu: bekci once bist-alpha.yml'ye baglanmisti, orada
+      # `gate.run` hic 'true' olmuyor (raporu bu workflow uretiyor) -> 40 kosuda
+      # 0 KEZ CALISTI. "Adim workflow'da tanimli" != "adim kostu"; adimin
+      # `conclusion` alanina bakilmadigi icin sessizce olu kaldi.
+      # KOSUL YOK (gate yok) -> her precise kosusunda calisir.
+      # continue-on-error: alarm Telegram'dan gider, daemon'un kendi
+      # yesil/kirmizi sinyali kirletilmez.
+      - name: Bekci — liveness tarayicisi canli + tutarli mi
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/liveness_watchdog.py
+
       - name: State commit (kalicilik)
         if: always()
         run: |

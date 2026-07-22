@@ -49,6 +49,14 @@ OUT = ROOT / "docs" / "state" / "liveness.json"
 # TZ: tum hesap UTC (bkz _age_hours TZ notu). GitHub cron gecikmesi gozlemlendi
 # (6:45 cron -> 08:56 kosu) -> grace saatleri o gecikmeye toleransli.
 # ---------------------------------------------------------------------------
+# Uretici damgalarinin ekseni. daemon.py `datetime.now()` yaziyor ve ilgili
+# workflow adimlarinda TZ: Europe/Istanbul set edili (bist-alpha.yml, precise.yml,
+# catalyst.yml) -> damgalar TR saati = UTC+3. Tarayici UTC ekseninde hesaplar.
+# Uretici DEGISTIRILMEZ (F zincirine yakin); tuketiciye eksen BILDIRILIR.
+# Bir workflow'un TZ ayari degisirse BURASI da degismeli (bilinen kirilganlik,
+# slot-saati hard-code ile ayni sinif -- bkz ACIK_ISLER #3).
+PRODUCER_TZ_OFFSET_H = 3.0
+
 SCHEDULES = {
     # daemon (bist-alpha.yml + precise.yml) hafta-ici ~3 slot; gozlenen gecikme ~2h
     "daemon_cycle": {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (7, 12, 16), "grace_h": 4},
@@ -89,6 +97,7 @@ REGISTRY = {
         "expected": "active",
         "file": "docs/state/kap_status.json",
         "ts_keys": ["updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "kap_daily",   # catalyst.yml: '10 16 * * 1-5' (gunluk tek slot)
         "ok_key": "status",
         "ok_value": "ok",
@@ -99,6 +108,7 @@ REGISTRY = {
         "expected": "active",
         "file": "docs/state/dashboard.json",
         "ts_keys": ["timestamp", "updated_at", "date"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "ok_key": "bist_data_ok",
         "ok_value": True,
@@ -109,6 +119,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/forward_test.json",
         "ts_keys": ["updated_at", "summary.updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["tracked_count", "days_tracked"],
         "input_paths": [],
@@ -120,6 +131,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/performance_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.latest_events"],
         "input_paths": [],
@@ -128,6 +140,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/opportunity_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.total_events"],
         "input_paths": [],
@@ -136,6 +149,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/catalyst_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["docs/state/catalysts.json"],
@@ -144,6 +158,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # buyback-event henuz gelmedi
         "file": "docs/state/flow_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         # SADECE OZEL girdi. Paylasilan ust-akis (catalysts.json) buraya KONMAZ:
@@ -157,6 +172,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # KAP finansal parser YAZILMADI
         "file": "docs/state/quality_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["local/kap_financials", "local/kap_financial_actuals.json"],
@@ -165,6 +181,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # sources.json'a event girilmedi
         "file": "docs/state/macro_surprise_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["docs/state/macro_surprise_sources.json"],
@@ -173,6 +190,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "planned",   # private input hic konmadi
         "file": "docs/state/broker_bulletin_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["local/broker_bulletins"],
@@ -181,6 +199,7 @@ REGISTRY = {
         "kind": "consumer", "expected": "active",
         "file": "docs/state/missed_opportunities.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
         "count_keys": ["summary.tracked_days", "summary.hot_missed_count"],
         "input_paths": [],
@@ -206,22 +225,44 @@ def _first(d, keys):
     return None, None
 
 
-def _age_hours(ts):
+def _age_hours(ts, tz_offset_h=0.0):
     """
-    ISO ya da YYYY-MM-DD damgasini saat-yasina cevirir.
+    ISO ya da YYYY-MM-DD damgasini saat-yasina cevirir. Hesap UTC ekseninde.
 
-    TZ NOTU (2026-07-18 bulundu, gercek bug): tum damgalar CLOUD'da (GitHub
-    Actions = UTC) uretiliyor -> naive ama fiilen UTC. Karsilastirmayi
-    datetime.now() (LOCAL) ile yapmak, local makinede yasi TZ-offset kadar
-    sisirir (TR'de +3h) -> 72h esiginde gercekte 69h olan is BAYAT sanilir =
-    yanlis-KIRMIZI = alarm-korlugu. CI'da (UTC runner) tesadufen dogru calisir,
-    yani bug YALNIZ local'de gorunur, CI'da GIZLI kalir. -> utcnow kullan.
+    tz_offset_h: damganin yazildigi eksenin UTC'ye gore ofseti (TR = +3).
+    Damga naive; UTC'ye cevirmek icin ofset CIKARILIR.
 
-    COZUNURLUK NOTU (2026-07-18, slot-esigi kurulurken bulundu): tarih-only
-    damga ("2026-07-17") 00:00 sayilirsa, o GUNUN kendi slotlari (07/12/16)
-    "kacmis" gorunur -> sahte-KIRMIZI. Gercek kosu 18:40'ta olmustu. Cozum:
-    saat bilinmiyorsa GUN-SONU'na yorumla (en-lehte okuma) -> gun-ici sahte-
-    kacik uretmez, ama COK-GUNLUK cokme yine yakalanir (kayma <24h).
+    ---------------------------------------------------------------------------
+    TZ NOTU (2026-07-18 yazildi, 2026-07-22 CURUTULDU -- ders burada)
+
+    ESKI IDDIA: "tum damgalar CLOUD'da (GitHub Actions = UTC) uretiliyor ->
+    naive ama fiilen UTC" -> bu yuzden utcnow ile karsilastir.
+
+    NEDEN YANLISTI: uretici damgalari `daemon.py` icinde `datetime.now()` ile
+    yaziliyor VE o workflow adiminda `TZ: Europe/Istanbul` set edilmis
+    (bist-alpha.yml, precise.yml, catalyst.yml). Yani damgalar TR saati (UTC+3).
+    Runner'in VARSAYILANINA baktim, workflow'un ACIK gecersiz kilmasina degil --
+    ara-gostergeye bakip ground-truth'u atlamak. Ustelik now()->utcnow()
+    degisikligi CI'da hicbir seyi degistirmedi (ikisi de UTC'ydi orada); yalniz
+    yerel davranisi degistirdi. Gercek uyusmazlik hep oradaydi.
+
+    SONUCU: 11 uyenin hepsinde yas 3 SAAT EKSIK. 5h araliktaki slotlarda
+    (7/12/16 UTC, grace 4h) bu bir KACAN SLOTU GIZLEYEBILIR = alarm korlugu.
+
+    DUZELTME: registry her uyenin `tz` alanini tasir; hesap burada UTC'ye
+    normalize edilir. Uretici (daemon.py) DEGISTIRILMEZ -- F zincirine yakin.
+    ---------------------------------------------------------------------------
+    NEGATIF YAS = IMKANSIZLIK, SUSTURULMAZ (2026-07-22)
+
+    Eskiden `max(0.0, ...)` vardi: negatif yasi 0.0'a kirpiyordu. Bu, YUKARIDAKI
+    TZ bug'ini "0.0h = yepyeni = GREEN" diye raporladi -- yani bir KORUMA, baska
+    bir BUG'I GIZLEDI ve bug'i en-saglikli gosterdi. Negatif yas gelecekten-damga
+    demektir: TZ hatasi, saat kaymasi ya da veri bozulmasi isareti. Artik
+    kirpilmaz; None yerine negatif deger dondurulur ve check() bunu RED yapar.
+    ---------------------------------------------------------------------------
+    COZUNURLUK NOTU (2026-07-18): tarih-only damga ("2026-07-17") 00:00
+    sayilirsa, o GUNUN kendi slotlari "kacmis" gorunur -> sahte-KIRMIZI. Cozum:
+    saat bilinmiyorsa GUN-SONU'na yorumla (en-lehte okuma).
     Kayit-defterinde her zaman once SAAT-HASSAS alani yaz (ts_keys sirasi).
     """
     if not ts:
@@ -233,7 +274,8 @@ def _age_hours(ts):
             dt = datetime.strptime(s[:len(now.strftime(fmt))], fmt)
             if fmt == "%Y-%m-%d":
                 dt = dt.replace(hour=23, minute=59, second=59)
-            return max(0.0, (now - dt).total_seconds() / 3600.0)
+            dt -= timedelta(hours=tz_offset_h)       # damga ekseni -> UTC
+            return (now - dt).total_seconds() / 3600.0   # NEGATIF KIRPILMAZ
         except ValueError:
             continue
     return None
@@ -289,8 +331,9 @@ def check(name, cfg):
         return row
 
     ts, ts_key = _first(d, cfg["ts_keys"])
-    age = _age_hours(ts)
-    row.update(timestamp=ts, ts_key=ts_key,
+    tz_off = cfg.get("tz", 0.0)
+    age = _age_hours(ts, tz_off)
+    row.update(timestamp=ts, ts_key=ts_key, tz_offset_h=tz_off,
                age_hours=(round(age, 1) if age is not None else None))
 
     if ts is None:
@@ -299,6 +342,16 @@ def check(name, cfg):
     if age is None:
         row.update(status="RED", reason=f"damga cozulemedi: {ts!r}")
         return row
+    # NEGATIF YAS = GELECEKTEN DAMGA = IMKANSIZLIK -> susturma, BAGIR.
+    # (2026-07-22: eskiden max(0.0,..) ile kirpiliyordu; o kirpma TZ bug'ini
+    #  "0.0h = yepyeni = GREEN" diye gizledi. Bir koruma baska bir bug'i orttu.)
+    # -0.2h tolerans: uretici ile tarayici arasindaki saniyelik saat kaymasi.
+    if age < -0.2:
+        row.update(status="RED",
+                   reason=f"GELECEKTEN damga: yas {age:.1f}h < 0 (damga {ts}, "
+                          f"tz-ofset {tz_off}h) — TZ hatasi/saat kaymasi/veri bozulmasi")
+        return row
+    age = max(0.0, age)
     # --- TAKVIM-FARKINDA BAYATLIK: kacirilan SLOT say (sabit saat esigi DEGIL) ---
     sched = SCHEDULES[cfg["schedule"]]
     last_dt = datetime.utcnow() - timedelta(hours=age)
