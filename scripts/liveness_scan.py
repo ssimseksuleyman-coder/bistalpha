@@ -204,7 +204,26 @@ REGISTRY = {
         "count_keys": ["summary.tracked_days", "summary.hot_missed_count"],
         "input_paths": [],
     },
+    # ---- IZLEYENIN IZLEYENI (12. uye, 2026-07-22) ----
+    # Bekci 40 kosuda 0 kez calisti ve kimse fark etmedi: bekcinin heartbeat'i
+    # yoktu, sessizligi "saglikli/olu/kurulmamis" arasinda ayrilamiyordu.
+    # Artik bekci her kosuda kendi izini yaziyor; burasi onu izler.
+    # KABA + BAGIMSIZ kontrol (check_mode=raw_age): paylasilan slot/TZ mantigi
+    # KULLANILMAZ -> ortak-mod ariza yok (ikisi ayni yonde yanilip birbirini
+    # onaylayamaz). tz=0: bekci utcnow ile yazar, daemon damgalarindan farkli eksen.
+    "watchdog": {
+        "kind": "watchdog",
+        "expected": "active",
+        "file": "docs/state/watchdog.json",
+        "ts_keys": ["updated_at"],
+        "tz": 0.0,
+        "check_mode": "raw_age",
+        "raw_max_age_h": 72,
+        "note": "bekci (liveness_watchdog.py) her precise kosusunda yazar; "
+                "yazmiyorsa izleyeni-izleyen katmani olu",
+    },
 }
+
 
 
 def _get(d, dotted):
@@ -281,6 +300,74 @@ def _age_hours(ts, tz_offset_h=0.0):
     return None
 
 
+def _raw_age_hours(ts):
+    """
+    KABA + BAGIMSIZ yas hesabi. `_age_hours`'i BILEREK KULLANMAZ.
+
+    NEDEN AYRI (ortak-mod ariza onleme, 2026-07-22): bekci tarayiciyi izliyor,
+    tarayici da bekciyi izleyecek. Ikisi AYNI yas/TZ mantigini paylasirsa, o
+    mantik bozuldugunda ikisi de AYNI YONDE yanilir ve birbirini "dogru" diye
+    onaylar -- bu turda birebir yasandi (TZ hatasi hem tarayiciyi hem bekcinin
+    B3'unu vurdu, cunku ayni eksen varsayimini paylasiyorlardi).
+
+    Bu yuzden: slot kutuphanesi YOK, tz-ofset YOK, gun-sonu yorumu YOK.
+    Yalniz "ISO damga, UTC kabul, kac saat gecti". Bekci dosyayi utcnow ile
+    yazdigi icin ofset sorusu zaten dogmaz.
+    """
+    try:
+        dt = datetime.strptime(str(ts).strip()[:19], "%Y-%m-%dT%H:%M:%S")
+    except Exception:
+        return None
+    return (datetime.utcnow() - dt).total_seconds() / 3600.0
+
+
+def _check_watchdog(name, cfg, d, row):
+    """
+    12. UYE: bekcinin kendi izi. KABA esik (B3 dersinin tekrari: kabalik ozellik).
+
+    ESIK NEDEN 72h: bekci precise.yml'de hafta-ici 3 slot kosar (06:45/11:30/
+    15:40 UTC). En uzun MESRU bosluk Cuma 15:40 -> Pzt 06:45 = ~63h. 72h, hicbir
+    hafta-sonunun yanlis-alarm uretmeyecegi ilk guvenli esik. Hafta-ici bir
+    olumu ~3 gunde yakalar: YAVAS ama BAGIMSIZ -- ve bu bir IKINCIL hatti
+    (daemon olumu tarayicidan ~22h'te, tarayici olumu bekciden ayni gun cikar).
+    Hizli+paylasilan-mantik yerine yavas+bagimsiz TERCIH EDILDI.
+    """
+    age = _raw_age_hours(row.get("timestamp"))
+    row["age_hours"] = round(age, 1) if age is not None else None
+    row["check_mode"] = "raw_age (kaba+bagimsiz)"
+    if age is None:
+        row.update(status="RED", reason=f"bekci damgasi cozulemedi: {row.get('timestamp')!r}")
+        return row
+    if age < -0.2:
+        row.update(status="RED", reason=f"bekci damgasi GELECEKTEN: {age:.1f}h")
+        return row
+    lim = cfg["raw_max_age_h"]
+    if age > lim:
+        row.update(status="RED",
+                   reason=f"BEKCI DURDU: son iz {age:.0f}h once (> {lim}h) — "
+                          f"izleyeni-izleyen katmani olu")
+        return row
+    # Bekci calisiyor. Kendi raporladigi sonucu da yansit (sessiz mi, alarm mi).
+    sonuc = d.get("sonuc")
+    gord = d.get("gordugu") or {}
+    row["watchdog_sonuc"] = sonuc
+    row["watchdog_gordugu"] = gord
+    if sonuc == "ALARM":
+        row.update(status="RED",
+                   reason=f"bekci ALARM veriyor: {', '.join(d.get('problem_kodlari') or [])}")
+        return row
+    neg = gord.get("negatif_yas_sayisi")
+    if isinstance(neg, int) and neg > 0:
+        row.update(status="RED",
+                   reason=f"bekci sessiz AMA {neg} uyede negatif yas gormus — sahte-yesil")
+        return row
+    row.update(status="GREEN",
+               reason=f"bekci canli ({age:.0f}h once), sonuc={sonuc}, "
+                      f"gordugu: liveness verdict={gord.get('liveness_verdict')} "
+                      f"{gord.get('liveness_checks')} uye")
+    return row
+
+
 def _input_state(paths):
     """
     'YOK' ile 'GOREMIYORUM' ayrimi — negatif-kanit zayiftir.
@@ -331,14 +418,26 @@ def check(name, cfg):
         return row
 
     ts, ts_key = _first(d, cfg["ts_keys"])
-    tz_off = cfg.get("tz", 0.0)
-    age = _age_hours(ts, tz_off)
-    row.update(timestamp=ts, ts_key=ts_key, tz_offset_h=tz_off,
-               age_hours=(round(age, 1) if age is not None else None))
+    row.update(timestamp=ts, ts_key=ts_key)
 
     if ts is None:
         row.update(status="RED", reason="zaman damgasi YOK (canlilik olculemez)")
         return row
+
+    # --- 12. uye (bekci): KABA + BAGIMSIZ yol ---------------------------------
+    # DALLANMA BURADA, _age_hours'DAN ONCE. Sonraya koyulursa bagimsizlik
+    # SAHTE olur: paylasilan yas/TZ mantigi bozuldugunda bu uye de ona takilip
+    # RED verir -> tarayici ile bekci AYNI YONDE yanilir = ortak-mod ariza,
+    # yani onlemek icin kurdugumuz seyin ta kendisi.
+    # (2026-07-22: ilk yazimda dallanma _age_hours'tan SONRAYDI; ortak-mod
+    #  mutasyon testi bunu yakaladi.)
+    if cfg.get("check_mode") == "raw_age":
+        return _check_watchdog(name, cfg, d, row)
+
+    tz_off = cfg.get("tz", 0.0)
+    age = _age_hours(ts, tz_off)
+    row.update(tz_offset_h=tz_off,
+               age_hours=(round(age, 1) if age is not None else None))
     if age is None:
         row.update(status="RED", reason=f"damga cozulemedi: {ts!r}")
         return row

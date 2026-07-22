@@ -46,6 +46,7 @@ from liveness_scan import (  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 LIVENESS = ROOT / "docs" / "state" / "liveness.json"
 DASHBOARD = ROOT / "docs" / "state" / "dashboard.json"
+STATE = ROOT / "docs" / "state" / "watchdog.json"      # bekcinin KENDI izi
 
 # Tarayicinin KENDI takvimi (liveness.yml: '0 17 * * 1-5').
 # grace 5h: gozlenen GitHub cron gecikmesi ~2h; 5h rahat pay birakir.
@@ -155,8 +156,67 @@ def notify(text):
         print(f"[notify] HATA {e}")
 
 
+def _write_state(problems, lv):
+    """
+    BEKCININ KENDI IZI — "bekciyi kim izliyor?" bosluğunu kapatir.
+
+    NEDEN (2026-07-22 bulgusu): bekci 40 kosuda 0 KEZ calisti ve kimse fark
+    etmedi. Sebep yapisal: tarayicinin heartbeat'i var (her kosuda mesaj ->
+    SESSIZLIK = ALARM), bekcinin YOK -- bekci yalniz sorun-varsa konusuyordu.
+    Dolayisiyla bekcinin sessizligi UC ayri sey demekti: saglikli / olu /
+    hic-kurulmamis. Ayirt edilemiyordu.
+
+    COZUM: bekci her kosuda BU DOSYAYI yazar; tarayici onu registry'nin 12.
+    uyesi olarak izler. Dosya yazilmissa bekci CALISMIS demektir (adim-varligi
+    degil, adim-CIKTISI = ground-truth). Bayatlarsa tarayici KIRMIZI der ve
+    durum zaten gunluk gelen heartbeat'e binmis olur -- ek Telegram gurultusu
+    YOK.
+
+    EKSEN: utcnow() ile yazilir. precise.yml adiminda TZ: Europe/Istanbul set
+    edili, yani datetime.now() TR verirdi; utcnow diyerek bu dosyanin eksenini
+    daemon damgalarindan AYIRIYORUZ -> tarayici tarafinda tz-ofset 0, TZ sorusu
+    bu dosyada hic dogmaz.
+    """
+    payload = {
+        "updated_at": datetime.utcnow().isoformat(timespec="seconds"),
+        "tz": "UTC",
+        "writer": "scripts/liveness_watchdog.py",
+        "sonuc": "ALARM" if problems else "SESSIZ",
+        "problem_kodlari": [k for k, _ in problems],
+        "problemler": [f"[{k}] {m}" for k, m in problems],
+        # Bekcinin NE GORDUGU — katman-2/3/4'un otomatik kaydi:
+        # sessiz kaldiysa "sessizlik dogru muydu" bu alanlardan denetlenir.
+        "gordugu": {
+            "liveness_updated_at": (lv or {}).get("updated_at"),
+            "liveness_verdict": (lv or {}).get("verdict"),
+            "liveness_checks": len((lv or {}).get("checks", [])),
+            "liveness_red": (lv or {}).get("red_count"),
+            "liveness_yellow": (lv or {}).get("yellow_count"),
+            # tarayicinin uygulandigini bildirdigi tz-ofset (fix devrede mi)
+            "tz_offset_gorunuyor": sorted({
+                c.get("tz_offset_h") for c in (lv or {}).get("checks", [])
+                if "tz_offset_h" in c
+            }),
+            "negatif_yas_sayisi": sum(
+                1 for c in (lv or {}).get("checks", [])
+                if isinstance(c.get("age_hours"), (int, float)) and c["age_hours"] < 0
+            ),
+        },
+        "note": "Bekcinin kendi izi. Tarayici bunu 12. uye olarak KABA esikle "
+                "izler (paylasilan slot/TZ mantigi KULLANILMAZ -> ortak-mod ariza yok).",
+    }
+    try:
+        STATE.parent.mkdir(parents=True, exist_ok=True)
+        STATE.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                         encoding="utf-8")
+        print(f"[state] {STATE.name} yazildi (sonuc={payload['sonuc']})")
+    except Exception as e:
+        print(f"[state] YAZILAMADI: {e}")
+
+
 def main():
     problems, lv = check()
+    _write_state(problems, lv)   # her kosuda -- alarm olsun olmasin
     if not problems:
         v = (lv or {}).get("verdict", "?")
         print(f"OK bekci: tarayici canli + tutarli (liveness verdict={v}, "
