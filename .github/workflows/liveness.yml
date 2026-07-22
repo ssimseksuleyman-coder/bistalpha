@@ -81,7 +81,12 @@ jobs:
           if [ "${{ steps.scan.outputs.red }}" = "1" ]; then
             MSG="🔴 LIVENESS ALARM ($(date -u +%F))${NL}${{ steps.scan.outputs.health }}"
             MSG="${MSG}${NL}${NL}KIRMIZI:${NL}${{ steps.scan.outputs.redlines }}"
-            MSG="${MSG}${NL}${NL}Bir zamanlanmis is DURMUS olabilir — dashboard > Canlilik blogunu kontrol et."
+            # Metin KIRMIZI'nin gercek anlamina kalibre (2026-07-22): yeni eklenen
+            # uyeler artik SARI ("henuz hic yazilmadi"), yani KIRMIZI gercekten
+            # "calisiyordu, artik calismiyor" YA DA "kontrol bozuldu" demek.
+            # Eski metin ("bir is DURMUS olabilir") 12. uye eklenince yaniltmisti:
+            # duran bir is yoktu, uye yeniydi.
+            MSG="${MSG}${NL}${NL}Bir zamanlanmis is DURDU ya da bir kontrol BOZULDU — dashboard > Canlilik blogunu kontrol et. (Yeni eklenen uyeler SARI raporlanir, KIRMIZI degil.)"
           else
             # HEARTBEAT: yesil/sari da bildirilir ki SESSIZLIK = tarayici-oldu olsun.
             MSG="🟢 liveness heartbeat ($(date -u +%F)) — ${{ steps.scan.outputs.health }}"

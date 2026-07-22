@@ -89,6 +89,14 @@ def _missed_slots(last_run, now, sched):
 # ---------------------------------------------------------------------------
 # REGISTRY — hangi mekanizma canli olmali, damgasini nereye yazmali.
 # YENI DIS-KAYNAK EKLERKEN BURAYA DA EKLE. Eklenmezse izlenmez (bug dogus kosulu).
+#
+# YENI UYE KURALI (2026-07-22): bir uye eklendiginde damga dosyasi henuz YOKTUR.
+# Bu, "durmus is" DEGILDIR -> otomatik olarak SARI raporlanir ("YENI UYE: henuz
+# hic yazilmadi"), ilk yazimdan sonra normal (KIRMIZI-yapabilen) rejime gecer.
+# Gecis OTOMATIK: `_ever_written_map()` bir onceki liveness.json'dan tasir.
+# ELLE yapilmaz -- biri unutursa uye sonsuza dek "yeni" kalir ve gercekten
+# kirildiginda da SARI gorunurdu = yeni bir sessiz korluk.
+# Bu, defterlerdeki "BOS-normal vs KIRIK" ayriminin REGISTRY hali.
 # ---------------------------------------------------------------------------
 REGISTRY = {
     # ---- URETICILER (disariya cikan: scrape/API) ----
@@ -400,16 +408,62 @@ def _input_state(paths):
     return "empty", "girdi-yolu var, icerik bos"
 
 
-def check(name, cfg):
+def _ever_written_map():
+    """
+    "HIC YAZILMADI" ile "YAZIYORDU, DURDU" ayrimi icin kalici hafiza.
+
+    NEDEN (2026-07-22): 12. uye (watchdog) eklendiginde damga dosyasi henuz
+    yoktu -> KIRMIZI + "bir zamanlanmis is DURMUS olabilir" alarmi gitti. Ama
+    duran bir is YOKTU; uye yeniydi ve ilk yazimini bekliyordu. Bu, defterlerde
+    zaten cozdugumuz "BOS-normal vs KIRIK" ayriminin REGISTRY hali -- ust
+    katmanda cozulmemisti. Registry'ye eklenecek her yeni uye (scheduler-last-run,
+    G1-reentry...) ayni yaniltici KIRMIZI'yi uretecekti.
+
+    NEDEN OTOMATIK: gecisi elle yapmak (planned -> active) yeni bir SESSIZ
+    KORLUK kaynagi olurdu -- biri unutur, uye sonsuza dek "planned" kalir ve
+    gercekten kirildiginda da SARI gorunur. Bu yuzden turetiliyor.
+
+    NEDEN DOSYA-VARLIGI YETMEZ: "dosya var mi" ile bakarsak, bir kez yazip
+    sonra SILINEN dosya tekrar "yeni uye" sayilir ve sessizlesir. Bu yuzden
+    hafiza bir onceki liveness.json'dan tasiniyor (o dosya her kosuda commit
+    edilir, yani kalicidir).
+    """
+    prev = {}
+    try:
+        old = json.loads(OUT.read_text(encoding="utf-8"))
+        for c in old.get("checks", []):
+            nm = c.get("name")
+            if not nm:
+                continue
+            # Ya acikca isaretlenmis, ya da o kosuda gecerli damgasi vardi.
+            prev[nm] = bool(c.get("ever_written") or c.get("timestamp"))
+    except Exception:
+        pass
+    return prev
+
+
+def check(name, cfg, ever_prev=None):
     f = ROOT / cfg["file"]
     row = {"name": name, "kind": cfg["kind"], "expected": cfg["expected"],
            "file": cfg["file"], "note": cfg.get("note", "")}
+    ever = bool((ever_prev or {}).get(name))
 
     if not f.exists():
-        # Registry'de var ama damga dosyasi YOK -> uretici damga yazmiyor.
-        row.update(status="RED", reason="registry'de kayitli ama damga dosyasi YOK "
-                                        "(uretici/tuketici damga yazmiyor)")
+        row["ever_written"] = ever
+        if not ever:
+            # HIC yazilmadi: yeni kayitli uye, ilk yazimini bekliyor. SARI.
+            # (Sessiz degil -- gorunur kalir; ama KIRMIZI degil -- alarm-korlugu
+            #  uretmez ve "durmus is" diye yanlis okunmaz.)
+            row.update(status="YELLOW",
+                       reason="YENI UYE: henuz hic yazilmadi, ilk yazimini bekliyor "
+                              "(durmus is DEGIL)")
+            return row
+        # Daha once yaziyordu, simdi dosya YOK -> gercek arıza.
+        row.update(status="RED",
+                   reason="daha once yaziyordu, damga dosyasi ARTIK YOK -> "
+                          "uretici DURDU ya da dosya silindi")
         return row
+    row["ever_written"] = True
 
     try:
         d = json.loads(f.read_text(encoding="utf-8"))
@@ -501,7 +555,9 @@ def check(name, cfg):
 
 
 def main():
-    rows = [check(n, c) for n, c in REGISTRY.items()]
+    # "hic yazilmadi" vs "yaziyordu durdu" ayrimi icin onceki taramanin hafizasi
+    ever_prev = _ever_written_map()
+    rows = [check(n, c, ever_prev) for n, c in REGISTRY.items()]
     red = [r for r in rows if r["status"] == "RED"]
     yellow = [r for r in rows if r["status"] == "YELLOW"]
     payload = {
