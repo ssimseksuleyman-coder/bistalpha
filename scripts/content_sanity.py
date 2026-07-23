@@ -29,7 +29,9 @@ Cikis: 0 = anomali yok, 1 = anomali (workflow/daemon alarmi icin).
 from __future__ import annotations
 
 import json
+import os
 import sys
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -37,14 +39,41 @@ ROOT = Path(__file__).resolve().parents[1]
 DASH = ROOT / "docs" / "state" / "dashboard.json"
 OUT = ROOT / "docs" / "state" / "content_sanity.json"
 
-# Esikler. Normal select_valid_count ~581; tatil-deligi ~2-17'ye dusuruyor.
-# 100: normal ile anomali arasinda genis guvenli bant (gozlenen en yuksek
-# zehirli deger 17, en dusuk normal ~200+). Kaba ve emin -- taban-lock/DSTKF
-# esiklerindeki gibi kabalik OZELLIK.
-VALID_MIN = 100
+# --- ORANSAL esikler (MUTLAK DEGIL, 2026-07-23) -------------------------------
+# ESKI: VALID_MIN=100 mutlak. Sorun: sabit, gercegin (evren-boyutu) proxy'si;
+# evren kuculurse yanlislanir = slot-hard-code/TZ-ofset sinifi. ORANSAL cozum:
+# olculen taban valid/price = 581/612 = %95; tatil-deligi <%3 -> %50 devasa marj,
+# evren-boyutundan BAGIMSIZ.
+VALID_RATIO_MIN = 0.5        # PAY: valid/price_count -- veri-TAMLIK (RS5 deligi)
+
+# PAYDA KOR-NOKTASI (kullanici, 2026-07-23): oran pay+payda BIRLIKTE cokerse kor
+# kalir. yfinance 612->20 doner, 19 gecerli -> valid/price=%95 -> GREEN, ama F
+# 20 hisselik evrenden secim yapiyor = kirik. Gosterge olctugu seyle birlikte
+# hareket edebiliyor (bugunun 5. tekrari). COZUM: BAGIMSIZ payda referansi.
+# source_pool_count (TradingView taramasi) yfinance-fiyatlarindan AYRI kaynak ->
+# yfinance cokse bile pool ~614 kalir -> price/pool=%3 -> RED. Mutlak sabit YOK.
+COVERAGE_RATIO_MIN = 0.5     # PAYDA: price_count/source_pool_count -- fetch-KAPSAMA
+# KALAN BOSLUK (bir sonraki tur, KAYITLI): ikisi de coker (tarama+yfinance
+# birlikte) -> price/pool sabit -> yine kor. Gercek cozum: kendi-gecmis-medyani
+# (source_pool_count'un son N kosu medyani). Bugun ertelendi -- ACIK_ISLER #0g.
+
+# ZAMANA-BAGLI None kurali: select_valid_count propagation duzeltmesi (24526c7)
+# 2026-07-23 canli dustu. Bu tarihten SONRA her dashboard alani TASIMALI; yoksa
+# = propagation KIRIK. Oncesi (eski state) = normal, sessiz. "Ayni yokluk,
+# duzeltme oncesi normal / sonrasi ariza" = yok!=kirik'in zamana-bagli hali.
+# 07-24: alan bugun (07-23) dustu; bugunku GECIS dashboard'larinin bir kismi
+# fix-oncesi. 07-24'ten emin.
+FIX_ANCHOR = "2026-07-24"
+
 # Tam radar cikitisi bu anahtarlari tasir; erken-cikista duser. Sabit sayi
 # KARAR VERMEZ (config-kirilgan); yalnizca ANAHTAR VARLIGI teyit-edici.
 RADAR_FULL_KEYS = ("radar_universe_count", "trade_universe_count")
+
+
+def _ratio(num, den):
+    if isinstance(num, (int, float)) and isinstance(den, (int, float)) and den:
+        return num / den
+    return None
 
 
 def check(d):
@@ -55,18 +84,32 @@ def check(d):
     wl = d.get("watchlists") or {}
     data_ok = d.get("bist_data_ok")
     price_count = d.get("price_count")
+    pool = d.get("source_pool_count")
+    dash_date = str(d.get("date") or d.get("timestamp") or "")[:10]
 
-    # --- BIRINCIL: kok metrik (yeterli gecerli bar) ---
-    # valid None ise: alan henuz yok (reporter guncellenmeden yazilmis eski
-    # state). Bu TEK BASINA anomali DEGIL -- yalniz "kok metrigi goremiyorum"
-    # demek; ikincil sinyaller (C/celiski, D/radar) zaten uretim-cokusunu
-    # yakaliyor. Kosulsuz YELLOW yanlis-alarm olurdu (saglikli eski state'lerde
-    # de tetiklenir). "YOK" ile "KIRIK" ayrimi (bugunun tekrar eden dersi):
-    # alan-yoklugu susmayi degil, ikincile-birakmayi gerektirir.
-    if isinstance(valid, (int, float)) and valid < VALID_MIN:
-        problems.append(("B/VALID_DUSUK",
-                        f"select_valid_count={valid} < {VALID_MIN}: gecerli-bar "
-                        f"cokmus (tatil-deligi?) -> secim coplerle karar verebilir"))
+    valid_ratio = _ratio(valid, price_count)
+    coverage_ratio = _ratio(price_count, pool)
+
+    # --- BIRINCIL (PAY): veri-TAMLIK, oransal ---
+    if valid_ratio is not None:
+        if valid_ratio < VALID_RATIO_MIN:
+            problems.append(("B/VALID_DUSUK",
+                f"valid/price={valid_ratio:.2f} < {VALID_RATIO_MIN} "
+                f"(valid={valid}/price={price_count}): gecerli-bar cokmus "
+                f"(tatil-deligi?) -> secim coplerle karar verebilir"))
+    elif valid is None and dash_date >= FIX_ANCHOR:
+        # ZAMANA-BAGLI None kurali: alan FIX_ANCHOR sonrasi olmali; yoksa kirik.
+        problems.append(("B/METRIK_YOK",
+            f"select_valid_count YOK ama dashboard {dash_date} >= {FIX_ANCHOR} "
+            f"-> propagation KIRIK (reporter->daemon zinciri)"))
+    # (valid None ve dash_date < FIX_ANCHOR: eski state, SESSIZ -- yok!=kirik)
+
+    # --- PAYDA KOR-NOKTASI: fetch-KAPSAMA (bagimsiz referans) ---
+    if coverage_ratio is not None and coverage_ratio < COVERAGE_RATIO_MIN:
+        problems.append(("B/EVREN_COKTU",
+            f"price/pool={coverage_ratio:.2f} < {COVERAGE_RATIO_MIN} "
+            f"(price={price_count}/pool={pool}): veri kaynagi cokmus, evren "
+            f"kuculdu -> F kucuk evrenden TOP_N seciyor (oran-kor-noktasi)"))
 
     # --- IKINCIL/TEYIT: uretim BOS ama veri SAGLIKLI celiskisi ---
     # (canlilik-yesil + anlamlilik-kirmizi = tam bugunku durum)
@@ -88,9 +131,13 @@ def check(d):
                             f"radar tam kosmadi: {', '.join(eksik)} yok ve tum "
                             f"izleme listeleri bos -> build_watchlists erken cikti"))
 
-    return problems, {"select_valid_count": valid, "top10": top10_n,
+    return problems, {"select_valid_count": valid, "price_count": price_count,
+                      "source_pool_count": pool,
+                      "valid_ratio": round(valid_ratio, 3) if valid_ratio is not None else None,
+                      "coverage_ratio": round(coverage_ratio, 3) if coverage_ratio is not None else None,
+                      "top10": top10_n,
                       "watchlists_keys": sorted(wl.keys()) if wl else [],
-                      "bist_data_ok": data_ok, "price_count": price_count}
+                      "bist_data_ok": data_ok}
 
 
 def main():
@@ -113,12 +160,36 @@ def main():
     _write(payload)
 
     icon = {"GREEN": "OK ", "YELLOW": "?? ", "RED": "!! "}[verdict]
-    print(f"{icon}content_sanity: {verdict} | valid={gozlem['select_valid_count']} "
-          f"top10={gozlem['top10']} watchlists_keys={len(gozlem['watchlists_keys'])}")
+    print(f"{icon}content_sanity: {verdict} | valid/price={gozlem['valid_ratio']} "
+          f"price/pool={gozlem['coverage_ratio']} top10={gozlem['top10']}")
     for k, m in problems:
         print(f"   [{k}] {m}")
+    # RED -> ANINDA Telegram: liveness gunde 1x tarar (17:00, kor-pencere #0h),
+    # ama icerik-anomali rebalans-gununde SABAH kritik -> beklenemez. RED-yoksa
+    # sus (gunluk liveness heartbeat zaten tasir; ek gurultu yok).
+    if verdict == "RED":
+        _notify("🔴 ANLAMLILIK ALARMI — content_sanity\n"
+                + "\n".join(f"• [{k}] {m}" for k, m in problems)
+                + "\n(uretilen veri COKMUS; canlilik-yesil ama anlamlilik-kirmizi. "
+                  "Rebalans gunuyse copler-le karar riski.)")
     # RED -> exit 1 (rebalans-durdur / alarm icin); YELLOW -> gorunur ama bloklamaz
     return 1 if verdict == "RED" else 0
+
+
+def _notify(text):
+    token = os.environ.get("TELEGRAM_TOKEN", "")
+    chat = os.environ.get("TELEGRAM_CHAT_ID", "")
+    if not (token and chat):
+        print("[notify] TELEGRAM_TOKEN/CHAT_ID yok — atlandi")
+        return
+    data = json.dumps({"chat_id": chat, "text": text}).encode()
+    req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
+                                 data=data, headers={"Content-Type": "application/json"})
+    try:
+        urllib.request.urlopen(req, timeout=10)
+        print("[notify] gonderildi")
+    except Exception as e:
+        print(f"[notify] HATA {e}")
 
 
 def _write(payload):

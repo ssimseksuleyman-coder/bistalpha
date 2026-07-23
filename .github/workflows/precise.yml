@@ -72,6 +72,20 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 scripts/liveness_watchdog.py
 
+      # ANLAMLILIK TARAYICISI: canlilik degil, uretilen veri DOLU+TUTARLI mi.
+      # daemon dashboard.json yazdiktan SONRA kosar (icerik-anomali okur).
+      # RS5 tatil-deligi / evren-cokusu -> alarm (bekci/liveness bunu goremez:
+      # onlar canlilik olcer, bu anlamlilik). Kendi content_sanity.json'unu yazar
+      # -> 13. liveness uyesi okur. continue-on-error: bekci gibi, daemon
+      # sinyalini kirletmez. Bugun (07-23) planned'dan active'e ilk gercek kosum.
+      - name: Anlamlilik — content_sanity (icerik-anomali)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 scripts/content_sanity.py
+
       - name: State commit (kalicilik)
         if: always()
         run: |
