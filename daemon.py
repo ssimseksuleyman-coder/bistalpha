@@ -430,6 +430,11 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             "kap": _kap_status(),
         },
         "top10": report.get("top10", []),
+        # ANLAMLILIK metrigi (2026-07-23): reporter.py:200 uretir; content_sanity
+        # dashboard'dan okuyacak. default=None BILINCLI -> "uretilmedi" (propagation
+        # kirik) ile "gercekten 0" (valid tam-cokme = anomali) AYRI arizadir; 0
+        # verirsem ikisi karisir. (yok != sifir, bu turun tekrar eden dersi.)
+        "select_valid_count": report.get("select_valid_count"),
         "firsatlar": report.get("firsatlar", []),
         "watchlists": dashboard_watchlists,
         "catalyst_ledger": report.get("catalyst_ledger"),
