@@ -185,10 +185,19 @@ def generate_report(data, signals, date=None, mode=None,
                 break
 
     market_regime = regime.classify(data, date)
+    # İÇERİK-ANOMALİ metrigi (2026-07-22, #0g ①): score()'un uretttigi GECERLI
+    # hisse sayisi. Normal ~581; tatil-deligi bir karar gununu vurunca (RS_GUN_5/
+    # RS_GUN_30/MOM_GUN pencerelerinden biri bos bara dusunce) TUM valid maskesi
+    # coker ve bu sayi ~2'ye iner -> top10 bosalir, rebalans coplerle karar verir.
+    # Bu sayi ROOT metriktir: hem select'i hem radar'i (ayri df ama ayni
+    # bar-geçerliligi) besleyen kaynak. content_sanity tarayicisi bunu okur.
+    # SADECE RAPOR ALANI -- karar mantigina girmez (F DOKUNULMAZ; golden-master
+    # backtest ret/dd/stops'a bakar, bu alana degil).
     return {
         "date": str(date.date()) if hasattr(date, "date") else str(date),
         "mode": mode,
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "select_valid_count": int(s.shape[0]) if s is not None else 0,
         "source": data.get("_source"),
         "source_pool_count": data.get("_source_pool_count"),
         "source_pool_method": data.get("_source_pool_method"),

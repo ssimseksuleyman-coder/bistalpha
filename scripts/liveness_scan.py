@@ -230,6 +230,26 @@ REGISTRY = {
         "note": "bekci (liveness_watchdog.py) her precise kosusunda yazar; "
                 "yazmiyorsa izleyeni-izleyen katmani olu",
     },
+    # ---- ANLAMLILIK TARAYICISI (13. uye, 2026-07-22, HENUZ BAGLANMADI) ----
+    # content_sanity.py: canlilik degil ANLAMLILIK olcer (uretilen veri dolu+
+    # tutarli mi). RS_GUN_5 tatil-deligi bugun panelin 3 bolumunu bosaltti ve
+    # hicbir canlilik-gostergesi bunu gormedi -> bu tarayici o eksigi kapatir.
+    # expected="planned": HENUZ BIR WORKFLOW'A BAGLANMADI (bkz ACIK_ISLER #0g ①).
+    # Bagli olmadigi surece dosya YOK -> _ever_written ile SARI "yeni uye" (gorunur,
+    # unutulmaz). Baglanip ilk yazdiginda kendi verdict'ini yansitir; DOGRULANINCA
+    # active'e cekilir (otomatik degil -- expected statik alan, elle flip).
+    # NOT: "yazinca otomatik active" YANLIS varsayimdi; otomatik olan yalniz
+    # _ever_written'in yeni-uye-SARI'si.
+    "content_sanity": {
+        "kind": "scanner",
+        "expected": "planned",
+        "file": "docs/state/content_sanity.json",
+        "ts_keys": ["updated_at"],
+        "tz": 0.0,                     # content_sanity utcnow ile yazar
+        "check_mode": "own_verdict",
+        "raw_max_age_h": 72,
+        "note": "anlamlilik denetimi; HENUZ workflow'a bagli DEGIL (planned)",
+    },
 }
 
 
@@ -327,6 +347,43 @@ def _raw_age_hours(ts):
     except Exception:
         return None
     return (datetime.utcnow() - dt).total_seconds() / 3600.0
+
+
+def _check_scanner_verdict(name, cfg, d, row):
+    """
+    KENDI VERDICT'INI yazan tarayici uyesi (content_sanity gibi). KABA + BAGIMSIZ
+    yas (watchdog ile ayni ortak-mod onlemesi: paylasilan _age_hours/slot mantigi
+    KULLANILMAZ). tz=0 varsayilir (bu tarayicilar utcnow ile yazar).
+
+    Iki katman: (1) tarayici CANLI mi (yas < esik, negatif degil), (2) tarayicinin
+    KENDI verdict'i ne (GREEN/YELLOW/RED). Olu tarayici -> RED; canli+RED-diyor ->
+    RED; canli+YELLOW -> YELLOW; canli+GREEN -> GREEN.
+    """
+    age = _raw_age_hours(row.get("timestamp"))
+    row["age_hours"] = round(age, 1) if age is not None else None
+    row["check_mode"] = "own_verdict (kaba+bagimsiz)"
+    if age is None:
+        row.update(status="RED", reason=f"damga cozulemedi: {row.get('timestamp')!r}")
+        return row
+    if age < -0.2:
+        row.update(status="RED", reason=f"damga GELECEKTEN: {age:.1f}h")
+        return row
+    if age > cfg["raw_max_age_h"]:
+        row.update(status="RED",
+                   reason=f"TARAYICI DURDU: son iz {age:.0f}h once (> {cfg['raw_max_age_h']}h)")
+        return row
+    v = d.get("verdict")
+    row["scanner_verdict"] = v
+    row["scanner_problems"] = [p[0] if isinstance(p, list) else p for p in (d.get("problems") or [])]
+    if v == "RED":
+        row.update(status="RED", reason=f"tarayici RED: {', '.join(row['scanner_problems']) or '?'}")
+    elif v == "YELLOW":
+        row.update(status="YELLOW", reason=f"tarayici YELLOW: {', '.join(row['scanner_problems']) or '?'}")
+    elif v == "GREEN":
+        row.update(status="GREEN", reason=f"tarayici canli ({age:.0f}h once), verdict=GREEN")
+    else:
+        row.update(status="RED", reason=f"gecersiz verdict: {v!r}")
+    return row
 
 
 def _check_watchdog(name, cfg, d, row):
@@ -487,6 +544,8 @@ def check(name, cfg, ever_prev=None):
     #  mutasyon testi bunu yakaladi.)
     if cfg.get("check_mode") == "raw_age":
         return _check_watchdog(name, cfg, d, row)
+    if cfg.get("check_mode") == "own_verdict":
+        return _check_scanner_verdict(name, cfg, d, row)
 
     tz_off = cfg.get("tz", 0.0)
     age = _age_hours(ts, tz_off)
