@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-07-22T18:34:38",
+  "updated_at": "2026-07-23T03:50:35",
   "tz": "UTC",
   "scanner": "scripts/liveness_scan.py",
   "verdict": "YELLOW",
   "red_count": 0,
-  "yellow_count": 3,
-  "total": 12,
+  "yellow_count": 11,
+  "total": 13,
   "checks": [
     {
       "name": "kap_feed",
@@ -17,7 +17,7 @@
       "timestamp": "2026-07-22T20:41:04",
       "ts_key": "updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 0.9,
+      "age_hours": 10.2,
       "schedule": "kap_daily",
       "missed_slots": 0,
       "status": "GREEN",
@@ -33,11 +33,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "timestamp",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "status": "GREEN",
-      "reason": "taze + saglikli"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "forward_test",
@@ -49,13 +49,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 33,
-      "input_state": "n/a",
-      "status": "GREEN",
-      "reason": "taze, 33 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "performance_ledger",
@@ -67,13 +65,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 33,
-      "input_state": "n/a",
-      "status": "GREEN",
-      "reason": "taze, 33 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "opportunity_ledger",
@@ -85,13 +81,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 8,
-      "input_state": "n/a",
-      "status": "GREEN",
-      "reason": "taze, 8 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "catalyst_ledger",
@@ -103,13 +97,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 18,
-      "input_state": "present",
-      "status": "GREEN",
-      "reason": "taze, 18 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "flow_ledger",
@@ -121,13 +113,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 0,
-      "input_state": "missing",
+      "missed_slots": 1,
       "status": "YELLOW",
-      "reason": "kurulmadi (planned): girdi-yolu YOK: local/flow_inputs"
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "quality_ledger",
@@ -139,13 +129,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 1,
-      "input_state": "missing",
-      "status": "GREEN",
-      "reason": "taze, 1 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "macro_surprise_ledger",
@@ -157,13 +145,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 0,
-      "input_state": "empty",
+      "missed_slots": 1,
       "status": "YELLOW",
-      "reason": "beklenen bosluk (girdi-yolu var, icerik bos)"
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "broker_bulletin_ledger",
@@ -175,13 +161,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 0,
-      "input_state": "missing",
+      "missed_slots": 1,
       "status": "YELLOW",
-      "reason": "kurulmadi (planned): girdi-yolu YOK: local/broker_bulletins"
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "missed_opportunities",
@@ -193,13 +177,11 @@
       "timestamp": "2026-07-22T18:40:52",
       "ts_key": "summary.updated_at",
       "tz_offset_h": 3.0,
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "schedule": "daemon_cycle",
-      "missed_slots": 0,
-      "events": 33,
-      "input_state": "n/a",
-      "status": "GREEN",
-      "reason": "taze, 33 kayit"
+      "missed_slots": 1,
+      "status": "YELLOW",
+      "reason": "1 slot kacti — gecici olabilir, izle [daemon_cycle, yas 12h]"
     },
     {
       "name": "watchdog",
@@ -210,7 +192,7 @@
       "ever_written": true,
       "timestamp": "2026-07-22T15:40:52",
       "ts_key": "updated_at",
-      "age_hours": 2.9,
+      "age_hours": 12.2,
       "check_mode": "raw_age (kaba+bagimsiz)",
       "watchdog_sonuc": "SESSIZ",
       "watchdog_gordugu": {
@@ -225,7 +207,17 @@
         "negatif_yas_sayisi": 0
       },
       "status": "GREEN",
-      "reason": "bekci canli (3h once), sonuc=SESSIZ, gordugu: liveness verdict=RED 12 uye"
+      "reason": "bekci canli (12h once), sonuc=SESSIZ, gordugu: liveness verdict=RED 12 uye"
+    },
+    {
+      "name": "content_sanity",
+      "kind": "scanner",
+      "expected": "planned",
+      "file": "docs/state/content_sanity.json",
+      "note": "anlamlilik denetimi; HENUZ workflow'a bagli DEGIL (planned)",
+      "ever_written": false,
+      "status": "YELLOW",
+      "reason": "YENI UYE: henuz hic yazilmadi, ilk yazimini bekliyor (durmus is DEGIL)"
     }
   ],
   "note": "Zamanlanmis her mekanizmanin 'son ne zaman calisti' denetimi. Registry-gudumlu: yeni dis-kaynak eklenip damga yazmazsa RED."
