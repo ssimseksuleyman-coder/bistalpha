@@ -1,36 +1,26 @@
 {
-  "updated_at": "2026-07-24T06:45:59",
+  "updated_at": "2026-07-24T11:30:42",
   "tz": "UTC",
   "scanner": "scripts/content_sanity.py",
-  "verdict": "RED",
+  "verdict": "GREEN",
   "gozlem": {
-    "select_valid_count": 3,
+    "select_valid_count": 581,
     "price_count": 612,
     "source_pool_count": 614,
-    "valid_ratio": 0.005,
+    "valid_ratio": 0.949,
     "coverage_ratio": 0.997,
-    "top10": 0,
+    "top10": 10,
     "watchlists_keys": [
       "firsatlar",
       "peak_risks",
       "quiet_accumulation",
+      "radar_note",
+      "radar_universe_count",
+      "trade_universe_count",
       "transformation"
     ],
     "bist_data_ok": true
   },
-  "problems": [
-    [
-      "B/VALID_DUSUK",
-      "valid/price=0.00 < 0.5 (valid=3/price=612): gecerli-bar cokmus (tatil-deligi?) -> secim coplerle karar verebilir"
-    ],
-    [
-      "C/CELISKI",
-      "top10 BOS ama veri saglikli gorunuyor (bist_data_ok=True, price_count=612) -> URETIM coktu, CANLILIK gostergeleri bunu gizliyor"
-    ],
-    [
-      "D/RADAR_ERKEN_CIKIS",
-      "radar tam kosmadi: radar_universe_count, trade_universe_count yok ve tum izleme listeleri bos -> build_watchlists erken cikti"
-    ]
-  ],
+  "problems": [],
   "note": "Anlamlilik denetimi (canlilik DEGIL): uretilen veri dolu+tutarli mi."
 }

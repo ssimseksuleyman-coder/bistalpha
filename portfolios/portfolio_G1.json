@@ -1,16 +1,10 @@
 {
   "account": "G1",
-  "cash": 0.6122832771214333,
+  "cash": 0.6989532141345536,
   "positions": {
-    "KTLEV": {
-      "entry": 183.6999969482422,
-      "peak": 198.3000030517578,
-      "shares": 0.0005395612146870039,
-      "w": 0.21823327461877404
-    },
     "IEYHO": {
       "entry": 152.0,
-      "peak": 161.5,
+      "peak": 163.0,
       "shares": 0.0006836590654213479,
       "w": 0.22879907350030884
     },
@@ -135,6 +129,16 @@
       "pnl_pct": -18.96,
       "giveback": 18.96,
       "was_reentry": true
+    },
+    {
+      "date": "2026-07-24",
+      "type": "SELL",
+      "ticker": "KTLEV",
+      "price": 161.6,
+      "reason": "stop",
+      "pnl_pct": -12.03,
+      "giveback": 18.51,
+      "was_reentry": false
     }
   ],
   "watch": {
@@ -142,6 +146,11 @@
       "exit": 2522.5,
       "cash": 0.10256094376515378,
       "w": 0.42681320112473736
+    },
+    "KTLEV": {
+      "exit": 161.60000610351562,
+      "cash": 0.0866699370131203,
+      "w": 0.21823327461877404
     }
   },
   "equity_daily": [
@@ -213,11 +222,12 @@
     0.8767,
     0.8777,
     0.8731,
-    0.8767
+    0.8767,
+    0.8703
   ],
   "stats": {
     "buys": 5,
-    "stops": 3,
+    "stops": 4,
     "reentries": 2,
     "reentry_restops": 2,
     "reentry_restop_loss": 2,
@@ -226,7 +236,7 @@
     "reentry_total_pnl_pct": -37.90014722665064,
     "reentry_rebalance_loss_count": 0,
     "peak_value": 1.0,
-    "max_dd_pct": -12.6860326306252,
+    "max_dd_pct": -12.966708691168193,
     "reentry_throttled": 0,
     "reentry_paused": 0
   },
