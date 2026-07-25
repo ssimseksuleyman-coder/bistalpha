@@ -150,7 +150,7 @@ class YahooFeed(DataFeed):
         tickers = all_bist_tickers()
         symbols = yahoo_symbols(tickers)
 
-        prices, mins, maxs, aofs, volumes = {}, {}, {}, {}, {}
+        prices, mins, maxs, aofs, volumes, opens = {}, {}, {}, {}, {}, {}
         batch_size = int(os.environ.get("YAHOO_BATCH_SIZE", "80"))
         for start in range(0, len(symbols), batch_size):
             batch_symbols = symbols[start:start + batch_size]
@@ -168,6 +168,11 @@ class YahooFeed(DataFeed):
                     maxs[tic] = sub['High']
                     aofs[tic] = (sub['High'] + sub['Low'] + sub['Close']) / 3  # AOF yakınsama
                     volumes[tic] = sub['Volume']
+                    # OPEN: #0i D+1-open fill icin (kismi-barda kesin: ilk islem).
+                    # ADDITIF -> skor closes(prices) kullanir, DEGISMEZ; golden-master
+                    # backtest'i load_data(Excel) okur, o dokunulmadi -> etkilenmez.
+                    if 'Open' in sub:
+                        opens[tic] = sub['Open']
                 except (KeyError, TypeError):
                     continue
 
@@ -194,6 +199,7 @@ class YahooFeed(DataFeed):
             "maxs": pd.DataFrame(maxs).sort_index(),
             "aofs": pd.DataFrame(aofs).sort_index(),
             "volumes": pd.DataFrame(volumes).sort_index(),
+            "opens": pd.DataFrame(opens).sort_index(),
         })
         prices = frames["prices"]
         if prices.empty:
@@ -205,6 +211,7 @@ class YahooFeed(DataFeed):
             'maxs': frames["maxs"],
             'aofs': frames["aofs"],
             'volumes': frames["volumes"],
+            'opens': frames["opens"],
             'mcaps': pd.DataFrame(prices),
             'bist': bist,
             '_bist_ok': _bist_ok,
@@ -270,7 +277,7 @@ class BorsaPyFeed(DataFeed):
         # Toplu snapshot indir (cron-dostu, WebSocket değil)
         raw = borsapy.download(tickers, period=self.period, interval="1d")
 
-        prices, mins, maxs, aofs, volumes = {}, {}, {}, {}, {}
+        prices, mins, maxs, aofs, volumes, opens = {}, {}, {}, {}, {}, {}
         for tic in tickers:
             try:
                 # borsapy.download çoklu hisse için MultiIndex kolon döndürür
@@ -287,6 +294,9 @@ class BorsaPyFeed(DataFeed):
                 maxs[tic] = sub[cols.get('high', 'High')]
                 aofs[tic] = (sub[cols.get('high', 'High')] + sub[cols.get('low', 'Low')] + close) / 3
                 volumes[tic] = sub[cols.get('volume', 'Volume')]
+                # OPEN: #0i D+1-open fill (YahooFeed ile ayni; additif, skor degismez)
+                if 'open' in cols:
+                    opens[tic] = sub[cols['open']]
             except (KeyError, TypeError):
                 continue
 
@@ -309,6 +319,7 @@ class BorsaPyFeed(DataFeed):
             "maxs": pd.DataFrame(maxs).sort_index(),
             "aofs": pd.DataFrame(aofs).sort_index(),
             "volumes": pd.DataFrame(volumes).sort_index(),
+            "opens": pd.DataFrame(opens).sort_index(),
         })
         prices = frames["prices"]
         if prices.empty:
@@ -320,6 +331,7 @@ class BorsaPyFeed(DataFeed):
             'maxs': frames["maxs"],
             'aofs': frames["aofs"],
             'volumes': frames["volumes"],
+            'opens': frames["opens"],
             'mcaps': pd.DataFrame(prices),  # mcap yok → universe sıralama proxy (birim-bağımsız)
             'bist': bist,
             '_bist_ok': _bist_ok,
