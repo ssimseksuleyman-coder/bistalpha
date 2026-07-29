@@ -56,6 +56,14 @@ def main() -> int:
         "added": added,
         "total_events": total,
         "latest_event_date": latest_event_date,
+        # SESSIZ-DUSURME TESHISI (2026-07-29): siniflandirilamayan basliklar
+        # artik GORUNUR. Eskiden iz birakmadan dusuyorlardi -> KAP kategori adi
+        # degisince (ya da yeni kategori gelince) sessizce veri kaybi olurdu ve
+        # kimse fark etmezdi (buyback'ler haftalarca boyle kayboldu).
+        # Bu alanlar yeni bir anahtar-boslugunun ERKEN UYARISIDIR: sayi surekli
+        # yuksekse ya da ornekte tanidik bir katalizor turu goruyorsan -> anahtar ekle.
+        "unclassified_count": getattr(cf, "last_unclassified_count", 0),
+        "unclassified_sample": getattr(cf, "last_unclassified", []),
         "opens_trade": False,
         "note": "KAP resmi kaynak defteri; olcer, F motoruna emir uretmez.",
     })

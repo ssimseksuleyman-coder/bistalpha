@@ -40,8 +40,17 @@ CATALYST_TYPES = (
 class CatalystFeed:
     """KAP bildirim akisindan katalizor OLAY TARIHLERI. event_study'ye [(ticker,date)] verir."""
 
+    # SESSIZ-DUSURME TESHISI (2026-07-29): siniflandirilamayan basliktan kac
+    # ornek saklanacagi. Ornek KISA tutulur (kap_status.json public).
+    UNCLASSIFIED_SAMPLE = 15
+
     def __init__(self, state_dir: str = "docs/state"):
         self.state_dir = state_dir
+        # Son _map_rows kosusunun TESHIS ciktisi (bkz _map_rows'daki not):
+        # eskiden siniflandirilamayan olay IZ BIRAKMADAN dusuyordu -> anahtar
+        # kelime bosluklari yapisal olarak GORUNMEZDI.
+        self.last_unclassified = []
+        self.last_unclassified_count = 0
 
     # ---- fetch (PLAYWRIGHT — gercek tarayici, WAF/RSC gecer) ----
     # KESIF (2026-07): KAP requests-API'si (POST /tr/api/disclosures) headless'e
@@ -146,6 +155,7 @@ class CatalystFeed:
         _pick fallback anahtarlari ilk gercek yanitta dogrulanmali."""
         want = ticker.split(".")[0].upper() if ticker else None
         out, seen = [], set()
+        unclassified = []          # (2) SESSIZ-DUSURME KAPATMA
         for r in rows:
             d = self._to_iso(self._pick(r, "publishDate", "disclosureDate",
                                         "kapPublishDate", "publishTime", "date"))
@@ -157,6 +167,19 @@ class CatalystFeed:
                 continue
             typ = self.classify_title(title)
             if typ is None:
+                # SESSIZ DUSURME KAPATILDI (2026-07-29 bulgusu). ESKIDEN: sadece
+                # `continue` -> siniflandirilamayan olay IZ BIRAKMADAN yok
+                # oluyordu. Sonuc: anahtar-kelime bosluklari YAPISAL OLARAK
+                # denetlenemezdi. Somut zarar: KAP'in resmi buyback kategorisi
+                # ("Paylarin Geri Alinmasina Iliskin Bildirim") hicbir anahtara
+                # uymuyordu -> TUM buyback'ler haftalarca sessizce dustu
+                # (66 olayda 0), ve flow_ledger'in geri-alim yarisi hic dolmadi.
+                # Kimse fark etmedi cunku dusen olayin izi YOKTU.
+                # Artik SAYILIR + ORNEKLENIR -> kap_status.json'a duser ->
+                # bir sonraki anahtar-boslugu GORUNUR olur.
+                # ("Yoklugun imzasi yok"un siniflandirici-ici hali.)
+                if title and title not in unclassified:
+                    unclassified.append(title)
                 continue
             for tic in self._split_codes(codes):
                 if want and tic != want:
@@ -167,6 +190,9 @@ class CatalystFeed:
                 seen.add(key)
                 out.append({"date": d, "ticker": tic, "type": typ,
                             "title": title, "raw": r})
+        # TESHIS ciktisi (I/O YOK -> _map_rows saf kalir; yazma cagirana ait)
+        self.last_unclassified_count = len(unclassified)
+        self.last_unclassified = unclassified[-self.UNCLASSIFIED_SAMPLE:]
         return out
 
     @staticmethod
@@ -219,7 +245,8 @@ class CatalystFeed:
             # yon-kelimesiyle birlikte kontrol eder. Rules'a "endeks" koymak
             # yon kelimesi olmayan basliklari (ör. "endeks duzeltme katsayisi")
             # yanlislikla endeks_giris etiketler.
-            ("geri_alim", ["geri alım", "geri alim", "pay geri"]),
+            # NOT: geri_alim rules'ta DEGIL — asagida BILESIK kosulla kontrol
+            # edilir (salt anahtar-kelime yetersiz kaldi, bkz. 2026-07-29 notu).
             ("ortaklik", ["devralma", "satın alma", "satin alma", "birleşme", "birlesme", "ortaklık"]),
             ("temettu", ["temettü", "temettu", "kar payı", "kar payi"]),
             ("yatirim_tesvik", ["teşvik", "tesvik", "yatırım tamamlama", "yeni yatırım"]),
@@ -230,6 +257,25 @@ class CatalystFeed:
             return "endeks_giris"
         if "endeks" in t and any(k in t for k in ["çıkar", "cikar", "çıkarıl", "cikaril"]):
             return "endeks_cikis"
+
+        # --- geri_alim: BILESIK kosul (2026-07-29 bulgusu, capraz-kontrolle) ---
+        # ESKI: ["geri alım","geri alim","pay geri"] -> KAP'in RESMI kategori adi
+        # "Paylarin Geri Alinmasina Iliskin Bildirim" HICBIRINE uymuyordu
+        # ("Alinmasina" != "alim"; "Paylarin Geri" arasina kelime giriyor)
+        # -> TUM buyback'ler dustu (66 olayda 0, BIMAS/GEREL hic gorunmedi).
+        # YENI: "geri al*" VE pay-baglami BIRLIKTE. Ikisi de tek basina COK GENIS:
+        #   - salt "geri alin" -> kredi/teminat/avans "geri alinmasi" (buyback DEGIL)
+        #   - salt "pay"       -> "kar payi" (temettu)
+        # "kar pay" diskalifiye eder: "Kar Payi Dagitim Kararinin Geri Alinmasi"
+        # temettu kovasina duser (dogru), geri_alim'e degil.
+        # "kendi pay/hisse" ayri tetikleyici: "Sirketin Kendi Paylarini Satin
+        # Almasi" varyantinda "geri" kelimesi HIC gecmez.
+        _geri = any(k in t for k in ("geri alım", "geri alim", "geri alın", "geri alin"))
+        _pay_ctx = ("pay" in t or "hisse" in t) and "kar pay" not in t
+        _kendi = ("kendi pay" in t) or ("kendi hisse" in t)
+        if (_geri and _pay_ctx) or _kendi:
+            return "geri_alim"
+
         for typ, keys in rules:
             if any(k in t for k in keys):
                 return typ
