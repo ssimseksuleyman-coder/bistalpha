@@ -1,10 +1,10 @@
 {
   "summary": {
-    "updated_at": "2026-07-31T14:31:03",
+    "updated_at": "2026-07-31T18:40:47",
     "tracked_days": 15,
     "latest_date": "2026-07-31",
-    "current_candidates": 0,
-    "total_events": 8,
+    "current_candidates": 1,
+    "total_events": 9,
     "unique_tickers": 5,
     "matured_5d": 7,
     "avg_5d_return_pct": -4.65,
@@ -35,7 +35,56 @@
       "denominator_available": false,
       "note": "Firsat listesi yalniz kendi adaylarini olcer; F'in eledigi tum payda ayrica kurulmadan terfi kapisi sayilmaz."
     },
-    "latest_candidates": [],
+    "latest_candidates": [
+      {
+        "ticker": "KERVN",
+        "entry_date": "2026-07-31",
+        "entry_price": 8.3,
+        "sector": "XU100",
+        "source_layer": "firsat",
+        "source_label": "FIRSAT",
+        "reason": "strong_accumulation_not_f_pick",
+        "f_not_selected_reason": "sector_cap_or_slot_full",
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 19.4,
+        "m21": 25.0,
+        "m252": 241.6,
+        "volume_ratio": 2.06,
+        "upper_wick": 0.108,
+        "close_strength": 1.0,
+        "quality": {
+          "status": "pending_official_free_data",
+          "kap_confirmed": null,
+          "quality_score": null
+        },
+        "macro": {
+          "status": "pending_macro_surprise_ledger",
+          "support": null
+        },
+        "range_high": 8.3,
+        "range_low": 2.03,
+        "from_high_pct": 0.0,
+        "near_high": true,
+        "from_low_pct": 308.9,
+        "catalyst_present": false,
+        "catalyst_types": [],
+        "catalyst_source_tiers": [],
+        "sector_context": {
+          "sector": "XU100",
+          "status": "self_sector_rs_pending",
+          "role": "context_only",
+          "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
+        },
+        "current_price": 8.3,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "return_21d_pct": null,
+        "entered_f_top10_later": false,
+        "entered_f_top10_date": null,
+        "status": "open"
+      }
+    ],
     "notes": [
       "FIRSAT is measurement-only; it does not open trades.",
       "Quality/macro fields stay pending until free official data is connected.",
@@ -98,9 +147,9 @@
             "role": "context_only",
             "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
           },
-          "current_price": 110.9,
+          "current_price": 111.0,
           "age_trading_days": 15,
-          "current_return_pct": 13.16,
+          "current_return_pct": 13.27,
           "return_5d_pct": 9.69,
           "return_21d_pct": null,
           "entered_f_top10_later": false,
@@ -146,9 +195,9 @@
             "role": "context_only",
             "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
           },
-          "current_price": 92.6,
+          "current_price": 91.8,
           "age_trading_days": 15,
-          "current_return_pct": 1.7,
+          "current_return_pct": 0.82,
           "return_5d_pct": 1.43,
           "return_21d_pct": null,
           "entered_f_top10_later": false,
@@ -212,9 +261,9 @@
             "role": "context_only",
             "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
           },
-          "current_price": 27.6,
+          "current_price": 27.9,
           "age_trading_days": 14,
-          "current_return_pct": -18.05,
+          "current_return_pct": -17.16,
           "return_5d_pct": -1.43,
           "return_21d_pct": null,
           "entered_f_top10_later": false,
@@ -343,9 +392,9 @@
             "role": "context_only",
             "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
           },
-          "current_price": 27.6,
+          "current_price": 27.9,
           "age_trading_days": 13,
-          "current_return_pct": -19.44,
+          "current_return_pct": -18.56,
           "return_5d_pct": -5.66,
           "return_21d_pct": null,
           "entered_f_top10_later": false,
@@ -457,9 +506,9 @@
             "role": "context_only",
             "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
           },
-          "current_price": 27.6,
+          "current_price": 27.9,
           "age_trading_days": 10,
-          "current_return_pct": -13.15,
+          "current_return_pct": -12.21,
           "return_5d_pct": -1.57,
           "return_21d_pct": null,
           "entered_f_top10_later": false,
@@ -661,7 +710,7 @@
     },
     {
       "date": "2026-07-31",
-      "generated_at": "2026-07-31T14:31:03",
+      "generated_at": "2026-07-31T18:40:47",
       "top10": [
         "HEDEF",
         "GUNDG",
@@ -670,11 +719,60 @@
         "KTLEV",
         "IEYHO",
         "ALKLC",
-        "DSTKF",
         "CVKMD",
-        "EUPWR"
+        "EUPWR",
+        "DSTKF"
       ],
-      "items": []
+      "items": [
+        {
+          "ticker": "KERVN",
+          "entry_date": "2026-07-31",
+          "entry_price": 8.3,
+          "sector": "XU100",
+          "source_layer": "firsat",
+          "source_label": "FIRSAT",
+          "reason": "strong_accumulation_not_f_pick",
+          "f_not_selected_reason": "sector_cap_or_slot_full",
+          "sm_signal": "GÜÇLÜ_BİRİKİM",
+          "m5": 19.4,
+          "m21": 25.0,
+          "m252": 241.6,
+          "volume_ratio": 2.06,
+          "upper_wick": 0.108,
+          "close_strength": 1.0,
+          "quality": {
+            "status": "pending_official_free_data",
+            "kap_confirmed": null,
+            "quality_score": null
+          },
+          "macro": {
+            "status": "pending_macro_surprise_ledger",
+            "support": null
+          },
+          "range_high": 8.3,
+          "range_low": 2.03,
+          "from_high_pct": 0.0,
+          "near_high": true,
+          "from_low_pct": 308.9,
+          "catalyst_present": false,
+          "catalyst_types": [],
+          "catalyst_source_tiers": [],
+          "sector_context": {
+            "sector": "XU100",
+            "status": "self_sector_rs_pending",
+            "role": "context_only",
+            "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
+          },
+          "current_price": 8.3,
+          "age_trading_days": 0,
+          "current_return_pct": 0.0,
+          "return_5d_pct": null,
+          "return_21d_pct": null,
+          "entered_f_top10_later": false,
+          "entered_f_top10_date": null,
+          "status": "open"
+        }
+      ]
     }
   ]
 }
