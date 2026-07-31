@@ -145,8 +145,12 @@ def rebal_status(state, prices, date):
     return should, False, elapsed, last_sel
 
 
-def step(data, signals, date=None, slippage=None):
-    """Tüm hesaplar için bir shadow adımı."""
+def step(data, signals, date=None, slippage=None, run_label=None):
+    """Tüm hesaplar için bir shadow adımı.
+
+    run_label: koşu slotu ("acilis"/"bulten"/"gunici"/"kapanis"/"manuel"...).
+    STOP DEGERLENDIRMESI YALNIZ "kapanis" KOSUSUNDA yapilir — bkz #0l.
+    """
     prices = data['prices']
     if date is None:
         date = prices.index[-1]
@@ -162,10 +166,35 @@ def step(data, signals, date=None, slippage=None):
     for acc, mode in ACCOUNTS.items():
         try:
             state = pf.load(acc, state_dir=config.STATE_DIR)
-            # 1) Stop kontrol
-            sells = pf.check_stops(state, prices_today)
-            stop_trades = pf.close_positions(state, sells, prices_today,
-                                             slippage=slippage, trade_date=trade_date)
+            # 1) Stop kontrol — YALNIZ KAPANIS KOSUSU (#0l phantom-stop duzeltmesi)
+            #
+            # ESKI DAVRANIS (bug): her kosuda (acilis/gunici/kapanis) calisirdi.
+            #   (A) BAYAT-BAR: acilis kosusu (09:45 TR, borsa kapali) onceki/eski
+            #       bara donuyordu -> eski fiyat, yeni peak'e karsi cokus gorunur.
+            #       OZATD 2026-07-27: pt=3427.5 (07-27 bari) vs peak=3770 (07-28
+            #       kapanisi) -> gain %39.9 -> TIGHT(%5) -> phantom stop.
+            #   (B) INTRADAY PEAK SISMESI: gun-ici kosu peak'i KISMI bardan
+            #       guncelliyordu (backtest asla yapmaz; peak yalniz yukari
+            #       kilitlendigi icin bias tek yonlu). GUNDG: peak 2637.5 >
+            #       en yuksek kapanis 2630.0 -> kapanis-bazli olsaydi stop YOK.
+            #   Olculen sonuc: 5 stop'un 2'si ARTEFAKT (2026-07-29).
+            #
+            # YENI KURAL: stop yalnizca "kapanis" slotunda degerlendirilir. O kosu
+            # 18:40 TR'de calisir, BIST 18:00'de kapanir -> son bar TAM ve BUGUNKU.
+            # Tetik VE fill ayni tam kapanis barindan gelir = backtest semantigi
+            # (backtest.py gunde bir bar, bir kontrol). Boylece (A) ve (B) birlikte
+            # kapanir; gun-ici kontroller zaten bilgi olarak bostu (ayni tam
+            # kapanisa karsi ayni cevap).
+            #
+            # TZ NOTU: "kapanis" etiketi precise_runner.target_slot()'tan gelir
+            # (tek TZ kaynagi). Stop yoluna IKINCI bir duvar-saati hesabi
+            # EKLENMEDI — iki bagimsiz saat hesabinin ayrismasi bilinen bug sinifi.
+            if run_label == "kapanis":
+                sells = pf.check_stops(state, prices_today)
+                stop_trades = pf.close_positions(state, sells, prices_today,
+                                                 slippage=slippage, trade_date=trade_date)
+            else:
+                sells, stop_trades = [], []
             new_trades = list(stop_trades)
             # 2) Rebalance — PORTFOY-DEMIRLI takvim (her hesap kendi gecmisinden sayar)
             should_rebalance, initial_entry, rebal_elapsed, last_selection = rebal_status(
@@ -224,9 +253,11 @@ def step(data, signals, date=None, slippage=None):
     else:
         # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
         g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
+        # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
+        # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
         g1_state, g1_events = g1_mod.step(
             data, signals, g1_state, date, prices_today, g1_should_rebalance,
-            slippage=slippage)
+            slippage=slippage, eval_stops=(run_label == "kapanis"))
     f_return_pct = None
     if results.get("F", {}).get("value") is not None:
         f_return_pct = (results["F"]["value"] - 1) * 100
@@ -250,10 +281,64 @@ def step(data, signals, date=None, slippage=None):
     except Exception as e:
         print(f"[shadow] G1 tradelog yazilamadi: {e}")
     results["G1"] = g1_info
+    # STOP-DEGERLENDIRME IZI (#0l): yalniz gercekten degerlendirildiginde yaz.
+    _write_stop_eval(run_label, trade_date, results)
     # Cycle-duzeyi bayrak: artik global bar-index yok -> hesaplardan turet.
     any_rebal = any(r.get("rebalance") for r in results.values() if isinstance(r, dict))
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
             "rebalance": any_rebal, "accounts": results}
+
+
+def _write_stop_eval(run_label, trade_date, results):
+    """docs/state/stop_eval.json — 'stop en son NE ZAMAN, HANGI BAR icin degerlendirildi'.
+
+    NEDEN (#0l'in ACTIGI kor nokta): #0l sonrasi stop YALNIZ kapanis kosusunda
+    degerlendiriliyor. Ama liveness `daemon_cycle` programini (7,12,16 UTC)
+    UC SLOTU BIRLIKTE sayiyor (liveness_scan.py:82) -> yalniz kapanis kosusu
+    kacarsa 11:30 kosusu damgalari tazeler ve KIRMIZI GELMEZ; oysa o gun stop
+    HIC degerlendirilmemis olur. Stop = ayi korumasinin tek kolonu (#0m) ->
+    bosluk tam tasiyici kolonda. Kor nokta zaten biliniyordu (liveness_scan.py:297
+    yorumu: "KACAN SLOTU GIZLEYEBILIR = alarm korlugu"); #0l onu gizliden
+    YUK TASIYANA cevirdi.
+
+    TASARIM KISITLARI (bilincli):
+      - Ayri artefakt: F portfoyune (portfolio_F.json) YAZILMAZ. O dosyanin
+        anahtarlari [account, cash, positions, history]; uretici-damgasi eklemek
+        F-state'e yazmak olurdu (schema_version dersi, dc81cb5).
+      - YALNIZ IZ, KARAR DEGIL: hicbir kod bu damgaya bakip farkli davranmaz.
+        "last_eval eskiyse su stop kuralini uygula" gibi bir kural F mantigina
+        sizardi -> YASAK.
+      - Yalniz stop GERCEKTEN degerlendirildiginde yazilir. Her kosuda yazilsa
+        damga hep taze olur ve kor noktayi KAPATMAZ (izlemenin kendi kor noktasi).
+      - UTC + tz 0.0 (content_sanity/watchdog deseni) -> offset matematigi yok.
+    """
+    if run_label != "kapanis":
+        return
+    try:
+        out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "state")
+        os.makedirs(out_dir, exist_ok=True)
+        n_stops = sum(len((r or {}).get("stop_trades") or [])
+                      for r in results.values() if isinstance(r, dict))
+        payload = {
+            "updated_at": datetime.utcnow().isoformat(timespec="seconds"),
+            "tz": "UTC",
+            "writer": "shadow._write_stop_eval",
+            "run_label": run_label,
+            "eval_bar": trade_date,
+            "accounts": sorted(k for k in results if isinstance(results.get(k), dict)),
+            "stops_triggered": int(n_stops),
+            "opens_trade": False,
+            "note": ("Stop-degerlendirme izi (#0l). YALNIZ kapanis kosusunda yazilir; "
+                     "bayatlarsa 'o gun stop degerlendirilmedi' demektir. "
+                     "IZ'dir, KARAR DEGIL - hicbir kod buna bakip davranis degistirmez."),
+        }
+        tmp = os.path.join(out_dir, "stop_eval.json.tmp")
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh, ensure_ascii=False, indent=2)
+        os.replace(tmp, os.path.join(out_dir, "stop_eval.json"))
+    except Exception as e:
+        # Iz yazilamazsa AKIS DURMAZ (izleme, karar degil) - ama sessiz de kalmaz.
+        print(f"[shadow] stop_eval izi yazilamadi: {e}")
 
 
 def status():

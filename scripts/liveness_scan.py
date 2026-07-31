@@ -62,6 +62,13 @@ SCHEDULES = {
     "daemon_cycle": {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (7, 12, 16), "grace_h": 4},
     # catalyst.yml: '10 16 * * 1-5' -> gunluk tek slot
     "kap_daily":    {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (16,),       "grace_h": 6},
+    # SADECE KAPANIS SLOTU (#0l). daemon_cycle UC slotu BIRLIKTE sayar -> yalniz
+    # kapanis kacarsa 11:30 damgayi tazeler ve kacak GIZLENIR (satir ~297'deki
+    # "alarm korlugu" uyarisi). #0l sonrasi stop YALNIZ kapanista degerlendirildigi
+    # icin bu gizlenme "o gun stop yok" demek olur -> kapanis kendi programiyla
+    # ayri izlenir. Kalici cozum: yml-parser partisi (SCHEDULES cron'dan turetilince
+    # her slot dogal olarak ayrisir).
+    "close_only":   {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (16,),       "grace_h": 4},
 }
 
 
@@ -249,6 +256,29 @@ REGISTRY = {
         "check_mode": "own_verdict",
         "raw_max_age_h": 72,
         "note": "anlamlilik denetimi; HENUZ workflow'a bagli DEGIL (planned)",
+    },
+    # 14. UYE — STOP-DEGERLENDIRME IZI (#0l ile BIRLIKTE dogar).
+    #
+    # NEDEN AYRI PROGRAM (close_only): #0l sonrasi stop YALNIZ kapanis kosusunda
+    # degerlendirilir. `daemon_cycle` uc slotu birlikte saydigi icin, yalniz
+    # kapanis kacarsa 11:30 kosusu diger damgalari tazeler ve kacak GORUNMEZ --
+    # ama o gun stop HIC degerlendirilmemis olur. Stop = ayi korumasinin tek
+    # kolonu (#0m) -> bu, tasiyici kolonda sessiz bosluk demekti.
+    #
+    # NEDEN AYRI DOSYA (portfolio_F degil): F-state'e uretici-damgasi yazmak
+    # F-yakinlik sinirini asardi (schema_version dersi). Damga IZ'dir, KARAR
+    # DEGIL -- hicbir kod buna bakip davranis degistirmez.
+    #
+    # ILK GECIS: dosya ilk kapanis kosusuna kadar YOK -> _ever_written sayesinde
+    # "YENI UYE ... henuz hic yazilmadi" = SARI (sahte KIRMIZI uretmez).
+    "stop_eval": {
+        "kind": "producer",
+        "expected": "active",
+        "file": "docs/state/stop_eval.json",
+        "ts_keys": ["updated_at"],
+        "tz": 0.0,                     # shadow._write_stop_eval utcnow ile yazar
+        "schedule": "close_only",
+        "note": "stop en son ne zaman/hangi bar icin degerlendirildi (#0l izi)",
     },
 }
 

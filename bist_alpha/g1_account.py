@@ -196,35 +196,56 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
     return state, events
 
 
-def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0):
-    """G1 gunluk adim. state yerinde guncellenir. (state, events) doner."""
+def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
+         eval_stops=False):
+    """G1 gunluk adim. state yerinde guncellenir. (state, events) doner.
+
+    eval_stops: stop degerlendirilsin mi. YALNIZ kapanis kosusunda True olmali
+      (cagiran: shadow.step -> run_label == "kapanis"). Bkz #0l.
+      Varsayilan False = F tarafiyla SIMETRIK muhafazakar secim
+      (shadow.step'te de run_label=None -> stop yok). Tek cagri yeri var
+      (shadow.py) ve o acikca geciriyor.
+    """
     friction = config.COMMISSION / 2 + slippage
     _ensure(state)
     events = {"buys": [], "sells": [], "reentries": []}
 
     # 1) STOP (+ watch). Re-entry pozisyonu tekrar stop olursa yanlis-kirilim say.
-    for tic, pos in list(state["positions"].items()):
-        pt = prices_today.get(tic)
-        if pt is None:
-            continue
-        pt = float(_py(pt))
-        if pt > pos["peak"]:
-            pos["peak"] = float(pt)
-        if pt < pf.stop_level(pos):
-            pnl = float((pt / pos["entry"] - 1) * 100)
-            giveback = float((pos["peak"] - pt) / pos["peak"] * 100)
-            state["cash"] = float(state["cash"] + pos["shares"] * pt * (1 - friction))
-            is_re = pos.get("origin") == "reentry"
-            if is_re:
-                _close_reentry(state, pnl, "stop")
-            state["watch"][tic] = {"exit": float(pt), "cash": float(pos["shares"] * pt * (1 - friction)),
-                                   "w": float(pos.get("w", 1.0))}
-            del state["positions"][tic]
-            state["stats"]["stops"] += 1
-            _log(state, date, "SELL", tic, pt, reason="stop", pnl_pct=round(pnl, 2),
-                 giveback=round(giveback, 2), was_reentry=is_re)
-            events["sells"].append({"ticker": str(tic), "price": round(_py(pt), 2), "reason": "stop",
-                                    "pnl_pct": round(_py(pnl), 2), "was_reentry": bool(is_re)})
+    #
+    # #0l KAPSAM GENISLEMESI (2026-07-30, Faz-5 bulgusu): F'i kapanis-only yapip
+    # G1'i her-kosu birakmak, G1 kiyasini BOZARDI — kiyas "stop sonrasi hemen gir
+    # (G1) vs rebalansi bekle (F)" hipotezini olcuyor; iki kol farkli stop
+    # semantiginde olursa olculen sey hipotez degil SEMANTIK FARK olur.
+    # Bu blok F'teki portfolio.check_stops'un IKIZI ama BIREBIR DEGIL:
+    # stop_level ortak (pf.stop_level), peak-circiri ayni; ama F'teki
+    # "peak yoksa entry'den doldur" korumasi burada YOK ve burada re-entry
+    # muhasebesi (origin/yanlis-kirilim) FAZLADAN var -> ayri kuru-kosu sart.
+    # NOT: (2) YENIDEN-GIRIS bilincli olarak KAPILANMADI — o bir GIRIS/fill
+    # karari ve #0i'nin (fill konvansiyonu) alanina girer; #0i, F'in rebalansi
+    # kadar G1'in re-entry'sini de kapsamalidir.
+    if eval_stops:
+        for tic, pos in list(state["positions"].items()):
+            pt = prices_today.get(tic)
+            if pt is None:
+                continue
+            pt = float(_py(pt))
+            if pt > pos["peak"]:
+                pos["peak"] = float(pt)
+            if pt < pf.stop_level(pos):
+                pnl = float((pt / pos["entry"] - 1) * 100)
+                giveback = float((pos["peak"] - pt) / pos["peak"] * 100)
+                state["cash"] = float(state["cash"] + pos["shares"] * pt * (1 - friction))
+                is_re = pos.get("origin") == "reentry"
+                if is_re:
+                    _close_reentry(state, pnl, "stop")
+                state["watch"][tic] = {"exit": float(pt), "cash": float(pos["shares"] * pt * (1 - friction)),
+                                       "w": float(pos.get("w", 1.0))}
+                del state["positions"][tic]
+                state["stats"]["stops"] += 1
+                _log(state, date, "SELL", tic, pt, reason="stop", pnl_pct=round(pnl, 2),
+                     giveback=round(giveback, 2), was_reentry=is_re)
+                events["sells"].append({"ticker": str(tic), "price": round(_py(pt), 2), "reason": "stop",
+                                        "pnl_pct": round(_py(pnl), 2), "was_reentry": bool(is_re)})
 
     # 2) YENIDEN-GIRIS (cikis ustune kapanis). origin=reentry.
     #    ROLLING THROTTLE: son re-entry'ler kume halinde basarisizsa lot kis / dur (mitigator).

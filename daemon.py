@@ -328,7 +328,9 @@ def run_cycle(label="manuel"):
         shadow_result = None
         try:
             import shadow
-            shadow_result = shadow.step(data, signals)
+            # run_label: stop degerlendirmesi yalniz "kapanis" slotunda yapilir (#0l).
+            # Etiket precise_runner.target_slot() -> run_cycle(label) zincirinden gelir.
+            shadow_result = shadow.step(data, signals, run_label=label)
             trade_notice = shadow._format_trade_notice(shadow_result)
             if trade_notice:
                 notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
