@@ -68,7 +68,14 @@ SCHEDULES = {
     # icin bu gizlenme "o gun stop yok" demek olur -> kapanis kendi programiyla
     # ayri izlenir. Kalici cozum: yml-parser partisi (SCHEDULES cron'dan turetilince
     # her slot dogal olarak ayrisir).
-    "close_only":   {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (16,),       "grace_h": 4},
+    # SLOT 15, 16 DEGIL — GERCEK kosu saatinden turetildi (2026-07-31 duzeltmesi):
+    # kapanis kosusu 15:40 UTC'de yazar. Slot 16 tanimlansaydi `last_run(15:40) <
+    # slot(16:00)` olurdu -> kosu KENDI SLOTUNU tatmin etmez -> her gece 20:00'den
+    # (slot+grace) sonraki her taramada SAHTE YELLOW. Olculdu: (16,) ile saglikli
+    # kapanis 3 senaryonun 2'sinde YELLOW; (15,) ile 3/3 GREEN ve gercek kacak
+    # HALA YELLOW. Ders: "saglamken yesil" yonu GERCEK kosu saatiyle test edilmeli,
+    # idealize damgayla degil (07-18 market_data bug'inin ayni sinifi).
+    "close_only":   {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (15,),       "grace_h": 4},
 }
 
 
