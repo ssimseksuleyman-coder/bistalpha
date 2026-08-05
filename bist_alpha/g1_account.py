@@ -197,7 +197,7 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
 
 
 def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
-         eval_stops=False):
+         eval_stops=False, opens_today=None):
     """G1 gunluk adim. state yerinde guncellenir. (state, events) doner.
 
     eval_stops: stop degerlendirilsin mi. YALNIZ kapanis kosusunda True olmali
@@ -209,6 +209,98 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     friction = config.COMMISSION / 2 + slippage
     _ensure(state)
     events = {"buys": [], "sells": [], "reentries": []}
+    opens_today = opens_today or {}
+    _dstr = str(date.date()) if hasattr(date, "date") else str(date)
+    # #0i — BU KOSUDA rebalans fill'i kitaplandi mi. Karar blogu bunu GORMELI:
+    # `is_rebal` shadow.py'de step'ten ONCE hesaplaniyor (fill'den onceki state'e
+    # gore) -> fill pending'i tuketince karar blogu "hala vadesi gelmis" sanip
+    # ANINDA yeni pending yazardi = her kapanista sonsuz rebalans dongusu.
+    # F'te bu, rebal_status'u fill SONRASINA tasiyarak cozuldu; G1'de hesap
+    # disarida oldugu icin bayrakla cozuluyor. (Kuru-kosu yakaladi, 2026-08-01.)
+    _filled_rebal_now = False
+
+    # ── 0) FILL — bekleyen KARARLARI D+1 OPEN'dan doldur (#0i) ────────────────
+    # F ile simetrik: karar D-kapanista yazildi, ICRA bugun (D+1) OPEN'dan.
+    # SIRA: rebalans ONCELIKLI — tam devir zaten hedefe gecirir, bekleyen
+    # re-entry ya hedefin disindadir (anlamsiz) ya icindedir (rebalans alir).
+    _pr = state.get("_pending_rebalance")
+    if _pr and _pr.get("status") == "pending":
+        _hedef = list((_pr.get("targets") or {}).keys())
+        _eksik = [t for t in _hedef if t not in opens_today]
+        if _eksik:
+            # KAPSAMA KONTROLU (F ile ayni katı kural): eksikse KITAPLAMA.
+            _pr["fill_blocked"] = {"at": _dstr, "missing_n": len(_eksik),
+                                   "missing_sample": _eksik[:5]}
+        else:
+            state["watch"].clear()
+            total = float(state["cash"])
+            for tic, pos in state["positions"].items():
+                total += float(pos["shares"] * float(_py(opens_today.get(tic, pos["entry"]))))
+            # SAT — D+1 OPEN'dan (F'te pf.rebalance sat+al ATOMIK; burada da oyle)
+            for tic, pos in list(state["positions"].items()):
+                p = float(_py(opens_today.get(tic, pos["entry"])))
+                pnl = float((p / pos["entry"] - 1) * 100)
+                state["cash"] = float(state["cash"] + pos["shares"] * p * (1 - friction))
+                if pos.get("origin") == "reentry":
+                    _close_reentry(state, pnl, "rebalance")
+                _log(state, date, "SELL", tic, p, reason="rebalance", pnl_pct=round(pnl, 2))
+                events["sells"].append({"ticker": str(tic), "price": round(_py(p), 2),
+                                        "reason": "rebalance", "pnl_pct": round(_py(pnl), 2),
+                                        "was_reentry": bool(pos.get("origin") == "reentry")})
+            state["positions"] = {}
+            # AL — agirliktan lota cevrim FILL aninda (deger+fiyat o an, #0i-2b)
+            tw = sum((_pr.get("targets") or {}).values())
+            if tw > 0:
+                for tic, w in (_pr.get("targets") or {}).items():
+                    ep = opens_today.get(tic)
+                    if ep and ep > 0:
+                        ep = float(_py(ep)); w = float(_py(w))
+                        alloc = float(total * (w / tw) * (1 - friction))
+                        state["positions"][tic] = {"entry": ep, "peak": ep,
+                                                   "shares": float(alloc / ep), "w": w}
+                        state["cash"] = float(state["cash"] - alloc)
+                        state["stats"]["buys"] += 1
+                        _log(state, date, "BUY", tic, ep, weight=round(w, 2))
+                        events["buys"].append({"ticker": str(tic), "price": round(_py(ep), 2)})
+            # history olayi FILL'de yazilir -> sayac fill'de sifirlanir (F ile ayni)
+            state["history"].append({"date": _dstr, "total": round(float(total), 4),
+                                     "n_pos": len(state["positions"])})
+            if len(state["history"]) > _HISTORY_CAP:
+                state["history"] = state["history"][-_HISTORY_CAP:]
+            state.pop("_pending_rebalance", None)
+            _filled_rebal_now = True
+    else:
+        _pe = state.get("_pending_reentry")
+        if _pe and _pe.get("status") == "pending":
+            _tg = _pe.get("targets") or {}
+            _eksik = [t for t in _tg if t not in opens_today]
+            if _eksik:
+                _pe["fill_blocked"] = {"at": _dstr, "missing_n": len(_eksik),
+                                       "missing_sample": _eksik[:5]}
+            else:
+                rf = float(_pe.get("re_factor", 1.0))   # KARARDA dondu (#0i)
+                for tic, w in list(_tg.items()):
+                    if tic in state["positions"]:
+                        state["watch"].pop(tic, None); continue
+                    pt = float(_py(opens_today[tic]))
+                    # NAKIT kontrolu FILL'de (karar aninda DEGIL) — D+1'de deger
+                    # degismis olabilir; F'te de toplam-deger fill'de hesaplanir.
+                    if state["cash"] < w["cash"] * 0.4 * rf:
+                        continue
+                    spend = float(min(w["cash"], state["cash"]) * rf)
+                    state["positions"][tic] = {"entry": pt, "peak": pt,
+                                               "shares": float(spend * (1 - friction) / pt),
+                                               "w": float(w["w"]), "origin": "reentry"}
+                    state["cash"] = float(state["cash"] - spend)
+                    state["watch"].pop(tic, None)
+                    state["stats"]["reentries"] += 1
+                    if rf < 1.0:
+                        state["stats"]["reentry_throttled"] += 1
+                    _log(state, date, "REENTRY", tic, pt, prev_exit=round(w["exit"], 2),
+                         throttle=(round(rf, 2) if rf < 1.0 else None))
+                    events["reentries"].append({"ticker": str(tic), "price": round(_py(pt), 2),
+                                                "throttle": (round(rf, 2) if rf < 1.0 else None)})
+                state.pop("_pending_reentry", None)
 
     # 1) STOP (+ watch). Re-entry pozisyonu tekrar stop olursa yanlis-kirilim say.
     #
@@ -262,60 +354,57 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
         if pt > w["exit"] and re_factor == 0.0:
             state["stats"]["reentry_paused"] += 1
             continue
-        if pt > w["exit"] and state["cash"] >= w["cash"] * 0.4 * re_factor:
-            spend = float(min(w["cash"], state["cash"]) * re_factor)
-            state["positions"][tic] = {"entry": float(pt), "peak": float(pt),
-                                       "shares": float(spend * (1 - friction) / pt),
-                                       "w": float(w["w"]), "origin": "reentry"}
-            state["cash"] = float(state["cash"] - spend)
-            state["watch"].pop(tic, None)
-            state["stats"]["reentries"] += 1
-            if re_factor < 1.0:
-                state["stats"]["reentry_throttled"] += 1
-            _log(state, date, "REENTRY", tic, pt, prev_exit=round(w["exit"], 2),
-                 throttle=(round(re_factor, 2) if re_factor < 1.0 else None))
-            events["reentries"].append({"ticker": str(tic), "price": round(_py(pt), 2),
-                                        "throttle": (round(re_factor, 2) if re_factor < 1.0 else None)})
+        if pt > w["exit"]:
+            # #0i — KARAR: aninda ALMA, pending'e yaz; ICRA D+1 OPEN'dan.
+            #
+            # re_factor KARARDA DONAR (F'teki `scale` ile simetrik, #0i-2b):
+            # throttle "son re-entry'ler tutuyor mu" yargisidir ve o yargi
+            # KARAR aninda verilir. Pending beklerken araya stop girip
+            # reentry_recent degisirse donmus deger ESKIR — bu KASITLI.
+            # NAKIT kontrolu KARARDA DEGIL, FILL'de yapilir (D+1'de deger
+            # degismis olabilir; F'te de toplam-deger fill'de hesaplaniyor).
+            tgt = state.setdefault("_pending_reentry", {
+                "decided_at": str(date.date()) if hasattr(date, "date") else str(date),
+                "re_factor": float(re_factor),
+                "targets": {},
+                "status": "pending",
+            })
+            tgt["targets"][str(tic)] = {"exit": float(w["exit"]),
+                                        "cash": float(w["cash"]),
+                                        "w": float(w["w"])}
+            # watch'tan DUSURME — fill edilene kadar izlemede kalmali; fill
+            # aninda dusurulur. Aksi halde fill bloklanirsa aday kaybolur.
 
-    # 3) REBALANCE (F secimi; watch sifirla). Rebalance satislari da events'e (FIX 3).
-    if is_rebal:
-        state["watch"].clear()
-        total = float(state["cash"])
-        for tic, pos in state["positions"].items():
-            total += float(pos["shares"] * prices_today.get(tic, pos["entry"]))
-        for tic, pos in list(state["positions"].items()):
-            p = float(_py(prices_today.get(tic, pos["entry"])))
-            pnl = float((p / pos["entry"] - 1) * 100)
-            state["cash"] = float(state["cash"] + pos["shares"] * p * (1 - friction))
-            if pos.get("origin") == "reentry":
-                _close_reentry(state, pnl, "rebalance")
-            _log(state, date, "SELL", tic, p, reason="rebalance", pnl_pct=round(pnl, 2))
-            events["sells"].append({"ticker": str(tic), "price": round(_py(p), 2),
-                                    "reason": "rebalance", "pnl_pct": round(_py(pnl), 2),
-                                    "was_reentry": bool(pos.get("origin") == "reentry")})
-        state["positions"] = {}
+    # 3) REBALANCE — YALNIZ KARAR (#0i). SATIS DA ERTELENIR.
+    #
+    # ⚠️ F ILE SIMETRI ICIN KRITIK: `portfolio.rebalance()` (F yolu) sat+al'i
+    # ATOMIK yapar — ikisi de ayni fiyattan (D+1 open). G1'de sat ve al AYRI
+    # bloklardaydi; yalnizca alimi ertelemek G1'i "D-kapanista sat, D+1-acilista
+    # al" haline getirirdi -> bir gun nakitte kalir ve F'ten YINE ayrisirdi
+    # (kiyas yine semantik-fark olcerdi, #0l dersi). Bu yuzden TUM DEVIR
+    # (sat + al) fill fazina tasindi; burada YALNIZ hedef yazilir.
+    if is_rebal and not _filled_rebal_now and not state.get("_pending_rebalance"):
         picks, sig_map, _ = strat_mod.select(data, signals, date, mode="F")
         weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
         scale = strat_mod.regime_scale(data, date) if hasattr(strat_mod, "regime_scale") else 1.0
         if scale != 1.0:
             weights = {t: w * scale for t, w in weights.items()}
-        tw = sum(weights.values())
-        if tw > 0:
-            for tic, w in weights.items():
-                ep = prices_today.get(tic)
-                if ep and ep > 0:
-                    ep = float(_py(ep))
-                    w = float(_py(w))
-                    alloc = float(total * (w / tw) * (1 - friction))
-                    state["positions"][tic] = {"entry": float(ep), "peak": float(ep), "shares": float(alloc / ep), "w": float(w)}
-                    state["cash"] = float(state["cash"] - alloc)
-                    state["stats"]["buys"] += 1
-                    _log(state, date, "BUY", tic, ep, weight=round(w, 2))
-                    events["buys"].append({"ticker": str(tic), "price": round(_py(ep), 2)})
-        state["history"].append({"date": str(date.date()) if hasattr(date, "date") else str(date),
-                                 "total": round(float(total), 4), "n_pos": len(state["positions"])})
-        if len(state["history"]) > _HISTORY_CAP:
-            state["history"] = state["history"][-_HISTORY_CAP:]
+        # AGIRLIK birimi (F ile ayni, #0i-2b): pending {ticker: weight} saklar;
+        # lot D+1 fill aninda hesaplanir (deger + fiyat o an).
+        # NOT: history olayi da FILL'de yazilir (sayac fill'de sifirlansin diye,
+        # F'teki `pf.rebalance` davranisiyla ayni) — burada YAZILMAZ.
+        if weights:
+            state["_pending_rebalance"] = {
+                "decided_at": str(date.date()) if hasattr(date, "date") else str(date),
+                "targets": {str(t): float(_py(w)) for t, w in weights.items()},
+                "status": "pending",
+            }
+            # REBALANS RE-ENTRY'YI IPTAL EDER: tam devir zaten hedefe gecirir,
+            # bekleyen re-entry o hedefin disindaysa anlamsiz, icindeyse
+            # rebalans onu zaten alir. Cift-alim onlenir.
+            if state.pop("_pending_reentry", None) is not None:
+                state["stats"]["reentry_cancelled_by_rebal"] = \
+                    state["stats"].get("reentry_cancelled_by_rebal", 0) + 1
 
     # 4) GUNLUK DEGER + ARTIMLI DD — rebalance'a degil HER gune dayali (native float, JSON guvenli)
     st = state["stats"]
