@@ -166,6 +166,102 @@ DOCS_STATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs"
 PENDING_MAX_AGE_DAYS = 2
 
 
+# ── #0k — CORPORATE-ACTION (bedelsiz/bolunme) TESPITI + ATOMIK DUZELTME ──────
+#
+# MEKANIZMA (2026-07-31 olculdu, YEOTK canli vakasi): Yahoo bolunme/bedelsizde
+# TUM GECMISI geriye donuk boler (`auto_adjust=False` bunu ENGELLEMEZ — o yalniz
+# temettu duzeltmesini kontrol eder). Seride KOPUKLUK OLUSMAZ, bu yuzden
+# "limit-asan hareket" imzasi bu vakayi YAKALAYAMAZ. Phantom-stop seriden degil
+# STATE<->FEED UYUMSUZLUGUNDAN dogar: state.entry alim gunundeki HAM fiyatta
+# DONUK kalir, feed ise geriye donuk bolunur -> F duzeltilmemis peak'i
+# duzeltilmis fiyatla kiyaslar -> %57 cokus gorur -> phantom stop.
+#
+# DEDEKTOR: state.entry / feed[giris_tarihi]. Esik-tabanli DEGIL, oran-tabanli.
+# OLCUM (2026-08-05, 92 gozlem): temiz vakalar oran = 1.000000 (12/12 acik
+# pozisyon + 80/80 gecmis alim, 1e-6 ustu sapma SIFIR); YEOTK bedelsiz orani
+# 2.338 -> marj ~134x. Bu yuzden tolerans %1 fazlasiyla guvenli.
+# NOT: onceki bir olcumde %4.3 sapma gorulmustu — onlar SATIS (stop) kayitlariydi,
+# yani #0l'in duzelttigi gun-ici kitaplama artefakti; GIRIS fiyatlari temiz.
+CA_RATIO_TOL = 0.01
+
+
+def _entry_dates(state, acc):
+    """Pozisyonlarin GIRIS TARIHI — kaynak HESABA GORE FARKLI (G1 F'in ikizi DEGIL).
+
+    F/A/B/O : history[].trades  (pf.rebalance/close_positions trade listesi yazar)
+    G1      : trades[]          (g1 history'si {date,total,n_pos} tutar, ticker YOK;
+                                 giris izi _log -> state["trades"]'te, ve G1'de
+                                 REENTRY de bir giristir)
+    """
+    out = {}
+    if acc == "G1":
+        for t in (state.get("trades") or []):
+            if t.get("type") in ("BUY", "REENTRY") and t.get("ticker"):
+                out[str(t["ticker"])] = t.get("date")
+    else:
+        for e in (state.get("history") or []):
+            for t in (e.get("trades") or []):
+                if t.get("type") != "SELL" and t.get("ticker"):
+                    out[str(t["ticker"])] = e.get("date")
+    return out
+
+
+def _ca_detect_and_fix(state, acc, prices, trade_date):
+    """Geriye donuk duzeltme tespit et; bulursa entry VE peak'i ATOMIK duzelt.
+
+    ATOMIKLIK KRITIK: yalniz entry bolunurse peak eski (bolunmemis) yuksek
+    fiyatta kalir -> stop seviyesi (peak-tabanli trailing) SACMALAR.
+    Ornek: OZATD entry=2695 peak=3770 — CA olsa IKISI de bolunmeli.
+
+    "KONTROL EDILEMEDI" != "TEMIZ" (yok != kirik != yanlis-olculen'in dedektor
+    hali): sebebi AYRI AYRI raporlanir, sessizce atlanmaz.
+
+    Returns: (fixed:list, unchecked:list)
+    """
+    ed = _entry_dates(state, acc)
+    fixed, unchecked = [], []
+    for tic, pos in list((state.get("positions") or {}).items()):
+        d = ed.get(tic)
+        if not d:
+            unchecked.append((tic, "giris_tarihi_yok")); continue
+        try:
+            k = pd.Timestamp(d)
+        except Exception:
+            unchecked.append((tic, "tarih_parse_edilemedi")); continue
+        if tic not in prices.columns:
+            unchecked.append((tic, "ticker_feedde_yok")); continue
+        if k not in prices.index:
+            # feed penceresi 2 yil (YahooFeed period="2y") -> daha eski giris
+            unchecked.append((tic, "tarih_feed_penceresi_disinda")); continue
+        f = prices.loc[k, tic]
+        if pd.isna(f) or float(f) <= 0:
+            unchecked.append((tic, "feed_fiyati_bos")); continue
+        e = float(pos.get("entry") or 0)
+        if e <= 0:
+            unchecked.append((tic, "entry_gecersiz")); continue
+        ratio = e / float(f)
+        if abs(ratio - 1.0) <= CA_RATIO_TOL:
+            continue                      # TEMIZ — dokunma
+        # --- CORPORATE ACTION: ATOMIK duzeltme (entry VE peak ayni oranla) ---
+        old_e = e
+        old_p = float(pos.get("peak") or e)
+        pos["entry"] = old_e / ratio
+        pos["peak"] = old_p / ratio
+        # GERI ALINABILIR + DENETLENEBILIR: eski degerler saklanir, sessiz degisim YOK
+        pos["entry_original"] = old_e
+        pos["peak_original"] = old_p
+        pos["ca_ratio"] = ratio
+        pos["ca_adjusted_at"] = trade_date
+        fixed.append({"ticker": tic, "ratio": round(ratio, 6),
+                      "entry": [round(old_e, 4), round(pos["entry"], 4)],
+                      "peak": [round(old_p, 4), round(pos["peak"], 4)],
+                      "entry_date": str(d)})
+        print(f"[shadow] {acc} CORPORATE-ACTION duzeltmesi: {tic} oran={ratio:.4f} "
+              f"entry {old_e:.2f}->{pos['entry']:.2f} peak {old_p:.2f}->{pos['peak']:.2f} "
+              f"(giris {d})")
+    return fixed, unchecked
+
+
 def _pending_age_days(decided_at, today):
     """Karar tarihinden bugune TAKVIM gunu. Parse edilemezse None (iptal etme)."""
     try:
@@ -234,8 +330,16 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             #    pozisyonlari REBALANS cikarir, ayri on-stop GEREKSIZ. Dahasi
             #    zamansal olarak IMKANSIZDI: on-stop D+1 CLOSE'dan satar (18:00),
             #    rebalans ayni gun D+1 OPEN'dan alir (10:00).
-            #    Yeni sira: FILL (varsa) -> STOP -> KARAR.
+            #    Yeni sira: CA-DUZELTME -> FILL (varsa) -> STOP -> KARAR.
             sells, stop_trades, new_trades = [], [], []
+            # 0) #0k — CORPORATE-ACTION duzeltmesi, STOP'tan ONCE.
+            # Neden once: geriye donuk bolunme entry/peak'i feed'le uyumsuz
+            # birakir; duzeltilmeden stop'a girilirse phantom-stop DOGAR.
+            # Fill'den de once: fill bloklanirsa mevcut pozisyonlar tasinir ve
+            # yine duzeltilmis olmalari gerekir.
+            ca_fixed, ca_unchecked = ([], [])
+            if run_label == "kapanis":
+                ca_fixed, ca_unchecked = _ca_detect_and_fix(state, acc, prices, trade_date)
             # #0i FAZ-5 (2026-08-01): "rebalance" bayragi ARTIK ICRA demek.
             # BULGU: eskiden `rebalance = should_rebalance` idi. Karar/icra ayrilinca
             # bu bayrak TERS bilgi vermeye basladi:
@@ -386,6 +490,11 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 # #0i-③ GORUNURLUK: pending EYLEMI yalniz kapanista, ama HER kosuda
                 # RAPORLANIR. Eylemsiz+gorunmez olsaydi takilan pending gorunmezdi
                 # ve "omur<=2 gun" kurali denetlenemezdi ("yoklugun imzasi yok").
+                # #0k GORUNURLUK: "kontrol edildi-temiz" ile "kontrol EDILEMEDI"
+                # ayri raporlanir (yok != kirik != yanlis-olculen, dedektor hali).
+                "ca_fixed": ca_fixed or None,
+                "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in ca_unchecked]
+                                 if ca_unchecked else None),
                 "pending_rebalance": ({
                     "decided_at": pending.get("decided_at"),
                     "picks_n": len(pending.get("picks") or []),
@@ -421,6 +530,11 @@ def step(data, signals, date=None, slippage=None, run_label=None):
     else:
         # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
         g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
+        # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
+        # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
+        g1_ca_fixed, g1_ca_unchecked = ([], [])
+        if run_label == "kapanis":
+            g1_ca_fixed, g1_ca_unchecked = _ca_detect_and_fix(g1_state, "G1", prices, trade_date)
         # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
         # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
         g1_state, g1_events = g1_mod.step(
@@ -438,6 +552,9 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         # kitaplandi), vade DEGIL. G1'de icra izi = events["buys"] (fill BUY uretir;
         # karar gunu 0 uretir). Eskiden `g1_should_rebalance` (vade) yazilıyordu ->
         # karar gunu True/0-islem, fill gunu vade-dustugu icin yanlis okuma.
+        "ca_fixed": g1_ca_fixed or None,
+        "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
+                         if g1_ca_unchecked else None),
         "rebalance": bool((g1_events or {}).get("buys")),
         "rebalance_decided": bool(g1_state.get("_pending_rebalance")),
         "rebalance_due": g1_should_rebalance,
