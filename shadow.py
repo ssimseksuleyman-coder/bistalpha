@@ -74,14 +74,49 @@ def _g1_events_to_trades(events):
     return trades
 
 def _format_trade_notice(result):
-    """Sadece gerçekleşen shadow işlemleri için kısa bildirim metni üretir."""
+    """Gerçekleşen shadow işlemleri + CORPORATE-ACTION düzeltmeleri için bildirim.
+
+    #0k GORUNURLUK (2026-08-06): CA duzeltmesi ISLEM URETMEZ (entry/peak yerinde
+    degisir) -> eski surumde `if not trades: continue` onu YAPISAL olarak
+    eliyordu. Sonuc: dedektor ilk gercek CA'da dogru calissa bile bildirim
+    kanalinda GORUNMEZ; kanit yalniz ham state'te (entry_original/ca_ratio) ve
+    Actions log'unda kalirdi. "Olan ama duyurulmayan olayin da imzasi yok" —
+    "yoklugun imzasi yok" yasasinin simetrigi. `#0k`'yi "wire edildi"den
+    "calisti"ya tasiyan teyit bu kanaldan gecer.
+
+    F ve G1 SIMETRIK: G1 de `results["G1"]` ile accounts'a giriyor -> tek dongu
+    ikisini de kapsar, ayri kol GEREKMEZ.
+
+    TETIKLEYICI YALNIZ `ca_fixed` — `ca_unchecked` DEGIL (bilincli): "kontrol
+    edilemedi" KALICI bir durum olabilir (ornegin giris tarihi feed penceresi
+    disinda -> her kosuda tekrarlar) -> tetikleyici yapilirsa HER GUN mesaj =
+    yeni gurultu kaynagi. Bu oturum sahte-sari gurultusunden bir kez yandi
+    (#3-EK). Unchecked yalniz ZATEN mesaj yazilirken EK BILGI olarak eklenir.
+    """
     lines = []
     for acc, info in result.get("accounts", {}).items():
         event = info.get("last_event") or {}
         trades = info.get("new_trades") or []
-        if not trades:
+        ca_fixed = info.get("ca_fixed") or []
+        if not trades and not ca_fixed:
             continue
-        lines.append(f"Hesap {acc} | {event.get('event', 'islem')} | değer {info.get('value')} | pozisyon {info.get('n_pos')}")
+        # Baslik etiketi: islem YOKKEN "islem" yazmak yanlis okunur — ilk gercek
+        # CA mesaji tam da o an okunacak, etiket dogru olmali.
+        etiket = event.get("event", "islem") if trades else "corporate-action"
+        lines.append(f"Hesap {acc} | {etiket} | değer {info.get('value')} | pozisyon {info.get('n_pos')}")
+        for ca in ca_fixed[:6]:
+            e, p = (ca.get("entry") or [None, None]), (ca.get("peak") or [None, None])
+            lines.append(
+                f"  ⚠ CORPORATE-ACTION DÜZELTME {ca.get('ticker')} oran={ca.get('ratio')}"
+                f" | entry {e[0]}→{e[1]} | peak {p[0]}→{p[1]} (giriş {ca.get('entry_date')})")
+        if len(ca_fixed) > 6:
+            lines.append(f"  ... {len(ca_fixed) - 6} CA düzeltmesi daha")
+        # "kontrol edilemedi" YALNIZ burada (zaten mesaj yaziliyor) — tek basina
+        # mesaj TETIKLEMEZ. "temiz" ile "kontrol EDILEMEDI" ayri kalir.
+        cu = info.get("ca_unchecked") or []
+        if ca_fixed and cu:
+            ozet = ", ".join(f"{x.get('ticker')}({x.get('reason')})" for x in cu[:4])
+            lines.append(f"  (CA kontrol edilemedi: {len(cu)} — {ozet})")
         for tr in trades[:12]:
             extra = f" | P/L %{tr['pnl_pct']}" if tr.get("pnl_pct") is not None else ""
             lines.append(f"  {tr.get('type')} {tr.get('ticker')} @ {tr.get('price')}{extra}")
