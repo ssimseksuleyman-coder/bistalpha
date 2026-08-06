@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from liveness_scan import (  # noqa: E402
-    REGISTRY, PRODUCER_TZ_OFFSET_H, _age_hours, _missed_slots,
+    REGISTRY, PRODUCER_TZ_OFFSET_H, _age_hours, _missed_slots, _cron_slots_utc,
 )
 
 # EKSEN NOTU (2026-07-22): liveness.json'i TARAYICI yazar (liveness.yml'de TZ yok
@@ -51,7 +51,16 @@ STATE = ROOT / "docs" / "state" / "watchdog.json"      # bekcinin KENDI izi
 # Tarayicinin KENDI takvimi (liveness.yml: '0 17 * * 1-5').
 # grace 5h: gozlenen GitHub cron gecikmesi ~2h; 5h rahat pay birakir.
 # NOT: bu da slot-hard-code -- ayni bilinen-kirilganlik (ACIK_ISLER #3).
-SCANNER_SCHEDULE = {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (17,), "grace_h": 5}
+# TARAYICININ kendi takvimi — liveness.yml cron'undan TURETILIR (#3 partisi,
+# 2026-08-06). Eskiden `(17,)` elle yaziliydi: DORDUNCU slot-kopyasi, ve tam da
+# bekcinin izlemek icin var oldugu bug sinifi ("sabit, gercegin proxy'si").
+# Burada cron GERCEKTEN kaynak: liveness.yml uyumuyor ve kod-kapisi yok
+# (precise/bist-alpha'dan farki bu — orada cron kasten hedef DEGIL).
+# Turetme cokerse son-bilinen-iyiye duser, ama SESSIZ degil: _SLOT_ISSUES dolar
+# ve tarayicinin `slot_source` uyesi RED verir.
+SCANNER_SCHEDULE = {"weekdays": (0, 1, 2, 3, 4),
+                    "slots_utc": _cron_slots_utc("liveness.yml") or ((17, 0),),
+                    "grace_h": 5}
 
 # B3 icin KABA ve DIK sinir. Bilerek slot-kutuphanesini KULLANMAZ: paylasilan
 # takvim mantigi bozulursa hem tarayici hem capraz-kontrol ayni sekilde

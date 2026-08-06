@@ -57,25 +57,133 @@ OUT = ROOT / "docs" / "state" / "liveness.json"
 # slot-saati hard-code ile ayni sinif -- bkz ACIK_ISLER #3).
 PRODUCER_TZ_OFFSET_H = 3.0
 
+# ---------------------------------------------------------------------------
+# SLOT KAYNAGI — TEK-KAYNAK + CAPRAZ-KONTROL (#3'un kalici cozumu, 2026-08-06)
+#
+# ESKI HALI: slots_utc = (7, 12, 16) — GOZLENEN kosu saatlerinden elle turetilmis
+# SAAT-hassas sabitler. Gercek kosu 15:40'ta yazdigi icin `last_run(15:40) <
+# slot(16:00)` -> saglikli kapanis KENDI SLOTUNU tatmin etmiyordu -> her gece
+# 20:00 UTC'den (slot+grace) sonra 10 uye SAHTE YELLOW. Sinif: sabit, gercegin
+# proxy'si (rebalance-bug'in birebir sinifi).
+#
+# 🔴 KAYITTAKI PLAN ("cron'dan turet") OLCULDU VE YANLIS CIKTI (2026-08-06):
+# HIC BIR workflow cron'u hedef saati temsil ETMIYOR — ikisi de kasten oyle:
+#   precise.yml   : cron '0 2','30 7','0 12'  -> is HEDEFE KADAR UYUR (GitHub cron
+#                   saatlerce gecikebiliyor; erken tetikle + uyu deseni)
+#   bist-alpha.yml: 30 ayri cron (6:45..7:30, 11:30..12:20, 15:40..16:30) saciyor,
+#                   gercek kapi `scripts/report_gate.py check` (due_slot)
+# Cron'dan turetseydik daemon slotlari 02:00/07:30/12:00 olurdu -> slot COK ERKEN
+# -> gercek kacik gizlenir = SAHTE YESIL (kaydin kendi uyardigi tehlikeli yon).
+#
+# GERCEK KAYNAK KODDA, ve UC KOPYASI var (ucuncusu bu dosyaydi, yanlis kodlanmis):
+#   1. scripts/report_gate.SLOTS      (TR)  <- KANONIK sectik: bist-alpha kapisi
+#   2. precise_runner.SLOT_TR         (TR)  <- capraz-kontrol
+#   3. liveness_scan.slots_utc        (UTC) <- ARTIK TURETILIYOR (bu blok)
+# Uretici DEGISTIRILMEZ (ikisi de canli kosuyu tetikleyen kapi). Tuketici turetir,
+# ve kalan iki kopyayi KARSILASTIRIR: uyusmazlik -> tarayicinin KENDISI RED verir
+# ("koruma kendini korumadan muaf sanir" panzehiri; `slot_source` uyesi).
+# NOT: ikisi de `bist_alpha` import ETMIYOR (precise_runner daemon'u subprocess'le
+# cagirir) -> tasarim ilkesi 5 ("F'e sifir dokunus") korunuyor.
+_SLOT_ISSUES: list[str] = []
+# Import/parse cokerse izleme olmesin: son-bilinen-iyi degerlere dus, AMA sessizce
+# degil -> _SLOT_ISSUES doldugu icin `slot_source` uyesi RED verir.
+_FALLBACK_SLOTS_TR = {"acilis": (9, 45), "gunici": (14, 30), "kapanis": (18, 40)}
+
+
+def _load_slots_tr() -> dict:
+    """report_gate.SLOTS = KANONIK; precise_runner.SLOT_TR ile capraz-kontrol."""
+    canon = {}
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import report_gate  # noqa: E402  (yalniz SLOTS okunur, state'e dokunulmaz)
+        canon = {str(lbl): (int(t.hour), int(t.minute)) for lbl, t in report_gate.SLOTS}
+    except Exception as exc:
+        _SLOT_ISSUES.append(f"KANONIK kaynak okunamadi (report_gate.SLOTS): {exc!r}")
+        return dict(_FALLBACK_SLOTS_TR)
+    if not canon:
+        _SLOT_ISSUES.append("KANONIK kaynak BOS (report_gate.SLOTS)")
+        return dict(_FALLBACK_SLOTS_TR)
+    try:
+        sys.path.insert(0, str(ROOT))
+        import precise_runner  # noqa: E402
+        other = {str(k): (int(v[0]), int(v[1])) for k, v in precise_runner.SLOT_TR.items()}
+    except Exception as exc:
+        _SLOT_ISSUES.append(f"capraz-kontrol kaynagi okunamadi (precise_runner.SLOT_TR): {exc!r}")
+        return canon
+    if other != canon:
+        _SLOT_ISSUES.append(
+            f"SLOT KAYNAKLARI UYUSMUYOR — report_gate.SLOTS={canon} vs "
+            f"precise_runner.SLOT_TR={other} (biri degistirilmis, digeri unutulmus)")
+    return canon
+
+
+def _tr_to_utc(hm: tuple) -> tuple:
+    """TR (saat,dakika) -> UTC (saat,dakika). Turkiye kalici UTC+3, DST yok."""
+    total = hm[0] * 60 + hm[1] - int(round(PRODUCER_TZ_OFFSET_H * 60))
+    total %= 24 * 60
+    return (total // 60, total % 60)
+
+
+def _cron_slots_utc(workflow: str) -> tuple:
+    """workflow yml'indeki `- cron: 'M H ...'` satirlarindan (saat,dakika) UTC uret.
+
+    GitHub Actions cron'u HER ZAMAN UTC'dir (workflow'un TZ: ayari cron'u
+    ETKILEMEZ; yalniz uretici damgalarinin eksenini degistirir).
+    Bu yalniz UYUYAN/KAPILI OLMAYAN uretici icin gecerlidir (catalyst.yml) —
+    precise/bist-alpha icin cron hedef DEGIL (yukaridaki blok).
+    """
+    import re
+    p = ROOT / ".github" / "workflows" / workflow
+    try:
+        txt = p.read_text(encoding="utf-8")
+    except Exception as exc:
+        _SLOT_ISSUES.append(f"cron okunamadi ({workflow}): {exc!r}")
+        return ()
+    out = []
+    for m in re.finditer(r"^\s*-\s*cron:\s*['\"]([^'\"]+)['\"]", txt, re.M):
+        parts = m.group(1).split()
+        if len(parts) < 2:
+            continue
+        for mi in parts[0].split(","):
+            for ho in parts[1].split(","):
+                try:
+                    out.append((int(ho), int(mi)))
+                except ValueError:
+                    pass
+    if not out:
+        _SLOT_ISSUES.append(f"cron bulunamadi ({workflow})")
+    return tuple(sorted(set(out)))
+
+
+_SLOTS_TR = _load_slots_tr()
+_DAEMON_SLOTS = tuple(sorted(_tr_to_utc(v) for v in _SLOTS_TR.values()))
+_CLOSE_SLOTS = ((_tr_to_utc(_SLOTS_TR["kapanis"]),) if "kapanis" in _SLOTS_TR
+                else _DAEMON_SLOTS[-1:])
+_KAP_SLOTS = _cron_slots_utc("catalyst.yml") or ((16, 10),)
+
 SCHEDULES = {
-    # daemon (bist-alpha.yml + precise.yml) hafta-ici ~3 slot; gozlenen gecikme ~2h
-    "daemon_cycle": {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (7, 12, 16), "grace_h": 4},
-    # catalyst.yml: '10 16 * * 1-5' -> gunluk tek slot
-    "kap_daily":    {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (16,),       "grace_h": 6},
+    # daemon (bist-alpha.yml + precise.yml) hafta-ici 3 slot -> report_gate.SLOTS'tan
+    # TURETILDI (06:45/11:30/15:40 UTC); gozlenen gecikme ~2h icin grace 4h.
+    "daemon_cycle": {"weekdays": (0, 1, 2, 3, 4), "slots_utc": _DAEMON_SLOTS, "grace_h": 4},
+    # catalyst.yml '10 16 * * 1-5' -> gunluk tek slot, CRON'DAN turetildi.
+    # Burada cron GERCEKTEN kaynak: catalyst.yml uyumuyor, kod-kapisi yok.
+    # OLCULDU (2026-08-06, 6 gun): yazim 17:37-18:04 UTC — yani cron'dan 1.5-2h
+    # SONRA (Actions kuyrugu + scrape suresi). Slot=cron oldugu icin yazim daima
+    # slot'tan sonra -> yapica tatmin. (#3-EK tablosu bu satirda YANLISTI: "gercek
+    # 15:40, ayni kusur" diyordu; kap_daily AYRI workflow ve hic bozuk degildi.)
+    "kap_daily":    {"weekdays": (0, 1, 2, 3, 4), "slots_utc": _KAP_SLOTS,    "grace_h": 6},
     # SADECE KAPANIS SLOTU (#0l). daemon_cycle UC slotu BIRLIKTE sayar -> yalniz
     # kapanis kacarsa 11:30 damgayi tazeler ve kacak GIZLENIR (satir ~297'deki
     # "alarm korlugu" uyarisi). #0l sonrasi stop YALNIZ kapanista degerlendirildigi
     # icin bu gizlenme "o gun stop yok" demek olur -> kapanis kendi programiyla
     # ayri izlenir. Kalici cozum: yml-parser partisi (SCHEDULES cron'dan turetilince
     # her slot dogal olarak ayrisir).
-    # SLOT 15, 16 DEGIL — GERCEK kosu saatinden turetildi (2026-07-31 duzeltmesi):
-    # kapanis kosusu 15:40 UTC'de yazar. Slot 16 tanimlansaydi `last_run(15:40) <
-    # slot(16:00)` olurdu -> kosu KENDI SLOTUNU tatmin etmez -> her gece 20:00'den
-    # (slot+grace) sonraki her taramada SAHTE YELLOW. Olculdu: (16,) ile saglikli
-    # kapanis 3 senaryonun 2'sinde YELLOW; (15,) ile 3/3 GREEN ve gercek kacak
-    # HALA YELLOW. Ders: "saglamken yesil" yonu GERCEK kosu saatiyle test edilmeli,
-    # idealize damgayla degil (07-18 market_data bug'inin ayni sinifi).
-    "close_only":   {"weekdays": (0, 1, 2, 3, 4), "slots_utc": (15,),       "grace_h": 4},
+    # ELLE (15,) YAMASI KALKTI — artik report_gate.SLOTS["kapanis"]'tan turetiliyor
+    # (15:40 UTC, DAKIKA-hassas). Eski yama dogruydu ama hala elle sabitti ve
+    # kirilgandi: "15 calisiyor cunku 15:00 <= 15:40; kapanis 15:00 oncesine
+    # kayarsa sahte alarm geri gelir" (#3-EK). Turetilmis slot bu kirilganligi
+    # KALDIRIR — hedef degisirse slot da degisir.
+    "close_only":   {"weekdays": (0, 1, 2, 3, 4), "slots_utc": _CLOSE_SLOTS, "grace_h": 4},
 }
 
 
@@ -93,8 +201,11 @@ def _missed_slots(last_run, now, sched):
     end = cutoff.date()
     while day <= end:
         if day.weekday() in sched["weekdays"]:
-            for h in sched["slots_utc"]:
-                slot = datetime(day.year, day.month, day.day, h)
+            # DAKIKA-hassas: slotlar artik (saat, dakika) — saat-yuvarlama, saglikli
+            # kosuyu kendi slotunun ONUNE dusuruyordu (sahte YELLOW ureteci).
+            for hm in sched["slots_utc"]:
+                h, mi = (hm if isinstance(hm, tuple) else (hm, 0))
+                slot = datetime(day.year, day.month, day.day, h, mi)
                 if last_run < slot <= cutoff:
                     n += 1
         day += timedelta(days=1)
@@ -176,27 +287,58 @@ REGISTRY = {
         "count_keys": ["summary.tracked_events"],
         "input_paths": ["docs/state/catalysts.json"],
     },
-    "flow_ledger": {
-        "kind": "consumer", "expected": "planned",   # buyback-event henuz gelmedi
+    # ── #0j-EK ③ (2026-08-06): flow ve quality defterleri IKI YARIYA BOLUNDU ──
+    # SEBEP: tek kayit iki yariyi (CALISAN akis + KURULMAMIS parser) birlestiriyordu
+    # -> `expected:"planned"` etiketi BAYAT kaldi (uretiyor ama "planned"). Uretim
+    # DURSA sistem "zaten kurulmamisti" (YELLOW) derdi; dogrusu "uretiyordu, durdu"
+    # (RED). Bolununce her yari kendi dogru etiketini ve kendi girdi-yolunu alir.
+    #
+    # ⚠️ AKTIF YARILARIN input_paths'i BOS — VE BU BILINCLI (olculdu 2026-08-06):
+    # #0j-EK "aktif yariya catalysts.json'i girdi ver, olay 0'a dusunce RED versin"
+    # diyordu. OLCUM BUNU CURUTTU: catalysts.json ~35 gunluk KAYAN pencere ve
+    # buyback PATLAMALI — 24 gunun yalniz 5'inde var, 07-02..07-28 arasi 19 gun
+    # SIFIR. Yani "0 buyback" MESRU bir durum; RED yapmak yanlis-alarm olurdu —
+    # tam da bu satirin eski yorumunun uyardigi hata ("girdi var" != "ILGILI girdi
+    # var"; ilk surumde catalysts.json'i girdi sayip yanlis-KIRMIZI uretilmisti).
+    # Aktif yarinin GERCEK canlilik sinyali olay-sayisi DEGIL TAZELIK: defter her
+    # dongude yeniden yazilir, uretici durursa damga bayatlar -> slot makinesi RED
+    # verir. Ust-akis zaten kendi dugumunde (kap_feed) izleniyor.
+    "flow_kap_buyback": {
+        "kind": "consumer", "expected": "active",    # KAP geri-alim taramasi CALISIYOR
         "file": "docs/state/flow_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
         "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
-        "count_keys": ["summary.tracked_events"],
-        # SADECE OZEL girdi. Paylasilan ust-akis (catalysts.json) buraya KONMAZ:
-        # "girdi var" != "ILGILI girdi var" -> ilk surumde catalysts.json'i (25 event,
-        # ici buyback-YOK) girdi sayip yanlis-KIRMIZI urettim. Ust-akis kendi
-        # dugumunde (kap_feed) izlenir; burada tekrar izlemek gurultu uretir.
-        "input_paths": ["local/flow_inputs"],
+        "count_keys": ["summary.kap_buyback_events"],
+        "input_paths": [],
         "upstream": ["docs/state/catalysts.json (kap_feed dugumunde izleniyor)"],
     },
-    "quality_ledger": {
-        "kind": "consumer", "expected": "planned",   # KAP finansal parser YAZILMADI
+    "flow_foreign_inputs": {
+        "kind": "consumer", "expected": "planned",   # yabanci/takas: ucretli, girdi yok
+        "file": "docs/state/flow_ledger.json",
+        "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
+        "schedule": "daemon_cycle",
+        "count_keys": ["summary.foreign_flow_events", "summary.takas_events"],
+        "input_paths": ["local/flow_inputs"],
+    },
+    "quality_kap_events": {
+        "kind": "consumer", "expected": "active",    # KAP finansal olay akisi CALISIYOR
         "file": "docs/state/quality_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
         "tz": PRODUCER_TZ_OFFSET_H,
         "schedule": "daemon_cycle",
-        "count_keys": ["summary.tracked_events"],
+        "count_keys": ["summary.source_meta.kap_financial_events"],
+        "input_paths": [],
+        "upstream": ["docs/state/catalysts.json (kap_feed dugumunde izleniyor)"],
+    },
+    "quality_metrics_parser": {
+        "kind": "consumer", "expected": "planned",   # KAP finansal tablo parser YAZILMADI
+        "file": "docs/state/quality_ledger.json",
+        "ts_keys": ["summary.updated_at", "updated_at"],
+        "tz": PRODUCER_TZ_OFFSET_H,
+        "schedule": "daemon_cycle",
+        "count_keys": ["summary.source_meta.n_companies"],
         "input_paths": ["local/kap_financials", "local/kap_financial_actuals.json"],
     },
     "macro_surprise_ledger": {
@@ -636,7 +778,16 @@ def check(name, cfg, ever_prev=None):
     inp, detail = _input_state(cfg.get("input_paths", []))
     row["input_state"] = inp
     if n > 0:
-        row.update(status="GREEN", reason=f"taze, {n} kayit")
+        # #0j-EK ② (2026-08-06): `n > 0` ESKIDEN her seyi KISA DEVRE yapiyordu —
+        # input_state kayda yaziliyor ama KARARA girmiyordu. Sonuc: YARIM calisan
+        # defter YESIL gorunuyordu (flow'un yabanci-akis yarisi yok, yine GREEN).
+        # Artik girdi-yolu beyan edilmis ama YOKSA sari: "uretiyor ama yarim".
+        # NOT: girdi-yolu beyan etmeyen uyeler etkilenmez (_input_state([]) -> "n/a").
+        if inp == "missing":
+            row.update(status="YELLOW",
+                       reason=f"YARIM CALISIYOR: {n} kayit uretiyor ama {detail}")
+        else:
+            row.update(status="GREEN", reason=f"taze, {n} kayit")
     elif inp == "missing":
         if cfg["expected"] == "active":
             row.update(status="RED", reason=f"CONFIG-KIRIK: {detail}")
@@ -650,10 +801,33 @@ def check(name, cfg, ever_prev=None):
     return row
 
 
+def _slot_source_row():
+    """SLOT KAYNAGININ KENDISI izlenir — "koruma kendini korumadan muaf sanir"
+    panzehiri. Slot artik turetiliyor, ama turetme ZINCIRI de bozulabilir:
+    kaynak import edilemez, cron silinir, ya da iki uretici kopyasi AYRISIR
+    (biri degistirilip digeri unutulur). Bunlarin hicbiri damga birakmaz —
+    "yoklugun imzasi yok" -> ayri bir uye olarak GORUNUR yapiliyor.
+    """
+    row = {"name": "slot_source", "kind": "meta", "expected": "active",
+           "file": "(kod) scripts/report_gate.SLOTS <-> precise_runner.SLOT_TR",
+           "ever_written": True, "schedule": None, "missed_slots": None,
+           "slots_utc": {"daemon_cycle": [list(x) for x in _DAEMON_SLOTS],
+                         "close_only": [list(x) for x in _CLOSE_SLOTS],
+                         "kap_daily": [list(x) for x in _KAP_SLOTS]}}
+    if _SLOT_ISSUES:
+        row.update(status="RED", reason="SLOT KAYNAGI BOZUK: " + " | ".join(_SLOT_ISSUES))
+    else:
+        row.update(status="GREEN",
+                   reason=(f"slot kaynagi tek ve tutarli (TR {_SLOTS_TR} -> UTC "
+                           f"{list(_DAEMON_SLOTS)}; kap cron {list(_KAP_SLOTS)})"))
+    return row
+
+
 def main():
     # "hic yazilmadi" vs "yaziyordu durdu" ayrimi icin onceki taramanin hafizasi
     ever_prev = _ever_written_map()
     rows = [check(n, c, ever_prev) for n, c in REGISTRY.items()]
+    rows.append(_slot_source_row())
     red = [r for r in rows if r["status"] == "RED"]
     yellow = [r for r in rows if r["status"] == "YELLOW"]
     payload = {
