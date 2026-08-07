@@ -201,6 +201,44 @@ DOCS_STATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs"
 PENDING_MAX_AGE_DAYS = 2
 
 
+# ── #0e-GUARD — INCE-SECIM ERTELEME (2026-08-07, olcumle tasarlandi) ─────────
+#
+# SORUN: tatil deligi (#0e) karar gununu ZEHIRLER. `strategy.score()` yalniz
+# idx / idx-5 / idx-30 / idx-252 barlarini okur; birinde delik varsa TUM evren
+# gecersiz olur. OLCULDU (2026-08-07, fiyat matrisinden): 2026-07-22 bar-dolu
+# 612/614 (TAM GUN) ama valid=3 -> `idx-5` = 07-15 tatili. Yani KAPANIS kosusu
+# tam bar okusa DA cop secim yapardi; "kapanis yapisal temiz" hipotezi CURUDU.
+#
+# TETIKLEYICI: `len(picks)` — `valid` DEGIL. Bu FARK OLCULDU (10y Yahoo, gercek
+# delikler, +30g ileri getiri, olay-calismasi):
+#   AGIR  (secilen <=3 isim; 4 olayda da TEK isim): cop +1.49% / ertele +12.94%
+#         -> ertele +11.45pp, 4/4 tutarli
+#   HAFIF (secilen 8-10 isim):                      cop +10.19% / ertele -1.14%
+#         -> ertele -11.33pp, yani ERTELE ZARAR VERIYOR
+# `valid < esik` tetikleyicisi HAFIF vakalari da yakalar ve F'e ZARAR verirdi.
+# Zarar mekanizmasi valid sayisi degil KONSANTRASYON (portfoy tek hisseye
+# cokuyor) -> tetikleyici CIKTIDA olmali, girdide degil.
+# Esik guvenli: gozlemde AGIR=1 isim, HAFIF=8-10 -> arada genis bosluk.
+# SINIR: AGIR n=4 (yon guclu 4/4 ama ornek ince), 10y-Yahoo evreni
+# (golden-master datapath'i DEGIL), getiri modeli basit (+30g esit-agirlik,
+# stop modellenmedi). Yon icin yeterli, kesinlik icin degil.
+THIN_PICKS_MAX = 3
+
+# ⚠️ "3 GUN SONRA ATLA" BILINCLI OLARAK YAZILMADI — gerekce:
+# Ertelemenin maliyeti PORTFOYUN BAYATLAMASI (stoplar calismaya devam eder,
+# konsantrasyon riski YOK). Ince-rebalansi kabul etmenin maliyeti OLCULDU:
+# -11.45pp ve tek-hisse konsantrasyonu. Yani "N gun sonra zorla kabul et"
+# emniyet supabi, korudugundan DAHA BUYUK bir riski geri getirir.
+# Ayrica ertelemek saati DONDURMUYOR: history'ye olay yazilmadigi icin
+# `_last_selection_date` eskide kalir -> `rebal_elapsed` BUYUMEYE devam eder
+# -> ertesi kapanista otomatik yeniden denenir (sonsuz bekleme degil, gunluk
+# yeniden deneme). Gozlenen en uzun ardisik zehirli seri = 2 GUN.
+# Bunun yerine: ERTELEME SAYACI gorunur yapilir ve esigi asinca RAPORDA
+# yukselir (izleme meselesi, ticaret kurali degil). Zorla-kabul isteniyorsa
+# AYRI ve BILINCLI bir karar olmali.
+THIN_DEFER_LOUD_AFTER = 3
+
+
 # ── #0k — CORPORATE-ACTION (bedelsiz/bolunme) TESPITI + ATOMIK DUZELTME ──────
 #
 # MEKANIZMA (2026-07-31 olculdu, YEOTK canli vakasi): Yahoo bolunme/bedelsizde
@@ -308,6 +346,28 @@ def _ca_detect_and_fix(state, acc, prices, trade_date):
                "n_unchecked": len(unchecked),
                "n_clean": n_pos - len(fixed) - len(unchecked)}
     return fixed, unchecked, checked
+
+
+def _thin_defer(state, acc, picks, trade_date):
+    """picks INCE ise ertele. True donerse KARAR VERILMEZ (pending yazilmaz).
+
+    Sayac state'te tutulur (`_rebal_defer`) -> ardisik erteleme GORUNUR olur.
+    Saat DONMAZ: history'ye olay yazilmadigi icin rebal_elapsed buyumeye devam
+    eder ve ertesi kapanista otomatik yeniden denenir.
+    """
+    if len(picks) > THIN_PICKS_MAX:
+        if state.pop("_rebal_defer", None):
+            print(f"[shadow] {acc} ince-secim BITTI ({len(picks)} pick) -> karar verilebilir")
+        return False
+    dfr = state.get("_rebal_defer") or {"count": 0, "first_at": trade_date}
+    dfr["count"] = int(dfr.get("count", 0)) + 1
+    dfr["last_at"] = trade_date
+    dfr["n_picks"] = len(picks)
+    state["_rebal_defer"] = dfr
+    yuksek = " ** ARDISIK %d GUN — VERI SORUNU SURUYOR **" % dfr["count"]         if dfr["count"] >= THIN_DEFER_LOUD_AFTER else ""
+    print(f"[shadow] {acc} INCE-SECIM ({len(picks)} pick <= {THIN_PICKS_MAX}) "
+          f"-> rebalans ERTELENDI, sayac={dfr['count']}{yuksek}")
+    return True
 
 
 def _pending_age_days(decided_at, today):
@@ -491,6 +551,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             #    burada rebal_status FILL SONRASI durumu gorur.
             should_rebalance, initial_entry, rebal_elapsed, last_selection = rebal_status(
                 state, prices, date)
+            thin_deferred = False
             # Karar YALNIZ: kapanis kosusu + zamani geldi + pending YOK (#0i-②, spam yok)
             if run_label == "kapanis" and should_rebalance and not state.get("_pending_rebalance"):
                 if mode == "O":
@@ -502,6 +563,14 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                         weights = {t: lot_multiplier(sig_map.get(t, "Nötr")) for t in picks}
                     else:
                         weights = {t: 1.0 for t in picks}
+                # #0e-GUARD: ince secim -> KARAR VERME, ertele (pending YAZILMAZ).
+                # Yer bilincli: select() CAGRILDI (strategy.py DOKUNULMAZ, ciktisi
+                # okunuyor), karar ondan SONRA veriliyor -> F-datapath degismiyor.
+                # NOT: istisna KULLANILMAZ — hesap dongusu `except Exception` ile
+                # sarili, istisna results[acc]={"error":..} olarak YUTULURDU.
+                thin_deferred = _thin_defer(state, acc, picks, trade_date)
+            if (run_label == "kapanis" and should_rebalance
+                    and not state.get("_pending_rebalance") and not thin_deferred):
                 scale = strat_mod.regime_scale(data, date)
                 reason = "initial_entry" if initial_entry else "rebalance"
                 # HEDEF BIRIMI = AGIRLIK (#0i-2b), lot DEGIL. Lot D+1 fill aninda
@@ -542,6 +611,9 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 # ve "omur<=2 gun" kurali denetlenemezdi ("yoklugun imzasi yok").
                 # #0k GORUNURLUK: "kontrol edildi-temiz" ile "kontrol EDILEMEDI"
                 # ayri raporlanir (yok != kirik != yanlis-olculen, dedektor hali).
+                # #0e-GUARD gorunurlugu: ertelendiyse SEBEBI ve SAYACI raporlanir
+                # (sessiz erteleme = "yoklugun imzasi yok"in yeni bir hali olurdu).
+                "rebal_thin_deferred": (state.get("_rebal_defer") or None),
                 "ca_checked": ca_checked,
                 "ca_fixed": ca_fixed or None,
                 "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in ca_unchecked]
@@ -581,6 +653,21 @@ def step(data, signals, date=None, slippage=None, run_label=None):
     else:
         # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
         g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
+        # #0e-GUARD G1 SIMETRISI: G1 de strat_mod.select(mode="F") kullaniyor
+        # (g1_account.py:387) ama `is_rebal`i BURADAN aliyor -> guard'i burada
+        # uygulamak yeterli, g1_account.py DOKUNULMAZ kalir.
+        g1_gate = g1_should_rebalance          # kapi (guard uygulanir), VADE ayri
+        if run_label == "kapanis" and g1_should_rebalance and not g1_state.get("_pending_rebalance"):
+            try:
+                _g1_picks, _, _ = strat_mod.select(data, signals, date, mode="F")
+            except Exception:
+                _g1_picks = []
+            if _thin_defer(g1_state, "G1", _g1_picks, trade_date):
+                # KAPIYI kapat ama VADEYI bozma: `rebalance_due` raporu VADE
+                # demek, "guard'dan gecti" demek DEGIL. g1_should_rebalance'i
+                # ezersek rapor "vade gelmedi" der -> TERS BILGI (#0i'nin
+                # duzelttigi bayrak-sinifi). Ayri degisken kullanilir.
+                g1_gate = False
         # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
         # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
         g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
@@ -590,7 +677,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
         # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
         g1_state, g1_events = g1_mod.step(
-            data, signals, g1_state, date, prices_today, g1_should_rebalance,
+            data, signals, g1_state, date, prices_today, g1_gate,
             slippage=slippage, eval_stops=(run_label == "kapanis"),
             opens_today=(opens_today if run_label == "kapanis" else {}))
     f_return_pct = None
@@ -604,6 +691,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         # kitaplandi), vade DEGIL. G1'de icra izi = events["buys"] (fill BUY uretir;
         # karar gunu 0 uretir). Eskiden `g1_should_rebalance` (vade) yazilıyordu ->
         # karar gunu True/0-islem, fill gunu vade-dustugu icin yanlis okuma.
+        "rebal_thin_deferred": (g1_state.get("_rebal_defer") or None),
         "ca_checked": g1_ca_checked,
         "ca_fixed": g1_ca_fixed or None,
         "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
