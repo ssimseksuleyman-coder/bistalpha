@@ -251,7 +251,16 @@ def _ca_detect_and_fix(state, acc, prices, trade_date):
     "KONTROL EDILEMEDI" != "TEMIZ" (yok != kirik != yanlis-olculen'in dedektor
     hali): sebebi AYRI AYRI raporlanir, sessizce atlanmaz.
 
-    Returns: (fixed:list, unchecked:list)
+    Returns: (fixed:list, unchecked:list, checked:dict)
+
+    `checked` = POZITIF DAMGA (#0k artigi, 2026-08-06): `ca_fixed: null` IKI
+    ANLAMA geliyordu — "kostu, temiz" ve "HIC KOSMADI" (gun-ici kosuda dedektor
+    calismaz; ya da hesap dongusu CA'dan once patlarsa). Ucu de ayni gorunuyordu.
+    `stop_eval.json` bunu KAPATMIYOR: o dongunun DISINDA yazilir (satir ~623), yani
+    bir hesap CA'ya varmadan patlasa bile damga tazelenir -> okuyan "CA bakildi"
+    sanar. Bu yuzden damga HESAP BASINA ve dedektorun KENDI icinden uretilir.
+    Sinif: "sinyal yoklugu != sorun yoklugu" (bkz #4-EK, ayni gun runner kesintisi).
+    YALNIZ IZ, KARAR DEGIL — hicbir kod buna bakip farkli davranmaz (stop_eval kurali).
     """
     ed = _entry_dates(state, acc)
     fixed, unchecked = [], []
@@ -294,7 +303,11 @@ def _ca_detect_and_fix(state, acc, prices, trade_date):
         print(f"[shadow] {acc} CORPORATE-ACTION duzeltmesi: {tic} oran={ratio:.4f} "
               f"entry {old_e:.2f}->{pos['entry']:.2f} peak {old_p:.2f}->{pos['peak']:.2f} "
               f"(giris {d})")
-    return fixed, unchecked
+    n_pos = len(state.get("positions") or {})
+    checked = {"n_positions": n_pos, "n_fixed": len(fixed),
+               "n_unchecked": len(unchecked),
+               "n_clean": n_pos - len(fixed) - len(unchecked)}
+    return fixed, unchecked, checked
 
 
 def _pending_age_days(decided_at, today):
@@ -372,9 +385,11 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             # birakir; duzeltilmeden stop'a girilirse phantom-stop DOGAR.
             # Fill'den de once: fill bloklanirsa mevcut pozisyonlar tasinir ve
             # yine duzeltilmis olmalari gerekir.
-            ca_fixed, ca_unchecked = ([], [])
+            # ca_checked=None -> "bu kosuda BAKILMADI" (gun-ici kosu). Dolu ->
+            # "bakildi", sayilarla. `ca_fixed: null`in iki-anlamliligi boylece biter.
+            ca_fixed, ca_unchecked, ca_checked = ([], [], None)
             if run_label == "kapanis":
-                ca_fixed, ca_unchecked = _ca_detect_and_fix(state, acc, prices, trade_date)
+                ca_fixed, ca_unchecked, ca_checked = _ca_detect_and_fix(state, acc, prices, trade_date)
             # #0i FAZ-5 (2026-08-01): "rebalance" bayragi ARTIK ICRA demek.
             # BULGU: eskiden `rebalance = should_rebalance` idi. Karar/icra ayrilinca
             # bu bayrak TERS bilgi vermeye basladi:
@@ -527,6 +542,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 # ve "omur<=2 gun" kurali denetlenemezdi ("yoklugun imzasi yok").
                 # #0k GORUNURLUK: "kontrol edildi-temiz" ile "kontrol EDILEMEDI"
                 # ayri raporlanir (yok != kirik != yanlis-olculen, dedektor hali).
+                "ca_checked": ca_checked,
                 "ca_fixed": ca_fixed or None,
                 "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in ca_unchecked]
                                  if ca_unchecked else None),
@@ -567,9 +583,10 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
         # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
         # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
-        g1_ca_fixed, g1_ca_unchecked = ([], [])
+        g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
         if run_label == "kapanis":
-            g1_ca_fixed, g1_ca_unchecked = _ca_detect_and_fix(g1_state, "G1", prices, trade_date)
+            g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = _ca_detect_and_fix(
+                g1_state, "G1", prices, trade_date)
         # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
         # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
         g1_state, g1_events = g1_mod.step(
@@ -587,6 +604,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         # kitaplandi), vade DEGIL. G1'de icra izi = events["buys"] (fill BUY uretir;
         # karar gunu 0 uretir). Eskiden `g1_should_rebalance` (vade) yazilıyordu ->
         # karar gunu True/0-islem, fill gunu vade-dustugu icin yanlis okuma.
+        "ca_checked": g1_ca_checked,
         "ca_fixed": g1_ca_fixed or None,
         "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
                          if g1_ca_unchecked else None),
