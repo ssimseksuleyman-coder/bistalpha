@@ -762,11 +762,11 @@ function renderForward(info) {
     <div class="meta" style="padding-top:10px">Toplam: ${esc(info.days_tracked ?? '-')} | Gecersiz: ${esc(info.invalid_snapshot_count ?? 0)} | Son gecerli yas: ${esc(info.latest_valid_age_trading_days ?? info.latest_age_trading_days ?? '-')} islem gunu</div>
     <div class="forward-row">
       <strong>Top7 golge</strong>
-      <span>n ${esc(top7.n ?? '-')} | ort %${esc(top7.avg_return_pct ?? '-')} | hit %${esc(top7.hit_rate_pct ?? '-')}</span>
+      <span>${esc(top7.n ?? '-')} gozlem / <b>${esc(top7.n_unique_tickers ?? '?')} benzersiz</b> | ort %${esc(top7.avg_return_pct ?? '-')} | hit %${esc(top7.hit_rate_pct ?? '-')}</span>
     </div>
     <div class="forward-row">
       <strong>Rank 8-10 kuyruk</strong>
-      <span>n ${esc(tail.n ?? '-')} | ort %${esc(tail.avg_return_pct ?? '-')} | hit %${esc(tail.hit_rate_pct ?? '-')}</span>
+      <span>${esc(tail.n ?? '-')} gozlem / <b>${esc(tail.n_unique_tickers ?? '?')} benzersiz</b> | ort %${esc(tail.avg_return_pct ?? '-')} | hit %${esc(tail.hit_rate_pct ?? '-')}</span>
     </div>
     ${topRows || '<div class="empty">Hisse detayi yok</div>'}
   `;

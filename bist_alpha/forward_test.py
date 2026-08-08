@@ -162,7 +162,19 @@ def _cohort_summary(snapshots, min_age):
 
 
 def _rank_band_summary(snapshots, rank_min, rank_max, min_age=1):
+    """Rank bandinin ileri-getiri ozeti.
+
+    `n` GOZLEM sayisidir, ORNEKLEM BUYUKLUGU DEGIL — snapshot'lar GUNLUK ama F
+    30 islem gununde bir rebalans yapar, yani ayni pozisyon her gun yeniden
+    sayilir. 2026-08-08 olcumu: top7 n=290 ama BENZERSIZ ticker 16; tail n=123
+    ama 17. Gozlem-bazli fark 31.8pp iken ticker-bazli 19.9pp, medyan ~11.5pp
+    (yani yon gercek, buyukluk sisik). Okuyanin `n`'e bakip bagimsizlik
+    varsaymamasi icin `n_unique_tickers` DE yayinlanir.
+    Ayni sinifin diger iki vakasi (ayni gun): makro defterde 235 kirpilmis olay
+    ayni degeri tasiyordu; radar zehirli gunde sahte-sifir uretiyordu.
+    """
     returns = []
+    tickers = set()
     winners = 0
     for snap in snapshots:
         if not _is_valid_snapshot(snap) or (snap.get("age_trading_days") or 0) < min_age:
@@ -178,6 +190,8 @@ def _rank_band_summary(snapshots, rank_min, rank_max, min_age=1):
                 continue
             if rank_min <= rank_i <= rank_max:
                 returns.append(float(ret))
+                if item.get("ticker"):
+                    tickers.add(str(item["ticker"]))
                 if float(ret) > 0:
                     winners += 1
     return {
@@ -185,6 +199,8 @@ def _rank_band_summary(snapshots, rank_min, rank_max, min_age=1):
         "rank_max": rank_max,
         "min_age_days": min_age,
         "n": len(returns),
+        # GOZLEM != ORNEKLEM: gunluk snapshot ayni pozisyonu tekrar sayar.
+        "n_unique_tickers": len(tickers),
         "avg_return_pct": _round(sum(returns) / len(returns)) if returns else None,
         "hit_rate_pct": _round(winners / len(returns) * 100, 1) if returns else None,
     }
