@@ -92,8 +92,32 @@ def _price_at_pos(prices, ticker, pos):
     return float(value)
 
 
-def _first_pos_on_or_after(prices, date_s):
+def _before_window(prices, date_s):
+    """Olay tarihi fiyat penceresinin BASLANGICINDAN once mi?"""
     if prices is None or prices.empty or not date_s:
+        return False
+    try:
+        return pd.Timestamp(date_s) < prices.index[0]
+    except Exception:
+        return False
+
+
+def _first_pos_on_or_after(prices, date_s):
+    """Olayin giris pozisyonu; OLCULEMEZSE (None, None).
+
+    BUG (2026-08-07, makro backfill'i acikca gosterdi): `searchsorted` pencere
+    ONCESI bir tarih icin 0 doner, ve 0 < len oldugu icin eski surum onu GECERLI
+    sayardi -> 2005 tarihli bir olay, 2024'teki pencere BASLANGICINA kirpilir ve
+    o gunun ileri-getirisi o olaya atfedilirdi. Sonuc: 259 olayin 235'i AYNI
+    entry_pos=0'i ve AYNI "-1.5%" 21g getirisini tasidi; `hit_21d_pct` 5.8
+    gibi bir SAHTE ISTATISTIK panelde yayinlandi.
+    Pencere SONRASI zaten dogru ele aliniyordu (pos >= len -> None); eksik olan
+    ONCESIYDI. Sinif: "olcemedigini olctum sanmak" — sinyal yoklugu != sorun
+    yoklugu'nun hesaplama tarafi.
+    """
+    if prices is None or prices.empty or not date_s:
+        return None, None
+    if _before_window(prices, date_s):
         return None, None
     pos = int(prices.index.searchsorted(pd.Timestamp(date_s), side="left"))
     if pos >= len(prices.index):
@@ -164,6 +188,18 @@ def _source_events(sources):
 
 
 def _refresh_event(event, report, prices, as_of_pos):
+    # PENCERE ONCESI OLAY -> OLCULEMEZ. Bu kontrol CACHE'TEN ONCE gelir:
+    # `entry_pos` olayda onbelleklendigi icin (asagi) yalniz fonksiyonu duzeltmek
+    # ESKI KIRPILMIS kayitlari IYILESTIRMEZ. Burasi onlari da temizler (idempotent).
+    if _before_window(prices, event.get("date")):
+        event["entry_pos"] = None
+        event["entry_date"] = None
+        event["age_trading_days"] = None
+        for w in WINDOWS:
+            event[f"market_return_{w}d_pct"] = None
+            event[f"f_top10_return_{w}d_pct"] = None
+        event["status"] = "veri_penceresi_oncesi"
+        return event
     entry_pos = event.get("entry_pos")
     if entry_pos is None:
         entry_pos, entry_date = _first_pos_on_or_after(prices, event.get("date"))
