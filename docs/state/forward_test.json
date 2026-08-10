@@ -1,17 +1,17 @@
 {
-  "updated_at": "2026-08-10T09:45:54",
+  "updated_at": "2026-08-10T14:30:44",
   "days_tracked": 45,
   "summary": {
-    "updated_at": "2026-08-10T09:45:54",
+    "updated_at": "2026-08-10T14:30:44",
     "days_tracked": 45,
     "valid_days_tracked": 44,
     "invalid_snapshot_count": 1,
-    "latest_date": "2026-08-07",
+    "latest_date": "2026-08-10",
     "latest_avg_return_pct": 0.0,
     "latest_hit_rate_pct": 0.0,
     "latest_age_trading_days": 0,
     "tracked_count": 10,
-    "latest_valid_date": "2026-08-07",
+    "latest_valid_date": "2026-08-10",
     "latest_valid_avg_return_pct": 0.0,
     "latest_valid_hit_rate_pct": 0.0,
     "latest_valid_age_trading_days": 0,
@@ -19,44 +19,44 @@
     "primary_cohort": {
       "age_ge_days": 5,
       "snapshots": 39,
-      "avg_return_pct": 2.84,
-      "hit_rate_pct": 59.49,
+      "avg_return_pct": 2.01,
+      "hit_rate_pct": 58.72,
       "avg_tracked_count": 9.54
     },
     "mature_cohorts": [
       {
         "age_ge_days": 1,
         "snapshots": 43,
-        "avg_return_pct": 2.54,
-        "hit_rate_pct": 60.23,
+        "avg_return_pct": 1.71,
+        "hit_rate_pct": 59.3,
         "avg_tracked_count": 9.58
       },
       {
         "age_ge_days": 5,
         "snapshots": 39,
-        "avg_return_pct": 2.84,
-        "hit_rate_pct": 59.49,
+        "avg_return_pct": 2.01,
+        "hit_rate_pct": 58.72,
         "avg_tracked_count": 9.54
       },
       {
         "age_ge_days": 10,
         "snapshots": 34,
-        "avg_return_pct": 4.02,
-        "hit_rate_pct": 60.0,
+        "avg_return_pct": 3.12,
+        "hit_rate_pct": 58.53,
         "avg_tracked_count": 9.47
       },
       {
         "age_ge_days": 21,
         "snapshots": 25,
-        "avg_return_pct": 6.39,
-        "hit_rate_pct": 64.0,
+        "avg_return_pct": 5.45,
+        "hit_rate_pct": 61.6,
         "avg_tracked_count": 9.28
       },
       {
         "age_ge_days": 30,
         "snapshots": 16,
-        "avg_return_pct": 8.98,
-        "hit_rate_pct": 64.38,
+        "avg_return_pct": 8.35,
+        "hit_rate_pct": 63.12,
         "avg_tracked_count": 9.44
       }
     ],
@@ -66,195 +66,19 @@
       "min_age_days": 1,
       "n": 289,
       "n_unique_tickers": 15,
-      "avg_return_pct": 12.13,
-      "hit_rate_pct": 68.5
+      "avg_return_pct": 10.62,
+      "hit_rate_pct": 68.2
     },
     "tail8_10_shadow": {
       "rank_min": 8,
       "rank_max": 10,
       "min_age_days": 1,
       "n": 123,
-      "n_unique_tickers": 17,
-      "avg_return_pct": -19.71,
-      "hit_rate_pct": 35.0
+      "n_unique_tickers": 18,
+      "avg_return_pct": -19.25,
+      "hit_rate_pct": 32.5
     },
     "recent": [
-      {
-        "date": "2026-07-29",
-        "generated_at": "2026-07-29 14:31",
-        "mode": "F",
-        "source": "yahoo",
-        "last_data_date": "2026-07-29",
-        "items": [
-          {
-            "rank": 1,
-            "ticker": "GUNDG",
-            "action": "AL",
-            "signal": "Birikim",
-            "sector": "XU100",
-            "entry_price": 2131.0,
-            "m5": -4.0,
-            "m21": 28.4,
-            "m252": 3033.8,
-            "target_1": 2301.48,
-            "target_2": 2450.65,
-            "stop": 1811.35,
-            "current_price": 1826.0,
-            "return_pct": -14.31
-          },
-          {
-            "rank": 2,
-            "ticker": "HEDEF",
-            "action": "AL",
-            "signal": "GÜÇLÜ_BİRİKİM",
-            "sector": "XHOLD",
-            "entry_price": 216.0,
-            "m5": 12.3,
-            "m21": 71.2,
-            "m252": 2989.5,
-            "target_1": 280.0,
-            "target_2": 296.0,
-            "stop": 224.4,
-            "current_price": 267.25,
-            "return_pct": 23.73
-          },
-          {
-            "rank": 3,
-            "ticker": "ODINE",
-            "action": "AL",
-            "signal": "GÜÇLÜ_BİRİKİM",
-            "sector": "XUTEK",
-            "entry_price": 2423.0,
-            "m5": 10.6,
-            "m21": 30.8,
-            "m252": 1925.8,
-            "target_1": 2624.67,
-            "target_2": 2739.33,
-            "stop": 2133.5,
-            "current_price": 2752.5,
-            "return_pct": 13.6
-          },
-          {
-            "rank": 4,
-            "ticker": "KTLEV",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XUTEK",
-            "entry_price": 153.4,
-            "m5": -10.9,
-            "m21": -10.6,
-            "m252": 1593.8,
-            "target_1": 161.77,
-            "target_2": 167.53,
-            "stop": 132.6,
-            "current_price": 43.58,
-            "return_pct": -71.59
-          },
-          {
-            "rank": 5,
-            "ticker": "OZATD",
-            "action": "AL",
-            "signal": "Birikim",
-            "sector": "XU100",
-            "entry_price": 3395.0,
-            "m5": 24.2,
-            "m21": 129.3,
-            "m252": 1450.4,
-            "target_1": 3853.33,
-            "target_2": 4029.17,
-            "stop": 3125.88,
-            "current_price": 4480.0,
-            "return_pct": 31.96
-          },
-          {
-            "rank": 6,
-            "ticker": "IEYHO",
-            "action": "BEKLE",
-            "signal": "Üst_fitil_UYARI",
-            "sector": "XHOLD",
-            "entry_price": 165.8,
-            "m5": 2.8,
-            "m21": 8.9,
-            "m252": 1175.0,
-            "target_1": 166.57,
-            "target_2": 167.63,
-            "stop": 141.1,
-            "current_price": 174.2,
-            "return_pct": 5.07
-          },
-          {
-            "rank": 7,
-            "ticker": "ALKLC",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XUSIN",
-            "entry_price": 396.75,
-            "m5": -1.9,
-            "m21": 16.8,
-            "m252": 450.3,
-            "target_1": 399.08,
-            "target_2": 404.17,
-            "stop": 342.97,
-            "current_price": 425.0,
-            "return_pct": 7.12
-          },
-          {
-            "rank": 8,
-            "ticker": "DSTKF",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XFINK",
-            "entry_price": 1784.0,
-            "m5": -13.6,
-            "m21": -49.9,
-            "m252": 211.9,
-            "target_1": 1939.33,
-            "target_2": 2063.67,
-            "stop": 1542.75,
-            "current_price": 1773.0,
-            "return_pct": -0.62
-          },
-          {
-            "rank": 9,
-            "ticker": "SELEC",
-            "action": "BEKLE",
-            "signal": "DAĞITIM",
-            "sector": "XUHIZ",
-            "entry_price": 224.4,
-            "m5": -11.2,
-            "m21": 5.2,
-            "m252": 125.4,
-            "target_1": 239.2,
-            "target_2": 257.8,
-            "stop": 187.51,
-            "current_price": 216.7,
-            "return_pct": -3.43
-          },
-          {
-            "rank": 10,
-            "ticker": "EUPWR",
-            "action": "BEKLE",
-            "signal": "Üst_fitil_UYARI",
-            "sector": "XELKT",
-            "entry_price": 85.1,
-            "m5": -14.6,
-            "m21": 1.5,
-            "m252": 157.9,
-            "target_1": 87.92,
-            "target_2": 90.73,
-            "stop": 72.33,
-            "current_price": 91.7,
-            "return_pct": 7.76
-          }
-        ],
-        "first_generated_at": "2026-07-29 14:31",
-        "last_generated_at": "2026-07-31 09:45",
-        "as_of": "2026-08-07",
-        "age_trading_days": 7,
-        "avg_return_pct": -0.07,
-        "hit_rate_pct": 60.0,
-        "tracked_count": 10
-      },
       {
         "date": "2026-07-31",
         "generated_at": "2026-07-31 14:31",
@@ -275,8 +99,8 @@
             "target_1": 316.08,
             "target_2": 327.92,
             "stop": 258.61,
-            "current_price": 267.25,
-            "return_pct": -11.29
+            "current_price": 240.6,
+            "return_pct": -20.13
           },
           {
             "rank": 2,
@@ -291,8 +115,8 @@
             "target_1": 1865.16,
             "target_2": 1986.05,
             "stop": 1467.95,
-            "current_price": 1826.0,
-            "return_pct": 5.73
+            "current_price": 1722.0,
+            "return_pct": -0.29
           },
           {
             "rank": 3,
@@ -307,8 +131,8 @@
             "target_1": 2638.33,
             "target_2": 2776.67,
             "stop": 2125.0,
-            "current_price": 2752.5,
-            "return_pct": 29.16
+            "current_price": 2797.5,
+            "return_pct": 31.28
           },
           {
             "rank": 4,
@@ -323,8 +147,8 @@
             "target_1": 3977.5,
             "target_2": 4075.0,
             "stop": 3298.0,
-            "current_price": 4480.0,
-            "return_pct": 18.36
+            "current_price": 4510.0,
+            "return_pct": 19.15
           },
           {
             "rank": 5,
@@ -339,8 +163,8 @@
             "target_1": 169.33,
             "target_2": 171.17,
             "stop": 144.07,
-            "current_price": 174.2,
-            "return_pct": 3.51
+            "current_price": 178.0,
+            "return_pct": 5.76
           },
           {
             "rank": 6,
@@ -355,8 +179,8 @@
             "target_1": 398.08,
             "target_2": 399.67,
             "stop": 342.97,
-            "current_price": 425.0,
-            "return_pct": 7.39
+            "current_price": 426.0,
+            "return_pct": 7.64
           },
           {
             "rank": 7,
@@ -371,8 +195,8 @@
             "target_1": 47.69,
             "target_2": 49.36,
             "stop": 39.11,
-            "current_price": 43.58,
-            "return_pct": -71.68
+            "current_price": 42.9,
+            "return_pct": -72.12
           },
           {
             "rank": 8,
@@ -387,8 +211,8 @@
             "target_1": 38.25,
             "target_2": 38.69,
             "stop": 32.15,
-            "current_price": 15.91,
-            "return_pct": -56.93
+            "current_price": 16.2,
+            "return_pct": -56.15
           },
           {
             "rank": 9,
@@ -403,8 +227,8 @@
             "target_1": 86.77,
             "target_2": 88.43,
             "stop": 72.33,
-            "current_price": 91.7,
-            "return_pct": 7.38
+            "current_price": 90.95,
+            "return_pct": 6.5
           },
           {
             "rank": 10,
@@ -419,16 +243,16 @@
             "target_1": 1786.33,
             "target_2": 1869.67,
             "stop": 1447.55,
-            "current_price": 1773.0,
-            "return_pct": 0.91
+            "current_price": 1788.0,
+            "return_pct": 1.76
           }
         ],
         "first_generated_at": "2026-07-31 14:31",
         "last_generated_at": "2026-08-04 09:45",
-        "as_of": "2026-08-07",
-        "age_trading_days": 5,
-        "avg_return_pct": -6.75,
-        "hit_rate_pct": 70.0,
+        "as_of": "2026-08-10",
+        "age_trading_days": 6,
+        "avg_return_pct": -7.66,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -451,8 +275,8 @@
             "target_1": 372.83,
             "target_2": 379.67,
             "stop": 311.1,
-            "current_price": 267.25,
-            "return_pct": -26.43
+            "current_price": 240.6,
+            "return_pct": -33.76
           },
           {
             "rank": 2,
@@ -467,8 +291,8 @@
             "target_1": 2998.33,
             "target_2": 3091.67,
             "stop": 2469.25,
-            "current_price": 2752.5,
-            "return_pct": -1.34
+            "current_price": 2797.5,
+            "return_pct": 0.27
           },
           {
             "rank": 3,
@@ -483,8 +307,8 @@
             "target_1": 1512.0,
             "target_2": 1610.0,
             "stop": 1190.0,
-            "current_price": 1826.0,
-            "return_pct": 30.43
+            "current_price": 1722.0,
+            "return_pct": 23.0
           },
           {
             "rank": 4,
@@ -499,8 +323,8 @@
             "target_1": 4216.67,
             "target_2": 4303.33,
             "stop": 3510.5,
-            "current_price": 4480.0,
-            "return_pct": 11.93
+            "current_price": 4510.0,
+            "return_pct": 12.68
           },
           {
             "rank": 5,
@@ -515,8 +339,8 @@
             "target_1": 44.01,
             "target_2": 46.51,
             "stop": 35.29,
-            "current_price": 43.58,
-            "return_pct": 5.21
+            "current_price": 42.9,
+            "return_pct": 3.57
           },
           {
             "rank": 6,
@@ -531,8 +355,8 @@
             "target_1": 169.5,
             "target_2": 170.6,
             "stop": 144.07,
-            "current_price": 174.2,
-            "return_pct": 3.26
+            "current_price": 178.0,
+            "return_pct": 5.51
           },
           {
             "rank": 7,
@@ -547,8 +371,8 @@
             "target_1": 403.33,
             "target_2": 406.67,
             "stop": 342.97,
-            "current_price": 425.0,
-            "return_pct": 5.52
+            "current_price": 426.0,
+            "return_pct": 5.77
           },
           {
             "rank": 8,
@@ -563,8 +387,8 @@
             "target_1": 39.31,
             "target_2": 40.11,
             "stop": 32.73,
-            "current_price": 15.91,
-            "return_pct": -57.23
+            "current_price": 16.2,
+            "return_pct": -56.45
           },
           {
             "rank": 9,
@@ -579,8 +403,8 @@
             "target_1": 93.4,
             "target_2": 95.7,
             "stop": 77.43,
-            "current_price": 91.7,
-            "return_pct": 0.16
+            "current_price": 90.95,
+            "return_pct": -0.66
           },
           {
             "rank": 10,
@@ -595,16 +419,16 @@
             "target_1": 42.68,
             "target_2": 44.22,
             "stop": 34.97,
-            "current_price": 42.2,
-            "return_pct": 2.58
+            "current_price": 40.74,
+            "return_pct": -0.97
           }
         ],
         "first_generated_at": "2026-08-04 14:30",
         "last_generated_at": "2026-08-04 18:40",
-        "as_of": "2026-08-07",
-        "age_trading_days": 3,
-        "avg_return_pct": -2.59,
-        "hit_rate_pct": 70.0,
+        "as_of": "2026-08-10",
+        "age_trading_days": 4,
+        "avg_return_pct": -4.1,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -627,8 +451,8 @@
             "target_1": 343.92,
             "target_2": 353.83,
             "stop": 283.9,
-            "current_price": 267.25,
-            "return_pct": -18.58
+            "current_price": 240.6,
+            "return_pct": -26.7
           },
           {
             "rank": 2,
@@ -643,8 +467,8 @@
             "target_1": 1679.4,
             "target_2": 1788.25,
             "stop": 1321.75,
-            "current_price": 1826.0,
-            "return_pct": 17.43
+            "current_price": 1722.0,
+            "return_pct": 10.74
           },
           {
             "rank": 3,
@@ -659,8 +483,8 @@
             "target_1": 2807.67,
             "target_2": 2945.33,
             "stop": 2269.5,
-            "current_price": 2752.5,
-            "return_pct": 4.46
+            "current_price": 2797.5,
+            "return_pct": 6.17
           },
           {
             "rank": 4,
@@ -675,8 +499,8 @@
             "target_1": 4180.83,
             "target_2": 4334.17,
             "stop": 3423.38,
-            "current_price": 4480.0,
-            "return_pct": 15.46
+            "current_price": 4510.0,
+            "return_pct": 16.24
           },
           {
             "rank": 5,
@@ -691,8 +515,8 @@
             "target_1": 45.87,
             "target_2": 50.33,
             "stop": 35.21,
-            "current_price": 43.58,
-            "return_pct": -3.16
+            "current_price": 42.9,
+            "return_pct": -4.67
           },
           {
             "rank": 6,
@@ -707,8 +531,8 @@
             "target_1": 171.6,
             "target_2": 173.7,
             "stop": 145.35,
-            "current_price": 174.2,
-            "return_pct": 4.31
+            "current_price": 178.0,
+            "return_pct": 6.59
           },
           {
             "rank": 7,
@@ -723,8 +547,8 @@
             "target_1": 404.83,
             "target_2": 408.17,
             "stop": 347.65,
-            "current_price": 425.0,
-            "return_pct": 5.79
+            "current_price": 426.0,
+            "return_pct": 6.04
           },
           {
             "rank": 8,
@@ -739,8 +563,8 @@
             "target_1": 93.3,
             "target_2": 96.5,
             "stop": 76.58,
-            "current_price": 91.7,
-            "return_pct": 2.63
+            "current_price": 90.95,
+            "return_pct": 1.79
           },
           {
             "rank": 9,
@@ -755,8 +579,8 @@
             "target_1": 37.87,
             "target_2": 38.45,
             "stop": 31.69,
-            "current_price": 15.91,
-            "return_pct": -57.32
+            "current_price": 16.2,
+            "return_pct": -56.55
           },
           {
             "rank": 10,
@@ -771,16 +595,16 @@
             "target_1": 176.0,
             "target_2": 183.0,
             "stop": 143.65,
-            "current_price": 174.2,
-            "return_pct": 3.08
+            "current_price": 164.0,
+            "return_pct": -2.96
           }
         ],
         "first_generated_at": "2026-08-03 14:30",
         "last_generated_at": "2026-08-06 09:45",
-        "as_of": "2026-08-07",
-        "age_trading_days": 4,
-        "avg_return_pct": -2.59,
-        "hit_rate_pct": 70.0,
+        "as_of": "2026-08-10",
+        "age_trading_days": 5,
+        "avg_return_pct": -4.33,
+        "hit_rate_pct": 60.0,
         "tracked_count": 10
       },
       {
@@ -803,8 +627,8 @@
             "target_1": 320.49,
             "target_2": 341.26,
             "stop": 252.24,
-            "current_price": 267.25,
-            "return_pct": -9.94
+            "current_price": 240.6,
+            "return_pct": -18.92
           },
           {
             "rank": 2,
@@ -819,8 +643,8 @@
             "target_1": 1738.67,
             "target_2": 1783.33,
             "stop": 1439.9,
-            "current_price": 1826.0,
-            "return_pct": 7.79
+            "current_price": 1722.0,
+            "return_pct": 1.65
           },
           {
             "rank": 3,
@@ -835,8 +659,8 @@
             "target_1": 2795.0,
             "target_2": 2900.0,
             "stop": 2286.5,
-            "current_price": 2752.5,
-            "return_pct": 6.38
+            "current_price": 2797.5,
+            "return_pct": 8.12
           },
           {
             "rank": 4,
@@ -851,8 +675,8 @@
             "target_1": 4617.5,
             "target_2": 4755.0,
             "stop": 3808.0,
-            "current_price": 4480.0,
-            "return_pct": -0.17
+            "current_price": 4510.0,
+            "return_pct": 0.5
           },
           {
             "rank": 5,
@@ -867,8 +691,8 @@
             "target_1": 45.46,
             "target_2": 46.42,
             "stop": 37.82,
-            "current_price": 43.58,
-            "return_pct": 3.52
+            "current_price": 42.9,
+            "return_pct": 1.9
           },
           {
             "rank": 6,
@@ -883,8 +707,8 @@
             "target_1": 174.53,
             "target_2": 176.57,
             "stop": 146.62,
-            "current_price": 174.2,
-            "return_pct": 1.93
+            "current_price": 178.0,
+            "return_pct": 4.15
           },
           {
             "rank": 7,
@@ -899,8 +723,8 @@
             "target_1": 48.9,
             "target_2": 51.0,
             "stop": 39.78,
-            "current_price": 42.2,
-            "return_pct": -8.22
+            "current_price": 40.74,
+            "return_pct": -11.4
           },
           {
             "rank": 8,
@@ -915,8 +739,8 @@
             "target_1": 93.28,
             "target_2": 95.47,
             "stop": 77.43,
-            "current_price": 91.7,
-            "return_pct": -1.56
+            "current_price": 90.95,
+            "return_pct": -2.36
           },
           {
             "rank": 9,
@@ -931,8 +755,8 @@
             "target_1": 1769.33,
             "target_2": 1838.67,
             "stop": 1445.0,
-            "current_price": 1773.0,
-            "return_pct": 2.07
+            "current_price": 1788.0,
+            "return_pct": 2.94
           },
           {
             "rank": 10,
@@ -947,16 +771,16 @@
             "target_1": 328.83,
             "target_2": 336.17,
             "stop": 273.27,
-            "current_price": 323.5,
-            "return_pct": 0.62
+            "current_price": 333.25,
+            "return_pct": 3.65
           }
         ],
         "first_generated_at": "2026-08-06 14:30",
         "last_generated_at": "2026-08-06 18:40",
-        "as_of": "2026-08-07",
-        "age_trading_days": 1,
-        "avg_return_pct": 0.24,
-        "hit_rate_pct": 60.0,
+        "as_of": "2026-08-10",
+        "age_trading_days": 2,
+        "avg_return_pct": -0.98,
+        "hit_rate_pct": 70.0,
         "tracked_count": 10
       },
       {
@@ -979,8 +803,8 @@
             "target_1": 373.83,
             "target_2": 418.17,
             "stop": 280.07,
-            "current_price": 267.25,
-            "return_pct": -18.89
+            "current_price": 240.6,
+            "return_pct": -26.98
           },
           {
             "rank": 2,
@@ -995,8 +819,8 @@
             "target_1": 1627.67,
             "target_2": 1715.33,
             "stop": 1309.0,
-            "current_price": 1826.0,
-            "return_pct": 31.65
+            "current_price": 1722.0,
+            "return_pct": 24.15
           },
           {
             "rank": 3,
@@ -1011,8 +835,8 @@
             "target_1": 2975.0,
             "target_2": 3205.0,
             "stop": 2333.25,
-            "current_price": 2752.5,
-            "return_pct": -0.9
+            "current_price": 2797.5,
+            "return_pct": 0.72
           },
           {
             "rank": 4,
@@ -1027,8 +851,8 @@
             "target_1": 4670.83,
             "target_2": 4864.17,
             "stop": 3805.88,
-            "current_price": 4480.0,
-            "return_pct": 9.87
+            "current_price": 4510.0,
+            "return_pct": 10.61
           },
           {
             "rank": 5,
@@ -1043,8 +867,8 @@
             "target_1": 44.78,
             "target_2": 46.36,
             "stop": 36.72,
-            "current_price": 43.58,
-            "return_pct": 6.03
+            "current_price": 42.9,
+            "return_pct": 4.38
           },
           {
             "rank": 6,
@@ -1059,8 +883,8 @@
             "target_1": 173.33,
             "target_2": 175.67,
             "stop": 146.62,
-            "current_price": 174.2,
-            "return_pct": 1.63
+            "current_price": 178.0,
+            "return_pct": 3.85
           },
           {
             "rank": 7,
@@ -1075,8 +899,8 @@
             "target_1": 418.17,
             "target_2": 427.33,
             "stop": 357.0,
-            "current_price": 425.0,
-            "return_pct": 3.91
+            "current_price": 426.0,
+            "return_pct": 4.16
           },
           {
             "rank": 8,
@@ -1091,8 +915,8 @@
             "target_1": 93.45,
             "target_2": 95.5,
             "stop": 77.69,
-            "current_price": 91.7,
-            "return_pct": 0.99
+            "current_price": 90.95,
+            "return_pct": 0.17
           },
           {
             "rank": 9,
@@ -1107,8 +931,8 @@
             "target_1": 46.32,
             "target_2": 48.44,
             "stop": 37.57,
-            "current_price": 42.2,
-            "return_pct": 4.2
+            "current_price": 40.74,
+            "return_pct": 0.59
           },
           {
             "rank": 10,
@@ -1123,16 +947,16 @@
             "target_1": 186.8,
             "target_2": 192.7,
             "stop": 153.76,
-            "current_price": 174.2,
-            "return_pct": -4.7
+            "current_price": 164.0,
+            "return_pct": -10.28
           }
         ],
         "first_generated_at": "2026-08-05 14:30",
         "last_generated_at": "2026-08-07 09:45",
-        "as_of": "2026-08-07",
-        "age_trading_days": 2,
-        "avg_return_pct": 3.38,
-        "hit_rate_pct": 70.0,
+        "as_of": "2026-08-10",
+        "age_trading_days": 3,
+        "avg_return_pct": 1.14,
+        "hit_rate_pct": 80.0,
         "tracked_count": 10
       },
       {
@@ -1155,8 +979,8 @@
             "target_1": 288.63,
             "target_2": 307.34,
             "stop": 227.16,
-            "current_price": 267.25,
-            "return_pct": 0.0
+            "current_price": 240.6,
+            "return_pct": -9.97
           },
           {
             "rank": 2,
@@ -1171,8 +995,8 @@
             "target_1": 1886.0,
             "target_2": 1946.0,
             "stop": 1552.1,
-            "current_price": 1826.0,
-            "return_pct": 0.0
+            "current_price": 1722.0,
+            "return_pct": -5.7
           },
           {
             "rank": 3,
@@ -1187,8 +1011,8 @@
             "target_1": 4512.5,
             "target_2": 4545.0,
             "stop": 3808.0,
-            "current_price": 4480.0,
-            "return_pct": 0.0
+            "current_price": 4510.0,
+            "return_pct": 0.67
           },
           {
             "rank": 4,
@@ -1203,8 +1027,8 @@
             "target_1": 2840.0,
             "target_2": 2927.5,
             "stop": 2339.62,
-            "current_price": 2752.5,
-            "return_pct": 0.0
+            "current_price": 2797.5,
+            "return_pct": 1.63
           },
           {
             "rank": 5,
@@ -1219,8 +1043,8 @@
             "target_1": 44.99,
             "target_2": 46.39,
             "stop": 37.04,
-            "current_price": 43.58,
-            "return_pct": 0.0
+            "current_price": 42.9,
+            "return_pct": -1.56
           },
           {
             "rank": 6,
@@ -1235,8 +1059,8 @@
             "target_1": 175.33,
             "target_2": 176.47,
             "stop": 148.07,
-            "current_price": 174.2,
-            "return_pct": 0.0
+            "current_price": 178.0,
+            "return_pct": 2.18
           },
           {
             "rank": 7,
@@ -1251,8 +1075,8 @@
             "target_1": 1814.67,
             "target_2": 1856.33,
             "stop": 1507.05,
-            "current_price": 1773.0,
-            "return_pct": 0.0
+            "current_price": 1788.0,
+            "return_pct": 0.85
           },
           {
             "rank": 8,
@@ -1267,8 +1091,8 @@
             "target_1": 92.6,
             "target_2": 93.5,
             "stop": 77.94,
-            "current_price": 91.7,
-            "return_pct": 0.0
+            "current_price": 90.95,
+            "return_pct": -0.82
           },
           {
             "rank": 9,
@@ -1283,8 +1107,8 @@
             "target_1": 46.15,
             "target_2": 50.09,
             "stop": 35.87,
-            "current_price": 42.2,
-            "return_pct": 0.0
+            "current_price": 40.74,
+            "return_pct": -3.46
           },
           {
             "rank": 10,
@@ -1299,13 +1123,187 @@
             "target_1": 214.03,
             "target_2": 219.07,
             "stop": 177.65,
-            "current_price": 209.0,
-            "return_pct": 0.0
+            "current_price": 223.4,
+            "return_pct": 6.89
           }
         ],
         "first_generated_at": "2026-08-07 14:30",
         "last_generated_at": "2026-08-10 09:45",
-        "as_of": "2026-08-07",
+        "as_of": "2026-08-10",
+        "age_trading_days": 1,
+        "avg_return_pct": -0.93,
+        "hit_rate_pct": 50.0,
+        "tracked_count": 10
+      },
+      {
+        "date": "2026-08-10",
+        "generated_at": "2026-08-10 14:30",
+        "mode": "F",
+        "source": "yahoo",
+        "last_data_date": "2026-08-10",
+        "items": [
+          {
+            "rank": 1,
+            "ticker": "HEDEF",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XHOLD",
+            "entry_price": 240.6,
+            "m5": -28.0,
+            "m21": 28.0,
+            "m252": 2552.3,
+            "target_1": 259.85,
+            "target_2": 276.69,
+            "stop": 204.51,
+            "current_price": 240.6,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 2,
+            "ticker": "GUNDG",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XU100",
+            "entry_price": 1722.0,
+            "m5": 10.7,
+            "m21": -12.1,
+            "m252": 2137.8,
+            "target_1": 1812.0,
+            "target_2": 1902.0,
+            "stop": 1463.7,
+            "current_price": 1722.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 3,
+            "ticker": "OZATD",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XU100",
+            "entry_price": 4510.0,
+            "m5": 12.0,
+            "m21": 123.7,
+            "m252": 1890.3,
+            "target_1": 4553.33,
+            "target_2": 4596.67,
+            "stop": 3833.5,
+            "current_price": 4510.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 4,
+            "ticker": "ODINE",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XUTEK",
+            "entry_price": 2797.5,
+            "m5": 4.8,
+            "m21": 41.3,
+            "m252": 1854.9,
+            "target_1": 2863.33,
+            "target_2": 2929.17,
+            "stop": 2377.88,
+            "current_price": 2797.5,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 5,
+            "ticker": "KTLEV",
+            "action": "BEKLE",
+            "signal": "Nötr",
+            "sector": "XUTEK",
+            "entry_price": 42.9,
+            "m5": 3.6,
+            "m21": -23.6,
+            "m252": 1680.0,
+            "target_1": 44.33,
+            "target_2": 45.77,
+            "stop": 36.47,
+            "current_price": 42.9,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 6,
+            "ticker": "IEYHO",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XHOLD",
+            "entry_price": 178.0,
+            "m5": 5.0,
+            "m21": 11.9,
+            "m252": 1078.8,
+            "target_1": 179.13,
+            "target_2": 180.27,
+            "stop": 148.07,
+            "current_price": 178.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 7,
+            "ticker": "DSTKF",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XFINK",
+            "entry_price": 1788.0,
+            "m5": 10.8,
+            "m21": -53.4,
+            "m252": 247.2,
+            "target_1": 1835.67,
+            "target_2": 1883.33,
+            "stop": 1519.8,
+            "current_price": 1788.0,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 8,
+            "ticker": "EUPWR",
+            "action": "BEKLE",
+            "signal": "DAĞITIM",
+            "sector": "XELKT",
+            "entry_price": 90.95,
+            "m5": 0.9,
+            "m21": -0.5,
+            "m252": 191.7,
+            "target_1": 92.05,
+            "target_2": 93.15,
+            "stop": 77.31,
+            "current_price": 90.95,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 9,
+            "ticker": "TKFEN",
+            "action": "AL",
+            "signal": "Birikim",
+            "sector": "XINSA",
+            "entry_price": 223.4,
+            "m5": 36.2,
+            "m21": 62.7,
+            "m252": 119.4,
+            "target_1": 232.5,
+            "target_2": 241.6,
+            "stop": 189.89,
+            "current_price": 223.4,
+            "return_pct": 0.0
+          },
+          {
+            "rank": 10,
+            "ticker": "CWENE",
+            "action": "BEKLE",
+            "signal": "Nötr",
+            "sector": "XELKT",
+            "entry_price": 40.74,
+            "m5": 8.9,
+            "m21": 8.2,
+            "m252": 141.6,
+            "target_1": 42.53,
+            "target_2": 44.33,
+            "stop": 34.63,
+            "current_price": 40.74,
+            "return_pct": 0.0
+          }
+        ],
+        "as_of": "2026-08-10",
         "age_trading_days": 0,
         "avg_return_pct": 0.0,
         "hit_rate_pct": 0.0,
@@ -1314,182 +1312,6 @@
     ]
   },
   "snapshots": [
-    {
-      "date": "2026-06-05",
-      "generated_at": "2026-06-07 14:10",
-      "mode": "F",
-      "source": "yahoo",
-      "last_data_date": "2026-06-05",
-      "items": [
-        {
-          "rank": 1,
-          "ticker": "KTLEV",
-          "action": "AL",
-          "signal": "Birikim",
-          "sector": "XUTEK",
-          "entry_price": 148.5,
-          "m5": 17.7,
-          "m21": 28.8,
-          "m252": 1906.8,
-          "target_1": 152.97,
-          "target_2": 157.43,
-          "stop": 126.22,
-          "current_price": 43.58,
-          "return_pct": -70.65
-        },
-        {
-          "rank": 2,
-          "ticker": "ODINE",
-          "action": "BEKLE",
-          "signal": "DAĞITIM",
-          "sector": "XUTEK",
-          "entry_price": 1402.0,
-          "m5": 10.9,
-          "m21": 17.8,
-          "m252": 1747.2,
-          "target_1": 1426.0,
-          "target_2": 1450.0,
-          "stop": 1191.7,
-          "current_price": 2752.5,
-          "return_pct": 96.33
-        },
-        {
-          "rank": 3,
-          "ticker": "OZATD",
-          "action": "AL",
-          "signal": "Birikim",
-          "sector": "XU100",
-          "entry_price": 1494.0,
-          "m5": 9.2,
-          "m21": 173.6,
-          "m252": 971.7,
-          "target_1": 1528.0,
-          "target_2": 1562.0,
-          "stop": 1269.9,
-          "current_price": 4480.0,
-          "return_pct": 199.87
-        },
-        {
-          "rank": 4,
-          "ticker": "IEYHO",
-          "action": "BEKLE",
-          "signal": "DAĞITIM",
-          "sector": "XHOLD",
-          "entry_price": 117.2,
-          "m5": 0.0,
-          "m21": 16.4,
-          "m252": 708.3,
-          "target_1": 118.53,
-          "target_2": 119.87,
-          "stop": 99.62,
-          "current_price": 174.2,
-          "return_pct": 48.63
-        },
-        {
-          "rank": 5,
-          "ticker": "DSTKF",
-          "action": "AL",
-          "signal": "GÜÇLÜ_BİRİKİM",
-          "sector": "XFINK",
-          "entry_price": 2325.0,
-          "m5": 10.5,
-          "m21": -16.2,
-          "m252": 707.3,
-          "target_1": 2357.0,
-          "target_2": 2389.0,
-          "stop": 1976.25,
-          "current_price": 1773.0,
-          "return_pct": -23.74
-        },
-        {
-          "rank": 6,
-          "ticker": "PEKGY",
-          "action": "BEKLE",
-          "signal": "Üst_fitil_UYARI",
-          "sector": "XGMYO",
-          "entry_price": 11.99,
-          "m5": -10.5,
-          "m21": -29.5,
-          "m252": 541.2,
-          "target_1": 12.49,
-          "target_2": 12.99,
-          "stop": 10.19,
-          "current_price": 14.7,
-          "return_pct": 22.6
-        },
-        {
-          "rank": 7,
-          "ticker": "ANELE",
-          "action": "AL",
-          "signal": "Birikim",
-          "sector": "XU100",
-          "entry_price": 84.75,
-          "m5": -10.9,
-          "m21": 37.9,
-          "m252": 418.3,
-          "target_1": 86.32,
-          "target_2": 87.88,
-          "stop": 72.04,
-          "current_price": 124.9,
-          "return_pct": 47.37
-        },
-        {
-          "rank": 8,
-          "ticker": "EUPWR",
-          "action": "AL",
-          "signal": "Birikim",
-          "sector": "XELKT",
-          "entry_price": 88.7,
-          "m5": 16.6,
-          "m21": 49.1,
-          "m252": 237.3,
-          "target_1": 92.37,
-          "target_2": 96.03,
-          "stop": 75.39,
-          "current_price": 91.7,
-          "return_pct": 3.38
-        },
-        {
-          "rank": 9,
-          "ticker": "CVKMD",
-          "action": "BEKLE",
-          "signal": "Üst_fitil_UYARI",
-          "sector": "XMADN",
-          "entry_price": 43.1,
-          "m5": -8.8,
-          "m21": 15.8,
-          "m252": 256.2,
-          "target_1": 44.59,
-          "target_2": 46.07,
-          "stop": 36.63,
-          "current_price": 15.91,
-          "return_pct": -63.09
-        },
-        {
-          "rank": 10,
-          "ticker": "TERA",
-          "action": "BEKLE",
-          "signal": "DAĞITIM",
-          "sector": "XUMAL",
-          "entry_price": 200.1,
-          "m5": -4.8,
-          "m21": -18.7,
-          "m252": 246.7,
-          "target_1": 202.77,
-          "target_2": 205.43,
-          "stop": 170.09,
-          "current_price": 185.3,
-          "return_pct": -7.4
-        }
-      ],
-      "first_generated_at": "2026-06-07 14:10",
-      "last_generated_at": "2026-06-08 00:28",
-      "as_of": "2026-08-07",
-      "age_trading_days": 45,
-      "avg_return_pct": 25.33,
-      "hit_rate_pct": 60.0,
-      "tracked_count": 10
-    },
     {
       "date": "2026-06-08",
       "generated_at": "2026-06-08 14:31",
@@ -1510,8 +1332,8 @@
           "target_1": 165.53,
           "target_2": 172.87,
           "stop": 137.36,
-          "current_price": 43.58,
-          "return_pct": -72.95
+          "current_price": 42.9,
+          "return_pct": -73.37
         },
         {
           "rank": 2,
@@ -1526,8 +1348,8 @@
           "target_1": 1429.0,
           "target_2": 1473.0,
           "stop": 1217.2,
-          "current_price": 2752.5,
-          "return_pct": 92.21
+          "current_price": 2797.5,
+          "return_pct": 95.36
         },
         {
           "rank": 3,
@@ -1542,8 +1364,8 @@
           "target_1": 1551.67,
           "target_2": 1634.33,
           "stop": 1269.9,
-          "current_price": 4480.0,
-          "return_pct": 199.67
+          "current_price": 4510.0,
+          "return_pct": 201.67
         },
         {
           "rank": 4,
@@ -1558,8 +1380,8 @@
           "target_1": 119.57,
           "target_2": 120.33,
           "stop": 101.15,
-          "current_price": 174.2,
-          "return_pct": 46.51
+          "current_price": 178.0,
+          "return_pct": 49.71
         },
         {
           "rank": 5,
@@ -1574,8 +1396,8 @@
           "target_1": 2529.67,
           "target_2": 2589.33,
           "stop": 2099.5,
-          "current_price": 1773.0,
-          "return_pct": -26.74
+          "current_price": 1788.0,
+          "return_pct": -26.12
         },
         {
           "rank": 6,
@@ -1590,8 +1412,8 @@
           "target_1": 12.24,
           "target_2": 12.47,
           "stop": 10.2,
-          "current_price": 14.7,
-          "return_pct": 22.6
+          "current_price": 14.69,
+          "return_pct": 22.52
         },
         {
           "rank": 7,
@@ -1606,8 +1428,8 @@
           "target_1": 95.72,
           "target_2": 101.03,
           "stop": 79.22,
-          "current_price": 124.9,
-          "return_pct": 34.01
+          "current_price": 123.6,
+          "return_pct": 32.62
         },
         {
           "rank": 8,
@@ -1622,8 +1444,8 @@
           "target_1": 92.0,
           "target_2": 97.05,
           "stop": 75.39,
-          "current_price": 91.7,
-          "return_pct": 3.67
+          "current_price": 90.95,
+          "return_pct": 2.83
         },
         {
           "rank": 9,
@@ -1638,8 +1460,8 @@
           "target_1": 44.08,
           "target_2": 44.82,
           "stop": 36.84,
-          "current_price": 15.91,
-          "return_pct": -62.44
+          "current_price": 16.2,
+          "return_pct": -61.76
         },
         {
           "rank": 10,
@@ -1654,15 +1476,15 @@
           "target_1": 212.53,
           "target_2": 217.07,
           "stop": 177.14,
-          "current_price": 185.3,
-          "return_pct": -10.14
+          "current_price": 185.7,
+          "return_pct": -9.94
         }
       ],
       "first_generated_at": "2026-06-08 14:31",
       "last_generated_at": "2026-06-08 21:11",
-      "as_of": "2026-08-07",
-      "age_trading_days": 44,
-      "avg_return_pct": 22.64,
+      "as_of": "2026-08-10",
+      "age_trading_days": 45,
+      "avg_return_pct": 23.35,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -1686,8 +1508,8 @@
           "target_1": 162.57,
           "target_2": 165.13,
           "stop": 137.36,
-          "current_price": 43.58,
-          "return_pct": -72.83
+          "current_price": 42.9,
+          "return_pct": -73.25
         },
         {
           "rank": 2,
@@ -1702,8 +1524,8 @@
           "target_1": 1447.67,
           "target_2": 1475.33,
           "stop": 1217.2,
-          "current_price": 2752.5,
-          "return_pct": 101.8
+          "current_price": 2797.5,
+          "return_pct": 105.1
         },
         {
           "rank": 3,
@@ -1718,8 +1540,8 @@
           "target_1": 1532.33,
           "target_2": 1562.67,
           "stop": 1276.7,
-          "current_price": 4480.0,
-          "return_pct": 206.22
+          "current_price": 4510.0,
+          "return_pct": 208.27
         },
         {
           "rank": 4,
@@ -1734,8 +1556,8 @@
           "target_1": 123.0,
           "target_2": 124.2,
           "stop": 103.7,
-          "current_price": 174.2,
-          "return_pct": 44.68
+          "current_price": 178.0,
+          "return_pct": 47.84
         },
         {
           "rank": 5,
@@ -1750,8 +1572,8 @@
           "target_1": 2590.0,
           "target_2": 2630.0,
           "stop": 2167.5,
-          "current_price": 1773.0,
-          "return_pct": -30.2
+          "current_price": 1788.0,
+          "return_pct": -29.61
         },
         {
           "rank": 6,
@@ -1766,8 +1588,8 @@
           "target_1": 99.18,
           "target_2": 102.37,
           "stop": 81.6,
-          "current_price": 124.9,
-          "return_pct": 41.21
+          "current_price": 123.6,
+          "return_pct": 39.74
         },
         {
           "rank": 7,
@@ -1782,8 +1604,8 @@
           "target_1": 12.17,
           "target_2": 12.32,
           "stop": 10.26,
-          "current_price": 14.7,
-          "return_pct": 22.7
+          "current_price": 14.69,
+          "return_pct": 22.62
         },
         {
           "rank": 8,
@@ -1798,8 +1620,8 @@
           "target_1": 91.35,
           "target_2": 94.85,
           "stop": 75.39,
-          "current_price": 91.7,
-          "return_pct": 8.46
+          "current_price": 90.95,
+          "return_pct": 7.57
         },
         {
           "rank": 9,
@@ -1814,8 +1636,8 @@
           "target_1": 43.59,
           "target_2": 45.05,
           "stop": 36.84,
-          "current_price": 15.91,
-          "return_pct": -63.12
+          "current_price": 16.2,
+          "return_pct": -62.45
         },
         {
           "rank": 10,
@@ -1830,15 +1652,15 @@
           "target_1": 13.85,
           "target_2": 14.39,
           "stop": 11.31,
-          "current_price": 5.23,
-          "return_pct": -60.68
+          "current_price": 5.21,
+          "return_pct": -60.83
         }
       ],
       "first_generated_at": "2026-06-09 13:25",
       "last_generated_at": "2026-06-09 20:34",
-      "as_of": "2026-08-07",
-      "age_trading_days": 43,
-      "avg_return_pct": 19.82,
+      "as_of": "2026-08-10",
+      "age_trading_days": 44,
+      "avg_return_pct": 20.5,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -1862,8 +1684,8 @@
           "target_1": 163.03,
           "target_2": 165.07,
           "stop": 137.36,
-          "current_price": 43.58,
-          "return_pct": -72.56
+          "current_price": 42.9,
+          "return_pct": -72.98
         },
         {
           "rank": 2,
@@ -1878,8 +1700,8 @@
           "target_1": 1289.0,
           "target_2": 1338.0,
           "stop": 1054.0,
-          "current_price": 1826.0,
-          "return_pct": 47.97
+          "current_price": 1722.0,
+          "return_pct": 39.55
         },
         {
           "rank": 3,
@@ -1894,8 +1716,8 @@
           "target_1": 1538.33,
           "target_2": 1576.67,
           "stop": 1275.0,
-          "current_price": 2752.5,
-          "return_pct": 94.39
+          "current_price": 2797.5,
+          "return_pct": 97.56
         },
         {
           "rank": 4,
@@ -1910,8 +1732,8 @@
           "target_1": 1510.0,
           "target_2": 1526.0,
           "stop": 1276.7,
-          "current_price": 4480.0,
-          "return_pct": 205.18
+          "current_price": 4510.0,
+          "return_pct": 207.22
         },
         {
           "rank": 5,
@@ -1926,8 +1748,8 @@
           "target_1": 123.63,
           "target_2": 124.87,
           "stop": 104.47,
-          "current_price": 174.2,
-          "return_pct": 41.86
+          "current_price": 178.0,
+          "return_pct": 44.95
         },
         {
           "rank": 6,
@@ -1942,8 +1764,8 @@
           "target_1": 2680.83,
           "target_2": 2761.67,
           "stop": 2210.0,
-          "current_price": 1773.0,
-          "return_pct": -31.15
+          "current_price": 1788.0,
+          "return_pct": -30.56
         },
         {
           "rank": 7,
@@ -1958,8 +1780,8 @@
           "target_1": 12.29,
           "target_2": 12.44,
           "stop": 10.33,
-          "current_price": 14.7,
-          "return_pct": 22.19
+          "current_price": 14.69,
+          "return_pct": 22.11
         },
         {
           "rank": 8,
@@ -1974,8 +1796,8 @@
           "target_1": 99.23,
           "target_2": 101.87,
           "stop": 82.11,
-          "current_price": 91.7,
-          "return_pct": -1.98
+          "current_price": 90.95,
+          "return_pct": -2.78
         },
         {
           "rank": 9,
@@ -1990,8 +1812,8 @@
           "target_1": 42.29,
           "target_2": 43.47,
           "stop": 36.84,
-          "current_price": 15.91,
-          "return_pct": -61.06
+          "current_price": 16.2,
+          "return_pct": -60.35
         },
         {
           "rank": 10,
@@ -2006,15 +1828,15 @@
           "target_1": 206.33,
           "target_2": 208.57,
           "stop": 177.14,
-          "current_price": 185.3,
-          "return_pct": -8.45
+          "current_price": 185.7,
+          "return_pct": -8.25
         }
       ],
       "first_generated_at": "2026-06-10 13:45",
       "last_generated_at": "2026-06-10 21:14",
-      "as_of": "2026-08-07",
-      "age_trading_days": 42,
-      "avg_return_pct": 23.64,
+      "as_of": "2026-08-10",
+      "age_trading_days": 43,
+      "avg_return_pct": 23.65,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -2038,8 +1860,8 @@
           "target_1": 170.63,
           "target_2": 174.27,
           "stop": 141.95,
-          "current_price": 43.58,
-          "return_pct": -73.9
+          "current_price": 42.9,
+          "return_pct": -74.31
         },
         {
           "rank": 2,
@@ -2054,8 +1876,8 @@
           "target_1": 1273.0,
           "target_2": 1306.0,
           "stop": 1054.0,
-          "current_price": 1826.0,
-          "return_pct": 54.88
+          "current_price": 1722.0,
+          "return_pct": 46.06
         },
         {
           "rank": 3,
@@ -2070,8 +1892,8 @@
           "target_1": 1560.0,
           "target_2": 1585.0,
           "stop": 1304.75,
-          "current_price": 2752.5,
-          "return_pct": 86.48
+          "current_price": 2797.5,
+          "return_pct": 89.53
         },
         {
           "rank": 4,
@@ -2086,8 +1908,8 @@
           "target_1": 1592.67,
           "target_2": 1667.33,
           "stop": 1297.1,
-          "current_price": 4480.0,
-          "return_pct": 193.58
+          "current_price": 4510.0,
+          "return_pct": 195.54
         },
         {
           "rank": 5,
@@ -2102,8 +1924,8 @@
           "target_1": 125.1,
           "target_2": 126.3,
           "stop": 105.4,
-          "current_price": 174.2,
-          "return_pct": 42.79
+          "current_price": 178.0,
+          "return_pct": 45.9
         },
         {
           "rank": 6,
@@ -2118,8 +1940,8 @@
           "target_1": 2645.0,
           "target_2": 2690.0,
           "stop": 2212.12,
-          "current_price": 1773.0,
-          "return_pct": -31.87
+          "current_price": 1788.0,
+          "return_pct": -31.3
         },
         {
           "rank": 7,
@@ -2134,8 +1956,8 @@
           "target_1": 13.17,
           "target_2": 13.59,
           "stop": 10.98,
-          "current_price": 14.7,
-          "return_pct": 14.4
+          "current_price": 14.69,
+          "return_pct": 14.32
         },
         {
           "rank": 8,
@@ -2150,8 +1972,8 @@
           "target_1": 99.48,
           "target_2": 103.62,
           "stop": 83.38,
-          "current_price": 91.7,
-          "return_pct": -6.86
+          "current_price": 90.95,
+          "return_pct": -7.62
         },
         {
           "rank": 9,
@@ -2166,8 +1988,8 @@
           "target_1": 41.18,
           "target_2": 42.9,
           "stop": 36.84,
-          "current_price": 15.91,
-          "return_pct": -60.97
+          "current_price": 16.2,
+          "return_pct": -60.26
         },
         {
           "rank": 10,
@@ -2182,15 +2004,15 @@
           "target_1": 231.27,
           "target_2": 238.03,
           "stop": 190.82,
-          "current_price": 185.3,
-          "return_pct": -17.46
+          "current_price": 185.7,
+          "return_pct": -17.28
         }
       ],
       "first_generated_at": "2026-06-11 14:16",
       "last_generated_at": "2026-06-11 21:31",
-      "as_of": "2026-08-07",
-      "age_trading_days": 41,
-      "avg_return_pct": 20.11,
+      "as_of": "2026-08-10",
+      "age_trading_days": 42,
+      "avg_return_pct": 20.06,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -2214,15 +2036,15 @@
           "target_1": 388.08,
           "target_2": 396.17,
           "stop": 323.0,
-          "current_price": 385.75,
-          "return_pct": 0.06
+          "current_price": 390.5,
+          "return_pct": 1.3
         }
       ],
       "first_generated_at": "2026-06-12 13:53",
       "last_generated_at": "2026-06-12 20:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 40,
-      "avg_return_pct": 0.06,
+      "as_of": "2026-08-10",
+      "age_trading_days": 41,
+      "avg_return_pct": 1.3,
       "hit_rate_pct": 100.0,
       "tracked_count": 1
     },
@@ -2246,8 +2068,8 @@
           "target_1": 177.5,
           "target_2": 182.6,
           "stop": 158.04,
-          "current_price": 43.58,
-          "return_pct": -74.88
+          "current_price": 42.9,
+          "return_pct": -75.27
         },
         {
           "rank": 2,
@@ -2262,8 +2084,8 @@
           "target_1": 1659.33,
           "target_2": 1688.67,
           "stop": 1467.0,
-          "current_price": 2752.5,
-          "return_pct": 76.56
+          "current_price": 2797.5,
+          "return_pct": 79.44
         },
         {
           "rank": 3,
@@ -2278,8 +2100,8 @@
           "target_1": 1226.33,
           "target_2": 1252.67,
           "stop": 1020.0,
-          "current_price": 1826.0,
-          "return_pct": 53.83
+          "current_price": 1722.0,
+          "return_pct": 45.07
         },
         {
           "rank": 4,
@@ -2294,8 +2116,8 @@
           "target_1": 128.0,
           "target_2": 129.7,
           "stop": 108.97,
-          "current_price": 174.2,
-          "return_pct": 37.71
+          "current_price": 178.0,
+          "return_pct": 40.71
         },
         {
           "rank": 5,
@@ -2310,8 +2132,8 @@
           "target_1": 2883.33,
           "target_2": 2956.67,
           "stop": 2529.0,
-          "current_price": 1773.0,
-          "return_pct": -33.28
+          "current_price": 1788.0,
+          "return_pct": -32.72
         },
         {
           "rank": 6,
@@ -2326,8 +2148,8 @@
           "target_1": 13.25,
           "target_2": 13.66,
           "stop": 11.06,
-          "current_price": 14.7,
-          "return_pct": 18.55
+          "current_price": 14.69,
+          "return_pct": 18.47
         },
         {
           "rank": 7,
@@ -2342,8 +2164,8 @@
           "target_1": 29.14,
           "target_2": 29.66,
           "stop": 24.33,
-          "current_price": 30.66,
-          "return_pct": 10.29
+          "current_price": 31.12,
+          "return_pct": 11.94
         },
         {
           "rank": 8,
@@ -2358,8 +2180,8 @@
           "target_1": 103.72,
           "target_2": 107.58,
           "stop": 84.96,
-          "current_price": 91.7,
-          "return_pct": -8.39
+          "current_price": 90.95,
+          "return_pct": -9.14
         },
         {
           "rank": 9,
@@ -2374,8 +2196,8 @@
           "target_1": 44.24,
           "target_2": 45.34,
           "stop": 36.96,
-          "current_price": 15.91,
-          "return_pct": -63.39
+          "current_price": 16.2,
+          "return_pct": -62.72
         },
         {
           "rank": 10,
@@ -2390,15 +2212,15 @@
           "target_1": 40.49,
           "target_2": 41.55,
           "stop": 33.52,
-          "current_price": 42.2,
-          "return_pct": 7.98
+          "current_price": 40.74,
+          "return_pct": 4.25
         }
       ],
       "first_generated_at": "2026-06-15 15:55",
       "last_generated_at": "2026-06-15 22:12",
-      "as_of": "2026-08-07",
-      "age_trading_days": 39,
-      "avg_return_pct": 2.5,
+      "as_of": "2026-08-10",
+      "age_trading_days": 40,
+      "avg_return_pct": 2.0,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -2422,8 +2244,8 @@
           "target_1": 173.87,
           "target_2": 179.73,
           "stop": 158.04,
-          "current_price": 43.58,
-          "return_pct": -74.51
+          "current_price": 42.9,
+          "return_pct": -74.91
         },
         {
           "rank": 2,
@@ -2438,8 +2260,8 @@
           "target_1": 1708.33,
           "target_2": 1746.67,
           "stop": 1503.0,
-          "current_price": 2752.5,
-          "return_pct": 71.28
+          "current_price": 2797.5,
+          "return_pct": 74.08
         },
         {
           "rank": 3,
@@ -2454,8 +2276,8 @@
           "target_1": 128.4,
           "target_2": 129.8,
           "stop": 108.97,
-          "current_price": 174.2,
-          "return_pct": 36.95
+          "current_price": 178.0,
+          "return_pct": 39.94
         },
         {
           "rank": 4,
@@ -2470,8 +2292,8 @@
           "target_1": 2852.5,
           "target_2": 2895.0,
           "stop": 2529.0,
-          "current_price": 1773.0,
-          "return_pct": -36.11
+          "current_price": 1788.0,
+          "return_pct": -35.57
         },
         {
           "rank": 5,
@@ -2486,8 +2308,8 @@
           "target_1": 13.66,
           "target_2": 14.01,
           "stop": 11.31,
-          "current_price": 14.7,
-          "return_pct": 18.36
+          "current_price": 14.69,
+          "return_pct": 18.28
         },
         {
           "rank": 6,
@@ -2502,8 +2324,8 @@
           "target_1": 30.55,
           "target_2": 31.41,
           "stop": 25.25,
-          "current_price": 30.66,
-          "return_pct": 7.58
+          "current_price": 31.12,
+          "return_pct": 9.19
         },
         {
           "rank": 7,
@@ -2518,8 +2340,8 @@
           "target_1": 112.73,
           "target_2": 113.97,
           "stop": 94.77,
-          "current_price": 126.1,
-          "return_pct": 13.09
+          "current_price": 126.9,
+          "return_pct": 13.81
         },
         {
           "rank": 8,
@@ -2534,8 +2356,8 @@
           "target_1": 103.78,
           "target_2": 110.42,
           "stop": 94.5,
-          "current_price": 91.7,
-          "return_pct": -12.58
+          "current_price": 90.95,
+          "return_pct": -13.3
         },
         {
           "rank": 9,
@@ -2550,8 +2372,8 @@
           "target_1": 47.76,
           "target_2": 49.2,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -65.7
+          "current_price": 16.2,
+          "return_pct": -65.07
         },
         {
           "rank": 10,
@@ -2566,15 +2388,15 @@
           "target_1": 40.85,
           "target_2": 41.79,
           "stop": 33.93,
-          "current_price": 42.2,
-          "return_pct": 4.98
+          "current_price": 40.74,
+          "return_pct": 1.34
         }
       ],
       "first_generated_at": "2026-06-16 14:57",
       "last_generated_at": "2026-06-16 22:02",
-      "as_of": "2026-08-07",
-      "age_trading_days": 38,
-      "avg_return_pct": -3.67,
+      "as_of": "2026-08-10",
+      "age_trading_days": 39,
+      "avg_return_pct": -3.22,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -2598,8 +2420,8 @@
           "target_1": 180.67,
           "target_2": 184.23,
           "stop": 159.39,
-          "current_price": 43.58,
-          "return_pct": -74.97
+          "current_price": 42.9,
+          "return_pct": -75.36
         },
         {
           "rank": 2,
@@ -2614,8 +2436,8 @@
           "target_1": 1781.67,
           "target_2": 1813.33,
           "stop": 1575.0,
-          "current_price": 2752.5,
-          "return_pct": 62.87
+          "current_price": 2797.5,
+          "return_pct": 65.53
         },
         {
           "rank": 3,
@@ -2630,8 +2452,8 @@
           "target_1": 130.37,
           "target_2": 131.93,
           "stop": 109.48,
-          "current_price": 174.2,
-          "return_pct": 35.99
+          "current_price": 178.0,
+          "return_pct": 38.95
         },
         {
           "rank": 4,
@@ -2646,8 +2468,8 @@
           "target_1": 2919.17,
           "target_2": 2968.33,
           "stop": 2583.0,
-          "current_price": 1773.0,
-          "return_pct": -37.68
+          "current_price": 1788.0,
+          "return_pct": -37.15
         },
         {
           "rank": 5,
@@ -2662,8 +2484,8 @@
           "target_1": 13.48,
           "target_2": 13.73,
           "stop": 11.46,
-          "current_price": 14.7,
-          "return_pct": 8.97
+          "current_price": 14.69,
+          "return_pct": 8.9
         },
         {
           "rank": 6,
@@ -2678,8 +2500,8 @@
           "target_1": 29.75,
           "target_2": 30.45,
           "stop": 24.68,
-          "current_price": 30.66,
-          "return_pct": 2.2
+          "current_price": 31.12,
+          "return_pct": 3.73
         },
         {
           "rank": 7,
@@ -2694,8 +2516,8 @@
           "target_1": 109.97,
           "target_2": 112.83,
           "stop": 91.03,
-          "current_price": 126.1,
-          "return_pct": 15.48
+          "current_price": 126.9,
+          "return_pct": 16.21
         },
         {
           "rank": 8,
@@ -2710,8 +2532,8 @@
           "target_1": 45.77,
           "target_2": 47.71,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -65.34
+          "current_price": 16.2,
+          "return_pct": -64.71
         },
         {
           "rank": 9,
@@ -2726,8 +2548,8 @@
           "target_1": 98.43,
           "target_2": 103.67,
           "stop": 79.22,
-          "current_price": 91.7,
-          "return_pct": -2.29
+          "current_price": 90.95,
+          "return_pct": -3.09
         },
         {
           "rank": 10,
@@ -2742,15 +2564,15 @@
           "target_1": 41.12,
           "target_2": 42.12,
           "stop": 34.1,
-          "current_price": 42.2,
-          "return_pct": 8.04
+          "current_price": 40.74,
+          "return_pct": 4.3
         }
       ],
       "first_generated_at": "2026-06-17 14:24",
       "last_generated_at": "2026-06-17 21:02",
-      "as_of": "2026-08-07",
-      "age_trading_days": 37,
-      "avg_return_pct": -4.67,
+      "as_of": "2026-08-10",
+      "age_trading_days": 38,
+      "avg_return_pct": -4.27,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -2774,8 +2596,8 @@
           "target_1": 190.13,
           "target_2": 194.27,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -76.48
+          "current_price": 42.9,
+          "return_pct": -76.85
         },
         {
           "rank": 2,
@@ -2790,8 +2612,8 @@
           "target_1": 1737.67,
           "target_2": 1866.33,
           "stop": 1575.0,
-          "current_price": 2752.5,
-          "return_pct": 66.41
+          "current_price": 2797.5,
+          "return_pct": 69.14
         },
         {
           "rank": 3,
@@ -2806,8 +2628,8 @@
           "target_1": 131.27,
           "target_2": 132.73,
           "stop": 110.92,
-          "current_price": 174.2,
-          "return_pct": 33.49
+          "current_price": 178.0,
+          "return_pct": 36.4
         },
         {
           "rank": 4,
@@ -2822,8 +2644,8 @@
           "target_1": 3151.67,
           "target_2": 3230.83,
           "stop": 2918.88,
-          "current_price": 1773.0,
-          "return_pct": -40.25
+          "current_price": 1788.0,
+          "return_pct": -39.75
         },
         {
           "rank": 5,
@@ -2838,8 +2660,8 @@
           "target_1": 13.37,
           "target_2": 13.6,
           "stop": 11.46,
-          "current_price": 14.7,
-          "return_pct": 11.62
+          "current_price": 14.69,
+          "return_pct": 11.54
         },
         {
           "rank": 6,
@@ -2854,8 +2676,8 @@
           "target_1": 29.79,
           "target_2": 30.77,
           "stop": 24.48,
-          "current_price": 30.66,
-          "return_pct": 6.24
+          "current_price": 31.12,
+          "return_pct": 7.83
         },
         {
           "rank": 7,
@@ -2870,8 +2692,8 @@
           "target_1": 115.7,
           "target_2": 118.4,
           "stop": 96.05,
-          "current_price": 126.1,
-          "return_pct": 18.52
+          "current_price": 126.9,
+          "return_pct": 19.27
         },
         {
           "rank": 8,
@@ -2886,8 +2708,8 @@
           "target_1": 44.93,
           "target_2": 45.93,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -63.58
+          "current_price": 16.2,
+          "return_pct": -62.91
         },
         {
           "rank": 9,
@@ -2902,8 +2724,8 @@
           "target_1": 91.43,
           "target_2": 98.97,
           "stop": 71.32,
-          "current_price": 91.7,
-          "return_pct": 4.8
+          "current_price": 90.95,
+          "return_pct": 3.94
         },
         {
           "rank": 10,
@@ -2918,16 +2740,16 @@
           "target_1": 41.75,
           "target_2": 42.21,
           "stop": 35.1,
-          "current_price": 42.2,
-          "return_pct": 2.98
+          "current_price": 40.74,
+          "return_pct": -0.59
         }
       ],
       "first_generated_at": "2026-06-18 14:03",
       "last_generated_at": "2026-06-18 21:15",
-      "as_of": "2026-08-07",
-      "age_trading_days": 36,
-      "avg_return_pct": -3.63,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 37,
+      "avg_return_pct": -3.2,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -2950,8 +2772,8 @@
           "target_1": 188.53,
           "target_2": 196.07,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -76.4
+          "current_price": 42.9,
+          "return_pct": -76.77
         },
         {
           "rank": 2,
@@ -2966,8 +2788,8 @@
           "target_1": 1703.33,
           "target_2": 1750.67,
           "stop": 1575.0,
-          "current_price": 2752.5,
-          "return_pct": 66.41
+          "current_price": 2797.5,
+          "return_pct": 69.14
         },
         {
           "rank": 3,
@@ -2982,8 +2804,8 @@
           "target_1": 132.53,
           "target_2": 134.17,
           "stop": 112.29,
-          "current_price": 174.2,
-          "return_pct": 33.38
+          "current_price": 178.0,
+          "return_pct": 36.29
         },
         {
           "rank": 4,
@@ -2998,8 +2820,8 @@
           "target_1": 3299.17,
           "target_2": 3398.33,
           "stop": 3054.25,
-          "current_price": 1773.0,
-          "return_pct": -44.59
+          "current_price": 1788.0,
+          "return_pct": -44.12
         },
         {
           "rank": 5,
@@ -3014,8 +2836,8 @@
           "target_1": 13.9,
           "target_2": 14.16,
           "stop": 11.59,
-          "current_price": 14.7,
-          "return_pct": 10.11
+          "current_price": 14.69,
+          "return_pct": 10.04
         },
         {
           "rank": 6,
@@ -3030,8 +2852,8 @@
           "target_1": 29.4,
           "target_2": 29.8,
           "stop": 24.65,
-          "current_price": 30.66,
-          "return_pct": 7.13
+          "current_price": 31.12,
+          "return_pct": 8.74
         },
         {
           "rank": 7,
@@ -3046,8 +2868,8 @@
           "target_1": 122.67,
           "target_2": 125.33,
           "stop": 102.0,
-          "current_price": 126.1,
-          "return_pct": 8.99
+          "current_price": 126.9,
+          "return_pct": 9.68
         },
         {
           "rank": 8,
@@ -3062,8 +2884,8 @@
           "target_1": 44.59,
           "target_2": 45.23,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -63.73
+          "current_price": 16.2,
+          "return_pct": -63.06
         },
         {
           "rank": 9,
@@ -3078,8 +2900,8 @@
           "target_1": 92.75,
           "target_2": 97.15,
           "stop": 75.1,
-          "current_price": 91.7,
-          "return_pct": 4.98
+          "current_price": 90.95,
+          "return_pct": 4.12
         },
         {
           "rank": 10,
@@ -3094,16 +2916,16 @@
           "target_1": 41.89,
           "target_2": 42.67,
           "stop": 34.95,
-          "current_price": 42.2,
-          "return_pct": 1.34
+          "current_price": 40.74,
+          "return_pct": -2.16
         }
       ],
       "first_generated_at": "2026-06-19 14:10",
       "last_generated_at": "2026-06-19 20:29",
-      "as_of": "2026-08-07",
-      "age_trading_days": 35,
-      "avg_return_pct": -5.24,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 36,
+      "avg_return_pct": -4.81,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -3126,8 +2948,8 @@
           "target_1": 187.6,
           "target_2": 191.6,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -76.46
+          "current_price": 42.9,
+          "return_pct": -76.82
         },
         {
           "rank": 2,
@@ -3142,8 +2964,8 @@
           "target_1": 1721.67,
           "target_2": 1749.33,
           "stop": 1575.0,
-          "current_price": 2752.5,
-          "return_pct": 64.13
+          "current_price": 2797.5,
+          "return_pct": 66.82
         },
         {
           "rank": 3,
@@ -3158,8 +2980,8 @@
           "target_1": 141.23,
           "target_2": 146.67,
           "stop": 125.64,
-          "current_price": 174.2,
-          "return_pct": 24.79
+          "current_price": 178.0,
+          "return_pct": 27.51
         },
         {
           "rank": 4,
@@ -3174,8 +2996,8 @@
           "target_1": 3335.0,
           "target_2": 3370.0,
           "stop": 3135.0,
-          "current_price": 1773.0,
-          "return_pct": -45.66
+          "current_price": 1788.0,
+          "return_pct": -45.2
         },
         {
           "rank": 5,
@@ -3190,8 +3012,8 @@
           "target_1": 347.08,
           "target_2": 354.67,
           "stop": 288.57,
-          "current_price": 425.0,
-          "return_pct": 25.18
+          "current_price": 426.0,
+          "return_pct": 25.48
         },
         {
           "rank": 6,
@@ -3206,8 +3028,8 @@
           "target_1": 13.9,
           "target_2": 14.11,
           "stop": 11.64,
-          "current_price": 14.7,
-          "return_pct": 8.73
+          "current_price": 14.69,
+          "return_pct": 8.65
         },
         {
           "rank": 7,
@@ -3222,8 +3044,8 @@
           "target_1": 29.48,
           "target_2": 30.26,
           "stop": 24.4,
-          "current_price": 30.66,
-          "return_pct": 6.09
+          "current_price": 31.12,
+          "return_pct": 7.68
         },
         {
           "rank": 8,
@@ -3238,8 +3060,8 @@
           "target_1": 125.33,
           "target_2": 126.67,
           "stop": 105.4,
-          "current_price": 126.1,
-          "return_pct": 1.69
+          "current_price": 126.9,
+          "return_pct": 2.34
         },
         {
           "rank": 9,
@@ -3254,8 +3076,8 @@
           "target_1": 100.85,
           "target_2": 104.55,
           "stop": 82.58,
-          "current_price": 91.7,
-          "return_pct": -2.96
+          "current_price": 90.95,
+          "return_pct": -3.76
         },
         {
           "rank": 10,
@@ -3270,15 +3092,15 @@
           "target_1": 44.43,
           "target_2": 45.99,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -63.03
+          "current_price": 16.2,
+          "return_pct": -62.36
         }
       ],
       "first_generated_at": "2026-06-22 15:38",
       "last_generated_at": "2026-06-22 21:56",
-      "as_of": "2026-08-07",
-      "age_trading_days": 34,
-      "avg_return_pct": -5.75,
+      "as_of": "2026-08-10",
+      "age_trading_days": 35,
+      "avg_return_pct": -4.97,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -3302,8 +3124,8 @@
           "target_1": 1347.33,
           "target_2": 1374.67,
           "stop": 1122.0,
-          "current_price": 1826.0,
-          "return_pct": 38.33
+          "current_price": 1722.0,
+          "return_pct": 30.45
         },
         {
           "rank": 2,
@@ -3318,8 +3140,8 @@
           "target_1": 186.07,
           "target_2": 190.13,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -75.49
+          "current_price": 42.9,
+          "return_pct": -75.87
         },
         {
           "rank": 3,
@@ -3334,8 +3156,8 @@
           "target_1": 1776.67,
           "target_2": 1803.33,
           "stop": 1575.0,
-          "current_price": 2752.5,
-          "return_pct": 62.39
+          "current_price": 2797.5,
+          "return_pct": 65.04
         },
         {
           "rank": 4,
@@ -3350,8 +3172,8 @@
           "target_1": 1571.67,
           "target_2": 1617.33,
           "stop": 1297.1,
-          "current_price": 4480.0,
-          "return_pct": 193.58
+          "current_price": 4510.0,
+          "return_pct": 195.54
         },
         {
           "rank": 5,
@@ -3366,8 +3188,8 @@
           "target_1": 140.2,
           "target_2": 142.3,
           "stop": 125.64,
-          "current_price": 174.2,
-          "return_pct": 27.99
+          "current_price": 178.0,
+          "return_pct": 30.79
         },
         {
           "rank": 6,
@@ -3382,8 +3204,8 @@
           "target_1": 3363.33,
           "target_2": 3401.67,
           "stop": 3158.75,
-          "current_price": 1773.0,
-          "return_pct": -44.94
+          "current_price": 1788.0,
+          "return_pct": -44.47
         },
         {
           "rank": 7,
@@ -3398,8 +3220,8 @@
           "target_1": 13.88,
           "target_2": 14.02,
           "stop": 11.68,
-          "current_price": 14.7,
-          "return_pct": 7.38
+          "current_price": 14.69,
+          "return_pct": 7.3
         },
         {
           "rank": 8,
@@ -3414,8 +3236,8 @@
           "target_1": 97.67,
           "target_2": 102.38,
           "stop": 79.01,
-          "current_price": 91.7,
-          "return_pct": -2.34
+          "current_price": 90.95,
+          "return_pct": -3.14
         },
         {
           "rank": 9,
@@ -3430,8 +3252,8 @@
           "target_1": 42.48,
           "target_2": 43.14,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -62.08
+          "current_price": 16.2,
+          "return_pct": -61.39
         },
         {
           "rank": 10,
@@ -3446,15 +3268,15 @@
           "target_1": 42.31,
           "target_2": 44.83,
           "stop": 33.81,
-          "current_price": 42.2,
-          "return_pct": 6.08
+          "current_price": 40.74,
+          "return_pct": 2.41
         }
       ],
       "first_generated_at": "2026-06-23 13:23",
       "last_generated_at": "2026-06-23 20:24",
-      "as_of": "2026-08-07",
-      "age_trading_days": 33,
-      "avg_return_pct": 15.09,
+      "as_of": "2026-08-10",
+      "age_trading_days": 34,
+      "avg_return_pct": 14.67,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -3478,8 +3300,8 @@
           "target_1": 182.77,
           "target_2": 187.23,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -76.05
+          "current_price": 42.9,
+          "return_pct": -76.43
         },
         {
           "rank": 2,
@@ -3494,8 +3316,8 @@
           "target_1": 1783.0,
           "target_2": 1808.0,
           "stop": 1582.2,
-          "current_price": 2752.5,
-          "return_pct": 56.84
+          "current_price": 2797.5,
+          "return_pct": 59.4
         },
         {
           "rank": 3,
@@ -3510,8 +3332,8 @@
           "target_1": 1622.0,
           "target_2": 1685.0,
           "stop": 1325.15,
-          "current_price": 4480.0,
-          "return_pct": 180.0
+          "current_price": 4510.0,
+          "return_pct": 181.88
         },
         {
           "rank": 4,
@@ -3526,8 +3348,8 @@
           "target_1": 141.2,
           "target_2": 143.4,
           "stop": 126.81,
-          "current_price": 174.2,
-          "return_pct": 25.69
+          "current_price": 178.0,
+          "return_pct": 28.43
         },
         {
           "rank": 5,
@@ -3542,8 +3364,8 @@
           "target_1": 3370.83,
           "target_2": 3411.67,
           "stop": 3189.62,
-          "current_price": 1773.0,
-          "return_pct": -47.19
+          "current_price": 1788.0,
+          "return_pct": -46.75
         },
         {
           "rank": 6,
@@ -3558,8 +3380,8 @@
           "target_1": 13.85,
           "target_2": 13.98,
           "stop": 11.68,
-          "current_price": 14.7,
-          "return_pct": 7.14
+          "current_price": 14.69,
+          "return_pct": 7.07
         },
         {
           "rank": 7,
@@ -3574,8 +3396,8 @@
           "target_1": 353.25,
           "target_2": 362.5,
           "stop": 292.4,
-          "current_price": 425.0,
-          "return_pct": 24.18
+          "current_price": 426.0,
+          "return_pct": 24.47
         },
         {
           "rank": 8,
@@ -3590,8 +3412,8 @@
           "target_1": 29.85,
           "target_2": 30.85,
           "stop": 24.53,
-          "current_price": 30.66,
-          "return_pct": 9.58
+          "current_price": 31.12,
+          "return_pct": 11.22
         },
         {
           "rank": 9,
@@ -3606,8 +3428,8 @@
           "target_1": 91.47,
           "target_2": 96.78,
           "stop": 73.23,
-          "current_price": 91.7,
-          "return_pct": 2.63
+          "current_price": 90.95,
+          "return_pct": 1.79
         },
         {
           "rank": 10,
@@ -3622,15 +3444,15 @@
           "target_1": 41.28,
           "target_2": 42.66,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -61.14
+          "current_price": 16.2,
+          "return_pct": -60.43
         }
       ],
       "first_generated_at": "2026-06-24 13:02",
       "last_generated_at": "2026-06-24 20:25",
-      "as_of": "2026-08-07",
-      "age_trading_days": 32,
-      "avg_return_pct": 12.17,
+      "as_of": "2026-08-10",
+      "age_trading_days": 33,
+      "avg_return_pct": 13.07,
       "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
@@ -3654,8 +3476,8 @@
           "target_1": 180.3,
           "target_2": 190.2,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -74.68
+          "current_price": 42.9,
+          "return_pct": -75.07
         },
         {
           "rank": 2,
@@ -3670,8 +3492,8 @@
           "target_1": 1887.67,
           "target_2": 1940.33,
           "stop": 1743.25,
-          "current_price": 2752.5,
-          "return_pct": 58.83
+          "current_price": 2797.5,
+          "return_pct": 61.43
         },
         {
           "rank": 3,
@@ -3686,8 +3508,8 @@
           "target_1": 143.27,
           "target_2": 144.33,
           "stop": 127.98,
-          "current_price": 174.2,
-          "return_pct": 24.87
+          "current_price": 178.0,
+          "return_pct": 27.6
         },
         {
           "rank": 4,
@@ -3702,8 +3524,8 @@
           "target_1": 1680.0,
           "target_2": 1760.0,
           "stop": 1360.0,
-          "current_price": 4480.0,
-          "return_pct": 178.09
+          "current_price": 4510.0,
+          "return_pct": 179.95
         },
         {
           "rank": 5,
@@ -3718,8 +3540,8 @@
           "target_1": 3545.83,
           "target_2": 3671.67,
           "stop": 3249.0,
-          "current_price": 1773.0,
-          "return_pct": -47.66
+          "current_price": 1788.0,
+          "return_pct": -47.22
         },
         {
           "rank": 6,
@@ -3734,8 +3556,8 @@
           "target_1": 13.79,
           "target_2": 13.94,
           "stop": 12.42,
-          "current_price": 14.7,
-          "return_pct": 6.52
+          "current_price": 14.69,
+          "return_pct": 6.45
         },
         {
           "rank": 7,
@@ -3750,8 +3572,8 @@
           "target_1": 345.33,
           "target_2": 352.67,
           "stop": 287.3,
-          "current_price": 425.0,
-          "return_pct": 23.28
+          "current_price": 426.0,
+          "return_pct": 23.57
         },
         {
           "rank": 8,
@@ -3766,8 +3588,8 @@
           "target_1": 29.57,
           "target_2": 30.09,
           "stop": 24.7,
-          "current_price": 30.66,
-          "return_pct": 4.86
+          "current_price": 31.12,
+          "return_pct": 6.43
         },
         {
           "rank": 9,
@@ -3782,8 +3604,8 @@
           "target_1": 40.71,
           "target_2": 41.23,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -60.5
+          "current_price": 16.2,
+          "return_pct": -59.78
         },
         {
           "rank": 10,
@@ -3798,15 +3620,15 @@
           "target_1": 87.1,
           "target_2": 93.95,
           "stop": 68.21,
-          "current_price": 91.7,
-          "return_pct": 8.2
+          "current_price": 90.95,
+          "return_pct": 7.32
         }
       ],
       "first_generated_at": "2026-06-25 12:58",
       "last_generated_at": "2026-06-25 20:28",
-      "as_of": "2026-08-07",
-      "age_trading_days": 31,
-      "avg_return_pct": 12.18,
+      "as_of": "2026-08-10",
+      "age_trading_days": 32,
+      "avg_return_pct": 13.07,
       "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
@@ -3830,8 +3652,8 @@
           "target_1": 177.57,
           "target_2": 183.83,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -75.27
+          "current_price": 42.9,
+          "return_pct": -75.65
         },
         {
           "rank": 2,
@@ -3846,8 +3668,8 @@
           "target_1": 1900.0,
           "target_2": 1930.0,
           "stop": 1776.5,
-          "current_price": 2752.5,
-          "return_pct": 52.49
+          "current_price": 2797.5,
+          "return_pct": 54.99
         },
         {
           "rank": 3,
@@ -3862,8 +3684,8 @@
           "target_1": 144.37,
           "target_2": 146.83,
           "stop": 127.98,
-          "current_price": 174.2,
-          "return_pct": 22.59
+          "current_price": 178.0,
+          "return_pct": 25.26
         },
         {
           "rank": 4,
@@ -3878,8 +3700,8 @@
           "target_1": 1662.33,
           "target_2": 1749.67,
           "stop": 1338.75,
-          "current_price": 4480.0,
-          "return_pct": 186.81
+          "current_price": 4510.0,
+          "return_pct": 188.73
         },
         {
           "rank": 5,
@@ -3894,8 +3716,8 @@
           "target_1": 3537.5,
           "target_2": 3610.0,
           "stop": 3291.75,
-          "current_price": 1773.0,
-          "return_pct": -48.68
+          "current_price": 1788.0,
+          "return_pct": -48.25
         },
         {
           "rank": 6,
@@ -3910,8 +3732,8 @@
           "target_1": 14.07,
           "target_2": 14.25,
           "stop": 12.51,
-          "current_price": 14.7,
-          "return_pct": 5.83
+          "current_price": 14.69,
+          "return_pct": 5.76
         },
         {
           "rank": 7,
@@ -3926,8 +3748,8 @@
           "target_1": 343.67,
           "target_2": 349.33,
           "stop": 287.3,
-          "current_price": 425.0,
-          "return_pct": 25.55
+          "current_price": 426.0,
+          "return_pct": 25.85
         },
         {
           "rank": 8,
@@ -3942,8 +3764,8 @@
           "target_1": 30.75,
           "target_2": 31.51,
           "stop": 25.5,
-          "current_price": 30.66,
-          "return_pct": 4.71
+          "current_price": 31.12,
+          "return_pct": 6.28
         },
         {
           "rank": 9,
@@ -3958,8 +3780,8 @@
           "target_1": 40.47,
           "target_2": 40.97,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -60.24
+          "current_price": 16.2,
+          "return_pct": -59.52
         },
         {
           "rank": 10,
@@ -3974,15 +3796,15 @@
           "target_1": 80.8,
           "target_2": 83.4,
           "stop": 66.47,
-          "current_price": 91.7,
-          "return_pct": 17.26
+          "current_price": 90.95,
+          "return_pct": 16.3
         }
       ],
       "first_generated_at": "2026-06-26 13:02",
       "last_generated_at": "2026-06-29 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 30,
-      "avg_return_pct": 13.11,
+      "as_of": "2026-08-10",
+      "age_trading_days": 31,
+      "avg_return_pct": 13.98,
       "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
@@ -4006,8 +3828,8 @@
           "target_1": 1643.67,
           "target_2": 1683.33,
           "stop": 1363.4,
-          "current_price": 1826.0,
-          "return_pct": 15.86
+          "current_price": 1722.0,
+          "return_pct": 9.26
         },
         {
           "rank": 2,
@@ -4022,8 +3844,8 @@
           "target_1": 175.9,
           "target_2": 179.1,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -75.24
+          "current_price": 42.9,
+          "return_pct": -75.62
         },
         {
           "rank": 3,
@@ -4038,8 +3860,8 @@
           "target_1": 1930.0,
           "target_2": 1970.0,
           "stop": 1795.5,
-          "current_price": 2752.5,
-          "return_pct": 47.43
+          "current_price": 2797.5,
+          "return_pct": 49.84
         },
         {
           "rank": 4,
@@ -4054,8 +3876,8 @@
           "target_1": 147.87,
           "target_2": 149.73,
           "stop": 131.94,
-          "current_price": 174.2,
-          "return_pct": 20.3
+          "current_price": 178.0,
+          "return_pct": 22.93
         },
         {
           "rank": 5,
@@ -4070,8 +3892,8 @@
           "target_1": 3614.17,
           "target_2": 3678.33,
           "stop": 3372.5,
-          "current_price": 1773.0,
-          "return_pct": -48.68
+          "current_price": 1788.0,
+          "return_pct": -48.25
         },
         {
           "rank": 6,
@@ -4086,8 +3908,8 @@
           "target_1": 1686.67,
           "target_2": 1728.33,
           "stop": 1398.25,
-          "current_price": 4480.0,
-          "return_pct": 185.53
+          "current_price": 4510.0,
+          "return_pct": 187.44
         },
         {
           "rank": 7,
@@ -4102,8 +3924,8 @@
           "target_1": 14.08,
           "target_2": 14.18,
           "stop": 12.59,
-          "current_price": 14.7,
-          "return_pct": 5.53
+          "current_price": 14.69,
+          "return_pct": 5.46
         },
         {
           "rank": 8,
@@ -4118,8 +3940,8 @@
           "target_1": 140.2,
           "target_2": 143.6,
           "stop": 116.28,
-          "current_price": 126.1,
-          "return_pct": -8.09
+          "current_price": 126.9,
+          "return_pct": -7.51
         },
         {
           "rank": 9,
@@ -4134,8 +3956,8 @@
           "target_1": 42.79,
           "target_2": 45.33,
           "stop": 39.41,
-          "current_price": 15.91,
-          "return_pct": -61.29
+          "current_price": 16.2,
+          "return_pct": -60.58
         },
         {
           "rank": 10,
@@ -4150,15 +3972,15 @@
           "target_1": 225.4,
           "target_2": 235.7,
           "stop": 182.84,
-          "current_price": 216.7,
-          "return_pct": 1.5
+          "current_price": 217.3,
+          "return_pct": 1.78
         }
       ],
       "first_generated_at": "2026-06-29 11:53",
       "last_generated_at": "2026-06-29 23:28",
-      "as_of": "2026-08-07",
-      "age_trading_days": 29,
-      "avg_return_pct": 8.29,
+      "as_of": "2026-08-10",
+      "age_trading_days": 30,
+      "avg_return_pct": 8.47,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -4182,15 +4004,15 @@
           "target_1": 6.24,
           "target_2": 6.31,
           "stop": 5.24,
-          "current_price": 6.29,
-          "return_pct": 0.96
+          "current_price": 6.39,
+          "return_pct": 2.57
         }
       ],
       "first_generated_at": "2026-06-30 13:26",
       "last_generated_at": "2026-06-30 22:11",
-      "as_of": "2026-08-07",
-      "age_trading_days": 28,
-      "avg_return_pct": 0.96,
+      "as_of": "2026-08-10",
+      "age_trading_days": 29,
+      "avg_return_pct": 2.57,
       "hit_rate_pct": 100.0,
       "tracked_count": 1
     },
@@ -4214,8 +4036,8 @@
           "target_1": 1731.67,
           "target_2": 1792.33,
           "stop": 1420.35,
-          "current_price": 1826.0,
-          "return_pct": 10.33
+          "current_price": 1722.0,
+          "return_pct": 4.05
         },
         {
           "rank": 2,
@@ -4230,8 +4052,8 @@
           "target_1": 175.43,
           "target_2": 179.57,
           "stop": 167.4,
-          "current_price": 43.58,
-          "return_pct": -74.6
+          "current_price": 42.9,
+          "return_pct": -75.0
         },
         {
           "rank": 3,
@@ -4246,8 +4068,8 @@
           "target_1": 1930.67,
           "target_2": 1939.33,
           "stop": 1825.9,
-          "current_price": 2752.5,
-          "return_pct": 44.41
+          "current_price": 2797.5,
+          "return_pct": 46.77
         },
         {
           "rank": 4,
@@ -4262,8 +4084,8 @@
           "target_1": 3699.17,
           "target_2": 3730.83,
           "stop": 3484.12,
-          "current_price": 1773.0,
-          "return_pct": -51.32
+          "current_price": 1788.0,
+          "return_pct": -50.91
         },
         {
           "rank": 5,
@@ -4278,8 +4100,8 @@
           "target_1": 155.5,
           "target_2": 160.2,
           "stop": 144.78,
-          "current_price": 174.2,
-          "return_pct": 15.21
+          "current_price": 178.0,
+          "return_pct": 17.72
         },
         {
           "rank": 6,
@@ -4294,8 +4116,8 @@
           "target_1": 14.08,
           "target_2": 14.2,
           "stop": 12.59,
-          "current_price": 14.7,
-          "return_pct": 5.68
+          "current_price": 14.69,
+          "return_pct": 5.61
         },
         {
           "rank": 7,
@@ -4310,8 +4132,8 @@
           "target_1": 1652.67,
           "target_2": 1679.33,
           "stop": 1382.1,
-          "current_price": 4480.0,
-          "return_pct": 185.35
+          "current_price": 4510.0,
+          "return_pct": 187.26
         },
         {
           "rank": 8,
@@ -4326,8 +4148,8 @@
           "target_1": 40.01,
           "target_2": 40.63,
           "stop": 33.47,
-          "current_price": 15.91,
-          "return_pct": -58.93
+          "current_price": 16.2,
+          "return_pct": -58.18
         },
         {
           "rank": 9,
@@ -4342,8 +4164,8 @@
           "target_1": 85.32,
           "target_2": 87.73,
           "stop": 70.47,
-          "current_price": 91.7,
-          "return_pct": 11.02
+          "current_price": 90.95,
+          "return_pct": 10.11
         },
         {
           "rank": 10,
@@ -4358,15 +4180,15 @@
           "target_1": 209.03,
           "target_2": 214.07,
           "stop": 173.4,
-          "current_price": 216.7,
-          "return_pct": 7.17
+          "current_price": 217.3,
+          "return_pct": 7.47
         }
       ],
       "first_generated_at": "2026-07-01 12:18",
       "last_generated_at": "2026-07-01 14:12",
-      "as_of": "2026-08-07",
-      "age_trading_days": 27,
-      "avg_return_pct": 9.43,
+      "as_of": "2026-08-10",
+      "age_trading_days": 28,
+      "avg_return_pct": 9.49,
       "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
@@ -4390,8 +4212,8 @@
           "target_1": 1871.67,
           "target_2": 1913.33,
           "stop": 1555.5,
-          "current_price": 1826.0,
-          "return_pct": -0.22
+          "current_price": 1722.0,
+          "return_pct": -5.9
         },
         {
           "rank": 2,
@@ -4406,8 +4228,8 @@
           "target_1": 192.4,
           "target_2": 197.4,
           "stop": 168.66,
-          "current_price": 43.58,
-          "return_pct": -76.74
+          "current_price": 42.9,
+          "return_pct": -77.11
         },
         {
           "rank": 3,
@@ -4422,8 +4244,8 @@
           "target_1": 1997.0,
           "target_2": 2014.0,
           "stop": 1881.0,
-          "current_price": 2752.5,
-          "return_pct": 39.02
+          "current_price": 2797.5,
+          "return_pct": 41.29
         },
         {
           "rank": 4,
@@ -4438,8 +4260,8 @@
           "target_1": 3864.17,
           "target_2": 3918.33,
           "stop": 3619.5,
-          "current_price": 1773.0,
-          "return_pct": -53.46
+          "current_price": 1788.0,
+          "return_pct": -53.07
         },
         {
           "rank": 5,
@@ -4454,8 +4276,8 @@
           "target_1": 160.07,
           "target_2": 166.13,
           "stop": 146.3,
-          "current_price": 174.2,
-          "return_pct": 13.12
+          "current_price": 178.0,
+          "return_pct": 15.58
         },
         {
           "rank": 6,
@@ -4470,8 +4292,8 @@
           "target_1": 1813.0,
           "target_2": 1867.0,
           "stop": 1495.15,
-          "current_price": 4480.0,
-          "return_pct": 154.69
+          "current_price": 4510.0,
+          "return_pct": 156.4
         },
         {
           "rank": 7,
@@ -4486,8 +4308,8 @@
           "target_1": 14.53,
           "target_2": 14.76,
           "stop": 12.87,
-          "current_price": 14.7,
-          "return_pct": 2.8
+          "current_price": 14.69,
+          "return_pct": 2.73
         },
         {
           "rank": 8,
@@ -4502,8 +4324,8 @@
           "target_1": 40.79,
           "target_2": 41.65,
           "stop": 33.93,
-          "current_price": 15.91,
-          "return_pct": -60.15
+          "current_price": 16.2,
+          "return_pct": -59.42
         },
         {
           "rank": 9,
@@ -4518,8 +4340,8 @@
           "target_1": 85.52,
           "target_2": 88.18,
           "stop": 70.42,
-          "current_price": 91.7,
-          "return_pct": 10.68
+          "current_price": 90.95,
+          "return_pct": 9.78
         },
         {
           "rank": 10,
@@ -4534,15 +4356,15 @@
           "target_1": 214.63,
           "target_2": 220.47,
           "stop": 177.48,
-          "current_price": 216.7,
-          "return_pct": 3.78
+          "current_price": 217.3,
+          "return_pct": 4.07
         }
       ],
       "first_generated_at": "2026-07-02 23:37",
       "last_generated_at": "2026-07-03 09:57",
-      "as_of": "2026-08-07",
-      "age_trading_days": 26,
-      "avg_return_pct": 3.35,
+      "as_of": "2026-08-10",
+      "age_trading_days": 27,
+      "avg_return_pct": 3.43,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -4566,8 +4388,8 @@
           "target_1": 1833.67,
           "target_2": 1867.33,
           "stop": 1530.0,
-          "current_price": 1826.0,
-          "return_pct": 1.67
+          "current_price": 1722.0,
+          "return_pct": -4.12
         },
         {
           "rank": 2,
@@ -4582,8 +4404,8 @@
           "target_1": 188.57,
           "target_2": 193.43,
           "stop": 168.66,
-          "current_price": 43.58,
-          "return_pct": -76.65
+          "current_price": 42.9,
+          "return_pct": -77.01
         },
         {
           "rank": 3,
@@ -4598,8 +4420,8 @@
           "target_1": 1937.0,
           "target_2": 2069.0,
           "stop": 1534.25,
-          "current_price": 2752.5,
-          "return_pct": 44.41
+          "current_price": 2797.5,
+          "return_pct": 46.77
         },
         {
           "rank": 4,
@@ -4614,8 +4436,8 @@
           "target_1": 154.97,
           "target_2": 157.93,
           "stop": 146.3,
-          "current_price": 174.2,
-          "return_pct": 13.71
+          "current_price": 178.0,
+          "return_pct": 16.19
         },
         {
           "rank": 5,
@@ -4630,8 +4452,8 @@
           "target_1": 3825.0,
           "target_2": 3900.0,
           "stop": 3619.5,
-          "current_price": 1773.0,
-          "return_pct": -53.4
+          "current_price": 1788.0,
+          "return_pct": -53.01
         },
         {
           "rank": 6,
@@ -4646,8 +4468,8 @@
           "target_1": 1913.67,
           "target_2": 1957.33,
           "stop": 1589.5,
-          "current_price": 4480.0,
-          "return_pct": 148.34
+          "current_price": 4510.0,
+          "return_pct": 150.0
         },
         {
           "rank": 7,
@@ -4662,8 +4484,8 @@
           "target_1": 14.39,
           "target_2": 14.48,
           "stop": 12.89,
-          "current_price": 14.7,
-          "return_pct": 2.65
+          "current_price": 14.69,
+          "return_pct": 2.58
         },
         {
           "rank": 8,
@@ -4678,8 +4500,8 @@
           "target_1": 41.4,
           "target_2": 42.1,
           "stop": 34.6,
-          "current_price": 15.91,
-          "return_pct": -61.31
+          "current_price": 16.2,
+          "return_pct": -60.6
         },
         {
           "rank": 9,
@@ -4694,8 +4516,8 @@
           "target_1": 232.37,
           "target_2": 241.73,
           "stop": 189.55,
-          "current_price": 216.7,
-          "return_pct": 0.42
+          "current_price": 217.3,
+          "return_pct": 0.7
         },
         {
           "rank": 10,
@@ -4710,16 +4532,16 @@
           "target_1": 39.27,
           "target_2": 39.53,
           "stop": 33.17,
-          "current_price": 49.7,
-          "return_pct": 27.44
+          "current_price": 49.88,
+          "return_pct": 27.9
         }
       ],
       "first_generated_at": "2026-07-03 13:20",
       "last_generated_at": "2026-07-06 10:09",
-      "as_of": "2026-08-07",
-      "age_trading_days": 25,
-      "avg_return_pct": 4.73,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 26,
+      "avg_return_pct": 4.94,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -4742,8 +4564,8 @@
           "target_1": 1972.0,
           "target_2": 2064.0,
           "stop": 1598.0,
-          "current_price": 1826.0,
-          "return_pct": -2.87
+          "current_price": 1722.0,
+          "return_pct": -8.4
         },
         {
           "rank": 2,
@@ -4758,8 +4580,8 @@
           "target_1": 187.5,
           "target_2": 190.5,
           "stop": 168.66,
-          "current_price": 43.58,
-          "return_pct": -76.38
+          "current_price": 42.9,
+          "return_pct": -76.75
         },
         {
           "rank": 3,
@@ -4774,8 +4596,8 @@
           "target_1": 1876.0,
           "target_2": 1952.0,
           "stop": 1530.0,
-          "current_price": 2752.5,
-          "return_pct": 52.92
+          "current_price": 2797.5,
+          "return_pct": 55.42
         },
         {
           "rank": 4,
@@ -4790,8 +4612,8 @@
           "target_1": 2001.33,
           "target_2": 2041.67,
           "stop": 1666.85,
-          "current_price": 4480.0,
-          "return_pct": 128.45
+          "current_price": 4510.0,
+          "return_pct": 129.98
         },
         {
           "rank": 5,
@@ -4806,8 +4628,8 @@
           "target_1": 155.3,
           "target_2": 157.1,
           "stop": 147.91,
-          "current_price": 174.2,
-          "return_pct": 13.49
+          "current_price": 178.0,
+          "return_pct": 15.96
         },
         {
           "rank": 6,
@@ -4822,8 +4644,8 @@
           "target_1": 3765.0,
           "target_2": 3945.0,
           "stop": 3047.25,
-          "current_price": 1773.0,
-          "return_pct": -50.54
+          "current_price": 1788.0,
+          "return_pct": -50.13
         },
         {
           "rank": 7,
@@ -4838,8 +4660,8 @@
           "target_1": 14.46,
           "target_2": 14.64,
           "stop": 13.22,
-          "current_price": 14.7,
-          "return_pct": 2.87
+          "current_price": 14.69,
+          "return_pct": 2.8
         },
         {
           "rank": 8,
@@ -4854,8 +4676,8 @@
           "target_1": 350.25,
           "target_2": 355.75,
           "stop": 293.04,
-          "current_price": 425.0,
-          "return_pct": 23.28
+          "current_price": 426.0,
+          "return_pct": 23.57
         },
         {
           "rank": 9,
@@ -4870,8 +4692,8 @@
           "target_1": 40.93,
           "target_2": 42.09,
           "stop": 33.8,
-          "current_price": 15.91,
-          "return_pct": -59.98
+          "current_price": 16.2,
+          "return_pct": -59.26
         },
         {
           "rank": 10,
@@ -4886,15 +4708,15 @@
           "target_1": 19.67,
           "target_2": 20.27,
           "stop": 16.22,
-          "current_price": 6.09,
-          "return_pct": -68.08
+          "current_price": 6.04,
+          "return_pct": -68.34
         }
       ],
       "first_generated_at": "2026-07-06 12:49",
       "last_generated_at": "2026-07-08 10:06",
-      "as_of": "2026-08-07",
-      "age_trading_days": 24,
-      "avg_return_pct": -3.69,
+      "as_of": "2026-08-10",
+      "age_trading_days": 25,
+      "avg_return_pct": -3.51,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -4918,8 +4740,8 @@
           "target_1": 2003.33,
           "target_2": 2041.67,
           "stop": 1670.25,
-          "current_price": 1826.0,
-          "return_pct": -2.14
+          "current_price": 1722.0,
+          "return_pct": -7.72
         },
         {
           "rank": 2,
@@ -4934,8 +4756,8 @@
           "target_1": 185.43,
           "target_2": 190.87,
           "stop": 170.1,
-          "current_price": 43.58,
-          "return_pct": -75.98
+          "current_price": 42.9,
+          "return_pct": -76.35
         },
         {
           "rank": 3,
@@ -4950,8 +4772,8 @@
           "target_1": 1958.67,
           "target_2": 2043.33,
           "stop": 1592.9,
-          "current_price": 2752.5,
-          "return_pct": 66.01
+          "current_price": 2797.5,
+          "return_pct": 68.73
         },
         {
           "rank": 4,
@@ -4966,8 +4788,8 @@
           "target_1": 156.0,
           "target_2": 157.5,
           "stop": 149.25,
-          "current_price": 174.2,
-          "return_pct": 11.88
+          "current_price": 178.0,
+          "return_pct": 14.32
         },
         {
           "rank": 5,
@@ -4982,8 +4804,8 @@
           "target_1": 4060.83,
           "target_2": 4201.67,
           "stop": 3332.0,
-          "current_price": 1773.0,
-          "return_pct": -51.26
+          "current_price": 1788.0,
+          "return_pct": -50.85
         },
         {
           "rank": 6,
@@ -4998,8 +4820,8 @@
           "target_1": 1929.33,
           "target_2": 2030.67,
           "stop": 1553.8,
-          "current_price": 4480.0,
-          "return_pct": 138.68
+          "current_price": 4510.0,
+          "return_pct": 140.28
         },
         {
           "rank": 7,
@@ -5014,8 +4836,8 @@
           "target_1": 14.84,
           "target_2": 15.06,
           "stop": 13.22,
-          "current_price": 14.7,
-          "return_pct": 0.07
+          "current_price": 14.69,
+          "return_pct": 0.0
         },
         {
           "rank": 8,
@@ -5030,8 +4852,8 @@
           "target_1": 390.67,
           "target_2": 402.33,
           "stop": 322.15,
-          "current_price": 425.0,
-          "return_pct": 12.14
+          "current_price": 426.0,
+          "return_pct": 12.4
         },
         {
           "rank": 9,
@@ -5046,8 +4868,8 @@
           "target_1": 40.24,
           "target_2": 40.86,
           "stop": 33.68,
-          "current_price": 15.91,
-          "return_pct": -59.94
+          "current_price": 16.2,
+          "return_pct": -59.21
         },
         {
           "rank": 10,
@@ -5062,16 +4884,16 @@
           "target_1": 19.39,
           "target_2": 19.68,
           "stop": 16.24,
-          "current_price": 6.09,
-          "return_pct": -67.9
+          "current_price": 6.04,
+          "return_pct": -68.16
         }
       ],
       "first_generated_at": "2026-07-07 14:56",
       "last_generated_at": "2026-07-09 09:47",
-      "as_of": "2026-08-07",
-      "age_trading_days": 23,
-      "avg_return_pct": -2.84,
-      "hit_rate_pct": 50.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 24,
+      "avg_return_pct": -2.66,
+      "hit_rate_pct": 40.0,
       "tracked_count": 10
     },
     {
@@ -5094,8 +4916,8 @@
           "target_1": 2014.67,
           "target_2": 2072.33,
           "stop": 1663.45,
-          "current_price": 1826.0,
-          "return_pct": -6.07
+          "current_price": 1722.0,
+          "return_pct": -11.42
         },
         {
           "rank": 2,
@@ -5110,8 +4932,8 @@
           "target_1": 199.43,
           "target_2": 203.87,
           "stop": 185.25,
-          "current_price": 43.58,
-          "return_pct": -77.63
+          "current_price": 42.9,
+          "return_pct": -77.98
         },
         {
           "rank": 3,
@@ -5126,8 +4948,8 @@
           "target_1": 2020.33,
           "target_2": 2068.67,
           "stop": 1676.2,
-          "current_price": 2752.5,
-          "return_pct": 38.6
+          "current_price": 2797.5,
+          "return_pct": 40.86
         },
         {
           "rank": 4,
@@ -5142,8 +4964,8 @@
           "target_1": 159.4,
           "target_2": 160.7,
           "stop": 150.29,
-          "current_price": 174.2,
-          "return_pct": 10.11
+          "current_price": 178.0,
+          "return_pct": 12.52
         },
         {
           "rank": 5,
@@ -5158,8 +4980,8 @@
           "target_1": 1966.67,
           "target_2": 2005.33,
           "stop": 1638.8,
-          "current_price": 4480.0,
-          "return_pct": 131.76
+          "current_price": 4510.0,
+          "return_pct": 133.32
         },
         {
           "rank": 6,
@@ -5174,8 +4996,8 @@
           "target_1": 3899.17,
           "target_2": 3963.33,
           "stop": 3259.75,
-          "current_price": 1773.0,
-          "return_pct": -53.8
+          "current_price": 1788.0,
+          "return_pct": -53.41
         },
         {
           "rank": 7,
@@ -5190,8 +5012,8 @@
           "target_1": 387.25,
           "target_2": 395.25,
           "stop": 322.36,
-          "current_price": 425.0,
-          "return_pct": 11.62
+          "current_price": 426.0,
+          "return_pct": 11.88
         },
         {
           "rank": 8,
@@ -5206,8 +5028,8 @@
           "target_1": 14.85,
           "target_2": 15.03,
           "stop": 13.22,
-          "current_price": 14.7,
-          "return_pct": 0.14
+          "current_price": 14.69,
+          "return_pct": 0.07
         },
         {
           "rank": 9,
@@ -5222,8 +5044,8 @@
           "target_1": 39.61,
           "target_2": 40.39,
           "stop": 33.01,
-          "current_price": 15.91,
-          "return_pct": -59.25
+          "current_price": 16.2,
+          "return_pct": -58.5
         },
         {
           "rank": 10,
@@ -5238,15 +5060,15 @@
           "target_1": 40.99,
           "target_2": 41.57,
           "stop": 34.34,
-          "current_price": 49.7,
-          "return_pct": 23.02
+          "current_price": 49.88,
+          "return_pct": 23.47
         }
       ],
       "first_generated_at": "2026-07-09 14:31",
       "last_generated_at": "2026-07-09 19:04",
-      "as_of": "2026-08-07",
-      "age_trading_days": 21,
-      "avg_return_pct": 1.85,
+      "as_of": "2026-08-10",
+      "age_trading_days": 22,
+      "avg_return_pct": 2.08,
       "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
@@ -5270,8 +5092,8 @@
           "target_1": 2056.67,
           "target_2": 2113.33,
           "stop": 1700.0,
-          "current_price": 1826.0,
-          "return_pct": -7.54
+          "current_price": 1722.0,
+          "return_pct": -12.81
         },
         {
           "rank": 2,
@@ -5286,8 +5108,8 @@
           "target_1": 192.5,
           "target_2": 196.0,
           "stop": 185.25,
-          "current_price": 43.58,
-          "return_pct": -76.44
+          "current_price": 42.9,
+          "return_pct": -76.81
         },
         {
           "rank": 3,
@@ -5302,8 +5124,8 @@
           "target_1": 2022.33,
           "target_2": 2076.67,
           "stop": 1672.8,
-          "current_price": 2752.5,
-          "return_pct": 42.84
+          "current_price": 2797.5,
+          "return_pct": 45.17
         },
         {
           "rank": 4,
@@ -5318,8 +5140,8 @@
           "target_1": 157.4,
           "target_2": 159.0,
           "stop": 150.29,
-          "current_price": 174.2,
-          "return_pct": 10.88
+          "current_price": 178.0,
+          "return_pct": 13.3
         },
         {
           "rank": 5,
@@ -5334,8 +5156,8 @@
           "target_1": 3922.5,
           "target_2": 4025.0,
           "stop": 3247.0,
-          "current_price": 1773.0,
-          "return_pct": -54.04
+          "current_price": 1788.0,
+          "return_pct": -53.65
         },
         {
           "rank": 6,
@@ -5350,8 +5172,8 @@
           "target_1": 1958.0,
           "target_2": 2019.0,
           "stop": 1612.45,
-          "current_price": 4480.0,
-          "return_pct": 136.54
+          "current_price": 4510.0,
+          "return_pct": 138.12
         },
         {
           "rank": 7,
@@ -5366,8 +5188,8 @@
           "target_1": 393.5,
           "target_2": 409.0,
           "stop": 321.3,
-          "current_price": 425.0,
-          "return_pct": 12.29
+          "current_price": 426.0,
+          "return_pct": 12.55
         },
         {
           "rank": 8,
@@ -5382,8 +5204,8 @@
           "target_1": 14.66,
           "target_2": 14.81,
           "stop": 13.22,
-          "current_price": 14.7,
-          "return_pct": 0.68
+          "current_price": 14.69,
+          "return_pct": 0.62
         },
         {
           "rank": 9,
@@ -5398,8 +5220,8 @@
           "target_1": 19.8,
           "target_2": 20.16,
           "stop": 16.52,
-          "current_price": 6.09,
-          "return_pct": -67.9
+          "current_price": 6.04,
+          "return_pct": -68.16
         },
         {
           "rank": 10,
@@ -5414,15 +5236,15 @@
           "target_1": 39.05,
           "target_2": 40.31,
           "stop": 32.11,
-          "current_price": 15.91,
-          "return_pct": -58.59
+          "current_price": 16.2,
+          "return_pct": -57.83
         }
       ],
       "first_generated_at": "2026-07-08 14:32",
       "last_generated_at": "2026-07-10 10:07",
-      "as_of": "2026-08-07",
-      "age_trading_days": 22,
-      "avg_return_pct": -6.13,
+      "as_of": "2026-08-10",
+      "age_trading_days": 23,
+      "avg_return_pct": -5.95,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -5446,8 +5268,8 @@
           "target_1": 2066.33,
           "target_2": 2172.67,
           "stop": 1666.0,
-          "current_price": 1826.0,
-          "return_pct": -6.88
+          "current_price": 1722.0,
+          "return_pct": -12.19
         },
         {
           "rank": 2,
@@ -5462,8 +5284,8 @@
           "target_1": 196.6,
           "target_2": 203.2,
           "stop": 186.2,
-          "current_price": 43.58,
-          "return_pct": -77.44
+          "current_price": 42.9,
+          "return_pct": -77.8
         },
         {
           "rank": 3,
@@ -5478,8 +5300,8 @@
           "target_1": 2007.0,
           "target_2": 2034.0,
           "stop": 1683.0,
-          "current_price": 2752.5,
-          "return_pct": 41.66
+          "current_price": 2797.5,
+          "return_pct": 43.98
         },
         {
           "rank": 4,
@@ -5494,8 +5316,8 @@
           "target_1": 160.27,
           "target_2": 161.53,
           "stop": 152.19,
-          "current_price": 174.2,
-          "return_pct": 8.87
+          "current_price": 178.0,
+          "return_pct": 11.25
         },
         {
           "rank": 5,
@@ -5510,8 +5332,8 @@
           "target_1": 2064.0,
           "target_2": 2112.0,
           "stop": 1713.6,
-          "current_price": 4480.0,
-          "return_pct": 123.44
+          "current_price": 4510.0,
+          "return_pct": 124.94
         },
         {
           "rank": 6,
@@ -5526,8 +5348,8 @@
           "target_1": 3913.33,
           "target_2": 3986.67,
           "stop": 3264.0,
-          "current_price": 1773.0,
-          "return_pct": -53.56
+          "current_price": 1788.0,
+          "return_pct": -53.16
         },
         {
           "rank": 7,
@@ -5542,8 +5364,8 @@
           "target_1": 385.83,
           "target_2": 393.67,
           "stop": 321.3,
-          "current_price": 425.0,
-          "return_pct": 10.25
+          "current_price": 426.0,
+          "return_pct": 10.51
         },
         {
           "rank": 8,
@@ -5558,8 +5380,8 @@
           "target_1": 14.88,
           "target_2": 15.05,
           "stop": 13.28,
-          "current_price": 14.7,
-          "return_pct": -0.41
+          "current_price": 14.69,
+          "return_pct": -0.47
         },
         {
           "rank": 9,
@@ -5574,8 +5396,8 @@
           "target_1": 39.24,
           "target_2": 39.94,
           "stop": 32.76,
-          "current_price": 15.91,
-          "return_pct": -58.68
+          "current_price": 16.2,
+          "return_pct": -57.92
         },
         {
           "rank": 10,
@@ -5590,15 +5412,15 @@
           "target_1": 19.94,
           "target_2": 20.61,
           "stop": 16.38,
-          "current_price": 6.09,
-          "return_pct": -67.57
+          "current_price": 6.04,
+          "return_pct": -67.84
         }
       ],
       "first_generated_at": "2026-07-10 14:31",
       "last_generated_at": "2026-07-14 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 20,
-      "avg_return_pct": -8.03,
+      "as_of": "2026-08-10",
+      "age_trading_days": 21,
+      "avg_return_pct": -7.87,
       "hit_rate_pct": 40.0,
       "tracked_count": 10
     },
@@ -5622,8 +5444,8 @@
           "target_1": 2078.33,
           "target_2": 2136.67,
           "stop": 1717.0,
-          "current_price": 1826.0,
-          "return_pct": -7.92
+          "current_price": 1722.0,
+          "return_pct": -13.16
         },
         {
           "rank": 2,
@@ -5638,8 +5460,8 @@
           "target_1": 200.23,
           "target_2": 204.47,
           "stop": 186.3,
-          "current_price": 43.58,
-          "return_pct": -76.6
+          "current_price": 42.9,
+          "return_pct": -76.96
         },
         {
           "rank": 3,
@@ -5654,8 +5476,8 @@
           "target_1": 2084.0,
           "target_2": 2117.0,
           "stop": 1743.35,
-          "current_price": 2752.5,
-          "return_pct": 39.09
+          "current_price": 2797.5,
+          "return_pct": 41.36
         },
         {
           "rank": 4,
@@ -5670,8 +5492,8 @@
           "target_1": 160.8,
           "target_2": 162.1,
           "stop": 152.19,
-          "current_price": 174.2,
-          "return_pct": 8.74
+          "current_price": 178.0,
+          "return_pct": 11.11
         },
         {
           "rank": 5,
@@ -5686,8 +5508,8 @@
           "target_1": 2284.33,
           "target_2": 2351.67,
           "stop": 1884.45,
-          "current_price": 4480.0,
-          "return_pct": 105.22
+          "current_price": 4510.0,
+          "return_pct": 106.6
         },
         {
           "rank": 6,
@@ -5702,8 +5524,8 @@
           "target_1": 3710.83,
           "target_2": 3964.17,
           "stop": 2938.88,
-          "current_price": 1773.0,
-          "return_pct": -48.72
+          "current_price": 1788.0,
+          "return_pct": -48.29
         },
         {
           "rank": 7,
@@ -5718,8 +5540,8 @@
           "target_1": 385.92,
           "target_2": 390.08,
           "stop": 324.49,
-          "current_price": 425.0,
-          "return_pct": 12.43
+          "current_price": 426.0,
+          "return_pct": 12.7
         },
         {
           "rank": 8,
@@ -5734,8 +5556,8 @@
           "target_1": 14.84,
           "target_2": 14.95,
           "stop": 13.37,
-          "current_price": 14.7,
-          "return_pct": 0.68
+          "current_price": 14.69,
+          "return_pct": 0.62
         },
         {
           "rank": 9,
@@ -5750,8 +5572,8 @@
           "target_1": 38.13,
           "target_2": 38.57,
           "stop": 32.05,
-          "current_price": 15.91,
-          "return_pct": -58.18
+          "current_price": 16.2,
+          "return_pct": -57.41
         },
         {
           "rank": 10,
@@ -5766,15 +5588,15 @@
           "target_1": 19.14,
           "target_2": 19.75,
           "stop": 15.74,
-          "current_price": 6.09,
-          "return_pct": -67.12
+          "current_price": 6.04,
+          "return_pct": -67.39
         }
       ],
       "first_generated_at": "2026-07-13 14:50",
       "last_generated_at": "2026-07-15 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 19,
-      "avg_return_pct": -9.24,
+      "as_of": "2026-08-10",
+      "age_trading_days": 20,
+      "avg_return_pct": -9.08,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -5798,8 +5620,8 @@
           "target_1": 2145.33,
           "target_2": 2202.67,
           "stop": 1774.8,
-          "current_price": 1826.0,
-          "return_pct": -11.7
+          "current_price": 1722.0,
+          "return_pct": -16.73
         },
         {
           "rank": 2,
@@ -5814,8 +5636,8 @@
           "target_1": 200.57,
           "target_2": 206.33,
           "stop": 165.58,
-          "current_price": 267.25,
-          "return_pct": 37.62
+          "current_price": 240.6,
+          "return_pct": 23.89
         },
         {
           "rank": 3,
@@ -5830,8 +5652,8 @@
           "target_1": 200.7,
           "target_2": 203.1,
           "stop": 188.39,
-          "current_price": 43.58,
-          "return_pct": -77.91
+          "current_price": 42.9,
+          "return_pct": -78.26
         },
         {
           "rank": 4,
@@ -5846,8 +5668,8 @@
           "target_1": 2113.67,
           "target_2": 2137.33,
           "stop": 1776.5,
-          "current_price": 2752.5,
-          "return_pct": 33.04
+          "current_price": 2797.5,
+          "return_pct": 35.21
         },
         {
           "rank": 5,
@@ -5862,8 +5684,8 @@
           "target_1": 2640.33,
           "target_2": 2705.67,
           "stop": 2188.75,
-          "current_price": 4480.0,
-          "return_pct": 81.6
+          "current_price": 4510.0,
+          "return_pct": 82.81
         },
         {
           "rank": 6,
@@ -5878,8 +5700,8 @@
           "target_1": 161.63,
           "target_2": 163.27,
           "stop": 152.19,
-          "current_price": 174.2,
-          "return_pct": 8.94
+          "current_price": 178.0,
+          "return_pct": 11.32
         },
         {
           "rank": 7,
@@ -5894,8 +5716,8 @@
           "target_1": 410.33,
           "target_2": 422.17,
           "stop": 338.72,
-          "current_price": 425.0,
-          "return_pct": 7.32
+          "current_price": 426.0,
+          "return_pct": 7.58
         },
         {
           "rank": 8,
@@ -5910,8 +5732,8 @@
           "target_1": 3026.7,
           "target_2": 3222.87,
           "stop": 2382.12,
-          "current_price": 1773.0,
-          "return_pct": -36.74
+          "current_price": 1788.0,
+          "return_pct": -36.2
         },
         {
           "rank": 9,
@@ -5926,8 +5748,8 @@
           "target_1": 14.91,
           "target_2": 15.03,
           "stop": 13.37,
-          "current_price": 14.7,
-          "return_pct": -1.08
+          "current_price": 14.69,
+          "return_pct": -1.14
         },
         {
           "rank": 10,
@@ -5942,15 +5764,15 @@
           "target_1": 248.2,
           "target_2": 255.5,
           "stop": 204.76,
-          "current_price": 216.7,
-          "return_pct": -10.05
+          "current_price": 217.3,
+          "return_pct": -9.8
         }
       ],
       "first_generated_at": "2026-07-16 14:31",
       "last_generated_at": "2026-07-16 18:41",
-      "as_of": "2026-08-07",
-      "age_trading_days": 16,
-      "avg_return_pct": 3.1,
+      "as_of": "2026-08-10",
+      "age_trading_days": 17,
+      "avg_return_pct": 1.87,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -5974,8 +5796,8 @@
           "target_1": 2109.67,
           "target_2": 2143.33,
           "stop": 1764.6,
-          "current_price": 1826.0,
-          "return_pct": -10.49
+          "current_price": 1722.0,
+          "return_pct": -15.59
         },
         {
           "rank": 2,
@@ -5990,8 +5812,8 @@
           "target_1": 195.57,
           "target_2": 198.53,
           "stop": 163.71,
-          "current_price": 267.25,
-          "return_pct": 38.76
+          "current_price": 240.6,
+          "return_pct": 24.92
         },
         {
           "rank": 3,
@@ -6006,8 +5828,8 @@
           "target_1": 199.27,
           "target_2": 202.43,
           "stop": 188.39,
-          "current_price": 43.58,
-          "return_pct": -77.75
+          "current_price": 42.9,
+          "return_pct": -78.1
         },
         {
           "rank": 4,
@@ -6022,8 +5844,8 @@
           "target_1": 2154.0,
           "target_2": 2248.0,
           "stop": 1751.0,
-          "current_price": 2752.5,
-          "return_pct": 33.04
+          "current_price": 2797.5,
+          "return_pct": 35.21
         },
         {
           "rank": 5,
@@ -6038,8 +5860,8 @@
           "target_1": 2457.67,
           "target_2": 2502.33,
           "stop": 2051.05,
-          "current_price": 4480.0,
-          "return_pct": 87.68
+          "current_price": 4510.0,
+          "return_pct": 88.94
         },
         {
           "rank": 6,
@@ -6054,8 +5876,8 @@
           "target_1": 161.13,
           "target_2": 162.77,
           "stop": 152.19,
-          "current_price": 174.2,
-          "return_pct": 8.87
+          "current_price": 178.0,
+          "return_pct": 11.25
         },
         {
           "rank": 7,
@@ -6070,8 +5892,8 @@
           "target_1": 402.25,
           "target_2": 407.5,
           "stop": 337.45,
-          "current_price": 425.0,
-          "return_pct": 7.73
+          "current_price": 426.0,
+          "return_pct": 7.98
         },
         {
           "rank": 8,
@@ -6086,8 +5908,8 @@
           "target_1": 3361.5,
           "target_2": 3579.37,
           "stop": 2645.62,
-          "current_price": 1773.0,
-          "return_pct": -43.04
+          "current_price": 1788.0,
+          "return_pct": -42.55
         },
         {
           "rank": 9,
@@ -6102,8 +5924,8 @@
           "target_1": 14.92,
           "target_2": 15.07,
           "stop": 13.37,
-          "current_price": 14.7,
-          "return_pct": -1.08
+          "current_price": 14.69,
+          "return_pct": -1.14
         },
         {
           "rank": 10,
@@ -6118,15 +5940,15 @@
           "target_1": 39.1,
           "target_2": 39.76,
           "stop": 32.67,
-          "current_price": 15.91,
-          "return_pct": -58.83
+          "current_price": 16.2,
+          "return_pct": -58.07
         }
       ],
       "first_generated_at": "2026-07-14 14:31",
       "last_generated_at": "2026-07-17 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 18,
-      "avg_return_pct": -1.51,
+      "as_of": "2026-08-10",
+      "age_trading_days": 19,
+      "avg_return_pct": -2.72,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -6150,8 +5972,8 @@
           "target_1": 2142.0,
           "target_2": 2184.0,
           "stop": 1828.35,
-          "current_price": 1826.0,
-          "return_pct": -12.88
+          "current_price": 1722.0,
+          "return_pct": -17.84
         },
         {
           "rank": 2,
@@ -6166,8 +5988,8 @@
           "target_1": 196.6,
           "target_2": 198.2,
           "stop": 182.32,
-          "current_price": 267.25,
-          "return_pct": 37.26
+          "current_price": 240.6,
+          "return_pct": 23.57
         },
         {
           "rank": 3,
@@ -6182,8 +6004,8 @@
           "target_1": 195.4,
           "target_2": 201.6,
           "stop": 163.88,
-          "current_price": 43.58,
-          "return_pct": -77.44
+          "current_price": 42.9,
+          "return_pct": -77.8
         },
         {
           "rank": 4,
@@ -6198,8 +6020,8 @@
           "target_1": 2122.67,
           "target_2": 2145.33,
           "stop": 1850.45,
-          "current_price": 2752.5,
-          "return_pct": 31.26
+          "current_price": 2797.5,
+          "return_pct": 33.4
         },
         {
           "rank": 5,
@@ -6214,8 +6036,8 @@
           "target_1": 2788.33,
           "target_2": 2881.67,
           "stop": 2358.75,
-          "current_price": 4480.0,
-          "return_pct": 68.9
+          "current_price": 4510.0,
+          "return_pct": 70.03
         },
         {
           "rank": 6,
@@ -6230,8 +6052,8 @@
           "target_1": 160.27,
           "target_2": 162.93,
           "stop": 137.28,
-          "current_price": 174.2,
-          "return_pct": 9.77
+          "current_price": 178.0,
+          "return_pct": 12.16
         },
         {
           "rank": 7,
@@ -6246,8 +6068,8 @@
           "target_1": 399.25,
           "target_2": 405.25,
           "stop": 340.85,
-          "current_price": 425.0,
-          "return_pct": 6.38
+          "current_price": 426.0,
+          "return_pct": 6.63
         },
         {
           "rank": 8,
@@ -6262,8 +6084,8 @@
           "target_1": 2724.3,
           "target_2": 2900.88,
           "stop": 2144.12,
-          "current_price": 1773.0,
-          "return_pct": -29.71
+          "current_price": 1788.0,
+          "return_pct": -29.12
         },
         {
           "rank": 9,
@@ -6278,8 +6100,8 @@
           "target_1": 14.94,
           "target_2": 15.07,
           "stop": 12.75,
-          "current_price": 14.7,
-          "return_pct": -0.68
+          "current_price": 14.69,
+          "return_pct": -0.74
         },
         {
           "rank": 10,
@@ -6294,15 +6116,15 @@
           "target_1": 272.33,
           "target_2": 283.67,
           "stop": 228.86,
-          "current_price": 216.7,
-          "return_pct": -14.69
+          "current_price": 217.3,
+          "return_pct": -14.45
         }
       ],
       "first_generated_at": "2026-07-17 14:31",
       "last_generated_at": "2026-07-21 09:46",
-      "as_of": "2026-08-07",
-      "age_trading_days": 15,
-      "avg_return_pct": 1.82,
+      "as_of": "2026-08-10",
+      "age_trading_days": 16,
+      "avg_return_pct": 0.59,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -6326,8 +6148,8 @@
           "target_1": 222.83,
           "target_2": 231.17,
           "stop": 205.65,
-          "current_price": 267.25,
-          "return_pct": 37.05
+          "current_price": 240.6,
+          "return_pct": 23.38
         },
         {
           "rank": 2,
@@ -6342,8 +6164,8 @@
           "target_1": 2186.67,
           "target_2": 2223.33,
           "stop": 1829.2,
-          "current_price": 1826.0,
-          "return_pct": -15.11
+          "current_price": 1722.0,
+          "return_pct": -19.94
         },
         {
           "rank": 3,
@@ -6358,8 +6180,8 @@
           "target_1": 190.33,
           "target_2": 200.07,
           "stop": 163.88,
-          "current_price": 43.58,
-          "return_pct": -77.4
+          "current_price": 42.9,
+          "return_pct": -77.75
         },
         {
           "rank": 4,
@@ -6374,8 +6196,8 @@
           "target_1": 2218.0,
           "target_2": 2266.0,
           "stop": 1861.5,
-          "current_price": 2752.5,
-          "return_pct": 26.44
+          "current_price": 2797.5,
+          "return_pct": 28.5
         },
         {
           "rank": 5,
@@ -6390,8 +6212,8 @@
           "target_1": 2891.33,
           "target_2": 3007.67,
           "stop": 2452.25,
-          "current_price": 4480.0,
-          "return_pct": 73.14
+          "current_price": 4510.0,
+          "return_pct": 74.3
         },
         {
           "rank": 6,
@@ -6406,8 +6228,8 @@
           "target_1": 164.53,
           "target_2": 167.57,
           "stop": 137.28,
-          "current_price": 174.2,
-          "return_pct": 8.06
+          "current_price": 178.0,
+          "return_pct": 10.42
         },
         {
           "rank": 7,
@@ -6422,8 +6244,8 @@
           "target_1": 405.0,
           "target_2": 409.0,
           "stop": 340.85,
-          "current_price": 425.0,
-          "return_pct": 6.05
+          "current_price": 426.0,
+          "return_pct": 6.3
         },
         {
           "rank": 8,
@@ -6438,8 +6260,8 @@
           "target_1": 2421.67,
           "target_2": 2572.33,
           "stop": 1930.35,
-          "current_price": 1773.0,
-          "return_pct": -21.93
+          "current_price": 1788.0,
+          "return_pct": -21.27
         },
         {
           "rank": 9,
@@ -6454,8 +6276,8 @@
           "target_1": 15.08,
           "target_2": 15.16,
           "stop": 12.78,
-          "current_price": 14.7,
-          "return_pct": -0.88
+          "current_price": 14.69,
+          "return_pct": -0.94
         },
         {
           "rank": 10,
@@ -6470,15 +6292,15 @@
           "target_1": 272.67,
           "target_2": 290.33,
           "stop": 228.86,
-          "current_price": 216.7,
-          "return_pct": -19.52
+          "current_price": 217.3,
+          "return_pct": -19.29
         }
       ],
       "first_generated_at": "2026-07-20 14:30",
       "last_generated_at": "2026-07-22 09:46",
-      "as_of": "2026-08-07",
-      "age_trading_days": 14,
-      "avg_return_pct": 1.59,
+      "as_of": "2026-08-10",
+      "age_trading_days": 15,
+      "avg_return_pct": 0.37,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -6502,8 +6324,8 @@
           "target_1": 234.33,
           "target_2": 240.17,
           "stop": 211.5,
-          "current_price": 267.25,
-          "return_pct": 17.47
+          "current_price": 240.6,
+          "return_pct": 5.76
         },
         {
           "rank": 2,
@@ -6518,8 +6340,8 @@
           "target_1": 2206.33,
           "target_2": 2262.67,
           "stop": 1887.0,
-          "current_price": 1826.0,
-          "return_pct": -15.15
+          "current_price": 1722.0,
+          "return_pct": -19.98
         },
         {
           "rank": 3,
@@ -6534,8 +6356,8 @@
           "target_1": 2213.0,
           "target_2": 2236.0,
           "stop": 1929.5,
-          "current_price": 2752.5,
-          "return_pct": 25.74
+          "current_price": 2797.5,
+          "return_pct": 27.8
         },
         {
           "rank": 4,
@@ -6550,8 +6372,8 @@
           "target_1": 179.57,
           "target_2": 184.13,
           "stop": 163.88,
-          "current_price": 43.58,
-          "return_pct": -74.68
+          "current_price": 42.9,
+          "return_pct": -75.07
         },
         {
           "rank": 5,
@@ -6566,8 +6388,8 @@
           "target_1": 2994.17,
           "target_2": 3103.33,
           "stop": 2516.0,
-          "current_price": 4480.0,
-          "return_pct": 60.0
+          "current_price": 4510.0,
+          "return_pct": 61.07
         },
         {
           "rank": 6,
@@ -6582,8 +6404,8 @@
           "target_1": 162.9,
           "target_2": 164.8,
           "stop": 137.28,
-          "current_price": 174.2,
-          "return_pct": 7.86
+          "current_price": 178.0,
+          "return_pct": 10.22
         },
         {
           "rank": 7,
@@ -6598,8 +6420,8 @@
           "target_1": 404.92,
           "target_2": 409.33,
           "stop": 342.55,
-          "current_price": 425.0,
-          "return_pct": 6.05
+          "current_price": 426.0,
+          "return_pct": 6.3
         },
         {
           "rank": 8,
@@ -6614,8 +6436,8 @@
           "target_1": 2224.0,
           "target_2": 2404.0,
           "stop": 1737.4,
-          "current_price": 1773.0,
-          "return_pct": -18.33
+          "current_price": 1788.0,
+          "return_pct": -17.64
         },
         {
           "rank": 9,
@@ -6630,8 +6452,8 @@
           "target_1": 107.95,
           "target_2": 110.3,
           "stop": 89.76,
-          "current_price": 91.7,
-          "return_pct": -13.16
+          "current_price": 90.95,
+          "return_pct": -13.87
         },
         {
           "rank": 10,
@@ -6646,15 +6468,15 @@
           "target_1": 15.07,
           "target_2": 15.19,
           "stop": 12.78,
-          "current_price": 14.7,
-          "return_pct": -2.2
+          "current_price": 14.69,
+          "return_pct": -2.26
         }
       ],
       "first_generated_at": "2026-07-21 14:30",
       "last_generated_at": "2026-07-23 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 13,
-      "avg_return_pct": -0.64,
+      "as_of": "2026-08-10",
+      "age_trading_days": 14,
+      "avg_return_pct": -1.77,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -6678,8 +6500,8 @@
           "target_1": 2424.0,
           "target_2": 2487.0,
           "stop": 2006.85,
-          "current_price": 1826.0,
-          "return_pct": -19.38
+          "current_price": 1722.0,
+          "return_pct": -23.97
         },
         {
           "rank": 2,
@@ -6694,8 +6516,8 @@
           "target_1": 240.4,
           "target_2": 242.8,
           "stop": 214.2,
-          "current_price": 267.25,
-          "return_pct": 14.75
+          "current_price": 240.6,
+          "return_pct": 3.31
         },
         {
           "rank": 3,
@@ -6710,8 +6532,8 @@
           "target_1": 2368.0,
           "target_2": 2396.0,
           "stop": 1989.0,
-          "current_price": 2752.5,
-          "return_pct": 19.73
+          "current_price": 2797.5,
+          "return_pct": 21.68
         },
         {
           "rank": 4,
@@ -6726,8 +6548,8 @@
           "target_1": 176.13,
           "target_2": 183.27,
           "stop": 163.88,
-          "current_price": 43.58,
-          "return_pct": -75.41
+          "current_price": 42.9,
+          "return_pct": -75.79
         },
         {
           "rank": 5,
@@ -6742,8 +6564,8 @@
           "target_1": 3051.67,
           "target_2": 3133.33,
           "stop": 2541.5,
-          "current_price": 4480.0,
-          "return_pct": 49.83
+          "current_price": 4510.0,
+          "return_pct": 50.84
         },
         {
           "rank": 6,
@@ -6758,8 +6580,8 @@
           "target_1": 162.37,
           "target_2": 164.23,
           "stop": 137.28,
-          "current_price": 174.2,
-          "return_pct": 8.2
+          "current_price": 178.0,
+          "return_pct": 10.56
         },
         {
           "rank": 7,
@@ -6774,8 +6596,8 @@
           "target_1": 405.67,
           "target_2": 410.33,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 5.33
+          "current_price": 426.0,
+          "return_pct": 5.58
         },
         {
           "rank": 8,
@@ -6790,8 +6612,8 @@
           "target_1": 2161.67,
           "target_2": 2223.33,
           "stop": 1785.0,
-          "current_price": 1773.0,
-          "return_pct": -11.04
+          "current_price": 1788.0,
+          "return_pct": -10.29
         },
         {
           "rank": 9,
@@ -6806,8 +6628,8 @@
           "target_1": 101.02,
           "target_2": 103.68,
           "stop": 83.6,
-          "current_price": 91.7,
-          "return_pct": -8.07
+          "current_price": 90.95,
+          "return_pct": -8.82
         },
         {
           "rank": 10,
@@ -6822,15 +6644,15 @@
           "target_1": 39.9,
           "target_2": 40.32,
           "stop": 33.56,
-          "current_price": 15.91,
-          "return_pct": -59.7
+          "current_price": 16.2,
+          "return_pct": -58.97
         }
       ],
       "first_generated_at": "2026-07-23 14:30",
       "last_generated_at": "2026-07-23 18:41",
-      "as_of": "2026-08-07",
-      "age_trading_days": 11,
-      "avg_return_pct": -7.58,
+      "as_of": "2026-08-10",
+      "age_trading_days": 12,
+      "avg_return_pct": -8.59,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -6843,8 +6665,8 @@
       "items": [],
       "first_generated_at": "2026-07-22 14:30",
       "last_generated_at": "2026-07-24 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 12,
+      "as_of": "2026-08-10",
+      "age_trading_days": 13,
       "avg_return_pct": null,
       "hit_rate_pct": null,
       "tracked_count": 0
@@ -6869,8 +6691,8 @@
           "target_1": 2563.33,
           "target_2": 2616.67,
           "stop": 2373.75,
-          "current_price": 1826.0,
-          "return_pct": -24.48
+          "current_price": 1722.0,
+          "return_pct": -28.78
         },
         {
           "rank": 2,
@@ -6885,8 +6707,8 @@
           "target_1": 238.17,
           "target_2": 243.33,
           "stop": 216.0,
-          "current_price": 267.25,
-          "return_pct": 14.11
+          "current_price": 240.6,
+          "return_pct": 2.73
         },
         {
           "rank": 3,
@@ -6901,8 +6723,8 @@
           "target_1": 2529.33,
           "target_2": 2588.67,
           "stop": 2346.75,
-          "current_price": 2752.5,
-          "return_pct": 17.48
+          "current_price": 2797.5,
+          "return_pct": 19.4
         },
         {
           "rank": 4,
@@ -6917,8 +6739,8 @@
           "target_1": 165.63,
           "target_2": 176.27,
           "stop": 131.75,
-          "current_price": 43.58,
-          "return_pct": -73.03
+          "current_price": 42.9,
+          "return_pct": -73.45
         },
         {
           "rank": 5,
@@ -6933,8 +6755,8 @@
           "target_1": 3217.5,
           "target_2": 3315.0,
           "stop": 3084.75,
-          "current_price": 4480.0,
-          "return_pct": 55.96
+          "current_price": 4510.0,
+          "return_pct": 57.01
         },
         {
           "rank": 6,
@@ -6949,8 +6771,8 @@
           "target_1": 166.87,
           "target_2": 169.53,
           "stop": 139.57,
-          "current_price": 174.2,
-          "return_pct": 6.87
+          "current_price": 178.0,
+          "return_pct": 9.2
         },
         {
           "rank": 7,
@@ -6965,8 +6787,8 @@
           "target_1": 403.5,
           "target_2": 406.0,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 5.85
+          "current_price": 426.0,
+          "return_pct": 6.1
         },
         {
           "rank": 8,
@@ -6981,8 +6803,8 @@
           "target_1": 135.0,
           "target_2": 140.0,
           "stop": 110.5,
-          "current_price": 124.9,
-          "return_pct": -3.92
+          "current_price": 123.6,
+          "return_pct": -4.92
         },
         {
           "rank": 9,
@@ -6997,8 +6819,8 @@
           "target_1": 2120.33,
           "target_2": 2192.67,
           "stop": 1740.8,
-          "current_price": 1773.0,
-          "return_pct": -14.92
+          "current_price": 1788.0,
+          "return_pct": -14.2
         },
         {
           "rank": 10,
@@ -7013,15 +6835,15 @@
           "target_1": 102.27,
           "target_2": 104.13,
           "stop": 85.34,
-          "current_price": 91.7,
-          "return_pct": -7.28
+          "current_price": 90.95,
+          "return_pct": -8.04
         }
       ],
       "first_generated_at": "2026-07-24 14:30",
       "last_generated_at": "2026-07-28 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 10,
-      "avg_return_pct": -2.34,
+      "as_of": "2026-08-10",
+      "age_trading_days": 11,
+      "avg_return_pct": -3.5,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -7045,8 +6867,8 @@
           "target_1": 2734.0,
           "target_2": 2838.0,
           "stop": 2235.5,
-          "current_price": 1826.0,
-          "return_pct": -30.77
+          "current_price": 1722.0,
+          "return_pct": -34.71
         },
         {
           "rank": 2,
@@ -7061,8 +6883,8 @@
           "target_1": 245.0,
           "target_2": 250.0,
           "stop": 216.0,
-          "current_price": 267.25,
-          "return_pct": 14.16
+          "current_price": 240.6,
+          "return_pct": 2.78
         },
         {
           "rank": 3,
@@ -7077,8 +6899,8 @@
           "target_1": 2688.33,
           "target_2": 2769.17,
           "stop": 2346.75,
-          "current_price": 2752.5,
-          "return_pct": 7.94
+          "current_price": 2797.5,
+          "return_pct": 9.71
         },
         {
           "rank": 4,
@@ -7093,8 +6915,8 @@
           "target_1": 162.0,
           "target_2": 168.1,
           "stop": 132.51,
-          "current_price": 43.58,
-          "return_pct": -70.95
+          "current_price": 42.9,
+          "return_pct": -71.4
         },
         {
           "rank": 5,
@@ -7109,8 +6931,8 @@
           "target_1": 3554.17,
           "target_2": 3680.83,
           "stop": 2913.38,
-          "current_price": 4480.0,
-          "return_pct": 34.43
+          "current_price": 4510.0,
+          "return_pct": 35.33
         },
         {
           "rank": 6,
@@ -7125,8 +6947,8 @@
           "target_1": 164.6,
           "target_2": 165.8,
           "stop": 141.1,
-          "current_price": 174.2,
-          "return_pct": 6.61
+          "current_price": 178.0,
+          "return_pct": 8.94
         },
         {
           "rank": 7,
@@ -7141,8 +6963,8 @@
           "target_1": 405.75,
           "target_2": 410.25,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 5.59
+          "current_price": 426.0,
+          "return_pct": 5.84
         },
         {
           "rank": 8,
@@ -7157,8 +6979,8 @@
           "target_1": 2071.33,
           "target_2": 2150.67,
           "stop": 1693.2,
-          "current_price": 1773.0,
-          "return_pct": -11.83
+          "current_price": 1788.0,
+          "return_pct": -11.09
         },
         {
           "rank": 9,
@@ -7173,8 +6995,8 @@
           "target_1": 100.8,
           "target_2": 103.4,
           "stop": 83.47,
-          "current_price": 91.7,
-          "return_pct": -7.33
+          "current_price": 90.95,
+          "return_pct": -8.08
         },
         {
           "rank": 10,
@@ -7189,15 +7011,15 @@
           "target_1": 251.83,
           "target_2": 262.17,
           "stop": 205.28,
-          "current_price": 216.7,
-          "return_pct": -11.22
+          "current_price": 217.3,
+          "return_pct": -10.98
         }
       ],
       "first_generated_at": "2026-07-27 14:31",
       "last_generated_at": "2026-07-29 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 9,
-      "avg_return_pct": -6.34,
+      "as_of": "2026-08-10",
+      "age_trading_days": 10,
+      "avg_return_pct": -7.37,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -7221,8 +7043,8 @@
           "target_1": 2570.67,
           "target_2": 2774.33,
           "stop": 2011.95,
-          "current_price": 1826.0,
-          "return_pct": -22.86
+          "current_price": 1722.0,
+          "return_pct": -27.25
         },
         {
           "rank": 2,
@@ -7237,8 +7059,8 @@
           "target_1": 247.83,
           "target_2": 255.67,
           "stop": 204.0,
-          "current_price": 267.25,
-          "return_pct": 11.73
+          "current_price": 240.6,
+          "return_pct": 0.59
         },
         {
           "rank": 3,
@@ -7253,8 +7075,8 @@
           "target_1": 2715.0,
           "target_2": 2830.0,
           "stop": 2346.75,
-          "current_price": 2752.5,
-          "return_pct": 9.66
+          "current_price": 2797.5,
+          "return_pct": 11.45
         },
         {
           "rank": 4,
@@ -7269,8 +7091,8 @@
           "target_1": 3884.17,
           "target_2": 3998.33,
           "stop": 3204.5,
-          "current_price": 4480.0,
-          "return_pct": 26.82
+          "current_price": 4510.0,
+          "return_pct": 27.67
         },
         {
           "rank": 5,
@@ -7285,8 +7107,8 @@
           "target_1": 163.2,
           "target_2": 169.1,
           "stop": 133.71,
-          "current_price": 43.58,
-          "return_pct": -73.17
+          "current_price": 42.9,
+          "return_pct": -73.58
         },
         {
           "rank": 6,
@@ -7301,8 +7123,8 @@
           "target_1": 167.0,
           "target_2": 168.1,
           "stop": 141.1,
-          "current_price": 174.2,
-          "return_pct": 4.94
+          "current_price": 178.0,
+          "return_pct": 7.23
         },
         {
           "rank": 7,
@@ -7317,8 +7139,8 @@
           "target_1": 402.0,
           "target_2": 406.0,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 5.59
+          "current_price": 426.0,
+          "return_pct": 5.84
         },
         {
           "rank": 8,
@@ -7333,8 +7155,8 @@
           "target_1": 6.05,
           "target_2": 6.2,
           "stop": 5.02,
-          "current_price": 5.63,
-          "return_pct": -4.58
+          "current_price": 6.19,
+          "return_pct": 4.92
         },
         {
           "rank": 9,
@@ -7349,8 +7171,8 @@
           "target_1": 1935.67,
           "target_2": 2078.33,
           "stop": 1524.05,
-          "current_price": 1773.0,
-          "return_pct": -5.34
+          "current_price": 1788.0,
+          "return_pct": -4.54
         },
         {
           "rank": 10,
@@ -7365,16 +7187,16 @@
           "target_1": 96.07,
           "target_2": 103.73,
           "stop": 75.14,
-          "current_price": 91.7,
-          "return_pct": -7.14
+          "current_price": 90.95,
+          "return_pct": -7.9
         }
       ],
       "first_generated_at": "2026-07-28 14:30",
       "last_generated_at": "2026-07-30 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 8,
-      "avg_return_pct": -5.43,
-      "hit_rate_pct": 50.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 9,
+      "avg_return_pct": -5.56,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -7397,8 +7219,8 @@
           "target_1": 296.5,
           "target_2": 308.0,
           "stop": 242.25,
-          "current_price": 267.25,
-          "return_pct": -0.19
+          "current_price": 240.6,
+          "return_pct": -10.14
         },
         {
           "rank": 2,
@@ -7413,8 +7235,8 @@
           "target_1": 2071.44,
           "target_2": 2205.7,
           "stop": 1630.3,
-          "current_price": 1826.0,
-          "return_pct": -4.8
+          "current_price": 1722.0,
+          "return_pct": -10.22
         },
         {
           "rank": 3,
@@ -7429,8 +7251,8 @@
           "target_1": 2424.33,
           "target_2": 2532.67,
           "stop": 1968.6,
-          "current_price": 2752.5,
-          "return_pct": 21.85
+          "current_price": 2797.5,
+          "return_pct": 23.84
         },
         {
           "rank": 4,
@@ -7445,8 +7267,8 @@
           "target_1": 3940.0,
           "target_2": 4080.0,
           "stop": 3230.0,
-          "current_price": 4480.0,
-          "return_pct": 19.23
+          "current_price": 4510.0,
+          "return_pct": 20.03
         },
         {
           "rank": 5,
@@ -7461,8 +7283,8 @@
           "target_1": 161.93,
           "target_2": 166.97,
           "stop": 133.36,
-          "current_price": 43.58,
-          "return_pct": -72.12
+          "current_price": 42.9,
+          "return_pct": -72.55
         },
         {
           "rank": 6,
@@ -7477,8 +7299,8 @@
           "target_1": 165.63,
           "target_2": 166.97,
           "stop": 141.1,
-          "current_price": 174.2,
-          "return_pct": 5.45
+          "current_price": 178.0,
+          "return_pct": 7.75
         },
         {
           "rank": 7,
@@ -7493,8 +7315,8 @@
           "target_1": 399.67,
           "target_2": 403.33,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 8.14
+          "current_price": 426.0,
+          "return_pct": 8.4
         },
         {
           "rank": 8,
@@ -7509,8 +7331,8 @@
           "target_1": 1831.0,
           "target_2": 1864.0,
           "stop": 1528.3,
-          "current_price": 1773.0,
-          "return_pct": -1.34
+          "current_price": 1788.0,
+          "return_pct": -0.5
         },
         {
           "rank": 9,
@@ -7525,8 +7347,8 @@
           "target_1": 88.77,
           "target_2": 91.68,
           "stop": 72.97,
-          "current_price": 91.7,
-          "return_pct": 4.2
+          "current_price": 90.95,
+          "return_pct": 3.35
         },
         {
           "rank": 10,
@@ -7541,15 +7363,15 @@
           "target_1": 38.04,
           "target_2": 38.94,
           "stop": 31.57,
-          "current_price": 15.91,
-          "return_pct": -56.91
+          "current_price": 16.2,
+          "return_pct": -56.12
         }
       ],
       "first_generated_at": "2026-07-30 14:30",
       "last_generated_at": "2026-07-30 18:40",
-      "as_of": "2026-08-07",
-      "age_trading_days": 6,
-      "avg_return_pct": -7.65,
+      "as_of": "2026-08-10",
+      "age_trading_days": 7,
+      "avg_return_pct": -8.62,
       "hit_rate_pct": 50.0,
       "tracked_count": 10
     },
@@ -7573,8 +7395,8 @@
           "target_1": 2301.48,
           "target_2": 2450.65,
           "stop": 1811.35,
-          "current_price": 1826.0,
-          "return_pct": -14.31
+          "current_price": 1722.0,
+          "return_pct": -19.19
         },
         {
           "rank": 2,
@@ -7589,8 +7411,8 @@
           "target_1": 280.0,
           "target_2": 296.0,
           "stop": 224.4,
-          "current_price": 267.25,
-          "return_pct": 23.73
+          "current_price": 240.6,
+          "return_pct": 11.39
         },
         {
           "rank": 3,
@@ -7605,8 +7427,8 @@
           "target_1": 2624.67,
           "target_2": 2739.33,
           "stop": 2133.5,
-          "current_price": 2752.5,
-          "return_pct": 13.6
+          "current_price": 2797.5,
+          "return_pct": 15.46
         },
         {
           "rank": 4,
@@ -7621,8 +7443,8 @@
           "target_1": 161.77,
           "target_2": 167.53,
           "stop": 132.6,
-          "current_price": 43.58,
-          "return_pct": -71.59
+          "current_price": 42.9,
+          "return_pct": -72.03
         },
         {
           "rank": 5,
@@ -7637,8 +7459,8 @@
           "target_1": 3853.33,
           "target_2": 4029.17,
           "stop": 3125.88,
-          "current_price": 4480.0,
-          "return_pct": 31.96
+          "current_price": 4510.0,
+          "return_pct": 32.84
         },
         {
           "rank": 6,
@@ -7653,8 +7475,8 @@
           "target_1": 166.57,
           "target_2": 167.63,
           "stop": 141.1,
-          "current_price": 174.2,
-          "return_pct": 5.07
+          "current_price": 178.0,
+          "return_pct": 7.36
         },
         {
           "rank": 7,
@@ -7669,8 +7491,8 @@
           "target_1": 399.08,
           "target_2": 404.17,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 7.12
+          "current_price": 426.0,
+          "return_pct": 7.37
         },
         {
           "rank": 8,
@@ -7685,8 +7507,8 @@
           "target_1": 1939.33,
           "target_2": 2063.67,
           "stop": 1542.75,
-          "current_price": 1773.0,
-          "return_pct": -0.62
+          "current_price": 1788.0,
+          "return_pct": 0.22
         },
         {
           "rank": 9,
@@ -7701,8 +7523,8 @@
           "target_1": 239.2,
           "target_2": 257.8,
           "stop": 187.51,
-          "current_price": 216.7,
-          "return_pct": -3.43
+          "current_price": 217.3,
+          "return_pct": -3.16
         },
         {
           "rank": 10,
@@ -7717,16 +7539,16 @@
           "target_1": 87.92,
           "target_2": 90.73,
           "stop": 72.33,
-          "current_price": 91.7,
-          "return_pct": 7.76
+          "current_price": 90.95,
+          "return_pct": 6.87
         }
       ],
       "first_generated_at": "2026-07-29 14:31",
       "last_generated_at": "2026-07-31 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 7,
-      "avg_return_pct": -0.07,
-      "hit_rate_pct": 60.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 8,
+      "avg_return_pct": -1.29,
+      "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
     {
@@ -7749,8 +7571,8 @@
           "target_1": 316.08,
           "target_2": 327.92,
           "stop": 258.61,
-          "current_price": 267.25,
-          "return_pct": -11.29
+          "current_price": 240.6,
+          "return_pct": -20.13
         },
         {
           "rank": 2,
@@ -7765,8 +7587,8 @@
           "target_1": 1865.16,
           "target_2": 1986.05,
           "stop": 1467.95,
-          "current_price": 1826.0,
-          "return_pct": 5.73
+          "current_price": 1722.0,
+          "return_pct": -0.29
         },
         {
           "rank": 3,
@@ -7781,8 +7603,8 @@
           "target_1": 2638.33,
           "target_2": 2776.67,
           "stop": 2125.0,
-          "current_price": 2752.5,
-          "return_pct": 29.16
+          "current_price": 2797.5,
+          "return_pct": 31.28
         },
         {
           "rank": 4,
@@ -7797,8 +7619,8 @@
           "target_1": 3977.5,
           "target_2": 4075.0,
           "stop": 3298.0,
-          "current_price": 4480.0,
-          "return_pct": 18.36
+          "current_price": 4510.0,
+          "return_pct": 19.15
         },
         {
           "rank": 5,
@@ -7813,8 +7635,8 @@
           "target_1": 169.33,
           "target_2": 171.17,
           "stop": 144.07,
-          "current_price": 174.2,
-          "return_pct": 3.51
+          "current_price": 178.0,
+          "return_pct": 5.76
         },
         {
           "rank": 6,
@@ -7829,8 +7651,8 @@
           "target_1": 398.08,
           "target_2": 399.67,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 7.39
+          "current_price": 426.0,
+          "return_pct": 7.64
         },
         {
           "rank": 7,
@@ -7845,8 +7667,8 @@
           "target_1": 47.69,
           "target_2": 49.36,
           "stop": 39.11,
-          "current_price": 43.58,
-          "return_pct": -71.68
+          "current_price": 42.9,
+          "return_pct": -72.12
         },
         {
           "rank": 8,
@@ -7861,8 +7683,8 @@
           "target_1": 38.25,
           "target_2": 38.69,
           "stop": 32.15,
-          "current_price": 15.91,
-          "return_pct": -56.93
+          "current_price": 16.2,
+          "return_pct": -56.15
         },
         {
           "rank": 9,
@@ -7877,8 +7699,8 @@
           "target_1": 86.77,
           "target_2": 88.43,
           "stop": 72.33,
-          "current_price": 91.7,
-          "return_pct": 7.38
+          "current_price": 90.95,
+          "return_pct": 6.5
         },
         {
           "rank": 10,
@@ -7893,16 +7715,16 @@
           "target_1": 1786.33,
           "target_2": 1869.67,
           "stop": 1447.55,
-          "current_price": 1773.0,
-          "return_pct": 0.91
+          "current_price": 1788.0,
+          "return_pct": 1.76
         }
       ],
       "first_generated_at": "2026-07-31 14:31",
       "last_generated_at": "2026-08-04 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 5,
-      "avg_return_pct": -6.75,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 6,
+      "avg_return_pct": -7.66,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -7925,8 +7747,8 @@
           "target_1": 372.83,
           "target_2": 379.67,
           "stop": 311.1,
-          "current_price": 267.25,
-          "return_pct": -26.43
+          "current_price": 240.6,
+          "return_pct": -33.76
         },
         {
           "rank": 2,
@@ -7941,8 +7763,8 @@
           "target_1": 2998.33,
           "target_2": 3091.67,
           "stop": 2469.25,
-          "current_price": 2752.5,
-          "return_pct": -1.34
+          "current_price": 2797.5,
+          "return_pct": 0.27
         },
         {
           "rank": 3,
@@ -7957,8 +7779,8 @@
           "target_1": 1512.0,
           "target_2": 1610.0,
           "stop": 1190.0,
-          "current_price": 1826.0,
-          "return_pct": 30.43
+          "current_price": 1722.0,
+          "return_pct": 23.0
         },
         {
           "rank": 4,
@@ -7973,8 +7795,8 @@
           "target_1": 4216.67,
           "target_2": 4303.33,
           "stop": 3510.5,
-          "current_price": 4480.0,
-          "return_pct": 11.93
+          "current_price": 4510.0,
+          "return_pct": 12.68
         },
         {
           "rank": 5,
@@ -7989,8 +7811,8 @@
           "target_1": 44.01,
           "target_2": 46.51,
           "stop": 35.29,
-          "current_price": 43.58,
-          "return_pct": 5.21
+          "current_price": 42.9,
+          "return_pct": 3.57
         },
         {
           "rank": 6,
@@ -8005,8 +7827,8 @@
           "target_1": 169.5,
           "target_2": 170.6,
           "stop": 144.07,
-          "current_price": 174.2,
-          "return_pct": 3.26
+          "current_price": 178.0,
+          "return_pct": 5.51
         },
         {
           "rank": 7,
@@ -8021,8 +7843,8 @@
           "target_1": 403.33,
           "target_2": 406.67,
           "stop": 342.97,
-          "current_price": 425.0,
-          "return_pct": 5.52
+          "current_price": 426.0,
+          "return_pct": 5.77
         },
         {
           "rank": 8,
@@ -8037,8 +7859,8 @@
           "target_1": 39.31,
           "target_2": 40.11,
           "stop": 32.73,
-          "current_price": 15.91,
-          "return_pct": -57.23
+          "current_price": 16.2,
+          "return_pct": -56.45
         },
         {
           "rank": 9,
@@ -8053,8 +7875,8 @@
           "target_1": 93.4,
           "target_2": 95.7,
           "stop": 77.43,
-          "current_price": 91.7,
-          "return_pct": 0.16
+          "current_price": 90.95,
+          "return_pct": -0.66
         },
         {
           "rank": 10,
@@ -8069,16 +7891,16 @@
           "target_1": 42.68,
           "target_2": 44.22,
           "stop": 34.97,
-          "current_price": 42.2,
-          "return_pct": 2.58
+          "current_price": 40.74,
+          "return_pct": -0.97
         }
       ],
       "first_generated_at": "2026-08-04 14:30",
       "last_generated_at": "2026-08-04 18:40",
-      "as_of": "2026-08-07",
-      "age_trading_days": 3,
-      "avg_return_pct": -2.59,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 4,
+      "avg_return_pct": -4.1,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -8101,8 +7923,8 @@
           "target_1": 343.92,
           "target_2": 353.83,
           "stop": 283.9,
-          "current_price": 267.25,
-          "return_pct": -18.58
+          "current_price": 240.6,
+          "return_pct": -26.7
         },
         {
           "rank": 2,
@@ -8117,8 +7939,8 @@
           "target_1": 1679.4,
           "target_2": 1788.25,
           "stop": 1321.75,
-          "current_price": 1826.0,
-          "return_pct": 17.43
+          "current_price": 1722.0,
+          "return_pct": 10.74
         },
         {
           "rank": 3,
@@ -8133,8 +7955,8 @@
           "target_1": 2807.67,
           "target_2": 2945.33,
           "stop": 2269.5,
-          "current_price": 2752.5,
-          "return_pct": 4.46
+          "current_price": 2797.5,
+          "return_pct": 6.17
         },
         {
           "rank": 4,
@@ -8149,8 +7971,8 @@
           "target_1": 4180.83,
           "target_2": 4334.17,
           "stop": 3423.38,
-          "current_price": 4480.0,
-          "return_pct": 15.46
+          "current_price": 4510.0,
+          "return_pct": 16.24
         },
         {
           "rank": 5,
@@ -8165,8 +7987,8 @@
           "target_1": 45.87,
           "target_2": 50.33,
           "stop": 35.21,
-          "current_price": 43.58,
-          "return_pct": -3.16
+          "current_price": 42.9,
+          "return_pct": -4.67
         },
         {
           "rank": 6,
@@ -8181,8 +8003,8 @@
           "target_1": 171.6,
           "target_2": 173.7,
           "stop": 145.35,
-          "current_price": 174.2,
-          "return_pct": 4.31
+          "current_price": 178.0,
+          "return_pct": 6.59
         },
         {
           "rank": 7,
@@ -8197,8 +8019,8 @@
           "target_1": 404.83,
           "target_2": 408.17,
           "stop": 347.65,
-          "current_price": 425.0,
-          "return_pct": 5.79
+          "current_price": 426.0,
+          "return_pct": 6.04
         },
         {
           "rank": 8,
@@ -8213,8 +8035,8 @@
           "target_1": 93.3,
           "target_2": 96.5,
           "stop": 76.58,
-          "current_price": 91.7,
-          "return_pct": 2.63
+          "current_price": 90.95,
+          "return_pct": 1.79
         },
         {
           "rank": 9,
@@ -8229,8 +8051,8 @@
           "target_1": 37.87,
           "target_2": 38.45,
           "stop": 31.69,
-          "current_price": 15.91,
-          "return_pct": -57.32
+          "current_price": 16.2,
+          "return_pct": -56.55
         },
         {
           "rank": 10,
@@ -8245,16 +8067,16 @@
           "target_1": 176.0,
           "target_2": 183.0,
           "stop": 143.65,
-          "current_price": 174.2,
-          "return_pct": 3.08
+          "current_price": 164.0,
+          "return_pct": -2.96
         }
       ],
       "first_generated_at": "2026-08-03 14:30",
       "last_generated_at": "2026-08-06 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 4,
-      "avg_return_pct": -2.59,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 5,
+      "avg_return_pct": -4.33,
+      "hit_rate_pct": 60.0,
       "tracked_count": 10
     },
     {
@@ -8277,8 +8099,8 @@
           "target_1": 320.49,
           "target_2": 341.26,
           "stop": 252.24,
-          "current_price": 267.25,
-          "return_pct": -9.94
+          "current_price": 240.6,
+          "return_pct": -18.92
         },
         {
           "rank": 2,
@@ -8293,8 +8115,8 @@
           "target_1": 1738.67,
           "target_2": 1783.33,
           "stop": 1439.9,
-          "current_price": 1826.0,
-          "return_pct": 7.79
+          "current_price": 1722.0,
+          "return_pct": 1.65
         },
         {
           "rank": 3,
@@ -8309,8 +8131,8 @@
           "target_1": 2795.0,
           "target_2": 2900.0,
           "stop": 2286.5,
-          "current_price": 2752.5,
-          "return_pct": 6.38
+          "current_price": 2797.5,
+          "return_pct": 8.12
         },
         {
           "rank": 4,
@@ -8325,8 +8147,8 @@
           "target_1": 4617.5,
           "target_2": 4755.0,
           "stop": 3808.0,
-          "current_price": 4480.0,
-          "return_pct": -0.17
+          "current_price": 4510.0,
+          "return_pct": 0.5
         },
         {
           "rank": 5,
@@ -8341,8 +8163,8 @@
           "target_1": 45.46,
           "target_2": 46.42,
           "stop": 37.82,
-          "current_price": 43.58,
-          "return_pct": 3.52
+          "current_price": 42.9,
+          "return_pct": 1.9
         },
         {
           "rank": 6,
@@ -8357,8 +8179,8 @@
           "target_1": 174.53,
           "target_2": 176.57,
           "stop": 146.62,
-          "current_price": 174.2,
-          "return_pct": 1.93
+          "current_price": 178.0,
+          "return_pct": 4.15
         },
         {
           "rank": 7,
@@ -8373,8 +8195,8 @@
           "target_1": 48.9,
           "target_2": 51.0,
           "stop": 39.78,
-          "current_price": 42.2,
-          "return_pct": -8.22
+          "current_price": 40.74,
+          "return_pct": -11.4
         },
         {
           "rank": 8,
@@ -8389,8 +8211,8 @@
           "target_1": 93.28,
           "target_2": 95.47,
           "stop": 77.43,
-          "current_price": 91.7,
-          "return_pct": -1.56
+          "current_price": 90.95,
+          "return_pct": -2.36
         },
         {
           "rank": 9,
@@ -8405,8 +8227,8 @@
           "target_1": 1769.33,
           "target_2": 1838.67,
           "stop": 1445.0,
-          "current_price": 1773.0,
-          "return_pct": 2.07
+          "current_price": 1788.0,
+          "return_pct": 2.94
         },
         {
           "rank": 10,
@@ -8421,16 +8243,16 @@
           "target_1": 328.83,
           "target_2": 336.17,
           "stop": 273.27,
-          "current_price": 323.5,
-          "return_pct": 0.62
+          "current_price": 333.25,
+          "return_pct": 3.65
         }
       ],
       "first_generated_at": "2026-08-06 14:30",
       "last_generated_at": "2026-08-06 18:40",
-      "as_of": "2026-08-07",
-      "age_trading_days": 1,
-      "avg_return_pct": 0.24,
-      "hit_rate_pct": 60.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 2,
+      "avg_return_pct": -0.98,
+      "hit_rate_pct": 70.0,
       "tracked_count": 10
     },
     {
@@ -8453,8 +8275,8 @@
           "target_1": 373.83,
           "target_2": 418.17,
           "stop": 280.07,
-          "current_price": 267.25,
-          "return_pct": -18.89
+          "current_price": 240.6,
+          "return_pct": -26.98
         },
         {
           "rank": 2,
@@ -8469,8 +8291,8 @@
           "target_1": 1627.67,
           "target_2": 1715.33,
           "stop": 1309.0,
-          "current_price": 1826.0,
-          "return_pct": 31.65
+          "current_price": 1722.0,
+          "return_pct": 24.15
         },
         {
           "rank": 3,
@@ -8485,8 +8307,8 @@
           "target_1": 2975.0,
           "target_2": 3205.0,
           "stop": 2333.25,
-          "current_price": 2752.5,
-          "return_pct": -0.9
+          "current_price": 2797.5,
+          "return_pct": 0.72
         },
         {
           "rank": 4,
@@ -8501,8 +8323,8 @@
           "target_1": 4670.83,
           "target_2": 4864.17,
           "stop": 3805.88,
-          "current_price": 4480.0,
-          "return_pct": 9.87
+          "current_price": 4510.0,
+          "return_pct": 10.61
         },
         {
           "rank": 5,
@@ -8517,8 +8339,8 @@
           "target_1": 44.78,
           "target_2": 46.36,
           "stop": 36.72,
-          "current_price": 43.58,
-          "return_pct": 6.03
+          "current_price": 42.9,
+          "return_pct": 4.38
         },
         {
           "rank": 6,
@@ -8533,8 +8355,8 @@
           "target_1": 173.33,
           "target_2": 175.67,
           "stop": 146.62,
-          "current_price": 174.2,
-          "return_pct": 1.63
+          "current_price": 178.0,
+          "return_pct": 3.85
         },
         {
           "rank": 7,
@@ -8549,8 +8371,8 @@
           "target_1": 418.17,
           "target_2": 427.33,
           "stop": 357.0,
-          "current_price": 425.0,
-          "return_pct": 3.91
+          "current_price": 426.0,
+          "return_pct": 4.16
         },
         {
           "rank": 8,
@@ -8565,8 +8387,8 @@
           "target_1": 93.45,
           "target_2": 95.5,
           "stop": 77.69,
-          "current_price": 91.7,
-          "return_pct": 0.99
+          "current_price": 90.95,
+          "return_pct": 0.17
         },
         {
           "rank": 9,
@@ -8581,8 +8403,8 @@
           "target_1": 46.32,
           "target_2": 48.44,
           "stop": 37.57,
-          "current_price": 42.2,
-          "return_pct": 4.2
+          "current_price": 40.74,
+          "return_pct": 0.59
         },
         {
           "rank": 10,
@@ -8597,16 +8419,16 @@
           "target_1": 186.8,
           "target_2": 192.7,
           "stop": 153.76,
-          "current_price": 174.2,
-          "return_pct": -4.7
+          "current_price": 164.0,
+          "return_pct": -10.28
         }
       ],
       "first_generated_at": "2026-08-05 14:30",
       "last_generated_at": "2026-08-07 09:45",
-      "as_of": "2026-08-07",
-      "age_trading_days": 2,
-      "avg_return_pct": 3.38,
-      "hit_rate_pct": 70.0,
+      "as_of": "2026-08-10",
+      "age_trading_days": 3,
+      "avg_return_pct": 1.14,
+      "hit_rate_pct": 80.0,
       "tracked_count": 10
     },
     {
@@ -8629,8 +8451,8 @@
           "target_1": 288.63,
           "target_2": 307.34,
           "stop": 227.16,
-          "current_price": 267.25,
-          "return_pct": 0.0
+          "current_price": 240.6,
+          "return_pct": -9.97
         },
         {
           "rank": 2,
@@ -8645,8 +8467,8 @@
           "target_1": 1886.0,
           "target_2": 1946.0,
           "stop": 1552.1,
-          "current_price": 1826.0,
-          "return_pct": 0.0
+          "current_price": 1722.0,
+          "return_pct": -5.7
         },
         {
           "rank": 3,
@@ -8661,8 +8483,8 @@
           "target_1": 4512.5,
           "target_2": 4545.0,
           "stop": 3808.0,
-          "current_price": 4480.0,
-          "return_pct": 0.0
+          "current_price": 4510.0,
+          "return_pct": 0.67
         },
         {
           "rank": 4,
@@ -8677,8 +8499,8 @@
           "target_1": 2840.0,
           "target_2": 2927.5,
           "stop": 2339.62,
-          "current_price": 2752.5,
-          "return_pct": 0.0
+          "current_price": 2797.5,
+          "return_pct": 1.63
         },
         {
           "rank": 5,
@@ -8693,8 +8515,8 @@
           "target_1": 44.99,
           "target_2": 46.39,
           "stop": 37.04,
-          "current_price": 43.58,
-          "return_pct": 0.0
+          "current_price": 42.9,
+          "return_pct": -1.56
         },
         {
           "rank": 6,
@@ -8709,8 +8531,8 @@
           "target_1": 175.33,
           "target_2": 176.47,
           "stop": 148.07,
-          "current_price": 174.2,
-          "return_pct": 0.0
+          "current_price": 178.0,
+          "return_pct": 2.18
         },
         {
           "rank": 7,
@@ -8725,8 +8547,8 @@
           "target_1": 1814.67,
           "target_2": 1856.33,
           "stop": 1507.05,
-          "current_price": 1773.0,
-          "return_pct": 0.0
+          "current_price": 1788.0,
+          "return_pct": 0.85
         },
         {
           "rank": 8,
@@ -8741,8 +8563,8 @@
           "target_1": 92.6,
           "target_2": 93.5,
           "stop": 77.94,
-          "current_price": 91.7,
-          "return_pct": 0.0
+          "current_price": 90.95,
+          "return_pct": -0.82
         },
         {
           "rank": 9,
@@ -8757,8 +8579,8 @@
           "target_1": 46.15,
           "target_2": 50.09,
           "stop": 35.87,
-          "current_price": 42.2,
-          "return_pct": 0.0
+          "current_price": 40.74,
+          "return_pct": -3.46
         },
         {
           "rank": 10,
@@ -8773,13 +8595,187 @@
           "target_1": 214.03,
           "target_2": 219.07,
           "stop": 177.65,
-          "current_price": 209.0,
-          "return_pct": 0.0
+          "current_price": 223.4,
+          "return_pct": 6.89
         }
       ],
       "first_generated_at": "2026-08-07 14:30",
       "last_generated_at": "2026-08-10 09:45",
-      "as_of": "2026-08-07",
+      "as_of": "2026-08-10",
+      "age_trading_days": 1,
+      "avg_return_pct": -0.93,
+      "hit_rate_pct": 50.0,
+      "tracked_count": 10
+    },
+    {
+      "date": "2026-08-10",
+      "generated_at": "2026-08-10 14:30",
+      "mode": "F",
+      "source": "yahoo",
+      "last_data_date": "2026-08-10",
+      "items": [
+        {
+          "rank": 1,
+          "ticker": "HEDEF",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XHOLD",
+          "entry_price": 240.6,
+          "m5": -28.0,
+          "m21": 28.0,
+          "m252": 2552.3,
+          "target_1": 259.85,
+          "target_2": 276.69,
+          "stop": 204.51,
+          "current_price": 240.6,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 2,
+          "ticker": "GUNDG",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XU100",
+          "entry_price": 1722.0,
+          "m5": 10.7,
+          "m21": -12.1,
+          "m252": 2137.8,
+          "target_1": 1812.0,
+          "target_2": 1902.0,
+          "stop": 1463.7,
+          "current_price": 1722.0,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 3,
+          "ticker": "OZATD",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XU100",
+          "entry_price": 4510.0,
+          "m5": 12.0,
+          "m21": 123.7,
+          "m252": 1890.3,
+          "target_1": 4553.33,
+          "target_2": 4596.67,
+          "stop": 3833.5,
+          "current_price": 4510.0,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 4,
+          "ticker": "ODINE",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XUTEK",
+          "entry_price": 2797.5,
+          "m5": 4.8,
+          "m21": 41.3,
+          "m252": 1854.9,
+          "target_1": 2863.33,
+          "target_2": 2929.17,
+          "stop": 2377.88,
+          "current_price": 2797.5,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 5,
+          "ticker": "KTLEV",
+          "action": "BEKLE",
+          "signal": "Nötr",
+          "sector": "XUTEK",
+          "entry_price": 42.9,
+          "m5": 3.6,
+          "m21": -23.6,
+          "m252": 1680.0,
+          "target_1": 44.33,
+          "target_2": 45.77,
+          "stop": 36.47,
+          "current_price": 42.9,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 6,
+          "ticker": "IEYHO",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XHOLD",
+          "entry_price": 178.0,
+          "m5": 5.0,
+          "m21": 11.9,
+          "m252": 1078.8,
+          "target_1": 179.13,
+          "target_2": 180.27,
+          "stop": 148.07,
+          "current_price": 178.0,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 7,
+          "ticker": "DSTKF",
+          "action": "BEKLE",
+          "signal": "DAĞITIM",
+          "sector": "XFINK",
+          "entry_price": 1788.0,
+          "m5": 10.8,
+          "m21": -53.4,
+          "m252": 247.2,
+          "target_1": 1835.67,
+          "target_2": 1883.33,
+          "stop": 1519.8,
+          "current_price": 1788.0,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 8,
+          "ticker": "EUPWR",
+          "action": "BEKLE",
+          "signal": "DAĞITIM",
+          "sector": "XELKT",
+          "entry_price": 90.95,
+          "m5": 0.9,
+          "m21": -0.5,
+          "m252": 191.7,
+          "target_1": 92.05,
+          "target_2": 93.15,
+          "stop": 77.31,
+          "current_price": 90.95,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 9,
+          "ticker": "TKFEN",
+          "action": "AL",
+          "signal": "Birikim",
+          "sector": "XINSA",
+          "entry_price": 223.4,
+          "m5": 36.2,
+          "m21": 62.7,
+          "m252": 119.4,
+          "target_1": 232.5,
+          "target_2": 241.6,
+          "stop": 189.89,
+          "current_price": 223.4,
+          "return_pct": 0.0
+        },
+        {
+          "rank": 10,
+          "ticker": "CWENE",
+          "action": "BEKLE",
+          "signal": "Nötr",
+          "sector": "XELKT",
+          "entry_price": 40.74,
+          "m5": 8.9,
+          "m21": 8.2,
+          "m252": 141.6,
+          "target_1": 42.53,
+          "target_2": 44.33,
+          "stop": 34.63,
+          "current_price": 40.74,
+          "return_pct": 0.0
+        }
+      ],
+      "as_of": "2026-08-10",
       "age_trading_days": 0,
       "avg_return_pct": 0.0,
       "hit_rate_pct": 0.0,
