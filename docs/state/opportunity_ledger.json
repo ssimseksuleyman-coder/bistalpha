@@ -1,10 +1,10 @@
 {
   "summary": {
-    "updated_at": "2026-08-07T18:40:42",
+    "updated_at": "2026-08-10T09:45:54",
     "tracked_days": 20,
     "latest_date": "2026-08-07",
-    "current_candidates": 0,
-    "total_events": 12,
+    "current_candidates": 1,
+    "total_events": 13,
     "unique_tickers": 5,
     "matured_5d": 9,
     "avg_5d_return_pct": 0.46,
@@ -35,7 +35,56 @@
       "denominator_available": false,
       "note": "Firsat listesi yalniz kendi adaylarini olcer; F'in eledigi tum payda ayrica kurulmadan terfi kapisi sayilmaz."
     },
-    "latest_candidates": [],
+    "latest_candidates": [
+      {
+        "ticker": "KERVN",
+        "entry_date": "2026-08-07",
+        "entry_price": 10.28,
+        "sector": "XU100",
+        "source_layer": "firsat",
+        "source_label": "FIRSAT",
+        "reason": "strong_accumulation_not_f_pick",
+        "f_not_selected_reason": "sector_cap_or_slot_full",
+        "sm_signal": "GÜÇLÜ_BİRİKİM",
+        "m5": 23.9,
+        "m21": 69.6,
+        "m252": 220.2,
+        "volume_ratio": 1.23,
+        "upper_wick": 0.255,
+        "close_strength": 1.0,
+        "quality": {
+          "status": "pending_official_free_data",
+          "kap_confirmed": null,
+          "quality_score": null
+        },
+        "macro": {
+          "status": "pending_macro_surprise_ledger",
+          "support": null
+        },
+        "range_high": 10.28,
+        "range_low": 2.03,
+        "from_high_pct": 0.0,
+        "near_high": true,
+        "from_low_pct": 406.4,
+        "catalyst_present": false,
+        "catalyst_types": [],
+        "catalyst_source_tiers": [],
+        "sector_context": {
+          "sector": "XU100",
+          "status": "self_sector_rs_pending",
+          "role": "context_only",
+          "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
+        },
+        "current_price": 10.28,
+        "age_trading_days": 0,
+        "current_return_pct": -0.0,
+        "return_5d_pct": null,
+        "return_21d_pct": null,
+        "entered_f_top10_later": false,
+        "entered_f_top10_date": null,
+        "status": "open"
+      }
+    ],
     "notes": [
       "FIRSAT is measurement-only; it does not open trades.",
       "Quality/macro fields stay pending until free official data is connected.",
@@ -942,11 +991,69 @@
     },
     {
       "date": "2026-08-07",
-      "generated_at": "2026-08-07T18:40:42",
+      "generated_at": "2026-08-10T09:45:54",
       "top10": [
-        "YEOTK"
+        "HEDEF",
+        "GUNDG",
+        "OZATD",
+        "ODINE",
+        "KTLEV",
+        "IEYHO",
+        "DSTKF",
+        "EUPWR",
+        "CWENE",
+        "TKFEN"
       ],
-      "items": []
+      "items": [
+        {
+          "ticker": "KERVN",
+          "entry_date": "2026-08-07",
+          "entry_price": 10.28,
+          "sector": "XU100",
+          "source_layer": "firsat",
+          "source_label": "FIRSAT",
+          "reason": "strong_accumulation_not_f_pick",
+          "f_not_selected_reason": "sector_cap_or_slot_full",
+          "sm_signal": "GÜÇLÜ_BİRİKİM",
+          "m5": 23.9,
+          "m21": 69.6,
+          "m252": 220.2,
+          "volume_ratio": 1.23,
+          "upper_wick": 0.255,
+          "close_strength": 1.0,
+          "quality": {
+            "status": "pending_official_free_data",
+            "kap_confirmed": null,
+            "quality_score": null
+          },
+          "macro": {
+            "status": "pending_macro_surprise_ledger",
+            "support": null
+          },
+          "range_high": 10.28,
+          "range_low": 2.03,
+          "from_high_pct": 0.0,
+          "near_high": true,
+          "from_low_pct": 406.4,
+          "catalyst_present": false,
+          "catalyst_types": [],
+          "catalyst_source_tiers": [],
+          "sector_context": {
+            "sector": "XU100",
+            "status": "self_sector_rs_pending",
+            "role": "context_only",
+            "note": "Broker/third-party sector scores are not used in the public opportunity ledger."
+          },
+          "current_price": 10.28,
+          "age_trading_days": 0,
+          "current_return_pct": -0.0,
+          "return_5d_pct": null,
+          "return_21d_pct": null,
+          "entered_f_top10_later": false,
+          "entered_f_top10_date": null,
+          "status": "open"
+        }
+      ]
     }
   ]
 }
