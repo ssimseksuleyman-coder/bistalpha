@@ -1,15 +1,15 @@
 {
-  "updated_at": "2026-08-10T15:41:14",
+  "updated_at": "2026-08-11T06:45:44",
   "tz": "UTC",
   "scanner": "scripts/content_sanity.py",
-  "verdict": "GREEN",
+  "verdict": "RED",
   "gozlem": {
-    "select_valid_count": 581,
+    "select_valid_count": 7,
     "price_count": 617,
     "source_pool_count": 619,
-    "valid_ratio": 0.942,
+    "valid_ratio": 0.011,
     "coverage_ratio": 0.997,
-    "top10": 10,
+    "top10": 1,
     "watchlists_keys": [
       "firsatlar",
       "peak_risks",
@@ -21,6 +21,11 @@
     ],
     "bist_data_ok": true
   },
-  "problems": [],
+  "problems": [
+    [
+      "B/VALID_DUSUK",
+      "valid/price=0.01 < 0.5 (valid=7/price=617): gecerli-bar cokmus (tatil-deligi?) -> secim coplerle karar verebilir"
+    ]
+  ],
   "note": "Anlamlilik denetimi (canlilik DEGIL): uretilen veri dolu+tutarli mi."
 }
