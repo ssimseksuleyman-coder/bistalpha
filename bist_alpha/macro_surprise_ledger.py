@@ -211,6 +211,17 @@ def _refresh_event(event, report, prices, as_of_pos):
     age = max(0, int(as_of_pos - int(entry_pos)))
     event["age_trading_days"] = age
     all_tickers = [c for c in prices.columns if c]
+    # ⚠️ #0p — LOOK-AHEAD UYARISI (2026-08-12). Alan DEGISTIRILMEDI, ama
+    # SONUCU HUKME ESAS ALINAMAZ. `f_tickers` BUGUNUN top10'u; `entry_pos`
+    # ise gecmis bir tarih (2024-09-03 gibi). Yani olculen sey:
+    # "F'in BUGUN sectigi hisseler, IKI YIL ONCEKI tarihten 21 gunde ne getirdi".
+    # Bugunun top10'u zaten 252-gun momentumu yuksek OLDUGU ICIN orada
+    # -> gecmise uygulamak pozitif sonucu GARANTILER.
+    # OLCULDU: f_top10 - market = avg +15.79 / hit %95.7 (n=23) = artefakt imzasi.
+    # Karsilastirmasi: market = avg +2.61 / hit %65.2.
+    # Duzeltmesi ayri is: olay anindaki top10 gerekir (`f_top10_at_entry`
+    # alani `catalyst_ledger`de VAR, burada YOK). Silmiyoruz cunku o gun
+    # geldiginde tarihsel kayit lazim; ama kapi bu alani KULLANMAZ.
     f_tickers = [_norm_ticker(r.get("ticker")) for r in (report or {}).get("top10", [])]
     f_tickers = [t for t in f_tickers if t in prices.columns]
     for window in WINDOWS:
@@ -231,7 +242,100 @@ def _hit(values):
     return sum(1 for v in values if v > 0) / len(values) * 100 if values else None
 
 
-def _summary(events, as_of, sources):
+# =====================================================================
+# #0p — KOSULSUZ TABAN CIZGISI (2026-08-12)
+# =====================================================================
+BASELINE_MIN_N = 60             # taban icin gereken en az gozlem
+MIN_MATURE_FOR_DECISION = 20    # eskiden satir-ici sabit "20"
+
+
+def _basket_return_series(prices, window):
+    """`_basket_return`in VEKTORLESTIRILMIS ayni-anlamli hali.
+
+    NEDEN: taban ~485 baslangic noktasi ister. `_basket_return` dongusu
+    olculdu -> **39.7 sn** (her pozisyonda ticker basina `prices.iloc[pos]`
+    bir Series yaratiyor). Gunde 3 kosan daemon icin kabul edilemez.
+    Vektorlestirilmis hali **0.026 sn** (~1500x).
+
+    ESDEGERLIK, DAVRANIS DAVRANISA:
+      `_price_at_pos` NaN ve `value <= 0` -> None    =>  `.where(frame > 0)`
+      `_basket_return` `if start and end`            =>  oran NaN ise disarida
+      `entry_pos + window >= len(index)` -> None     =>  `shift(-window)` NaN
+      ortalama sonra `_round`                        =>  ayni `_round`
+    Tum pozisyonlarda dogrulandi (5 nokta DEGIL) — bkz ACIK_ISLER #0p.
+    """
+    if prices is None or getattr(prices, "empty", True):
+        return None
+    frame = prices[[c for c in prices.columns if c]]
+    frame = frame.where(frame > 0)
+    fwd = (frame.shift(-window) / frame - 1.0) * 100.0
+    return fwd.mean(axis=1, skipna=True).map(lambda v: _round(v) if v == v else float("nan"))
+
+
+def _baseline_stats(prices, window, lo_pos, hi_pos):
+    """KOSULSUZ TABAN — "kosullu vs kosulsuz" karsilastirmasinin paydasi.
+
+    Olay gunlerinin getirisi, AYNI ARALIKTAKI TUM GUNLERIN getirisiyle
+    karsilastirilir. Ayni hesap (`_basket_return_series` = `_basket_return`in
+    dogrulanmis vektor hali), ayni fiyat matrisi, ayni pencere, ayni evren;
+    degisen TEK sey baslangic tarihleri kumesi:
+
+        kosullu  = yalniz olay tarihleri          (n ~ 23)
+        kosulsuz = araliktaki her islem gunu      (n ~ 485)
+
+    NEDEN MUTLAK ESIK DEGIL: `avg>0 / hit>=50` evren yonunu olcume SIZDIRIR.
+    Yukselen bir piyasada rastgele 23 tarih bu esigi %91.03 geciyor
+    (bootstrap 20 000 tekrar; bkz ACIK_ISLER #0p) -> kapi ayirt etmiyor.
+
+    CALISMA ANINDA hesaplanir, SABIT GOMULMEZ: taban rejime baglidir
+    (2024-08..2026-08 icin avg +2.51 / hit %63.7; baska donemde baska deger).
+
+    NOT: olay gunleri tabandan CIKARILMAZ (23/485 = %4.7). Dahil etmek
+    muhafazakar yondedir: olaylar iyiyse tabani hafifce YUKARI ceker,
+    yani kapiyi zorlastirir.
+    """
+    if prices is None or lo_pos is None or hi_pos is None:
+        return None
+    series = _basket_return_series(prices, window)
+    if series is None:
+        return None
+    window_vals = series.iloc[int(lo_pos):int(hi_pos) + 1]
+    values = [float(v) for v in window_vals if v == v]   # NaN ele
+    if len(values) < BASELINE_MIN_N:
+        return None
+    return {
+        "n": len(values),
+        "avg": _round(_avg(values)),
+        "hit": _round(_hit(values), 1),
+        "window": window,
+        "from": _date_text(prices.index[int(lo_pos)]),
+        "to": _date_text(prices.index[int(hi_pos)]),
+    }
+
+
+def _hit_se(n, baseline_hit_pct):
+    """Hit oraninin standart hatasi (yuzde puani) — SIFIR HIPOTEZI altinda.
+
+    ⚠️ VARYANS TABANDAN ALINIR, ORNEKLEMDEN DEGIL. Sinadigimiz hipotez
+    "olay gunleri taban dagilimindan geliyor" -> H0'in varyansi p0(1-p0)/n,
+    p0 = TABAN hit orani.
+
+    NEDEN ONEMLI (cift-yonlu testte YAKALANDI, 2026-08-12): ornekleme
+    dayali SE, hit %0 veya %100'de p(1-p)=0 -> **SE=0** verir ve kapi tam
+    kacinmak istedigimiz ciplak `>`a GERI DUSER. Ilk surumde sagliklı-yon
+    testi (en iyi 23 gun, hit %100) GREEN verdi ama YANLIS SEBEPLE: guvenlik
+    payi anlamli oldugu icin degil, pay YOK OLDUGU icin. Taban orani ~%64-67
+    oldugundan p0(1-p0) asla cokmez.
+    """
+    if not n or int(n) <= 0 or baseline_hit_pct is None:
+        return None
+    p0 = float(baseline_hit_pct) / 100.0
+    if p0 <= 0.0 or p0 >= 1.0:
+        return None
+    return _round((p0 * (1 - p0) / int(n)) ** 0.5 * 100, 1)
+
+
+def _summary(events, as_of, sources, prices=None):
     ret21 = [e.get("market_return_21d_pct") for e in events]
     ret63 = [e.get("market_return_63d_pct") for e in events]
     by_group = {}
@@ -249,8 +353,37 @@ def _summary(events, as_of, sources):
             "hit_21d_pct": _round(_hit(row["ret21"]), 1),
         })
     decision = "olay_bekliyor" if not events else "olcum_devam"
-    if len([r for r in ret21 if r is not None]) >= 20 and _avg(ret21) is not None:
-        decision = "izleme_degeri_var" if _avg(ret21) > 0 and (_hit(ret21) or 0) >= 50 else "kenarda_tut"
+    baseline21 = None
+    edge21 = None
+    mature21 = [r for r in ret21 if r is not None]
+    if len(mature21) >= MIN_MATURE_FOR_DECISION and _avg(ret21) is not None:
+        # Taban ARALIGI olaylarin kendi araligi olmali (elma-elma).
+        poss = [int(e["entry_pos"]) for e in events
+                if e.get("market_return_21d_pct") is not None
+                and e.get("entry_pos") is not None]
+        baseline21 = _baseline_stats(prices, 21, min(poss), max(poss)) if poss else None
+        if baseline21 is None:
+            # Taban yoksa HUKUM DE YOK. Eski davranisa (mutlak esik) DUSULMEZ.
+            decision = "taban_hesaplanamadi"
+        else:
+            avg_edge = _round(_avg(ret21) - baseline21["avg"])
+            hit_edge = _round((_hit(ret21) or 0) - baseline21["hit"], 1)
+            # SE TABANDAN (H0), orneklemden DEGIL — bkz `_hit_se` docstring.
+            hit_se = _hit_se(len(mature21), baseline21["hit"])
+            edge21 = {
+                "avg_pp": avg_edge,
+                "hit_pp": hit_edge,
+                "hit_se_pp": hit_se,
+                "hit_se_basis": "baseline_h0",
+                "hit_edge_in_se": (_round(hit_edge / hit_se, 2)
+                                   if hit_se is not None and hit_se > 0 else None),
+            }
+            # KAPI: tabanin USTUNDE olmak YETMEZ — bir standart hata KADAR ustunde olmali.
+            # Ciplak `>` ile rastgele orneklerin ~%50'si gecer (simetri) -> yine ayirt etmez.
+            # Olcum: mevcut veride hit farki +1.5pp, SE 10.0pp -> 0.15 SE -> kenarda_tut.
+            decision = ("izleme_degeri_var"
+                        if avg_edge > 0 and hit_se is not None and hit_edge > hit_se
+                        else "kenarda_tut")
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of": as_of,
@@ -263,6 +396,10 @@ def _summary(events, as_of, sources):
         "hit_21d_pct": _round(_hit(ret21), 1),
         "avg_63d_market_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
+        # #0p — HUKMU DENETLENEBILIR YAPAN IKI ALAN. Kararin dayanagi
+        # panelde/JSON'da GORUNUR olmali, yoksa okuyan yine cikarim uydurur.
+        "baseline_21d": baseline21,
+        "edge_vs_baseline_21d": edge21,
         "decision": decision,
         "readiness": {
             "status": "active" if events else "empty",
@@ -275,6 +412,12 @@ def _summary(events, as_of, sources):
             "opens_trade": False,
             "promotion_gate": "closed_until_mature_multi_regime_sample",
         },
+        # #0p — alan saklanmaya devam ediyor; uyari ONUNLA BIRLIKTE tasinir.
+        "f_top10_return_warning": (
+            "LOOK-AHEAD: f_top10_return_* alanlari BUGUNUN top10'unu GECMIS "
+            "tarihlere uygular -> yapisal olarak pozitif (olculdu: asiri getiri "
+            "avg +15.79 / hit %95.7). HUKME ESAS ALINMAZ; kapi bu alani kullanmaz."
+        ),
         "by_group": sorted(group_rows, key=lambda x: x["group"]),
         "latest_events": sorted(events, key=lambda e: e.get("date") or "", reverse=True)[:10],
         "event_types": EVENT_TYPES,
@@ -300,7 +443,7 @@ def update(report, data, path=None, sources_path=None, max_events=MAX_EVENTS):
     events = [_refresh_event(event, report, prices, as_of_pos) for event in events]
     events.sort(key=lambda e: (e.get("date") or "", e.get("type") or ""))
     payload = {
-        "summary": _summary(events, as_of, sources),
+        "summary": _summary(events, as_of, sources, prices=prices),
         "events": events,
     }
     _save_json(ledger_path, payload)
