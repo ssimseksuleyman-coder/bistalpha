@@ -413,11 +413,22 @@ def _summary(events, as_of, sources, prices=None):
         "readiness": {
             "status": "active" if events else "empty",
             "data_status": "macro_event_source_waiting" if not events else "measuring",
+            # 2026-08-13: `message`/`next_step` KOSULSUZ sabit metindi -> kart
+            # kendisiyle CELISIYORDU: ayni kutuda hem "measuring" hem "kaynak
+            # gelmeden hukum yok", ve 08-06'da yuklenen 259 kaynagi "ekle" diye
+            # oneriyordu. Artik `status`/`data_status` gibi VERIDEN turetiliyor.
             "message": (
                 "Makro defter hazir; kaynak/event gelmeden surpiz alpha hukmu yok. "
                 "Consensus yoksa olay sadece takvim/reaksiyon olcumu sayilir."
+                if not events else
+                f"{len(events)} olay izleniyor. Hukum KOSULSUZ TABANA gore veriliyor "
+                "(ayni fiyat matrisinde tum baslangic noktalari); mutlak esik KULLANILMAZ."
             ),
-            "next_step": "docs/state/macro_surprise_sources.json icine resmi kaynakli olay ekle.",
+            "next_step": (
+                "docs/state/macro_surprise_sources.json icine resmi kaynakli olay ekle."
+                if not events else
+                "Olgunlasma bekleniyor; kenar 1-SE'yi asana kadar hukum yok."
+            ),
             "opens_trade": False,
             "promotion_gate": "closed_until_mature_multi_regime_sample",
         },

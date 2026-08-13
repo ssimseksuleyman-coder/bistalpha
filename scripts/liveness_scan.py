@@ -342,7 +342,15 @@ REGISTRY = {
         "input_paths": ["local/kap_financials", "local/kap_financial_actuals.json"],
     },
     "macro_surprise_ledger": {
-        "kind": "consumer", "expected": "planned",   # sources.json'a event girilmedi
+        # 2026-08-13: "planned" -> "active". Etiket BAYATTI: 08-06'da 259 olay
+        # yuklendi (`macro_surprise_sources.json`), uye GREEN uretiyor.
+        # ⚠️ SADECE ETIKET DOGRULUGU — DAVRANIS DEGISMEZ (izole test edildi):
+        #   girdi VAR -> active/planned ikisi de GREEN
+        #   girdi YOK -> ikisi de YELLOW "YARIM CALISIYOR: 259 kayit uretiyor
+        #                ama girdi-yolu yok"
+        # Cunku `expected`a bakan dal YALNIZ kayit SIFIRKEN calisir; 259 kayitli
+        # uye oraya hic ulasmaz. Ilk gerekcem ("kaybolursa RED verir") YANLISTI.
+        "kind": "consumer", "expected": "active",
         "file": "docs/state/macro_surprise_ledger.json",
         "ts_keys": ["summary.updated_at", "updated_at"],
         "tz": PRODUCER_TZ_OFFSET_H,
@@ -398,13 +406,20 @@ REGISTRY = {
     # _ever_written'in yeni-uye-SARI'si.
     "content_sanity": {
         "kind": "scanner",
-        "expected": "planned",
+        # 2026-08-13: "planned" -> "active". Not BAYATTI: `precise.yml:87`
+        # (`python3 scripts/content_sanity.py`) ile workflow'a BAGLI ve uretiyor.
+        # Yukaridaki "active'e cekilir (elle flip)" talimati unutulmustu — satir
+        # ~659'un uyardigi "biri unutur, uye sonsuza dek planned kalir" vakasi.
+        # DAVRANIS DEGISMEZ: `input_paths` YOK -> `_input_state` "n/a" doner ->
+        # `expected` hicbir dala girmez. Bu duzeltme YALNIZ yaniltici etiketi
+        # kaldirir (kozmetik). Girdi-yolu eklenirse davranissal hale gelir.
+        "expected": "active",
         "file": "docs/state/content_sanity.json",
         "ts_keys": ["updated_at"],
         "tz": 0.0,                     # content_sanity utcnow ile yazar
         "check_mode": "own_verdict",
         "raw_max_age_h": 72,
-        "note": "anlamlilik denetimi; HENUZ workflow'a bagli DEGIL (planned)",
+        "note": "anlamlilik denetimi; precise.yml ile kosuyor (aktif)",
     },
     # 14. UYE — STOP-DEGERLENDIRME IZI (#0l ile BIRLIKTE dogar).
     #
