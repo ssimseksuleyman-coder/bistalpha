@@ -93,12 +93,29 @@ def _first_price_on_or_after(prices, ticker, date_s):
 
 
 def _position_of_date(prices, date_s):
+    """Tarihin fiyat matrisindeki konumu; PENCERE DISINDA -> None (KIRPMAZ).
+
+    #0q (2026-08-13): eski surum iki yonde de SESSIZCE KIRPIYORDU — pencere
+    ONCESI icin `searchsorted` 0 doner ve 0 gecerli sayilirdi, pencere SONRASI
+    icin `len-1` dondurulurdu. Kirpma, olculEMEYEN bir olaya pencere ucundaki
+    BASKA bir gunun getirisini atfeder.
+      Ayni kusur makroda OLCULDU: 259 olayin 235'i entry_pos=0'a kirpilip AYNI
+      "-1.5%" 21g getirisini tasidi ve `hit_21d_pct 5.8` SAHTE ISTATISTIGI
+      public panele cikti (bkz `#0p`).
+    Catalyst'te bu kusur simdiye dek TETIKLENMEDI cunku `entry_pos`
+    onbellekteydi ve yeniden hesaplanmiyordu — yani onbellek (kendisi bir bug)
+    bu ikinci bug'i KAZARA gizliyordu. `_refresh_event` artik her kosumda
+    yeniden hesapladigi icin kirpma CANLI hale gelirdi; bu yuzden ayni anda
+    kapatiliyor. (Ayni desen kayitta: "rebalance-bug'ini duzeltmek bu riski ACTI".)
+    """
     if prices is None or prices.empty or not date_s:
         return None
     target = pd.Timestamp(date_s)
+    if target < prices.index[0]:
+        return None
     pos = int(prices.index.searchsorted(target, side="left"))
     if pos >= len(prices.index):
-        return len(prices.index) - 1
+        return None
     return pos
 
 
@@ -274,8 +291,17 @@ def _source_events(report, data, existing_events, sources, policy=None):
 def _refresh_event(event, prices, as_of_pos):
     ticker = event.get("ticker")
     entry = event.get("entry_price")
+    # #0q (2026-08-13): entry_pos kayan pencereye gore TUREV -> HER KOSUMDA
+    # entry_date'ten yeniden hesaplanir (eski surum yalniz None ise hesapliyordu).
+    #   OLCULDU: onbellek 07-16'dan beri 20 bar kaymisti. `age = as_of_pos -
+    #   entry_pos` oldugu icin yas 20 EKSIK raporlaniyordu (gercek 26, raporlanan
+    #   6) -> 18 olayin hicbiri 21g esigini gecemiyordu (matured_21d=0) ->
+    #   defterin kapisi BIR AYDIR ateslenemiyordu. Yas GERIYE de gidiyordu
+    #   (dun 8, bugun 6): pencere kisaldikca as_of_pos kuculuyor, entry_pos donuk.
+    # Pencere disi -> `_position_of_date` None doner (KIRPMAZ, `#0q`/D2) ->
+    # asagidaki `entry_pos is None` yolu devralir.
     entry_pos = event.get("entry_pos")
-    if entry_pos is None and event.get("entry_date"):
+    if event.get("entry_date"):
         entry_pos = _position_of_date(prices, event.get("entry_date"))
         event["entry_pos"] = entry_pos
     if entry is None and entry_pos is None and event.get("event_date"):

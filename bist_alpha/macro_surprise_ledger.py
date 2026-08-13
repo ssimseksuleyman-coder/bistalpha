@@ -200,11 +200,20 @@ def _refresh_event(event, report, prices, as_of_pos):
             event[f"f_top10_return_{w}d_pct"] = None
         event["status"] = "veri_penceresi_oncesi"
         return event
-    entry_pos = event.get("entry_pos")
-    if entry_pos is None:
-        entry_pos, entry_date = _first_pos_on_or_after(prices, event.get("date"))
-        event["entry_pos"] = entry_pos
-        event["entry_date"] = entry_date
+    # #0q (2026-08-13): `entry_pos` KALICI VERI DEGIL — kayan 2 yillik pencereye
+    # gore TUREVDIR. Onbelleklenirse pencere her ilerledikce eski bari gosterir
+    # ve olcum SESSIZCE yanlis tarihten baslar.
+    #   OLCULDU: 24/24 olayin entry_pos'u 5 bar kayikti (kayitli 2024-09-03 ->
+    #   fiilen 2024-09-10 olculuyordu) ve 23 olgun olayin 23'unun getirisi bir
+    #   gecede degisti (2025-10-03: 3.00 -> -0.28, ISARET degisimi).
+    # KALICI olan `date`; entry_pos/entry_date HER KOSUMDA ondan turetilir
+    # (idempotent, pencere kaymasina bagisik).
+    # NOT: pencere-oncesi korumasi (yukarida) BU SATIRLARDAN ONCE calisir, ve
+    # `_first_pos_on_or_after` kirpma-karsiti (2026-08-07 duzeltmesi) -> pencere
+    # disi olay 0'a KIRPILMAZ, None doner.
+    entry_pos, entry_date = _first_pos_on_or_after(prices, event.get("date"))
+    event["entry_pos"] = entry_pos
+    event["entry_date"] = entry_date
     if entry_pos is None:
         event["status"] = "future_or_missing_price"
         return event
