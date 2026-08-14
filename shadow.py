@@ -239,6 +239,46 @@ THIN_PICKS_MAX = 3
 THIN_DEFER_LOUD_AFTER = 3
 
 
+# ── #0i-5 — FILL KONVANSIYON DAMGASI ────────────────────────────────────────
+#
+# NEDEN (kayit `#0i` madde 5, tarihli: "2. rebalanstan ONCE bit"): C1'in 5
+# penceresi TEK konvansiyonla olculmeli; olculmezse degil, KARISTIRILMAMALI.
+# Iki konvansiyon fiilen var:
+#   07-17 rebalansi  -> karar ve fill AYNI gun kapanisinda (#0b olctu: DSTKF
+#                       2522 kitaplandi, gercek yurutme 07-20'de 2271 olurdu
+#                       = %10 fark)
+#   #0i sonrasi      -> karar D kapanisi, fill D+1 ACILISI (`opens_today`)
+# Damga olmazsa ileride iki pencere farkinda olmadan kiyaslanir — bugun `#0q`da
+# birebir bu yasandi (belgelenmemis state sonradan yanlis okundu).
+#
+# NEREYE: history KAYDININ ICINE -> pencere verisiyle birlikte seyahat eder.
+# NEDEN BURADA (shadow.py), portfolio.py'de DEGIL: konvansiyonu shadow SECIYOR
+# (`pf.rebalance`e `opens_today` mi `prices_today` mi gectigi), portfolio.py
+# kendisine verilen seriye doldurur — konvansiyon-agnostiktir. Dolayisiyla
+# damga da burada durur ve **F-datapath'in 5 dosyasi HIC DEGISMEZ** (golden-
+# master SHA-katiligi korunur; "davranis degismiyor" yargisina bel baglamaya
+# gerek kalmaz).
+FILL_CONV_NEXT_OPEN = "next_open_deferred"   # #0i: karar D kapanis, fill D+1 open
+FILL_CONV_SAME_DAY = "same_day_close"        # #0i oncesi + TUM stop'lar (prices_today)
+
+
+def _stamp_fill_convention(state):
+    """Alani OLMAYAN her history kaydina `same_day_close` yazar (idempotent).
+
+    Zaten damgali kayda DOKUNMAZ -> fill yerinde vurulan `next_open_deferred`
+    ezilmez, ve yeniden kosum sonucu degistirmez.
+    `same_day_close` dogru varsayilan: (a) #0i oncesi tum fill'ler oyleydi,
+    (b) stop'lar `close_positions(..., prices_today)` ile HALA ayni-gun doluyor
+    (#0i stop yolunu degistirmedi).
+    """
+    n = 0
+    for h in state.get("history") or []:
+        if isinstance(h, dict) and "fill_convention" not in h:
+            h["fill_convention"] = FILL_CONV_SAME_DAY
+            n += 1
+    return n
+
+
 # ── #0k — CORPORATE-ACTION (bedelsiz/bolunme) TESPITI + ATOMIK DUZELTME ──────
 #
 # MEKANIZMA (2026-07-31 olculdu, YEOTK canli vakasi): Yahoo bolunme/bedelsizde
@@ -523,6 +563,14 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                         pf.rebalance(state, pending["weights"], opens_today, slippage=slippage,
                                      trade_date=trade_date, reason=pending.get("reason", "rebalance"),
                                      scale=pending.get("scale", 1.0))
+                        # #0i-5: bu fill D+1 OPEN'dan yapildi -> kaydi HEMEN damgala.
+                        # `[-1]` guvenli: `pf.rebalance` tam BIR history kaydi ekler ve
+                        # append oncesi erken donusu YOKTUR (AST ile dogrulandi), ayrica
+                        # asagidaki satir zaten ayni varsayima dayaniyor. Stop blogu
+                        # (`close_positions`) BUNDAN SONRA calisir; damga once vurulmali
+                        # ki `[-1]` stop kaydina kaymasin.
+                        if state.get("history"):
+                            state["history"][-1]["fill_convention"] = FILL_CONV_NEXT_OPEN
                         new_trades.extend((state.get("history", [])[-1] or {}).get("trades", []))
                         state.pop("_pending_rebalance", None)
                         pending = None
@@ -590,6 +638,9 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 decided_now = True
                 print(f"[shadow] {acc} KARAR verildi ({len(picks)} pick) -> pending, "
                       f"fill D+1 open'da")
+            # #0i-5: kaydetmeden ONCE, bu kosumda yazilan her sey dahil, damgasiz
+            # kalan history kayitlarini geriye donuk isaretle (idempotent).
+            _stamp_fill_convention(state)
             pf.save(state, state_dir=config.STATE_DIR)
             results[acc] = {
                 "value": round(pf.current_value(state, prices_today), 4),
