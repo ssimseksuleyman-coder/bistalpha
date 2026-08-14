@@ -262,6 +262,93 @@ FILL_CONV_NEXT_OPEN = "next_open_deferred"   # #0i: karar D kapanis, fill D+1 op
 FILL_CONV_SAME_DAY = "same_day_close"        # #0i oncesi + TUM stop'lar (prices_today)
 
 
+# ── #0g-② — REBALANS ONCESI VERI-GECERLILIK KAPISI (BACKSTOP) ───────────────
+#
+# NEDEN (kayit `#0g` ① + `#0b`): shadow OTOMATIK. Alarm rebalansi DURDURMAZ ->
+# copveriyle kurulan pencere GERI ALINAMAZ ve C1'in 5 penceresinden biri KALICI
+# kirlenir. Kapi PARAYI degil OLCUMU korur.
+# BACKSTOP: birincil koruma `#0i` (karar bayat acilistan taze kapanisa tasindi,
+# CANLIDA). Bu kapi, kapanista DA anomali varsa devreye girer (nadir).
+#
+# UC KOL (VEYA) — her biri ayri bir arizayi kapatir:
+#   1. content_sanity.verdict == RED  -> veri ANLAMSIZ (dolu/tutarli degil)
+#   2. veri tarihi != kosum takvim gunu -> veri BAYAT
+#   3. content_sanity bugun kosmadi   -> hukum BUGUNE AIT DEGIL
+# Kol-3 neden sart (olculdu): `precise.yml`de content_sanity KARARDAN SONRA ve
+# `continue-on-error: true` ile kosuyor. Adim coker -> dosya bayat kalir ->
+# kol-1 ESKI bir GREEN okur ve gecer. Liveness bunu ancak 72h sonra RED'ler
+# (`raw_max_age_h`), o pencerede gunde 3 karar noktasi gecer. Kol-1+kol-2 bu
+# kor noktayi GORMEZ; kol-3 gorur.
+#
+# KOL-2'NIN REFERANSI (yanlis ifade edilmisti, olcerek duzeltildi): veri tarihi
+# `prices.index[-1]`den gelir, KARSILASTIRILAN ise KOSUMUN TAKVIM GUNUdur.
+# `prices.index`i kendisiyle kiyaslamak tautoloji olurdu; olculdu: 523 hafta-ici
+# gunun 14'unde atesler (%2.7) -> tautoloji degil.
+# YANLIS-POZITIF MALIYETI OLCULDU: yilda ~7-10 gun (BIST tatilleri; takvim YOK,
+# `prices.index` takvimin kendisi, tatil ile bayat-veri ayirt edilemez).
+# ARDISIK KUME MAX 2 (olculdu) -> sesli esik 5 secildi, bayramda sahte
+# "VERI SORUNU SURUYOR" alarmi CALMAZ (alarm-korlugu onlenir).
+GATE_LOUD_AFTER = 5
+CONTENT_SANITY_PATH = os.path.join(DOCS_STATE_DIR, "content_sanity.json")
+
+
+def _data_gate(prices, run_utc_date):
+    """Rebalans KARARI icin veri gecerli mi? (blocked, reason) doner.
+
+    Hesaptan BAGIMSIZ (ayni fiyat matrisi, ayni content_sanity) -> hesap
+    dongusunden ONCE bir kez hesaplanir, dorde birden uygulanir.
+    """
+    veri_tarihi = prices.index[-1].date() if len(prices.index) else None
+
+    cs, cs_hata = None, None
+    try:
+        with open(CONTENT_SANITY_PATH, encoding="utf-8") as fh:
+            cs = json.load(fh)
+    except Exception as e:
+        cs_hata = f"{type(e).__name__}: {e}"
+
+    # kol-3 ONCE: dosya yok/okunamiyorsa kol-1'in GREEN'ine guvenilemez.
+    if cs is None:
+        return True, f"content_sanity okunamadi ({cs_hata})"
+    cs_gun = str(cs.get("updated_at") or "")[:10]
+    if cs_gun != run_utc_date.isoformat():
+        return True, (f"content_sanity BUGUN kosmadi (damga {cs_gun or '?'}, "
+                      f"bugun {run_utc_date}) -> hukum bugune ait degil")
+
+    # kol-1
+    v = cs.get("verdict")
+    if v == "RED":
+        p = [x[0] if isinstance(x, list) else x for x in (cs.get("problems") or [])]
+        return True, f"content_sanity RED: {', '.join(str(x) for x in p) or '?'}"
+    if v not in ("GREEN", "YELLOW"):
+        return True, f"content_sanity verdict gecersiz: {v!r}"
+
+    # kol-2
+    if veri_tarihi != run_utc_date:
+        return True, (f"veri BAYAT ya da TATIL: son bar {veri_tarihi}, "
+                      f"kosum gunu {run_utc_date}")
+    return False, None
+
+
+def _gate_defer(state, acc, reason, trade_date):
+    """Kapi kapaliyken sayaci arttirir ve GORUNUR kilar (`_thin_defer` deseni).
+
+    Saat DONMAZ: history'ye olay yazilmadigi icin `rebal_elapsed` buyumeye devam
+    eder, ertesi kapanista otomatik yeniden denenir.
+    ESIK YOK (otomatik fail-open YOK): sayac suresiz artar, karar INSANDA.
+    Otomatik bir "N gun sonra gec" esigi yeni bir uydurma sabit olurdu.
+    """
+    dfr = state.get("_gate_defer") or {"count": 0, "first_at": trade_date}
+    dfr["count"] = int(dfr.get("count", 0)) + 1
+    dfr["last_at"] = trade_date
+    dfr["reason"] = reason
+    state["_gate_defer"] = dfr
+    yuksek = ("  ** ARDISIK %d GUN — VERI SORUNU SURUYOR **" % dfr["count"]
+              if dfr["count"] >= GATE_LOUD_AFTER else "")
+    print(f"[shadow] {acc} VERI-KAPISI KAPALI -> rebalans ERTELENDI "
+          f"(sayac={dfr['count']}): {reason}{yuksek}")
+
+
 def _stamp_fill_convention(state):
     """Alani OLMAYAN her history kaydina `same_day_close` yazar (idempotent).
 
@@ -443,6 +530,15 @@ def step(data, signals, date=None, slippage=None, run_label=None):
     # Eski global bar-index tetikleyicisi (bt_mod._rebal_dates) canlida hic tetiklenmiyordu.
     trade_date = str(date.date()) if hasattr(date, "date") else str(date)
 
+    # #0g-②: VERI-GECERLILIK KAPISI — hesaptan BAGIMSIZ, bir kez hesaplanir.
+    # Yalniz KARAR kosusunda (kapanis) anlamli; gun-ici kosuda karar verilmiyor
+    # zaten, bosuna dosya okumaya gerek yok.
+    gate_blocked, gate_reason = (False, None)
+    if run_label == "kapanis":
+        gate_blocked, gate_reason = _data_gate(prices, datetime.utcnow().date())
+        if gate_blocked:
+            print(f"[shadow] VERI-KAPISI: {gate_reason}")
+
     results = {}
     for acc, mode in ACCOUNTS.items():
         try:
@@ -600,8 +696,22 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             should_rebalance, initial_entry, rebal_elapsed, last_selection = rebal_status(
                 state, prices, date)
             thin_deferred = False
+            # #0g-②: VERI-KAPISI kapaliysa KARAR VERILMEZ (pending YAZILMAZ).
+            # `select()` bile CAGRILMAZ — kirli veriden pick uretmenin anlami yok.
+            # `_thin_defer` deseniyle ayni: saat DONMAZ (history'ye olay yazilmaz,
+            # rebal_elapsed buyur), ertesi kapanista otomatik yeniden denenir.
+            # AYRI SAYAC (`_gate_defer`): "ince secim" ile "kirli/bayat veri" ayri
+            # arizalar, tek sayacta birlesirlerse sebep kaybolur.
+            gate_deferred = False
+            if run_label == "kapanis" and should_rebalance and not state.get("_pending_rebalance") \
+                    and gate_blocked:
+                _gate_defer(state, acc, gate_reason, trade_date)
+                gate_deferred = True
+            elif state.pop("_gate_defer", None):
+                print(f"[shadow] {acc} veri-kapisi ACILDI -> karar verilebilir")
             # Karar YALNIZ: kapanis kosusu + zamani geldi + pending YOK (#0i-②, spam yok)
-            if run_label == "kapanis" and should_rebalance and not state.get("_pending_rebalance"):
+            if (run_label == "kapanis" and should_rebalance
+                    and not state.get("_pending_rebalance") and not gate_deferred):
                 if mode == "O":
                     picks, sig_map, exc = omega_mod.select(data, signals, date)
                     weights = omega_mod.weights(picks, sig_map)
@@ -618,7 +728,8 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 # sarili, istisna results[acc]={"error":..} olarak YUTULURDU.
                 thin_deferred = _thin_defer(state, acc, picks, trade_date)
             if (run_label == "kapanis" and should_rebalance
-                    and not state.get("_pending_rebalance") and not thin_deferred):
+                    and not state.get("_pending_rebalance")
+                    and not gate_deferred and not thin_deferred):
                 scale = strat_mod.regime_scale(data, date)
                 reason = "initial_entry" if initial_entry else "rebalance"
                 # HEDEF BIRIMI = AGIRLIK (#0i-2b), lot DEGIL. Lot D+1 fill aninda
@@ -665,6 +776,12 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 # #0e-GUARD gorunurlugu: ertelendiyse SEBEBI ve SAYACI raporlanir
                 # (sessiz erteleme = "yoklugun imzasi yok"in yeni bir hali olurdu).
                 "rebal_thin_deferred": (state.get("_rebal_defer") or None),
+                # #0g-②: kapi durumu GORUNUR olsun (sessiz erteleme olmasin).
+                # `gate_checked` pozitif damga (`ca_checked` deseni): None = "bu
+                # kosuda BAKILMADI" (gun-ici), dolu = "bakildi" + sonuc.
+                "gate_checked": ({"blocked": gate_blocked, "reason": gate_reason}
+                                 if run_label == "kapanis" else None),
+                "rebal_gate_deferred": (state.get("_gate_defer") or None),
                 "ca_checked": ca_checked,
                 "ca_fixed": ca_fixed or None,
                 "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in ca_unchecked]
