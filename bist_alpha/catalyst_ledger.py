@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from bist_alpha import ledger_stats
+
 
 WINDOWS = (5, 21)
 MAX_EVENTS = 500
@@ -334,6 +336,12 @@ def _refresh_event(event, prices, as_of_pos):
     age = max(0, int(as_of_pos - int(entry_pos)))
     event["age_trading_days"] = age
     event["current_return_pct"] = _round((current / float(entry) - 1) * 100)
+    # #0r: ASIRI getiri = olay getirisi - AYNI PENCEREDE evren sepeti.
+    # BU DEFTERDE OLCULDU (2026-08-13): 18 olayin ham getirisi -1.41% / hit %33.3
+    # idi ve "piyasanin altinda" diye hukum verdim -- YANLISTI. Ayni pencerede
+    # sepet -5.10% / yukselen %25.4; fiilen +3.70pp USTUNDE. Ham getiriyi sifirla
+    # kiyaslamak piyasa suruklenmesini iceride birakiyor.
+    all_tickers = [c for c in prices.columns if c]
     for window in WINDOWS:
         key = f"return_{window}d_pct"
         if int(entry_pos) + window <= as_of_pos:
@@ -341,6 +349,11 @@ def _refresh_event(event, prices, as_of_pos):
             event[key] = _round((px / float(entry) - 1) * 100) if px else None
         else:
             event[key] = None
+        r = event.get(key)
+        sepet = (ledger_stats.basket_return(prices, all_tickers, int(entry_pos), window)
+                 if r is not None else None)
+        event[f"excess_{window}d_pct"] = (_round(r - sepet)
+                                          if (r is not None and sepet is not None) else None)
     if event.get("return_21d_pct") is not None:
         ret21 = float(event["return_21d_pct"])
         event["status"] = "mature_21d"
@@ -419,15 +432,20 @@ def _summary(events, sources, as_of, policy=None):
     for source in registry:
         status = source.get("status") or "unknown"
         registry_counts[status] = registry_counts.get(status, 0) + 1
+    # #0r — KAPI: SATIR degil BAGIMSIZ BIRIM, ve ham getiri degil ASIRI getiri.
+    # BU DEFTER kusurun OLCULDUGU yer (2026-08-13): 18 olayin HEPSI 2026-07-06
+    # tarihliydi -> 18 bagimsiz olay degil, TEK GUNDE 18 hisse (etkin n ~ 1).
+    # Eski kapi bunu 18 gozlem sayardi. Ayrica ham getiri sifirla kiyaslaniyordu:
+    # ham -1.41% / hit %33.3 "piyasanin altinda" gorunuyordu, oysa ayni pencerede
+    # sepet -5.10% -> ASIRI +3.67% / hit %66.7 (isaret bile ters).
+    # Simdi: kume = tarih, kenar = kume-ortalamalarinin ortalamasi,
+    # SE = sd(kume_ort)/sqrt(K); K < 2 -> "hesaplanamadi".
+    cs21 = ledger_stats.cluster_stats(
+        [(e.get("event_date"), e.get("excess_21d_pct")) for e in events])
     decision = "olcum_devam"
     min_events = int(global_rules.get("minimum_mature_events_for_decision", 20) or 20)
     if len(mature21) >= min_events:
-        avg21 = _avg(ret21)
-        hit21 = sum(1 for r in ret21 if r > 0) / len(ret21) * 100 if ret21 else None
-        if avg21 is not None and avg21 > 0 and hit21 is not None and hit21 >= 50:
-            decision = "izleme_degeri_var"
-        else:
-            decision = "kenarda_tut"
+        decision = ledger_stats.gate_verdict(cs21)
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of": as_of,
@@ -445,7 +463,14 @@ def _summary(events, sources, as_of, policy=None):
         "avg_5d_return_pct": _round(_avg(ret5)),
         "hit_5d_pct": _round(sum(1 for r in ret5 if r > 0) / len(ret5) * 100, 1) if ret5 else None,
         "avg_21d_return_pct": _round(_avg(ret21)),
+        # #0r: `hit` DENETLENEBILIR kalsin diye yayinlanir ama KAPI KULLANMAZ.
         "hit_21d_pct": _round(sum(1 for r in ret21 if r > 0) / len(ret21) * 100, 1) if ret21 else None,
+        "hit_21d_note": "yayinlanir; KAPI KULLANMAZ (bkz cluster_21d)",
+        # #0r — DENETLENEBILIR KAPI ALANLARI: `k` benzersiz TARIH (bagimsiz
+        # birim), `n` satir. Aradaki fark sahte-n'in olcusudur.
+        "cluster_21d": cs21,
+        "excess_avg_21d_pct": cs21.get("edge"),
+        "n_unique_dates_21d": cs21.get("k"),
         "decision": decision,
         "policy_version": policy.get("version"),
         "min_mature_events_for_decision": min_events,

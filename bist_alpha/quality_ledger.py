@@ -14,6 +14,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from bist_alpha import ledger_stats
+
 
 WINDOWS = (5, 21, 63)
 MAX_EVENTS = 500
@@ -533,6 +535,12 @@ def _refresh_event(event, prices, as_of_pos):
     age = max(0, int(as_of_pos - int(entry_pos)))
     event["age_trading_days"] = age
     event["current_return_pct"] = _round((current / float(entry) - 1) * 100)
+    # #0r: ASIRI getiri = olay getirisi - AYNI PENCEREDE evren sepeti.
+    # Ham getiriyi sifirla kiyaslamak piyasa suruklenmesini iceride birakir;
+    # dogru taban, olayin KENDI penceresinde piyasanin yaptigidir.
+    #   OLCULDU 2026-08-13 (catalyst): ham -1.41% "kotu" gorunuyordu; ayni
+    #   pencerede sepet -5.10% -> fiilen +3.70pp USTUNDE (isaret bile ters).
+    all_tickers = [c for c in prices.columns if c]
     for window in WINDOWS:
         key = f"return_{window}d_pct"
         if int(entry_pos) + window <= as_of_pos:
@@ -540,6 +548,11 @@ def _refresh_event(event, prices, as_of_pos):
             event[key] = _round((px / float(entry) - 1) * 100) if px else None
         else:
             event[key] = None
+        r = event.get(key)
+        sepet = (ledger_stats.basket_return(prices, all_tickers, int(entry_pos), window)
+                 if r is not None else None)
+        event[f"excess_{window}d_pct"] = (_round(r - sepet)
+                                          if (r is not None and sepet is not None) else None)
     mature = [w for w in WINDOWS if event.get(f"return_{w}d_pct") is not None]
     event["status"] = f"mature_{max(mature)}d" if mature else "open"
     return event
@@ -597,8 +610,16 @@ def _summary(events, as_of):
     decision = "resmi_finansal_olay_bekliyor" if not events else "olcum_devam"
     if events and not confirmed:
         decision = "kap_teyidi_bekliyor"
-    if len(mature21) >= 20 and _avg(ret21) is not None and _avg(ret21) > 0 and (_hit(ret21) or 0) >= 50 and confirmed:
-        decision = "izleme_degeri_var"
+    # #0r — KAPI: SATIR degil BAGIMSIZ BIRIM, ve ham getiri degil ASIRI getiri.
+    # Eski kapi ham getiriyi SIFIRLA kiyasliyordu (taban-cizgisiz; `#0p`de makro
+    # icin olculdu: gurultuyu %91 gecirir) ve mature21'i SATIR olarak sayiyordu
+    # (catalyst'te olculdu: 18 olay = tek gunde 18 hisse, etkin n ~ 1).
+    # Kume = release_date; K < 2 -> SE tanimsiz -> "hesaplanamadi".
+    # `confirmed` sarti KORUNDU: KAP teyidi olmadan hukum verilmez.
+    cs21 = ledger_stats.cluster_stats(
+        [(e.get("release_date"), e.get("excess_21d_pct")) for e in events])
+    if len(mature21) >= 20 and confirmed:
+        decision = ledger_stats.gate_verdict(cs21)
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
         "as_of": as_of,
@@ -612,7 +633,13 @@ def _summary(events, as_of):
         "avg_5d_return_pct": _round(_avg(ret5)),
         "hit_5d_pct": _round(_hit(ret5), 1),
         "avg_21d_return_pct": _round(_avg(ret21)),
+        # #0r: `hit` DENETLENEBILIR kalsin diye yayinlanir ama KAPI KULLANMAZ.
         "hit_21d_pct": _round(_hit(ret21), 1),
+        "hit_21d_note": "yayinlanir; KAPI KULLANMAZ (bkz cluster_21d)",
+        # #0r — DENETLENEBILIR KAPI ALANLARI: `k` benzersiz TARIH, `n` satir.
+        "cluster_21d": cs21,
+        "excess_avg_21d_pct": cs21.get("edge"),
+        "n_unique_dates_21d": cs21.get("k"),
         "avg_63d_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
         "decision": decision,

@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from bist_alpha import ledger_stats
+
 
 WINDOWS = (5, 21, 63)
 MAX_EVENTS = 700
@@ -384,6 +386,16 @@ def _refresh_event(event, prices, as_of_pos):
     age = max(0, int(as_of_pos - int(entry_pos)))
     event["age_trading_days"] = age
     event["current_return_pct"] = _round((current / float(entry) - 1) * 100)
+    # #0r: ASIRI getiri = olay getirisi - AYNI PENCEREDE evren sepeti.
+    # NEDEN ham getiri YETMEZ: sifirla kiyaslamak piyasa suruklenmesini iceride
+    # birakir. Dogru taban, olayin KENDI penceresinde piyasanin yaptigidir.
+    #   OLCULDU 2026-08-13 (catalyst): ham -1.41% "kotu" gorunuyordu; ayni
+    #   pencerede sepet -5.10% -> fiilen +3.70pp USTUNDE. Zaman-eslesmemis
+    #   kiyas ISARETI bile yanlis verdi.
+    # NOT: `#0p`de makro icin kurulan KOSULSUZ taban (cok-pencereli ortalama)
+    # buraya TASINAMAZ -- orada olaylar 2 yila yayilmisti, burada hisse-bazli
+    # ve tek pencerede. Dogru desen budur.
+    all_tickers = [c for c in prices.columns if c]
     for window in WINDOWS:
         key = f"return_{window}d_pct"
         if int(entry_pos) + window <= as_of_pos:
@@ -391,6 +403,11 @@ def _refresh_event(event, prices, as_of_pos):
             event[key] = _round((px / float(entry) - 1) * 100) if px else None
         else:
             event[key] = None
+        r = event.get(key)
+        sepet = (ledger_stats.basket_return(prices, all_tickers, int(entry_pos), window)
+                 if r is not None else None)
+        event[f"excess_{window}d_pct"] = (_round(r - sepet)
+                                          if (r is not None and sepet is not None) else None)
     mature = [w for w in WINDOWS if event.get(f"return_{w}d_pct") is not None]
     event["status"] = f"mature_{max(mature)}d" if mature else "open"
     return event
@@ -429,13 +446,30 @@ def _summary(events, as_of):
             "hit_21d_pct": _round(row["wins21"] / n21 * 100, 1) if n21 else None,
         })
     mature21 = [e for e in events if e.get("return_21d_pct") is not None]
+    # #0r — KAPI: SATIR degil BAGIMSIZ BIRIM sayilir, ve ham getiri degil
+    # ASIRI getiri kullanilir.
+    #   Eski kapi: `len(mature21) >= 20 AND avg21 > 0 AND hit21 >= 50`
+    #   Iki kusuru vardi:
+    #   (1) TABAN CIZGISIZ -- ham getiriyi SIFIRLA kiyasliyordu. Olculdu (`#0p`,
+    #       makro): piyasanin kosulsuz 21g tabani +2.51% / hit %63.7 iken bu esik
+    #       bootstrap'te GURULTUYU %91 gecirti. Cozum: asiri getiri (`excess_*`).
+    #   (2) SATIR SAYIYORDU -- catalyst'in 18 olayinin HEPSI 2026-07-06 tarihliydi:
+    #       18 bagimsiz olay degil, TEK GUNDE 18 hisse. Ayni gunun hisseleri ortak
+    #       piyasa hareketine maruz => etkin n(tarih) ~ 1. Cozum: KUME = tarih.
+    # `cluster_stats`: her tarih icin kume ortalamasi (18 hisse -> 1 nokta,
+    # kume-ici korelasyon boylece coker), sonra kumeler-arasi SE = sd/sqrt(K).
+    # K < 2 -> SE TANIMSIZ -> "hesaplanamadi" (sabit esik UYDURULMAZ; veri
+    # yetmiyorsa kapi acilmaz, cunku SE hesaplanamaz).
+    # AVG uzerinden, HIT uzerinden DEGIL: hit bir orandir; kumeler farkli
+    # boyuttayken kumeler-arasi varyans gercek etkiden cok kume-boyutu
+    # heterojenligini olcer. `hit` yayinlanir ama HUKUM VERMEZ.
+    cs21 = ledger_stats.cluster_stats(
+        [(e.get("event_date"), e.get("excess_21d_pct")) for e in events])
     decision = "olcum_devam"
     if not events:
         decision = "akis_ve_geri_alim_verisi_bekliyor"
     elif len(mature21) >= 20:
-        avg21 = _avg(ret21)
-        hit21 = _hit(ret21)
-        decision = "izleme_degeri_var" if avg21 is not None and avg21 > 0 and (hit21 or 0) >= 50 else "kenarda_tut"
+        decision = ledger_stats.gate_verdict(cs21)
     local_files = _local_paths()
     return {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
@@ -446,7 +480,17 @@ def _summary(events, as_of):
         "matured_21d": len(mature21),
         "matured_63d": len([e for e in events if e.get("return_63d_pct") is not None]),
         "avg_21d_return_pct": _round(_avg(ret21)),
+        # #0r: `hit` DENETLENEBILIR kalsin diye yayinlanir ama KAPI BUNU
+        # KULLANMAZ (oran + degisken kume boyutu -> dayaniksiz). Karar
+        # `cluster_21d.edge_in_se` uzerinden verilir.
         "hit_21d_pct": _round(_hit(ret21), 1),
+        "hit_21d_note": "yayinlanir; KAPI KULLANMAZ (bkz cluster_21d)",
+        # #0r — DENETLENEBILIR KAPI ALANLARI: hukmun nasil olustugu JSON'dan
+        # yeniden hesaplanabilsin. `k` = benzersiz TARIH (bagimsiz birim),
+        # `n` = satir. Ikisi arasindaki fark sahte-n'in olcusudur.
+        "cluster_21d": cs21,
+        "excess_avg_21d_pct": cs21.get("edge"),
+        "n_unique_dates_21d": cs21.get("k"),
         "avg_63d_return_pct": _round(_avg(ret63)),
         "hit_63d_pct": _round(_hit(ret63), 1),
         "kap_buyback_events": len([e for e in events if e.get("type") == "geri_alim"]),
