@@ -258,6 +258,19 @@ def _source_events(report, data, existing_events, sources, policy=None):
             key = _source_key(source, ticker)
             old = existing.get(key)
             if old:
+                # #0u (2026-08-14) — BU SATIRIN NIYETI ACIK YAZILDI.
+                # Mevcut olay OLDUGU GIBI korunur; ozellikle `entry_date` ve
+                # `entry_price` KALICI OLGUDUR (olay o gun oldu, o fiyattan
+                # girildi) ve feed sonradan degisse de YENIDEN TURETILMEZ.
+                # NEDEN ONEMLI: `flow`/`quality` bu korumaya sahip DEGILDI ve
+                # gecmisleri kaydi -- olculdu 2026-08-14: flow 3/22, quality 1/88
+                # olayin `entry_date`i degisti (07-31 barinin feed'de sonradan
+                # %98.7 NaN'a dusmesi yuzunden 08-03'e atladi). Catalyst 0/18 ile
+                # SAGLAM kaldi, ama bu KAZARAYDI: koruma bu toptan-yeniden-kullanim
+                # satirinin YAN ETKISIYDI, acik bir karar degildi. Biri bu satiri
+                # "temizlerse" cipa SESSIZCE kaybolurdu -> bu yuzden yaziya dokuldu.
+                # (`entry_pos` KALICI DEGIL: kayan pencereye gore turev, her
+                # kosumda `_refresh_event`te `entry_date`ten hesaplanir -- `#0q`.)
                 events.append(old)
                 continue
             entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, event_date)

@@ -316,6 +316,42 @@ def _first_price_on_or_after(prices, ticker, date_s):
     return None, None, None
 
 
+def _position_of_date(prices, date_s):
+    """Tarihin fiyat matrisindeki konumu; PENCERE DISINDA -> None (KIRPMAZ).
+
+    #0u (2026-08-14): `catalyst_ledger`den KOPYALANDI (uc kopya oldu -> `#0t`ye
+    birlestirme adayi olarak yazildi).
+    NEDEN `_first_price_on_or_after` DEGIL: o, ticker'in fiyati YOKSA ileri kayar.
+    `entry_pos`i ondan turetmek, `#0u`in duzelttigi kaymayi `entry_pos`a TASIRDI.
+    Burada aranan SAF tarih->konum; fiyatin dolu olup olmadigi ayri sorudur.
+
+    #0q (2026-08-13): eski surum iki yonde de SESSIZCE KIRPIYORDU — pencere
+    ONCESI icin `searchsorted` 0 doner ve 0 gecerli sayilirdi, pencere SONRASI
+    icin `len-1` dondurulurdu. Kirpma, olculEMEYEN bir olaya pencere ucundaki
+    BASKA bir gunun getirisini atfeder.
+      Ayni kusur makroda OLCULDU: 259 olayin 235'i entry_pos=0'a kirpilip AYNI
+      "-1.5%" 21g getirisini tasidi ve `hit_21d_pct 5.8` SAHTE ISTATISTIGI
+      public panele cikti (bkz `#0p`).
+    """
+    if prices is None or prices.empty or not date_s:
+        return None
+    target = pd.Timestamp(date_s)
+    if target < prices.index[0]:
+        return None
+    pos = int(prices.index.searchsorted(target, side="left"))
+    if pos >= len(prices.index):
+        return None
+    return pos
+
+
+# #0u — CIPALI ALANLAR: olayin TARIHSEL OLGUSU, feed sonradan degisse de sabit.
+# Merge'de mevcut deger EZILMEZ. (`entry_pos` BU LISTEDE YOK: kayan pencereye
+# gore TUREV, her kosumda `entry_date`ten yeniden hesaplanir -- `#0q`.)
+# NOT: bu dosyada ayni fikrin OZEL bir ornegi zaten vardi (`kap_confirmed`
+# sticky-true, asagida); `#0u` onu KALICI-ALAN kavramina genellestiriyor.
+CIPALI_ALANLAR = ("entry_date", "entry_price")
+
+
 def _event_key(event):
     return "|".join([
         str(event.get("source_id") or ""),
@@ -477,12 +513,17 @@ def _official_quality_events(prices):
 def _refresh_event(event, prices, as_of_pos):
     ticker = event.get("ticker")
     entry = event.get("entry_price")
-    entry_pos = event.get("entry_pos")
     if entry is None and event.get("release_date"):
-        entry, entry_date, entry_pos = _first_price_on_or_after(prices, ticker, event.get("release_date"))
+        # ILK hesap: giris henuz yok -> release_date'ten TURET ve CIPALA.
+        entry, entry_date, _pos0 = _first_price_on_or_after(prices, ticker, event.get("release_date"))
         event["entry_price"] = _round(entry)
         event["entry_date"] = entry_date
-        event["entry_pos"] = entry_pos
+    # #0u/#0q: `entry_pos` TUREV -> HER KOSUMDA cipali `entry_date`ten hesaplanir.
+    # Onbelleklenirse pencere kaydikca bayatlar (`#0q`); `_first_price_on_or_after`
+    # ile turetilirse fiyati bos gunlerde ILERI KAYAR ve `#0u`in duzelttigi kayma
+    # geri gelir. Bu yuzden SAF tarih->konum (`_position_of_date`).
+    entry_pos = _position_of_date(prices, event.get("entry_date"))
+    event["entry_pos"] = entry_pos
     current = _price_at_pos(prices, ticker, as_of_pos)
     event["current_price"] = _round(current)
     if entry is None or entry_pos is None or current is None:
@@ -607,7 +648,14 @@ def update(report, data, path=None, max_events=MAX_EVENTS):
         old = merged.get(_event_key(event), {})
         if old.get("kap_confirmed") is True and event.get("kap_confirmed") is False:
             event["kap_confirmed"] = True
-        old.update({k: v for k, v in event.items() if v is not None or k not in old})
+        # #0u: CIPALI alanlar EZILMEZ (yukaridaki `kap_confirmed` sticky'sinin
+        # genellestirilmisi). `_official_quality_events` olayi her kosumda
+        # sifirdan kuruyor ve taze `entry_date`/`entry_price` uretiyor; eski
+        # `old.update(...)` bunlari mevcut degerlerin USTUNE yaziyordu ->
+        # defterin gecmisi feed'le birlikte kayiyordu (olculdu: 1/88 olay).
+        old.update({k: v for k, v in event.items()
+                    if (v is not None or k not in old)
+                    and not (k in CIPALI_ALANLAR and old.get(k) is not None)})
         merged[_event_key(event)] = old
     events = list(merged.values())[-max_events:]
     as_of_pos = len(prices.index) - 1
