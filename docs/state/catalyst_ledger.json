@@ -1,6 +1,6 @@
 {
   "summary": {
-    "updated_at": "2026-08-14T18:40:38",
+    "updated_at": "2026-08-17T09:45:48",
     "as_of": "2026-08-14",
     "source_count": 1,
     "tracked_events": 18,
@@ -17,6 +17,17 @@
     "hit_5d_pct": 27.8,
     "avg_21d_return_pct": -1.41,
     "hit_21d_pct": 33.3,
+    "hit_21d_note": "yayinlanir; KAPI KULLANMAZ (bkz cluster_21d)",
+    "cluster_21d": {
+      "k": 1,
+      "n": 18,
+      "edge": 3.69,
+      "se": null,
+      "edge_in_se": null,
+      "largest_cluster": 18
+    },
+    "excess_avg_21d_pct": 3.69,
+    "n_unique_dates_21d": 1,
     "decision": "olcum_devam",
     "policy_version": "2026-07-06",
     "min_mature_events_for_decision": 20,
@@ -171,7 +182,7 @@
       "ticker": "AEFES",
       "entry_date": "2026-07-06",
       "entry_price": 20.22,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -183,7 +194,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -0.69,
       "return_21d_pct": 6.53,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": 2.08,
+      "excess_21d_pct": 11.63
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|AKBNK",
@@ -202,7 +215,7 @@
       "ticker": "AKBNK",
       "entry_date": "2026-07-06",
       "entry_price": 73.5,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -214,7 +227,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -7.96,
       "return_21d_pct": -7.35,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": -5.19,
+      "excess_21d_pct": -2.25
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|BIMAS",
@@ -233,7 +248,7 @@
       "ticker": "BIMAS",
       "entry_date": "2026-07-06",
       "entry_price": 371.0,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -245,7 +260,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 0.88,
       "return_21d_pct": 3.98,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": 3.65,
+      "excess_21d_pct": 9.08
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|EKGYO",
@@ -264,7 +281,7 @@
       "ticker": "EKGYO",
       "entry_date": "2026-07-06",
       "entry_price": 20.5,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -276,7 +293,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 1.66,
       "return_21d_pct": -9.76,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 4.43,
+      "excess_21d_pct": -4.66
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|ENKAI",
@@ -295,7 +314,7 @@
       "ticker": "ENKAI",
       "entry_date": "2026-07-06",
       "entry_price": 91.05,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -307,7 +326,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -1.37,
       "return_21d_pct": -5.71,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 1.4,
+      "excess_21d_pct": -0.61
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|EREGL",
@@ -326,7 +347,7 @@
       "ticker": "EREGL",
       "entry_date": "2026-07-06",
       "entry_price": 41.52,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -338,7 +359,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -1.59,
       "return_21d_pct": 0.53,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": 1.18,
+      "excess_21d_pct": 5.63
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|FROTO",
@@ -357,7 +380,7 @@
       "ticker": "FROTO",
       "entry_date": "2026-07-06",
       "entry_price": 82.0,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -369,7 +392,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -0.55,
       "return_21d_pct": -1.77,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 2.22,
+      "excess_21d_pct": 3.33
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|GARAN",
@@ -388,7 +413,7 @@
       "ticker": "GARAN",
       "entry_date": "2026-07-06",
       "entry_price": 133.7,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -400,7 +425,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -5.24,
       "return_21d_pct": -1.42,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": -2.47,
+      "excess_21d_pct": 3.68
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|ISCTR",
@@ -419,7 +446,7 @@
       "ticker": "ISCTR",
       "entry_date": "2026-07-06",
       "entry_price": 14.34,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -431,7 +458,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -4.46,
       "return_21d_pct": -12.2,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": -1.69,
+      "excess_21d_pct": -7.1
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|KCHOL",
@@ -450,7 +479,7 @@
       "ticker": "KCHOL",
       "entry_date": "2026-07-06",
       "entry_price": 188.0,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -462,7 +491,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 1.86,
       "return_21d_pct": 5.8,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": 4.63,
+      "excess_21d_pct": 10.9
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|MGROS",
@@ -481,7 +512,7 @@
       "ticker": "MGROS",
       "entry_date": "2026-07-06",
       "entry_price": 639.0,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -493,7 +524,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -2.03,
       "return_21d_pct": -1.56,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 0.74,
+      "excess_21d_pct": 3.54
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|SAHOL",
@@ -512,7 +545,7 @@
       "ticker": "SAHOL",
       "entry_date": "2026-07-06",
       "entry_price": 93.6,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -524,7 +557,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -4.7,
       "return_21d_pct": -5.02,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": -1.93,
+      "excess_21d_pct": 0.08
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|SISE",
@@ -543,7 +578,7 @@
       "ticker": "SISE",
       "entry_date": "2026-07-06",
       "entry_price": 43.48,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -555,7 +590,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -0.78,
       "return_21d_pct": -2.39,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 1.99,
+      "excess_21d_pct": 2.71
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|TAVHL",
@@ -574,7 +611,7 @@
       "ticker": "TAVHL",
       "entry_date": "2026-07-06",
       "entry_price": 272.5,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -586,7 +623,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -4.68,
       "return_21d_pct": 4.95,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": -1.91,
+      "excess_21d_pct": 10.05
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|TCELL",
@@ -605,7 +644,7 @@
       "ticker": "TCELL",
       "entry_date": "2026-07-06",
       "entry_price": 108.6,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -617,7 +656,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 0.37,
       "return_21d_pct": -0.92,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 3.14,
+      "excess_21d_pct": 4.18
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|THYAO",
@@ -636,7 +677,7 @@
       "ticker": "THYAO",
       "entry_date": "2026-07-06",
       "entry_price": 347.0,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -648,7 +689,9 @@
       "age_trading_days": 29,
       "return_5d_pct": -3.89,
       "return_21d_pct": -6.7,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": -1.12,
+      "excess_21d_pct": -1.6
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|TOASO",
@@ -667,7 +710,7 @@
       "ticker": "TOASO",
       "entry_date": "2026-07-06",
       "entry_price": 301.5,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -679,7 +722,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 0.0,
       "return_21d_pct": -9.62,
-      "verdict_21d": "loss"
+      "verdict_21d": "loss",
+      "excess_5d_pct": 2.77,
+      "excess_21d_pct": -4.52
     },
     {
       "key": "third_party_secondary_source|temettu_verimi|2026-07-06|TUPRS",
@@ -698,7 +743,7 @@
       "ticker": "TUPRS",
       "entry_date": "2026-07-06",
       "entry_price": 247.4,
-      "entry_pos": 479,
+      "entry_pos": 476,
       "f_top10_at_entry": false,
       "f_position_at_entry": false,
       "opens_trade": false,
@@ -710,7 +755,9 @@
       "age_trading_days": 29,
       "return_5d_pct": 8.43,
       "return_21d_pct": 17.32,
-      "verdict_21d": "hit"
+      "verdict_21d": "hit",
+      "excess_5d_pct": 11.2,
+      "excess_21d_pct": 22.42
     }
   ]
 }

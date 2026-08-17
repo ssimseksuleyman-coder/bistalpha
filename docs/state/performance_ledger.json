@@ -1,6 +1,6 @@
 {
   "summary": {
-    "updated_at": "2026-08-14T18:40:39",
+    "updated_at": "2026-08-17T09:45:49",
     "tracked_days": 50,
     "latest_date": "2026-08-14",
     "latest_regime": "mixed",
@@ -35386,7 +35386,7 @@
       "regime": {
         "name": "mixed",
         "xu5": 2.9,
-        "xu21": -0.6
+        "xu21": -1.0
       },
       "source": "yahoo",
       "events": [
@@ -35401,7 +35401,7 @@
           "return_pct": 6.54,
           "entry_date": "2026-08-14",
           "reason": null,
-          "signal": "Birikim",
+          "signal": "Nötr",
           "tags": [],
           "verdict": "hit"
         },
@@ -35461,7 +35461,7 @@
           "return_pct": 0.0,
           "entry_date": "2026-08-14",
           "reason": null,
-          "signal": "Nötr",
+          "signal": "DAĞITIM",
           "tags": [],
           "verdict": "flat"
         },
@@ -35506,7 +35506,7 @@
           "return_pct": 1.46,
           "entry_date": "2026-08-14",
           "reason": null,
-          "signal": "Nötr",
+          "signal": "DAĞITIM",
           "tags": [],
           "verdict": "hit"
         },
@@ -35641,26 +35641,6 @@
           "label": "Donusum Radari",
           "role": "discovery",
           "metric": "captured_alpha_false_positive",
-          "ticker": "TUPRS",
-          "entry_price": 361.75,
-          "current_price": 361.75,
-          "return_pct": 0.0,
-          "entry_date": "2026-08-14",
-          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-          "signal": "GÜÇLÜ_BİRİKİM",
-          "tags": [
-            "zirveye_yakin",
-            "karantina_1_3_gun"
-          ],
-          "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 0.0,
-          "verdict": "neutral"
-        },
-        {
-          "layer": "transformation",
-          "label": "Donusum Radari",
-          "role": "discovery",
-          "metric": "captured_alpha_false_positive",
           "ticker": "AYGAZ",
           "entry_price": 305.75,
           "current_price": 312.0,
@@ -35695,6 +35675,26 @@
           "captured_alpha_pct": 0.0,
           "false_positive_loss_pct": 4.17,
           "verdict": "false_positive"
+        },
+        {
+          "layer": "transformation",
+          "label": "Donusum Radari",
+          "role": "discovery",
+          "metric": "captured_alpha_false_positive",
+          "ticker": "KCHOL",
+          "entry_price": 207.2,
+          "current_price": 207.2,
+          "return_pct": 0.0,
+          "entry_date": "2026-08-14",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "signal": "Nötr",
+          "tags": [
+            "sektor_cap_dolu",
+            "karantina_1_3_gun"
+          ],
+          "captured_alpha_pct": 0.0,
+          "false_positive_loss_pct": 0.0,
+          "verdict": "neutral"
         },
         {
           "layer": "quiet_accumulation",
@@ -35836,14 +35836,15 @@
           "label": "Sessiz Birikim",
           "role": "discovery",
           "metric": "captured_alpha_false_positive",
-          "ticker": "KCHOL",
-          "entry_price": 207.2,
-          "current_price": 207.2,
+          "ticker": "RGYAS",
+          "entry_price": 209.4,
+          "current_price": 209.4,
           "return_pct": 0.0,
           "entry_date": "2026-08-14",
           "reason": "birikim + hacim artisi, henuz Top 10 degil",
           "signal": "Birikim",
           "tags": [
+            "zirveye_yakin",
             "sektor_cap_dolu",
             "karantina_1_3_gun"
           ],
@@ -35906,27 +35907,6 @@
           "signal": "GÜÇLÜ_BİRİKİM",
           "tags": [
             "zirveye_yakin",
-            "sektor_cap_dolu"
-          ],
-          "saved_loss_pct": 0.0,
-          "opportunity_cost_pct": 0.0,
-          "verdict": "neutral"
-        },
-        {
-          "layer": "peak_risks",
-          "label": "Tepe Riski",
-          "role": "risk",
-          "metric": "saved_loss_opportunity_cost",
-          "ticker": "KRDMB",
-          "entry_price": 131.1,
-          "current_price": 131.1,
-          "return_pct": 0.0,
-          "entry_date": "2026-08-14",
-          "reason": "guc var ama alim icin risk etiketi tasiyor",
-          "signal": "DAĞITIM",
-          "tags": [
-            "ivme_yavasliyor",
-            "dagitim_bilgi",
             "sektor_cap_dolu"
           ],
           "saved_loss_pct": 0.0,
@@ -36006,9 +35986,29 @@
           "return_pct": 0.0,
           "entry_date": "2026-08-14",
           "reason": "guc var ama alim icin risk etiketi tasiyor",
-          "signal": "GÜÇLÜ_BİRİKİM",
+          "signal": "Birikim",
           "tags": [
             "zirveye_yakin"
+          ],
+          "saved_loss_pct": 0.0,
+          "opportunity_cost_pct": 0.0,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "peak_risks",
+          "label": "Tepe Riski",
+          "role": "risk",
+          "metric": "saved_loss_opportunity_cost",
+          "ticker": "TCKRC",
+          "entry_price": 171.0,
+          "current_price": 171.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-08-14",
+          "reason": "guc var ama alim icin risk etiketi tasiyor",
+          "signal": "GÜÇLÜ_BİRİKİM",
+          "tags": [
+            "zirveye_yakin",
+            "sektor_cap_dolu"
           ],
           "saved_loss_pct": 0.0,
           "opportunity_cost_pct": 0.0,
@@ -36117,7 +36117,7 @@
           "verdict": "hit"
         }
       ],
-      "last_generated_at": "2026-08-14T18:40:39"
+      "last_generated_at": "2026-08-17T09:45:49"
     }
   ]
 }

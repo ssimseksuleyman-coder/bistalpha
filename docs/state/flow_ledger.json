@@ -1,17 +1,28 @@
 {
   "summary": {
-    "updated_at": "2026-08-14T18:40:42",
+    "updated_at": "2026-08-17T09:45:52",
     "as_of": "2026-08-14",
-    "tracked_events": 22,
+    "tracked_events": 24,
     "opens_trade": false,
     "matured_5d": 14,
     "matured_21d": 0,
     "matured_63d": 0,
     "avg_21d_return_pct": null,
     "hit_21d_pct": null,
+    "hit_21d_note": "yayinlanir; KAPI KULLANMAZ (bkz cluster_21d)",
+    "cluster_21d": {
+      "k": 0,
+      "n": 0,
+      "edge": null,
+      "se": null,
+      "edge_in_se": null,
+      "largest_cluster": 0
+    },
+    "excess_avg_21d_pct": null,
+    "n_unique_dates_21d": 0,
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
-    "kap_buyback_events": 22,
+    "kap_buyback_events": 24,
     "foreign_flow_events": 0,
     "takas_events": 0,
     "local_input_files": 0,
@@ -34,11 +45,65 @@
         "source_score": 3,
         "type": "geri_alim",
         "signal": "official_buyback",
+        "event_date": "2026-08-14",
+        "ticker": "AKSGY",
+        "entry_date": "2026-08-14",
+        "entry_price": 9.8,
+        "entry_pos": 505,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 9.8,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
+        "event_date": "2026-08-14",
+        "ticker": "PRKME",
+        "entry_date": "2026-08-14",
+        "entry_price": 19.9,
+        "entry_pos": 505,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 19.9,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
         "event_date": "2026-08-13",
         "ticker": "EKIM",
         "entry_date": "2026-08-13",
         "entry_price": 17.0,
-        "entry_pos": 507,
+        "entry_pos": 504,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -49,7 +114,10 @@
         "age_trading_days": 1,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -62,7 +130,7 @@
         "ticker": "GLYHO",
         "entry_date": "2026-08-13",
         "entry_price": 17.36,
-        "entry_pos": 507,
+        "entry_pos": 504,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -73,7 +141,10 @@
         "age_trading_days": 1,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -86,7 +157,7 @@
         "ticker": "AKFIS",
         "entry_date": "2026-08-12",
         "entry_price": 91.45,
-        "entry_pos": 506,
+        "entry_pos": 503,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Geri Alınan Payların Elden Çıkarılması",
@@ -97,7 +168,10 @@
         "age_trading_days": 2,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -110,7 +184,7 @@
         "ticker": "EKIM",
         "entry_date": "2026-08-12",
         "entry_price": 17.34,
-        "entry_pos": 506,
+        "entry_pos": 503,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -121,7 +195,10 @@
         "age_trading_days": 2,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -134,7 +211,7 @@
         "ticker": "AHGAZ",
         "entry_date": "2026-08-11",
         "entry_price": 31.64,
-        "entry_pos": 505,
+        "entry_pos": 502,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -145,7 +222,10 @@
         "age_trading_days": 3,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -158,7 +238,7 @@
         "ticker": "BULGS",
         "entry_date": "2026-08-11",
         "entry_price": 36.5,
-        "entry_pos": 505,
+        "entry_pos": 502,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -169,7 +249,10 @@
         "age_trading_days": 3,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -182,7 +265,7 @@
         "ticker": "GLYHO",
         "entry_date": "2026-08-11",
         "entry_price": 17.15,
-        "entry_pos": 505,
+        "entry_pos": 502,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -193,7 +276,10 @@
         "age_trading_days": 3,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       },
       {
         "source_id": "kap_buyback",
@@ -206,7 +292,7 @@
         "ticker": "AKSGY",
         "entry_date": "2026-08-10",
         "entry_price": 9.78,
-        "entry_pos": 504,
+        "entry_pos": 501,
         "opens_trade": false,
         "kap_confirmed": true,
         "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -217,61 +303,16 @@
         "age_trading_days": 4,
         "return_5d_pct": null,
         "return_21d_pct": null,
-        "return_63d_pct": null
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-08-04",
-        "ticker": "GLYHO",
-        "entry_date": "2026-08-04",
-        "entry_price": 16.73,
-        "entry_pos": 500,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 17.13,
-        "status": "mature_5d",
-        "current_return_pct": 2.39,
-        "age_trading_days": 8,
-        "return_5d_pct": 2.51,
-        "return_21d_pct": null,
-        "return_63d_pct": null
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-08-04",
-        "ticker": "PAHOL",
-        "entry_date": "2026-08-04",
-        "entry_price": 1.4,
-        "entry_pos": 500,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 1.29,
-        "status": "mature_5d",
-        "current_return_pct": -7.86,
-        "age_trading_days": 8,
-        "return_5d_pct": -6.43,
-        "return_21d_pct": null,
-        "return_63d_pct": null
+        "return_63d_pct": null,
+        "excess_5d_pct": null,
+        "excess_21d_pct": null,
+        "excess_63d_pct": null
       }
     ],
     "by_type": [
       {
         "type": "geri_alim",
-        "n": 22,
+        "n": 24,
         "mature_21d": 0,
         "avg_21d_return_pct": null,
         "hit_21d_pct": null
@@ -292,7 +333,7 @@
       "ticker": "METRO",
       "entry_date": "2026-07-29",
       "entry_price": 7.68,
-      "entry_pos": 496,
+      "entry_pos": 493,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -303,7 +344,10 @@
       "age_trading_days": 12,
       "return_5d_pct": -6.38,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -6.81,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -316,7 +360,7 @@
       "ticker": "TRALT",
       "entry_date": "2026-07-29",
       "entry_price": 44.18,
-      "entry_pos": 496,
+      "entry_pos": 493,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -327,7 +371,10 @@
       "age_trading_days": 12,
       "return_5d_pct": 10.55,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": 10.12,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -340,7 +387,7 @@
       "ticker": "BALAT",
       "entry_date": "2026-07-30",
       "entry_price": 72.1,
-      "entry_pos": 497,
+      "entry_pos": 494,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -351,7 +398,10 @@
       "age_trading_days": 11,
       "return_5d_pct": 1.6,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -0.13,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -364,7 +414,7 @@
       "ticker": "BIMAS",
       "entry_date": "2026-07-30",
       "entry_price": 383.0,
-      "entry_pos": 497,
+      "entry_pos": 494,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -375,7 +425,10 @@
       "age_trading_days": 11,
       "return_5d_pct": -0.2,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -1.93,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -388,7 +441,7 @@
       "ticker": "BORSK",
       "entry_date": "2026-07-30",
       "entry_price": 5.89,
-      "entry_pos": 497,
+      "entry_pos": 494,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -399,7 +452,10 @@
       "age_trading_days": 11,
       "return_5d_pct": -4.75,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -6.48,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -412,7 +468,7 @@
       "ticker": "EKIM",
       "entry_date": "2026-07-30",
       "entry_price": 19.16,
-      "entry_pos": 497,
+      "entry_pos": 494,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -423,7 +479,10 @@
       "age_trading_days": 11,
       "return_5d_pct": -5.79,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -7.52,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -436,7 +495,7 @@
       "ticker": "PRKME",
       "entry_date": "2026-07-30",
       "entry_price": 16.99,
-      "entry_pos": 497,
+      "entry_pos": 494,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -447,7 +506,10 @@
       "age_trading_days": 11,
       "return_5d_pct": 7.65,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": 5.92,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -460,7 +522,7 @@
       "ticker": "AKSGY",
       "entry_date": "2026-07-31",
       "entry_price": 9.3,
-      "entry_pos": 498,
+      "entry_pos": 495,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -471,7 +533,10 @@
       "return_5d_pct": 5.48,
       "return_21d_pct": null,
       "return_63d_pct": null,
-      "status": "mature_5d"
+      "status": "mature_5d",
+      "excess_5d_pct": 12.61,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -484,7 +549,7 @@
       "ticker": "BALAT",
       "entry_date": "2026-07-31",
       "entry_price": 71.5,
-      "entry_pos": 498,
+      "entry_pos": 495,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -495,7 +560,10 @@
       "return_5d_pct": 0.7,
       "return_21d_pct": null,
       "return_63d_pct": null,
-      "status": "mature_5d"
+      "status": "mature_5d",
+      "excess_5d_pct": 7.83,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -508,7 +576,7 @@
       "ticker": "BOSSA",
       "entry_date": "2026-08-03",
       "entry_price": 6.24,
-      "entry_pos": 499,
+      "entry_pos": 496,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -519,7 +587,10 @@
       "return_5d_pct": 0.0,
       "return_21d_pct": null,
       "return_63d_pct": null,
-      "status": "mature_5d"
+      "status": "mature_5d",
+      "excess_5d_pct": -2.15,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -532,7 +603,7 @@
       "ticker": "EKIM",
       "entry_date": "2026-07-31",
       "entry_price": 18.9,
-      "entry_pos": 498,
+      "entry_pos": 495,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -543,7 +614,10 @@
       "return_5d_pct": -3.65,
       "return_21d_pct": null,
       "return_63d_pct": null,
-      "status": "mature_5d"
+      "status": "mature_5d",
+      "excess_5d_pct": 3.48,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -556,7 +630,7 @@
       "ticker": "AKSGY",
       "entry_date": "2026-08-03",
       "entry_price": 9.6,
-      "entry_pos": 499,
+      "entry_pos": 496,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -567,7 +641,10 @@
       "age_trading_days": 9,
       "return_5d_pct": 1.87,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -0.28,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -580,7 +657,7 @@
       "ticker": "GLYHO",
       "entry_date": "2026-08-04",
       "entry_price": 16.73,
-      "entry_pos": 500,
+      "entry_pos": 497,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -591,7 +668,10 @@
       "age_trading_days": 8,
       "return_5d_pct": 2.51,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": 2.65,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -604,7 +684,7 @@
       "ticker": "PAHOL",
       "entry_date": "2026-08-04",
       "entry_price": 1.4,
-      "entry_pos": 500,
+      "entry_pos": 497,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -615,7 +695,10 @@
       "age_trading_days": 8,
       "return_5d_pct": -6.43,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": -6.29,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -628,7 +711,7 @@
       "ticker": "AKSGY",
       "entry_date": "2026-08-10",
       "entry_price": 9.78,
-      "entry_pos": 504,
+      "entry_pos": 501,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -639,7 +722,10 @@
       "age_trading_days": 4,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -652,7 +738,7 @@
       "ticker": "AHGAZ",
       "entry_date": "2026-08-11",
       "entry_price": 31.64,
-      "entry_pos": 505,
+      "entry_pos": 502,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -663,7 +749,10 @@
       "age_trading_days": 3,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -676,7 +765,7 @@
       "ticker": "BULGS",
       "entry_date": "2026-08-11",
       "entry_price": 36.5,
-      "entry_pos": 505,
+      "entry_pos": 502,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -687,7 +776,10 @@
       "age_trading_days": 3,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -700,7 +792,7 @@
       "ticker": "GLYHO",
       "entry_date": "2026-08-11",
       "entry_price": 17.15,
-      "entry_pos": 505,
+      "entry_pos": 502,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -711,7 +803,10 @@
       "age_trading_days": 3,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -724,7 +819,7 @@
       "ticker": "AKFIS",
       "entry_date": "2026-08-12",
       "entry_price": 91.45,
-      "entry_pos": 506,
+      "entry_pos": 503,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Geri Alınan Payların Elden Çıkarılması",
@@ -735,7 +830,10 @@
       "age_trading_days": 2,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -748,7 +846,7 @@
       "ticker": "EKIM",
       "entry_date": "2026-08-12",
       "entry_price": 17.34,
-      "entry_pos": 506,
+      "entry_pos": 503,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -759,7 +857,10 @@
       "age_trading_days": 2,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -772,7 +873,7 @@
       "ticker": "EKIM",
       "entry_date": "2026-08-13",
       "entry_price": 17.0,
-      "entry_pos": 507,
+      "entry_pos": 504,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -783,7 +884,10 @@
       "age_trading_days": 1,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
     },
     {
       "source_id": "kap_buyback",
@@ -796,7 +900,7 @@
       "ticker": "GLYHO",
       "entry_date": "2026-08-13",
       "entry_price": 17.36,
-      "entry_pos": 507,
+      "entry_pos": 504,
       "opens_trade": false,
       "kap_confirmed": true,
       "note": "Payların Geri Alınmasına İlişkin Bildirim",
@@ -807,7 +911,64 @@
       "age_trading_days": 1,
       "return_5d_pct": null,
       "return_21d_pct": null,
-      "return_63d_pct": null
+      "return_63d_pct": null,
+      "excess_5d_pct": null,
+      "excess_21d_pct": null,
+      "excess_63d_pct": null
+    },
+    {
+      "source_id": "kap_buyback",
+      "source": "KAP resmi geri alim bildirimi",
+      "source_tier": "primary",
+      "source_score": 3,
+      "type": "geri_alim",
+      "signal": "official_buyback",
+      "event_date": "2026-08-14",
+      "ticker": "AKSGY",
+      "entry_date": "2026-08-14",
+      "entry_price": 9.8,
+      "entry_pos": 505,
+      "opens_trade": false,
+      "kap_confirmed": true,
+      "note": "Payların Geri Alınmasına İlişkin Bildirim",
+      "source_url": "",
+      "current_price": 9.8,
+      "age_trading_days": 0,
+      "current_return_pct": 0.0,
+      "return_5d_pct": null,
+      "excess_5d_pct": null,
+      "return_21d_pct": null,
+      "excess_21d_pct": null,
+      "return_63d_pct": null,
+      "excess_63d_pct": null,
+      "status": "open"
+    },
+    {
+      "source_id": "kap_buyback",
+      "source": "KAP resmi geri alim bildirimi",
+      "source_tier": "primary",
+      "source_score": 3,
+      "type": "geri_alim",
+      "signal": "official_buyback",
+      "event_date": "2026-08-14",
+      "ticker": "PRKME",
+      "entry_date": "2026-08-14",
+      "entry_price": 19.9,
+      "entry_pos": 505,
+      "opens_trade": false,
+      "kap_confirmed": true,
+      "note": "Payların Geri Alınmasına İlişkin Bildirim",
+      "source_url": "",
+      "current_price": 19.9,
+      "age_trading_days": 0,
+      "current_return_pct": 0.0,
+      "return_5d_pct": null,
+      "excess_5d_pct": null,
+      "return_21d_pct": null,
+      "excess_21d_pct": null,
+      "return_63d_pct": null,
+      "excess_63d_pct": null,
+      "status": "open"
     }
   ]
 }
