@@ -932,9 +932,10 @@ function renderCatalystLedger(info, data) {
       <strong>${esc(info.latest_source_label || 'kaynak yok')}</strong>
       <span>son olay ${esc(info.latest_events ?? 0)} | acik 21g ${esc(info.open_21d ?? 0)}</span>
     </div>
+    ${clusterRows(info)}
     <div class="forward-row">
-      <strong>21g sonuc</strong>
-      <span><b class="${avgClass}">%${esc(avg21 ?? '-')}</b> | isabet %${esc(info.hit_21d_pct ?? '-')} | karar ${esc(info.decision || '-')}</span>
+      <strong>21g HAM getiri</strong>
+      <span class="meta"><b class="${avgClass}">%${esc(avg21 ?? '-')}</b> | isabet %${esc(info.hit_21d_pct ?? '-')} | karar ${esc(info.decision || '-')} &mdash; KAPI KULLANMAZ (piyasa suruklenmesi icinde)</span>
     </div>
     <div class="forward-row">
       <strong>Kaynak disiplini</strong>
@@ -948,6 +949,32 @@ function renderCatalystLedger(info, data) {
     ${candidates || '<div class="empty">Son kaynak adayi yok</div>'}
     ${typeRows}
   `;
+}
+
+// #0r — ASIRI getiri + kume guveni satirlari (uc defter ayni blogu kullanir).
+// NEDEN BIRINCIL: ham getiri piyasa suruklenmesini iceride birakir. 2026-08-13'te
+// katalizorun ham -1.41%'i "piyasanin altinda" diye okundu; ayni pencerede sepet
+// -5.10% -> fiilen +3.67 USTUNDE. Ham getiri artik IKINCIL ve "KAPI KULLANMAZ"
+// damgali. `k` = BAGIMSIZ gun sayisi, `n` = satir; aradaki fark sahte-n'in olcusu
+// (catalyst: 18 satir / 1 gun).
+function clusterRows(info) {
+  const cs = info.cluster_21d;
+  if (!cs) return '';
+  const ex = info.excess_avg_21d_pct;
+  const cls = ex == null || Number(ex) >= 0 ? 'profit' : 'loss';
+  const buyuk = cs.largest_cluster > 1 ? ` (en buyuk gun ${esc(cs.largest_cluster)} hisse)` : '';
+  const guven = cs.se == null
+    ? `SE hesaplanamaz (bagimsiz gun ${esc(cs.k ?? 0)} &lt; 2) &rarr; hukum YOK`
+    : `kenar/SE ${esc(cs.edge_in_se ?? '-')} (SE ${esc(cs.se)})`;
+  return `
+    <div class="forward-row">
+      <strong>21g ASIRI getiri</strong>
+      <span><b class="${cls}">%${esc(ex ?? '-')}</b> | ${esc(cs.k ?? '-')} bagimsiz gun / ${esc(cs.n ?? '-')} satir${buyuk}</span>
+    </div>
+    <div class="forward-row">
+      <strong>Kume guveni</strong>
+      <span>${guven}</span>
+    </div>`;
 }
 
 function readinessBlock(info, fallback) {
@@ -996,9 +1023,10 @@ function renderQualityLedger(info) {
       <div class="forward-box"><div class="forward-value">${esc(info.kap_confirmed ?? 0)}</div><div class="forward-label">KAP teyitli</div></div>
       <div class="forward-box"><div class="forward-value">${esc(info.matured_21d ?? 0)}</div><div class="forward-label">21g olgun</div></div>
     </div>
+    ${clusterRows(info)}
     <div class="forward-row">
-      <strong>21g sonuc</strong>
-      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')}</span>
+      <strong>21g HAM getiri</strong>
+      <span class="meta"><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')} &mdash; KAPI KULLANMAZ</span>
     </div>
     <div class="forward-row">
       <strong>ROE shadow</strong>
@@ -1087,9 +1115,10 @@ function renderFlowLedger(info) {
       <div class="forward-box"><div class="forward-value">${esc(info.kap_buyback_events ?? 0)}</div><div class="forward-label">KAP geri alim</div></div>
       <div class="forward-box"><div class="forward-value">${esc((info.foreign_flow_events ?? 0) + '/' + (info.takas_events ?? 0))}</div><div class="forward-label">yabanci/takas</div></div>
     </div>
+    ${clusterRows(info)}
     <div class="forward-row">
-      <strong>21g sonuc</strong>
-      <span><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')}</span>
+      <strong>21g HAM getiri</strong>
+      <span class="meta"><b class="${cls21}">%${esc(avg21 ?? '-')}</b> | hit %${esc(info.hit_21d_pct ?? '-')} | 63g %${esc(info.avg_63d_return_pct ?? '-')} &mdash; KAPI KULLANMAZ</span>
     </div>
     <div class="forward-row">
       <strong>Local kaynak</strong>
