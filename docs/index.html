@@ -1193,6 +1193,32 @@ function renderLiveness(info) {
   const order = { RED: 0, YELLOW: 1, GREEN: 2 };
   const rows = (info.checks || []).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
   const scanAge = info.updated_at ? fmtTime(info.updated_at) : '-';
+  // #0w — CANLI YAS: `age_hours` uretici tarafinda TARAMA ANINDA hesaplanip
+  // SAKLANIR. Panel onu oldugu gibi basarsa, taramalar arasinda DONMUS bir yas
+  // gosterir: 2026-08-14'te uyeler "2h" goruyordu, oysa taramanin kendisi
+  // 63.8 SAATLIKTI. Hafta ici gunde tek tarama var -> gunun ~23 saati bayat,
+  // hafta sonu 60+ saat. (`#0q`nun panel hali: zamana bagli TUREVI saklayip
+  // guncelmis gibi sunmak.)
+  //
+  // NEDEN DAMGA AYRISTIRMIYORUZ — iki TZ tuzagi OLCULDU:
+  //  (1) uye damgalari UTC DEGIL: `kap_feed timestamp=19:44:56` ama `age_hours=0.5`
+  //      (tarama 17:15 UTC) -> o uye +3'te. Uretici bunu `tz_offset_h` ile
+  //      cozuyor; panelde `Date.parse(timestamp)` yapmak 3 SAAT hata verirdi.
+  //  (2) `info.updated_at` sonek TASIMIYOR (`tz` AYRI alanda "UTC") -> JS
+  //      soneksiz ISO'yu YEREL saat sayar; 'Z' eklenmezse yine kayar.
+  // Cozum: DAMGA ayristirmak yerine SURE toplamak. `age_hours` zaten ureticinin
+  // dogru hesapladigi bir SURE; `scanAgeH` de UTC-UTC farki. Toplamda TZ hic
+  // isin icine girmiyor.
+  const scanAgeH = info.updated_at
+    ? (Date.now() - Date.parse(info.updated_at + 'Z')) / 3600000
+    : null;
+  const canliYas = (r) => {
+    // age_hours YOKSA eski davranis (`-`) korunur -> kapsam disi/olculemeyen
+    // uyeler bozulmaz. (`#0r`-panel'deki bos-string fallback ile ayni ilke.)
+    if (r.age_hours == null) return '-';
+    if (scanAgeH == null || !isFinite(scanAgeH)) return r.age_hours + 'h';
+    return (r.age_hours + Math.max(0, scanAgeH)).toFixed(1) + 'h';
+  };
   el('liveness').innerHTML = `
     <div class="forward-grid">
       <div class="forward-box"><div class="forward-value">${esc(v)}</div><div class="forward-label">karar</div></div>
@@ -1203,7 +1229,7 @@ function renderLiveness(info) {
     ${rows.map(r => `
       <div class="forward-row">
         <strong>${esc(icon[r.status] || '')} ${esc(r.name)}</strong>
-        <span>${esc(r.age_hours != null ? r.age_hours + 'h' : '-')} | ${esc(r.reason || '')}</span>
+        <span>${esc(canliYas(r))} | ${esc(r.reason || '')}</span>
       </div>`).join('')}
   `;
 }
