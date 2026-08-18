@@ -574,7 +574,12 @@ def _check_scanner_verdict(name, cfg, d, row):
     elif v == "YELLOW":
         row.update(status="YELLOW", reason=f"tarayici YELLOW: {', '.join(row['scanner_problems']) or '?'}")
     elif v == "GREEN":
-        row.update(status="GREEN", reason=f"tarayici canli ({age:.0f}h once), verdict=GREEN")
+        # #0x: yas METNE GOMULMEZ. Tarama aninda dogru olan sure, JSON bir sonraki
+        # taramaya kadar (hafta-ici <=24h, hafta-sonu <=72h) okundugu icin bayatlar ve
+        # panelde CANLI yasin (#0w canliYas) yaninda celiskili durur. Ham veri zaten
+        # ayni satirda: age_hours + timestamp. Anomali dallari (DURDU/GELECEKTEN/slot)
+        # yasi TUTAR — orada sayi "olay anindaki kanit", ve satir zaten RED.
+        row.update(status="GREEN", reason="tarayici canli, verdict=GREEN")
     else:
         row.update(status="RED", reason=f"gecersiz verdict: {v!r}")
     return row
@@ -620,8 +625,9 @@ def _check_watchdog(name, cfg, d, row):
         row.update(status="RED",
                    reason=f"bekci sessiz AMA {neg} uyede negatif yas gormus — sahte-yesil")
         return row
+    # #0x: yas METNE GOMULMEZ (yukaridaki 'tarayici canli' ile ayni gerekce).
     row.update(status="GREEN",
-               reason=f"bekci canli ({age:.0f}h once), sonuc={sonuc}, "
+               reason=f"bekci canli, sonuc={sonuc}, "
                       f"gordugu: liveness verdict={gord.get('liveness_verdict')} "
                       f"{gord.get('liveness_checks')} uye")
     return row
