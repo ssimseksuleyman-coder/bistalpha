@@ -23,7 +23,7 @@ dolar; F-top10-graduation sonraki kosularda guncellenir. Gecmis kararlar yeniden
 Kullanim: python firsat_ledger.py   (periyodik; dashboard-firsatlar dolunca birikir)
 """
 import json, os, sys, warnings; warnings.filterwarnings('ignore')
-import yfinance as yf, pandas as pd, numpy as np
+import pandas as pd, numpy as np
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 LEDGER = os.path.join(REPO, "reports", "firsat_ledger.json")
@@ -59,14 +59,58 @@ def _dash():
     return firs, top10, date
 
 
+_FEED = None
+_FEED_TRIED = False
+
+
+def _feed():
+    """
+    #0o: daemon'un TOPLU feed'i, KOSUM BASINA BIR KEZ.
+
+    Eskiden burada ticker-basina `yf.download(t + '.IS')` vardi ve bulutta HER ZAMAN bos
+    donuyordu (6/6 firsat `entry_price=None`) — tek-tek istekler yfinance hiz-sinirina
+    takiliyor, daemon'un 618-hisselik TOPLU cagrisi takilmiyor. Fiyat zaten sistemde
+    oldugu icin cozum "ek cagriyi onar" degil "ek cagriyi KALDIR, ic kaynagi kullan".
+
+    safe_feed() zinciri: yahoo -> borsapy -> file (file ALLOW_FILE_FALLBACK'e bagli).
+    config.DATA_SOURCE varsayilani zaten 'yahoo' -> workflow'a env eklemek GEREKMEZ.
+    Import tembel: bist_alpha yuklenemese bile modulun geri kalani (dashboard okuma) calisir.
+    """
+    global _FEED, _FEED_TRIED
+    if not _FEED_TRIED:
+        _FEED_TRIED = True
+        try:
+            from bist_alpha import selfheal
+            _FEED = selfheal.safe_feed()
+        except Exception as e:
+            # SESSIZ DEGIL: #0o'nun haftalarca gorulmemesinin sebebi sessiz-yutmaydi.
+            print("[firsat] safe_feed BASARISIZ -> tum fiyatlar None olacak: %s" % e)
+            _FEED = None
+    return _FEED
+
+
 def _ohlcv(ticker):
-    """1y OHLCV (frozen sinyaller + giris-fiyati icin). Doner df ya da None."""
+    """
+    2y OHLCV (frozen sinyaller + giris-fiyati icin). Doner df ya da None.
+
+    Sozlesme DEGISMEDI: Close/High/Low/Volume kolonlu, tarih-indeksli df.
+    _signals_from_ohlcv ve evaluate() dokunulmadi. Kaynak feed'in genis cerceveleri:
+      Close=prices · High=maxs · Low=mins · Volume=volumes   (kolon adi CIPLAK ticker, .IS yok)
+    auto_adjust=False iki tarafta da ayni -> sayisal olarak esdeger. Gecmis 1y -> 2y
+    (tail(252)/rolling(20) trailing oldugu icin sonuc degismez, sadece daha dolu).
+    """
+    d = _feed()
+    if d is None:
+        return None
     try:
-        raw = yf.download(ticker + ".IS", period="1y", interval="1d",
-                          auto_adjust=False, progress=False)
-        if raw is None or raw.empty:
-            return None
-        return raw
+        cols = {}
+        for name, key in (("Close", "prices"), ("High", "maxs"), ("Low", "mins"), ("Volume", "volumes")):
+            fr = d.get(key)
+            if fr is None or ticker not in fr.columns:
+                return None
+            cols[name] = fr[ticker]
+        df = pd.DataFrame(cols).sort_index().dropna(how="all")
+        return df if not df.empty else None
     except Exception:
         return None
 
