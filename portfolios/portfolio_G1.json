@@ -1,10 +1,10 @@
 {
   "account": "G1",
-  "cash": 0.6122832771214333,
+  "cash": 0.6397656231497072,
   "positions": {
     "IEYHO": {
       "entry": 152.0,
-      "peak": 188.0,
+      "peak": 189.89999389648438,
       "shares": 0.0006836590654213479,
       "w": 0.22879907350030884
     },
@@ -13,13 +13,6 @@
       "peak": 15.420000076293945,
       "shares": 0.004009583415040273,
       "w": 0.12615445075617993
-    },
-    "KTLEV": {
-      "entry": 46.01314163208008,
-      "peak": 63.5,
-      "shares": 0.00047181290376875184,
-      "w": 0.21823327461877404,
-      "origin": "reentry"
     }
   },
   "history": [
@@ -172,6 +165,16 @@
       "price": 46.01,
       "prev_exit": 41.42,
       "throttle": null
+    },
+    {
+      "date": "2026-08-24",
+      "type": "SELL",
+      "ticker": "KTLEV",
+      "price": 58.6,
+      "reason": "stop",
+      "pnl_pct": 27.35,
+      "giveback": 7.72,
+      "was_reentry": true
     }
   ],
   "watch": {
@@ -179,10 +182,14 @@
       "exit": 2522.5,
       "cash": 0.10256094376515378,
       "w": 0.42681320112473736
+    },
+    "KTLEV": {
+      "exit": 58.599998474121094,
+      "cash": 0.02748234602827398,
+      "w": 0.21823327461877404
     }
   },
   "equity_daily": [
-    0.9856,
     0.9824,
     0.9793,
     0.9793,
@@ -301,17 +308,18 @@
     0.8302,
     0.8294,
     0.8294,
-    0.8321
+    0.8321,
+    0.8303
   ],
   "stats": {
     "buys": 5,
-    "stops": 5,
+    "stops": 6,
     "reentries": 4,
-    "reentry_restops": 3,
+    "reentry_restops": 4,
     "reentry_restop_loss": 3,
-    "reentry_closed": 3,
-    "reentry_wins": 0,
-    "reentry_total_pnl_pct": -112.39522128721563,
+    "reentry_closed": 4,
+    "reentry_wins": 1,
+    "reentry_total_pnl_pct": -85.04030398405646,
     "reentry_rebalance_loss_count": 0,
     "peak_value": 1.0,
     "max_dd_pct": -19.39000755818361,
@@ -326,6 +334,7 @@
   "reentry_recent": [
     1,
     1,
-    1
+    1,
+    0
   ]
 }
