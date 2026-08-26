@@ -637,6 +637,11 @@ def _input_state(paths):
     """
     'YOK' ile 'GOREMIYORUM' ayrimi — negatif-kanit zayiftir.
     Returns: ("missing"|"empty"|"present", detay)
+
+    Registry gercek local/private yollari bilmek zorunda; public liveness JSON'u
+    o yollari bilmek zorunda degil. Detay metni bu yuzden path degil, yalniz
+    kategori/sayi verir. Aksi halde `docs/state/liveness.json` sanitize kapisini
+    kirar ve local input yapisini aciga cikarir.
     """
     if not paths:
         return "n/a", ""
@@ -661,7 +666,7 @@ def _input_state(paths):
     if seen_present:
         return "present", "girdi mevcut"
     if missing and len(missing) == len(paths):
-        return "missing", "girdi-yolu YOK: " + ", ".join(missing)
+        return "missing", f"{len(missing)} private/local girdi bekleniyor"
     return "empty", "girdi-yolu var, icerik bos"
 
 
