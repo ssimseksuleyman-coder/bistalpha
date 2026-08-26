@@ -115,6 +115,20 @@
       coverageStatus, coverageReason
     ));
 
+    const semantic = (h.semantic_health && typeof h.semantic_health === "object")
+      ? h.semantic_health
+      : ((d.semantic_health && typeof d.semantic_health === "object") ? d.semantic_health : {});
+    const semanticVerdict = normalizeVerdict(semantic.verdict);
+    out.push(metric(
+      "content_sanity", true, "Anlamlilik", "valid/price ve price/pool tutarli mi",
+      semantic.select_valid_count == null || semantic.price_count == null
+        ? "-"
+        : semantic.select_valid_count + "/" + semantic.price_count,
+      semantic.valid_ratio == null ? "" : "valid/price " + semantic.valid_ratio,
+      semanticVerdict || "n",
+      semantic.reason || "semantic_health henuz uretilmiyor"
+    ));
+
     let missing = num(h.missing_symbols);
     let missingPct = num(h.missing_symbol_pct);
     if ((missing == null || missingPct == null) && pool != null && priceCount != null && pool > 0) {
