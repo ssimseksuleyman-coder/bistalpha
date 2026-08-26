@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-26T15:41:10",
+  "updated_at": "2026-08-26T19:00:32",
   "tz": "UTC",
   "scanner": "scripts/content_sanity.py",
   "verdict": "RED",
@@ -10,6 +10,8 @@
     "valid_ratio": 0.018,
     "coverage_ratio": 0.997,
     "top10": 0,
+    "semantic_blocked": true,
+    "semantic_reason": "valid/price=0.02 < 0.5 (valid=11/price=621)",
     "watchlists_keys": [
       "firsatlar",
       "opens_trade",
@@ -22,14 +24,6 @@
     [
       "B/VALID_DUSUK",
       "valid/price=0.02 < 0.5 (valid=11/price=621): gecerli-bar cokmus (tatil-deligi?) -> secim coplerle karar verebilir"
-    ],
-    [
-      "C/CELISKI",
-      "top10 BOS ama veri saglikli gorunuyor (bist_data_ok=True, price_count=621) -> URETIM coktu, CANLILIK gostergeleri bunu gizliyor"
-    ],
-    [
-      "D/RADAR_ERKEN_CIKIS",
-      "radar tam kosmadi: radar_universe_count, trade_universe_count yok ve tum izleme listeleri bos -> build_watchlists erken cikti"
     ]
   ],
   "note": "Anlamlilik denetimi (canlilik DEGIL): uretilen veri dolu+tutarli mi."
