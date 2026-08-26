@@ -89,6 +89,12 @@ def check(d):
 
     valid_ratio = _ratio(valid, price_count)
     coverage_ratio = _ratio(price_count, pool)
+    semantic = d.get("semantic_health") or (d.get("operation_health") or {}).get("semantic_health") or {}
+    semantic_blocked = (
+        isinstance(semantic, dict)
+        and str(semantic.get("verdict", "")).lower() == "red"
+        and bool(semantic.get("blocked", False))
+    ) or bool(d.get("top10_suppressed")) or bool((wl or {}).get("suppressed"))
 
     # --- BIRINCIL (PAY): veri-TAMLIK, oransal ---
     if valid_ratio is not None:
@@ -114,7 +120,7 @@ def check(d):
     # --- IKINCIL/TEYIT: uretim BOS ama veri SAGLIKLI celiskisi ---
     # (canlilik-yesil + anlamlilik-kirmizi = tam bugunku durum)
     veri_saglikli = bool(data_ok) and isinstance(price_count, int) and price_count >= 50
-    if top10_n == 0 and veri_saglikli:
+    if top10_n == 0 and veri_saglikli and not semantic_blocked:
         problems.append(("C/CELISKI",
                         f"top10 BOS ama veri saglikli gorunuyor "
                         f"(bist_data_ok={data_ok}, price_count={price_count}) "
@@ -126,7 +132,7 @@ def check(d):
         listeler_bos = all(
             (not v) for k, v in wl.items() if isinstance(v, list)
         )
-        if eksik and listeler_bos:
+        if eksik and listeler_bos and not semantic_blocked:
             problems.append(("D/RADAR_ERKEN_CIKIS",
                             f"radar tam kosmadi: {', '.join(eksik)} yok ve tum "
                             f"izleme listeleri bos -> build_watchlists erken cikti"))
@@ -136,6 +142,8 @@ def check(d):
                       "valid_ratio": round(valid_ratio, 3) if valid_ratio is not None else None,
                       "coverage_ratio": round(coverage_ratio, 3) if coverage_ratio is not None else None,
                       "top10": top10_n,
+                      "semantic_blocked": semantic_blocked,
+                      "semantic_reason": semantic.get("reason") if isinstance(semantic, dict) else None,
                       "watchlists_keys": sorted(wl.keys()) if wl else [],
                       "bist_data_ok": data_ok}
 
@@ -168,10 +176,14 @@ def main():
     # ama icerik-anomali rebalans-gununde SABAH kritik -> beklenemez. RED-yoksa
     # sus (gunluk liveness heartbeat zaten tasir; ek gurultu yok).
     if verdict == "RED":
+        tail = ("\n(normal sinyal bilincli bloklandi; canlilik-yesil olsa da anlamlilik-kirmizi. "
+                "Rebalans gunuyse kirli secim yayinlanmaz.)"
+                if gozlem.get("semantic_blocked") else
+                "\n(uretilen veri COKMUS; canlilik-yesil ama anlamlilik-kirmizi. "
+                "Rebalans gunuyse copler-le karar riski.)")
         _notify("🔴 ANLAMLILIK ALARMI — content_sanity\n"
                 + "\n".join(f"• [{k}] {m}" for k, m in problems)
-                + "\n(uretilen veri COKMUS; canlilik-yesil ama anlamlilik-kirmizi. "
-                  "Rebalans gunuyse copler-le karar riski.)")
+                + tail)
     # RED -> exit 1 (rebalans-durdur / alarm icin); YELLOW -> gorunur ama bloklamaz
     return 1 if verdict == "RED" else 0
 
