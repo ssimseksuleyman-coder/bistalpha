@@ -1,10 +1,14 @@
 {
-  "updated_at": "2026-08-26T11:31:04",
+  "updated_at": "2026-08-27T15:40:48",
   "tz": "UTC",
   "writer": "scripts/liveness_watchdog.py",
-  "sonuc": "SESSIZ",
-  "problem_kodlari": [],
-  "problemler": [],
+  "sonuc": "ALARM",
+  "problem_kodlari": [
+    "A/BAYAT"
+  ],
+  "problemler": [
+    "[A/BAYAT] tarayici 1 zamanlanmis taramayi KACIRDI (liveness.json yasi 30h) — cron tetiklenmiyor olabilir"
+  ],
   "gordugu": {
     "liveness_updated_at": "2026-08-26T09:30:43",
     "liveness_verdict": "YELLOW",
