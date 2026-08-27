@@ -160,5 +160,62 @@ console.log("\n[7] SLA gecikme esikleri");
   check("61 dk verdict kirmizi", evaluate(red, MON_PM).verdict, "r");
 }
 
+console.log("\n[6] Gecerli bar orani (select_valid) — 2026-08-26 vakasi");
+{
+  // O gun: kapsama %99.7 YESIL iken valid 11/621 = %1.8 -> top10 coktu, panel gormedi.
+  const base = {
+    last_data_date: "2026-06-29",
+    price_count: 621,
+    source_pool_count: 623,
+    source: "yahoo",
+    timestamp: "2026-06-29T14:30:00",
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
+    operation_health: {
+      target_time: "14:30", source: "yahoo", last_data_date: "2026-06-29",
+      price_count: 621, source_pool_count: 623, delay_minutes: 0,
+      data_health: { data_issues: [] }, telegram: { sent: true, status: "sent" },
+    },
+  };
+
+  // YON-1: cokmus evren -> KIRMIZI (asil vaka)
+  const cok = JSON.parse(JSON.stringify(base));
+  cok.select_valid_count = 11;
+  check("valid 11/621 metrik kirmizi",
+    evaluate(cok, MON_PM).metrics.find(m => m.key === "select_valid").status, "r");
+  check("valid 11/621 verdict kirmizi", evaluate(cok, MON_PM).verdict, "r");
+  check("kapsama YINE yesil (iki oran bagimsiz)",
+    evaluate(cok, MON_PM).metrics.find(m => m.key === "coverage").status, "g");
+
+  // YON-2: saglikli evren -> YESIL (pozitif kontrol; tek yonlu test yetmez)
+  const iyi = JSON.parse(JSON.stringify(base));
+  iyi.select_valid_count = 600;
+  check("valid 600/621 metrik yesil",
+    evaluate(iyi, MON_PM).metrics.find(m => m.key === "select_valid").status, "g");
+  check("valid 600/621 verdict yesil", evaluate(iyi, MON_PM).verdict, "g");
+
+  // YON-3: ALAN YOK -> "n" (olculemedi), KIRMIZI DEGIL. FIX_ANCHOR kurali:
+  // eski state'ler bu alani tasimiyor; "yok != kirik" olmali, yoksa sahte alarm.
+  const yok = JSON.parse(JSON.stringify(base));
+  check("alan yok -> metrik n (olculemedi)",
+    evaluate(yok, MON_PM).metrics.find(m => m.key === "select_valid").status, "n");
+  check("alan yok -> verdict BOZULMAZ", evaluate(yok, MON_PM).verdict, "g");
+
+  // YON-4: esik siniri (0.5) — content_sanity VALID_RATIO_MIN ile ayni olmali
+  const sinirAlt = JSON.parse(JSON.stringify(base));
+  sinirAlt.select_valid_count = 310;                    // 310/621 = 0.499 -> kirmizi
+  check("oran 0.499 -> kirmizi",
+    evaluate(sinirAlt, MON_PM).metrics.find(m => m.key === "select_valid").status, "r");
+  const sinirUst = JSON.parse(JSON.stringify(base));
+  sinirUst.select_valid_count = 311;                    // 311/621 = 0.501 -> yesil
+  check("oran 0.501 -> yesil",
+    evaluate(sinirUst, MON_PM).metrics.find(m => m.key === "select_valid").status, "g");
+
+  // operation_health icinden de okunabilmeli (iki yerden de gelebiliyor)
+  const oh = JSON.parse(JSON.stringify(base));
+  oh.operation_health.select_valid_count = 11;
+  check("operation_health icinden de okunur",
+    evaluate(oh, MON_PM).metrics.find(m => m.key === "select_valid").status, "r");
+}
+
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");
 process.exit(fail === 0 ? 0 : 1);

@@ -5,6 +5,12 @@
   const CONFIG = {
     dataAge: { freshTd: 1, warnTd: 2 },
     coverage: { green: 0.98, amber: 0.95 },
+    // PAY tarafi: veri GELDI mi degil, KULLANILABILIR mi (select_valid_count/price_count).
+    // Esik scripts/content_sanity.py VALID_RATIO_MIN ile AYNI (0.5) -- bilerek tek deger,
+    // panel ile tarayici ayni gune farkli hukum vermesin.
+    // AMBER BANDI YOK: normal-gun valid_ratio dagilimi OLCULMEDI; olcmeden ara esik
+    // uydurmak yerine tek esik birakildi (uydurma-esik > eksik-esik).
+    selectValid: { min: 0.5 },
     missing: { greenPct: 1, amberPct: 5 },
     source: { firstRunGraceIstHour: 12 },
     minPool: 100,
@@ -113,6 +119,28 @@
       coverage == null ? "-" : priceCount + "/" + pool,
       coverage == null ? "" : "%" + (coverage * 100).toFixed(1),
       coverageStatus, coverageReason
+    ));
+
+    // Skor evreni: kac hissenin BARI kullanilabilir. Kapsama (%99.7) "veri indi" der;
+    // bu oran "inen veri ise yaradi mi" der. 2026-08-26'da ikisi zit yone gitti:
+    // kapsama 621/623 YESIL iken valid 11/621 (%1.8) -> top10 coktu, panel bunu GORMEDI.
+    // ALAN YOKSA "n" (olculemedi), KIRMIZI DEGIL: eski state'ler alani tasimiyor ve
+    // "yok != kirik" (content_sanity FIX_ANCHOR kurali). "n" zaten verdict'ten dislaniyor.
+    const selectValid = num(h.select_valid_count ?? d.select_valid_count);
+    const validRatio = selectValid != null && priceCount != null && priceCount > 0
+      ? selectValid / priceCount
+      : null;
+    out.push(metric(
+      "select_valid", true, "Gecerli bar orani", "skor evreni: select_valid / fiyat_count",
+      validRatio == null ? "-" : selectValid + "/" + priceCount,
+      validRatio == null ? "" : "%" + (validRatio * 100).toFixed(1),
+      validRatio == null ? "n" : validRatio < CONFIG.selectValid.min ? "r" : "g",
+      validRatio == null
+        ? "select_valid_count yok -- olculemedi (eski state olabilir, kirik demek DEGIL)"
+        : validRatio < CONFIG.selectValid.min
+          ? "gecerli bar %" + (validRatio * 100).toFixed(1) + " < %" + (CONFIG.selectValid.min * 100)
+            + " -- skor evreni cokmus, secim az/coplu adaydan yapilmis"
+          : "gecerli bar %" + (validRatio * 100).toFixed(1)
     ));
 
     let missing = num(h.missing_symbols);

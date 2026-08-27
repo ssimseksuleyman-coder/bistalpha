@@ -393,12 +393,34 @@ function momentumText(item) {
   ].map(([label, value]) => `<span>${label} %${esc(value ?? '-')}</span>`).join('');
 }
 
-function renderTop(items) {
+// Skor evreni cokmus mu. Alan yoksa null doner -> UYARI BASILMAZ ("yok != kirik",
+// content_sanity FIX_ANCHOR kurali); eski state'lere sahte alarm basmayalim.
+const EVREN_MIN_ORAN = 0.5;   // scripts/content_sanity.py VALID_RATIO_MIN ile ayni
+function evrenDurumu(data) {
+  const d = data || {};
+  const h = d.operation_health || {};
+  const v = Number(h.select_valid_count ?? d.select_valid_count);
+  const p = Number(h.price_count ?? d.price_count);
+  if (!Number.isFinite(v) || !Number.isFinite(p) || p <= 0) return null;
+  return { valid: v, price: p, oran: v / p };
+}
+
+function renderTop(items, data) {
+  const ev = evrenDurumu(data);
+  const cokme = ev !== null && ev.oran < EVREN_MIN_ORAN;
+  // Neden bu kadar az kayit var: "piyasa secici" ile "veri coktu" ayrimi.
+  const uyari = cokme
+    ? `<div class="error">EVREN COKTU: ${esc(ev.price)} hisseden ${esc(ev.valid)} tanesi gecerli `
+      + `(%${esc((ev.oran * 100).toFixed(1))}). Asagidaki liste COKMUS evrenden secildi — `
+      + `sinyal DUSUK GUVEN, liste kisaligi piyasa seciciligi DEGIL veri sorunudur.</div>`
+    : '';
   if (!items || !items.length) {
-    el('topList').innerHTML = '<div class="error">Top 10 verisi henuz yok.</div>';
+    // Bos liste iki ayri sey olabilir: veri henuz gelmedi vs evren coktu. Ayir.
+    el('topList').innerHTML = uyari || '<div class="error">Top 10 verisi henuz yok.</div>';
     return;
   }
-  el('topList').innerHTML = items.map(item => `
+  // `uyari` cokme yoksa bos string -> tek sablon, kopya YOK.
+  el('topList').innerHTML = uyari + items.map(item => `
     <div class="row">
       <div class="rank">${esc(item.rank)}</div>
       <div>
@@ -1285,7 +1307,7 @@ async function loadDashboard() {
       livenessInfo = null;
     }
     const accounts = data.accounts || {};
-    renderTop(data.top10 || []);
+    renderTop(data.top10 || [], data);
     renderDecisionCards(data);
     renderWatchlists(data.watchlists, data.missed_opportunities);
     renderForward(data.forward_test);
