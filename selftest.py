@@ -204,6 +204,47 @@ def main():
     except Exception as e:
         bad(f"backtest hatası: {e}")
 
+    # 6b. F-DATAPATH 5-SHA — golden-master'in KAPSAMADIGI yari
+    #
+    # NEDEN AYRI BLOK: golden-master `data + signals + backtest` yolunu korur.
+    # `portfolio.py` backtest'te HIC REFERANS ALMIYOR -> oraya yazilan bir degisiklik
+    # golden-master'i KIRMAZ, sessizce gecer. "Korunuyor sanilan yer, daha tehlikeli yer."
+    # Bu assert o bosluğu kapatir.
+    #
+    # NEDEN 6'nin try'i DISINDA: backtest patlarsa yukarisi except'e duser ve SHA
+    # kontrolu SESSIZCE atlanirdi (sahte-yesil). Ayri blok = her kosumda calisir.
+    #
+    # YONTEM: git blob SHA-1 (`git hash-object`), ilk 12 hane. Kanonik olan bu —
+    # `sha256sum <dosya>` DEGIL: Windows'ta core.autocrlf=true oldugundan calisma
+    # agacindaki dosya CRLF, repo icerigi LF; `git hash-object` filtreyi uygular ve
+    # iki platformda ayni degeri verir.
+    #
+    # BASELINE IKI YERDE (bilincli): burasi makine-okur (CI), `local/ACIK_ISLER.md ->
+    # F-DATAPATH BASELINE` insan-okur. local/ gitignored oldugu icin CI oradan okuyamaz.
+    # Degistirilecekse IKISI BIRDEN degistirilir; tek tarafli degisiklik sapmayi gizler.
+    print("\n[6b] F-datapath 5-SHA (DOKUNULMAZ — golden-master'in kapsamadigi yari)")
+    F_DATAPATH_BASELINE = {
+        "bist_alpha/strategy.py":  "7330c5f19752",
+        "bist_alpha/backtest.py":  "7708e7818b66",
+        "bist_alpha/config.py":    "8eee78db71e0",
+        "bist_alpha/portfolio.py": "09ad265d9fd5",
+        "bist_alpha/signals.py":   "22bb89bf9de5",
+    }
+    import subprocess
+    for yol, beklenen in F_DATAPATH_BASELINE.items():
+        try:
+            sha = subprocess.check_output(["git", "hash-object", yol],
+                                          text=True, stderr=subprocess.DEVNULL).strip()[:12]
+        except Exception as e:
+            # "OLCULEMEDI" != "TEMIZ": sessiz atlama sahte-yesil uretir -> BLOKLAYICI.
+            bad(f"{yol}: 5-SHA OLCULEMEDI ({type(e).__name__}) — git yok/erisilemez")
+            continue
+        if sha == beklenen:
+            ok(f"{os.path.basename(yol)} {sha}")
+        else:
+            bad(f"{yol}: F-DATAPATH SAPTI → {sha} (bkl {beklenen}) "
+                f"— F'in veri yolu degisti: KASITLI mi?")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
