@@ -30,9 +30,6 @@ from bist_alpha import maintenance
 from bist_alpha import scheduler
 from bist_alpha import selfheal
 
-SEMANTIC_VALID_RATIO_MIN = 0.5
-SEMANTIC_COVERAGE_RATIO_MIN = 0.5
-
 
 SLOT_TARGETS = {
     "acilis": time(9, 45),
@@ -126,85 +123,6 @@ def _kap_status():
     }
 
 
-def _semantic_counts(valid, price_count, pool):
-    """Canlilik degil, ANLAMLILIK: skor evreni rapor/karar icin yeterli mi?"""
-    problems = []
-    valid_ratio = None
-    coverage_ratio = None
-    if isinstance(valid, (int, float)) and isinstance(price_count, (int, float)) and price_count:
-        valid_ratio = valid / price_count
-        if valid_ratio < SEMANTIC_VALID_RATIO_MIN:
-            problems.append({
-                "code": "B/VALID_DUSUK",
-                "message": (
-                    f"valid/price={valid_ratio:.2f} < {SEMANTIC_VALID_RATIO_MIN} "
-                    f"(valid={valid}/price={price_count})"
-                ),
-            })
-    else:
-        problems.append({
-            "code": "B/METRIK_YOK",
-            "message": "select_valid_count/price_count hesaplanamadi",
-        })
-    if isinstance(price_count, (int, float)) and isinstance(pool, (int, float)) and pool:
-        coverage_ratio = price_count / pool
-        if coverage_ratio < SEMANTIC_COVERAGE_RATIO_MIN:
-            problems.append({
-                "code": "B/EVREN_COKTU",
-                "message": (
-                    f"price/pool={coverage_ratio:.2f} < {SEMANTIC_COVERAGE_RATIO_MIN} "
-                    f"(price={price_count}/pool={pool})"
-                ),
-            })
-    return {
-        "verdict": "red" if problems else "green",
-        "blocked": bool(problems),
-        "valid_ratio": round(valid_ratio, 3) if valid_ratio is not None else None,
-        "coverage_ratio": round(coverage_ratio, 3) if coverage_ratio is not None else None,
-        "select_valid_count": int(valid) if isinstance(valid, (int, float)) else None,
-        "price_count": int(price_count) if isinstance(price_count, (int, float)) else None,
-        "source_pool_count": int(pool) if isinstance(pool, (int, float)) else None,
-        "problems": problems,
-        "reason": "; ".join(p["message"] for p in problems) if problems else "semantic_ok",
-        "opens_trade": False,
-        "note": (
-            "Anlamlilik kapisi: valid/price ve price/pool oranlari. "
-            "Kirmiziysa normal sinyal/defter guncellemesi yayinlanmaz; F motoru degismez."
-        ),
-    }
-
-
-def _semantic_data_health(data):
-    """Guncel data uzerinden reporter/content_sanity ile ayni kok metrigi hesapla."""
-    try:
-        from bist_alpha.strategy import score
-        prices = data.get("prices")
-        if prices is None or prices.empty:
-            return _semantic_counts(0, 0, data.get("_source_pool_count"))
-        date = prices.index[-1]
-        s, _ = score(data, date)
-        valid = int(s.shape[0]) if s is not None else 0
-        return _semantic_counts(valid, int(prices.shape[1]), data.get("_source_pool_count"))
-    except Exception as e:
-        h = _semantic_counts(None, None, data.get("_source_pool_count") if data else None)
-        h["verdict"] = "red"
-        h["blocked"] = True
-        h["problems"].append({"code": "B/SEMANTIC_HATA", "message": str(e)[:300]})
-        h["reason"] = "; ".join(p["message"] for p in h["problems"])
-        return h
-
-
-def _semantic_report_health(report, fallback=None):
-    """Report yazildiktan sonra ayni karari rapor alanlariyla damgala."""
-    if report is None:
-        return fallback or _semantic_counts(None, None, None)
-    return _semantic_counts(
-        report.get("select_valid_count"),
-        report.get("price_count"),
-        report.get("source_pool_count"),
-    )
-
-
 def _operation_health(report, label, data, health, notify_status):
     """Dashboard icin operasyon ve veri guvenilirligi ozetini uretir."""
     delay = _report_delay(label)
@@ -237,13 +155,6 @@ def _operation_health(report, label, data, health, notify_status):
             missing_pct is not None and missing_pct > 5):
         core_status = "amber"
 
-    semantic = report.get("semantic_health") if isinstance(report, dict) else None
-    semantic_verdict = (semantic or {}).get("verdict")
-    if semantic_verdict == "red":
-        core_status = "red"
-    elif semantic_verdict in {"yellow", "amber"} and core_status == "green":
-        core_status = "amber"
-
     telegram_ok = notify_status.get("telegram") if isinstance(notify_status, dict) else None
     email_ok = notify_status.get("email") if isinstance(notify_status, dict) else None
     if telegram_ok is False:
@@ -271,7 +182,6 @@ def _operation_health(report, label, data, health, notify_status):
         "last_data_date": report.get("last_data_date"),
         "data_cleaning": (data or {}).get("_data_cleaning", {}),
         "data_health": health or {},
-        "semantic_health": semantic or {},
         "verdict": core_status,
         "updated_at": datetime.now().isoformat(timespec="seconds"),
     }
@@ -405,18 +315,6 @@ def run_cycle(label="manuel"):
     data['_dynamic_universe_method'] = 'likidite_fiyat_x_hacim' if source_base in ('yahoo', 'borsapy') else 'piyasa_degeri'
     print(f"[daemon] Kaynak: {data.get('_source', config.DATA_SOURCE)}")
     print(f"[daemon] Veri: {data['prices'].shape[1]} hisse, dinamik evren: {len(universe)}")
-    semantic_health = _semantic_data_health(data)
-    data["_semantic_health"] = semantic_health
-    data["_semantic_gate"] = {
-        "blocked": semantic_health.get("verdict") == "red",
-        "reason": semantic_health.get("reason"),
-        "select_valid_count": semantic_health.get("select_valid_count"),
-        "price_count": semantic_health.get("price_count"),
-        "valid_ratio": semantic_health.get("valid_ratio"),
-        "coverage_ratio": semantic_health.get("coverage_ratio"),
-    }
-    if semantic_health.get("verdict") == "red":
-        print(f"[daemon] ANLAMLILIK KIRMIZI: {semantic_health.get('reason')}")
 
     # 3) Bakım (eksik #6) — veri sağlık + temp/log temizliği
     health = maintenance.run_maintenance(data)
@@ -453,36 +351,18 @@ def run_cycle(label="manuel"):
             held_positions = {}
         report = reporter.generate_report(data, signals, mode=config.MODE,
                                            held_positions=held_positions)
-        semantic_report = _semantic_report_health(report, fallback=semantic_health)
-        report["semantic_health"] = semantic_report
         report["shadow_cycle"] = shadow_result
         report["shadow_accounts"] = _shadow_summary(data)
-        if semantic_report.get("verdict") == "red":
-            report["raw_top10_count"] = len(report.get("top10") or [])
-            report["top10_suppressed"] = report.get("top10", [])
-            report["top10"] = []
-            report["firsatlar"] = []
-            report["watchlists"] = {
-                "suppressed": True,
-                "reason": semantic_report.get("reason"),
-                "opens_trade": False,
-            }
-            report["catalyst_ledger"] = {
-                "status": "skipped",
-                "reason": "semantic_red",
-                "opens_trade": False,
-            }
-        else:
-            try:
-                from bist_alpha import radar
-                report["watchlists"] = radar.build_watchlists(data, signals, report)
-            except Exception as e:
-                report["watchlists"] = {"error": str(e)}
-            try:
-                from bist_alpha import catalyst_ledger
-                report["catalyst_ledger"] = catalyst_ledger.update(report, data)
-            except Exception as e:
-                report["catalyst_ledger"] = {"error": str(e)}
+        try:
+            from bist_alpha import radar
+            report["watchlists"] = radar.build_watchlists(data, signals, report)
+        except Exception as e:
+            report["watchlists"] = {"error": str(e)}
+        try:
+            from bist_alpha import catalyst_ledger
+            report["catalyst_ledger"] = catalyst_ledger.update(report, data)
+        except Exception as e:
+            report["catalyst_ledger"] = {"error": str(e)}
         text = reporter.format_text(report)
         print(text)
         # 5) Bildirim (eksik #2)
@@ -528,7 +408,6 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             prices_today = {}
     dashboard_watchlists = dict(report.get("watchlists", {}) or {})
     dashboard_watchlists["firsatlar"] = report.get("firsatlar", [])
-    semantic_red = (report.get("semantic_health") or {}).get("verdict") == "red"
     state = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "label": label,
@@ -558,7 +437,6 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         # kirik) ile "gercekten 0" (valid tam-cokme = anomali) AYRI arizadir; 0
         # verirsem ikisi karisir. (yok != sifir, bu turun tekrar eden dersi.)
         "select_valid_count": report.get("select_valid_count"),
-        "semantic_health": report.get("semantic_health", {}),
         "firsatlar": report.get("firsatlar", []),
         "watchlists": dashboard_watchlists,
         "catalyst_ledger": report.get("catalyst_ledger"),
@@ -588,36 +466,24 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         },
         "accounts": {},
     }
-    if semantic_red:
-        skipped = {
-            "status": "skipped",
-            "reason": "semantic_red",
-            "opens_trade": False,
-            "note": "Anlamlilik kirmizi oldugu icin sinyal-tabanli defter guncellenmedi.",
-        }
-        state["forward_test"] = dict(skipped, ledger="forward_test")
-        state["missed_opportunities"] = dict(skipped, ledger="missed_opportunities")
-        state["opportunity_ledger"] = dict(skipped, ledger="opportunity_ledger")
-        state["performance_ledger"] = dict(skipped, ledger="performance_ledger")
-    else:
-        try:
-            state["forward_test"] = forward_test.update(report, data=data)
-        except Exception as e:
-            state["forward_test"] = {"error": str(e)}
-        try:
-            state["missed_opportunities"] = missed_log.update(
-                data, report.get("watchlists", {}), report)
-        except Exception as e:
-            state["missed_opportunities"] = {"error": str(e)}
-        try:
-            state["opportunity_ledger"] = opportunity_ledger.update(report, data)
-        except Exception as e:
-            state["opportunity_ledger"] = {"error": str(e)}
-        try:
-            state["performance_ledger"] = performance_ledger.update(
-                report, data, watchlists=report.get("watchlists", {}))
-        except Exception as e:
-            state["performance_ledger"] = {"error": str(e)}
+    try:
+        state["forward_test"] = forward_test.update(report, data=data)
+    except Exception as e:
+        state["forward_test"] = {"error": str(e)}
+    try:
+        state["missed_opportunities"] = missed_log.update(
+            data, report.get("watchlists", {}), report)
+    except Exception as e:
+        state["missed_opportunities"] = {"error": str(e)}
+    try:
+        state["opportunity_ledger"] = opportunity_ledger.update(report, data)
+    except Exception as e:
+        state["opportunity_ledger"] = {"error": str(e)}
+    try:
+        state["performance_ledger"] = performance_ledger.update(
+            report, data, watchlists=report.get("watchlists", {}))
+    except Exception as e:
+        state["performance_ledger"] = {"error": str(e)}
     if not state.get("catalyst_ledger"):
         try:
             state["catalyst_ledger"] = catalyst_ledger.update(report, data)

@@ -292,25 +292,13 @@ GATE_LOUD_AFTER = 5
 CONTENT_SANITY_PATH = os.path.join(DOCS_STATE_DIR, "content_sanity.json")
 
 
-def _data_gate(prices, run_utc_date, data=None):
+def _data_gate(prices, run_utc_date):
     """Rebalans KARARI icin veri gecerli mi? (blocked, reason) doner.
 
     Hesaptan BAGIMSIZ (ayni fiyat matrisi, ayni content_sanity) -> hesap
     dongusunden ONCE bir kez hesaplanir, dorde birden uygulanir.
     """
     veri_tarihi = prices.index[-1].date() if len(prices.index) else None
-
-    # #0g-③ — CURRENT-DATA kapisi (2026-08-26):
-    # content_sanity.json rapordan SONRA uretilir; yalniz ona bakmak bir kosu
-    # gecikmeli koruma demektir. daemon.py ayni data uzerinden semantic_gate
-    # hesaplar ve buraya tasir. Bu varsa once o okunur; yoksa geriye-donuk
-    # uyumluluk icin dosya-kapisi calismaya devam eder.
-    semantic_gate = (data or {}).get("_semantic_gate") or {}
-    if semantic_gate.get("blocked"):
-        return True, (
-            "current semantic gate: "
-            f"{semantic_gate.get('reason') or 'anlamlilik kirmizi'}"
-        )
 
     cs, cs_hata = None, None
     try:
@@ -547,7 +535,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
     # zaten, bosuna dosya okumaya gerek yok.
     gate_blocked, gate_reason = (False, None)
     if run_label == "kapanis":
-        gate_blocked, gate_reason = _data_gate(prices, datetime.utcnow().date(), data=data)
+        gate_blocked, gate_reason = _data_gate(prices, datetime.utcnow().date())
         if gate_blocked:
             print(f"[shadow] VERI-KAPISI: {gate_reason}")
 
@@ -838,24 +826,16 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         # uygulamak yeterli, g1_account.py DOKUNULMAZ kalir.
         g1_gate = g1_should_rebalance          # kapi (guard uygulanir), VADE ayri
         if run_label == "kapanis" and g1_should_rebalance and not g1_state.get("_pending_rebalance"):
-            if gate_blocked:
-                _gate_defer(g1_state, "G1", gate_reason, trade_date)
+            try:
+                _g1_picks, _, _ = strat_mod.select(data, signals, date, mode="F")
+            except Exception:
+                _g1_picks = []
+            if _thin_defer(g1_state, "G1", _g1_picks, trade_date):
+                # KAPIYI kapat ama VADEYI bozma: `rebalance_due` raporu VADE
+                # demek, "guard'dan gecti" demek DEGIL. g1_should_rebalance'i
+                # ezersek rapor "vade gelmedi" der -> TERS BILGI (#0i'nin
+                # duzelttigi bayrak-sinifi). Ayri degisken kullanilir.
                 g1_gate = False
-            else:
-                if g1_state.pop("_gate_defer", None):
-                    print("[shadow] G1 veri-kapisi ACILDI -> karar verilebilir")
-                try:
-                    _g1_picks, _, _ = strat_mod.select(data, signals, date, mode="F")
-                except Exception:
-                    _g1_picks = []
-                if _thin_defer(g1_state, "G1", _g1_picks, trade_date):
-                    # KAPIYI kapat ama VADEYI bozma: `rebalance_due` raporu VADE
-                    # demek, "guard'dan gecti" demek DEGIL. g1_should_rebalance'i
-                    # ezersek rapor "vade gelmedi" der -> TERS BILGI (#0i'nin
-                    # duzelttigi bayrak-sinifi). Ayri degisken kullanilir.
-                    g1_gate = False
-        elif not gate_blocked and g1_state.pop("_gate_defer", None):
-            print("[shadow] G1 veri-kapisi ACILDI -> karar verilebilir")
         # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
         # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
         g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)

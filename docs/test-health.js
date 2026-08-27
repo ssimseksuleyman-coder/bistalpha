@@ -160,27 +160,5 @@ console.log("\n[7] SLA gecikme esikleri");
   check("61 dk verdict kirmizi", evaluate(red, MON_PM).verdict, "r");
 }
 
-console.log("\n[8] Anlamlilik kirmizi -> KIRMIZI");
-{
-  const d = {
-    last_data_date: "2026-06-29",
-    price_count: 621,
-    source_pool_count: 623,
-    source: "yahoo",
-    timestamp: "2026-06-29T14:30:00",
-    semantic_health: {
-      verdict: "red",
-      select_valid_count: 11,
-      price_count: 621,
-      valid_ratio: 0.018,
-      coverage_ratio: 0.997,
-      reason: "valid/price=0.02 < 0.5",
-    },
-  };
-  const r = evaluate(d, MON_PM);
-  check("verdict", r.verdict, "r");
-  check("content_sanity", r.metrics.find(m => m.key === "content_sanity").status, "r");
-}
-
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");
 process.exit(fail === 0 ? 0 : 1);

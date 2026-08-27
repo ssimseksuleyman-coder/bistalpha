@@ -226,23 +226,6 @@ def format_text(report):
         L.append(f"Kaynak: {report['source']}{pool_note} | canlı veri: {report.get('price_count')} | evren: {report.get('dynamic_universe_count')} | son veri: {report.get('last_data_date')}")
     L.append("BIST Alpha bulten: sistem-uretimi | resmi KAP/sirket/BIST verileri defterlerde olculur")
     L.append("")
-    semantic = report.get("semantic_health") or {}
-    if semantic.get("verdict") == "red":
-        L.append("🔴 ANLAMLILIK KIRMIZI — NORMAL SINYAL BLOKE")
-        L.append(f"Sebep: {semantic.get('reason') or '-'}")
-        L.append(
-            "Eylem: Top10/Firsat/izleme defterleri bu kosuda yayinlanmadi; "
-            "F motoru degismedi, kirli secim terfi alamaz."
-        )
-        L.append(
-            f"Olcum: valid={semantic.get('select_valid_count')} / "
-            f"price={semantic.get('price_count')} | "
-            f"valid/price={semantic.get('valid_ratio')} | "
-            f"price/pool={semantic.get('coverage_ratio')}"
-        )
-        L.append("")
-        L.append("⚠️ Tek rejim (boğa) verisinde kalibre. Yatırım tavsiyesi değildir.")
-        return "\n".join(L)
     L.append("TOP 10:")
     for r in report["top10"]:
         v = " 🎫" if r.get("visa") else ""
