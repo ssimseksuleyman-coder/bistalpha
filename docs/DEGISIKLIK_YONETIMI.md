@@ -47,24 +47,32 @@ katmanları ayrılır, terfi kanıta bağlanır.
 ## Zaman Damgası Disiplini
 
 Yukarıdaki yasanın *"yerel saat vs damganın yazıldığı eksen"* satırının **alan haritası**.
-Bu sistemde damgalar **iki farklı eksende** yazılıyor ve çoğu **ofset taşımıyor** — yani
-damga, bakan kişiye kendi eksenini söylemiyor.
+Bu sistemde damgalar **iki farklı eksende** yazılıyor. Çoğu eksenini **bildiriyor** —
+biri bildirmiyor, ve hata riski oradadır.
 
-| Alan | Eksen | Ofset | Not |
+| Alan | Eksen | Eksen nasıl bildiriliyor | Not |
 |---|---|---|---|
-| `report_runs.sent_at` | TR | **VAR** (`+03:00`) | Tek açık alan. Ofseti silme, olduğu gibi parse et. |
-| `dashboard.timestamp` | TR yerel | yok | |
-| `content_sanity.updated_at` | UTC | yok | Kapının okuduğu alan. |
-| `liveness.updated_at` | UTC | yok | |
-| `watchdog.updated_at` | UTC | yok | |
+| `report_runs.sent_at` | TR | **ISO ofset** (`+03:00`) | Ofseti silme, olduğu gibi parse et. |
+| `content_sanity.updated_at` | UTC | **`tz: "UTC"` alanı** | Kapının okuduğu alan. |
+| `liveness.updated_at` | UTC | **`tz: "UTC"` alanı** | |
+| `watchdog.updated_at` | UTC | **`tz: "UTC"` alanı** | Hüküm alanı `sonuc`'tur, `verdict` **değil**. |
+| `dashboard.timestamp` | **TR yerel** | **BİLDİRMİYOR** | **Tek belirsiz alan.** |
+
+⚠️ **Bu tablo 2026-08-28'de düzeltildi.** İlk hâli *"çoğu ofset taşımıyor"* diyordu ve üç
+dosyayı belirsiz gösteriyordu — **yanlıştı**. Üçü `tz` alanıyla eksenini açıkça bildiriyor;
+belirsiz olan **yalnız `dashboard.timestamp`**. Bulgu doğruydu, kapsamı üç kat abartılmıştı.
+*(Kayıt hatası da ölçümle düzeltilir — `feedback_kural_kalitesi` ③.)*
 
 Aynı koşum bu yüzden iki farklı saat gösterir. 2026-08-28 günici koşumu `dashboard`'a
 `14:30:43` (TR), `content_sanity`'ye `11:30:52` (UTC) yazdı — **3 saat fark, tek koşum**.
 
 **Kurallar**
 
-- Her `timestamp` alanı **kendi eksen etiketiyle** parse edilir.
+- Her `timestamp` alanı **kendi eksen etiketiyle** parse edilir: önce ISO ofseti, yoksa
+  dosyanın `tz` alanı, o da yoksa bu tablodaki eksen.
 - Ofset **silinerek** veya string **kesilerek** (`[:19]`) yaş hesabı yapılmaz.
+- `tz` alanı **yok sayılmaz**. Yok sayılırsa negatif yaş ya da **+3 saatlik sahte bayatlık**
+  üretilir — ikisi de gerçek olmayan alarm doğurur.
 - **Negatif yaş görülürse önce denetim aracının hatası varsayılır**, verinin değil.
 - Kapılar **UTC** okur (`shadow.py` → `run_utc_date`). TR günü dönmüşken UTC dönmemiş
   olabilir; **00:00–03:00 TR** penceresinde kapı **bir önceki günü** ölçer.
