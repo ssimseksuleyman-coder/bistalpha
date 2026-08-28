@@ -4,7 +4,7 @@
   "positions": {
     "IEYHO": {
       "entry": 157.60000610351562,
-      "peak": 194.0,
+      "peak": 195.5,
       "shares": 0.0007616122328848373
     },
     "ALKLC": {
@@ -14,7 +14,7 @@
     },
     "PEKGY": {
       "entry": 14.800000190734863,
-      "peak": 16.5,
+      "peak": 17.5,
       "shares": 0.008110141284072692
     }
   },
@@ -459,5 +459,36 @@
       ],
       "fill_convention": "same_day_close"
     }
-  ]
+  ],
+  "_pending_rebalance": {
+    "decided_at": "2026-08-28",
+    "decided_run": "kapanis",
+    "picks": [
+      "OZATD",
+      "KTLEV",
+      "GUNDG",
+      "IEYHO",
+      "ODINE",
+      "HEDEF",
+      "ALKLC",
+      "SELEC",
+      "EUPWR",
+      "PASEU"
+    ],
+    "weights": {
+      "OZATD": 1.0,
+      "KTLEV": 1.5,
+      "GUNDG": 1.0,
+      "IEYHO": 1.5,
+      "ODINE": 1.0,
+      "HEDEF": 1.0,
+      "ALKLC": 1.0,
+      "SELEC": 1.0,
+      "EUPWR": 1.0,
+      "PASEU": 1.5
+    },
+    "scale": 1.0,
+    "reason": "rebalance",
+    "status": "pending"
+  }
 }
