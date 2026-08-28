@@ -44,6 +44,36 @@ katmanları ayrılır, terfi kanıta bağlanır.
 - Zamanlanmış her davranış için "son ne zaman çalıştı / gecikti mi" **ham kayıttan** doğrulanır.
 - Detektör kurarken test çift yönlüdür: bozunca kırmızı **ve** sağlamken yeşil.
 
+## Zaman Damgası Disiplini
+
+Yukarıdaki yasanın *"yerel saat vs damganın yazıldığı eksen"* satırının **alan haritası**.
+Bu sistemde damgalar **iki farklı eksende** yazılıyor ve çoğu **ofset taşımıyor** — yani
+damga, bakan kişiye kendi eksenini söylemiyor.
+
+| Alan | Eksen | Ofset | Not |
+|---|---|---|---|
+| `report_runs.sent_at` | TR | **VAR** (`+03:00`) | Tek açık alan. Ofseti silme, olduğu gibi parse et. |
+| `dashboard.timestamp` | TR yerel | yok | |
+| `content_sanity.updated_at` | UTC | yok | Kapının okuduğu alan. |
+| `liveness.updated_at` | UTC | yok | |
+| `watchdog.updated_at` | UTC | yok | |
+
+Aynı koşum bu yüzden iki farklı saat gösterir. 2026-08-28 günici koşumu `dashboard`'a
+`14:30:43` (TR), `content_sanity`'ye `11:30:52` (UTC) yazdı — **3 saat fark, tek koşum**.
+
+**Kurallar**
+
+- Her `timestamp` alanı **kendi eksen etiketiyle** parse edilir.
+- Ofset **silinerek** veya string **kesilerek** (`[:19]`) yaş hesabı yapılmaz.
+- **Negatif yaş görülürse önce denetim aracının hatası varsayılır**, verinin değil.
+- Kapılar **UTC** okur (`shadow.py` → `run_utc_date`). TR günü dönmüşken UTC dönmemiş
+  olabilir; **00:00–03:00 TR** penceresinde kapı **bir önceki günü** ölçer.
+
+**Yaşanmış (2026-08-28):** sekiz maddelik read-only denetimde `dashboard.timestamp` UTC
+sanıldı ve `-2.2h` **negatif yaş** üretildi. İmkânsız bir sayı olduğu için yakalandı; daha
+küçük bir sapma sessizce geçerdi. Aynı gün `#0w`'nin (`Z` eksikliği) ve kapı tarih tuzağının
+üçüncü örneği — sınıf: **eksen/ofset belirsizliği**.
+
 ## Commit Öncesi Kontrol
 
 ```powershell
