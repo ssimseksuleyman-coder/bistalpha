@@ -1,21 +1,56 @@
 {
   "account": "F",
-  "cash": 0.9252984744207955,
+  "cash": 0.005551790846525073,
   "positions": {
+    "OZATD": {
+      "entry": 4827.5,
+      "peak": 4827.5,
+      "shares": 1.7648113597771612e-05
+    },
+    "KTLEV": {
+      "entry": 57.29999923706055,
+      "peak": 57.29999923706055,
+      "shares": 0.00371711472633577
+    },
+    "BIGEN": {
+      "entry": 183.6999969482422,
+      "peak": 186.0,
+      "shares": 0.000772965612489428
+    },
     "IEYHO": {
-      "entry": 157.60000610351562,
-      "peak": 207.60000610351562,
-      "shares": 0.0007616122328848374
+      "entry": 207.8000030517578,
+      "peak": 208.5,
+      "shares": 0.0006833194348896952
+    },
+    "ODINE": {
+      "entry": 2013.0,
+      "peak": 2013.0,
+      "shares": 4.232303447254965e-05
+    },
+    "HEDEF": {
+      "entry": 77.05000305175781,
+      "peak": 77.05000305175781,
+      "shares": 0.0018428783261698345
     },
     "ALKLC": {
-      "entry": 393.25,
-      "peak": 428.0,
-      "shares": 0.0003052259187569296
+      "entry": 425.75,
+      "peak": 427.0,
+      "shares": 0.0003335144583802797
     },
-    "PEKGY": {
-      "entry": 14.800000190734863,
-      "peak": 17.5,
-      "shares": 0.008110141284072694
+    "SELEC": {
+      "entry": 334.5,
+      "peak": 338.0,
+      "shares": 0.0004244956073405204
+    },
+    "CRFSA": {
+      "entry": 290.75,
+      "peak": 317.5,
+      "shares": 0.00029302241923729135
+    },
+    "EUPWR": {
+      "entry": 101.80000305175781,
+      "peak": 101.80000305175781,
+      "shares": 0.0013948308094176645
     }
   },
   "history": [
@@ -458,37 +493,119 @@
         }
       ],
       "fill_convention": "same_day_close"
-    }
-  ],
-  "_pending_rebalance": {
-    "decided_at": "2026-08-31",
-    "decided_run": "kapanis",
-    "picks": [
-      "OZATD",
-      "KTLEV",
-      "BIGEN",
-      "IEYHO",
-      "ODINE",
-      "HEDEF",
-      "ALKLC",
-      "SELEC",
-      "CRFSA",
-      "EUPWR"
-    ],
-    "weights": {
-      "OZATD": 0.6,
-      "KTLEV": 1.5,
-      "BIGEN": 1.0,
-      "IEYHO": 1.0,
-      "ODINE": 0.6,
-      "HEDEF": 1.0,
-      "ALKLC": 1.0,
-      "SELEC": 1.0,
-      "CRFSA": 0.6,
-      "EUPWR": 1.0
     },
-    "scale": 1.0,
-    "reason": "rebalance",
-    "status": "pending"
-  }
+    {
+      "date": "2026-09-01",
+      "event": "rebalance",
+      "total": 1.3261,
+      "n_pos": 10,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "IEYHO",
+          "price": 207.8,
+          "shares": 0.000762,
+          "reason": "rebalance",
+          "pnl_pct": 31.85
+        },
+        {
+          "type": "SELL",
+          "ticker": "ALKLC",
+          "price": 425.75,
+          "shares": 0.000305,
+          "reason": "rebalance",
+          "pnl_pct": 8.26
+        },
+        {
+          "type": "SELL",
+          "ticker": "PEKGY",
+          "price": 14.18,
+          "shares": 0.00811,
+          "reason": "rebalance",
+          "pnl_pct": -4.19
+        },
+        {
+          "type": "BUY",
+          "ticker": "OZATD",
+          "price": 4827.5,
+          "shares": 1.8e-05,
+          "weight": 0.6,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "KTLEV",
+          "price": 57.3,
+          "shares": 0.003717,
+          "weight": 1.5,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "BIGEN",
+          "price": 183.7,
+          "shares": 0.000773,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "IEYHO",
+          "price": 207.8,
+          "shares": 0.000683,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "ODINE",
+          "price": 2013.0,
+          "shares": 4.2e-05,
+          "weight": 0.6,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "HEDEF",
+          "price": 77.05,
+          "shares": 0.001843,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "ALKLC",
+          "price": 425.75,
+          "shares": 0.000334,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "SELEC",
+          "price": 334.5,
+          "shares": 0.000424,
+          "weight": 1.0,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "CRFSA",
+          "price": 290.75,
+          "shares": 0.000293,
+          "weight": 0.6,
+          "reason": "rebalance"
+        },
+        {
+          "type": "BUY",
+          "ticker": "EUPWR",
+          "price": 101.8,
+          "shares": 0.001395,
+          "weight": 1.0,
+          "reason": "rebalance"
+        }
+      ],
+      "fill_convention": "next_open_deferred"
+    }
+  ]
 }
