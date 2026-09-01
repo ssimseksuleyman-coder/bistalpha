@@ -497,14 +497,28 @@ def _thin_defer(state, acc, picks, trade_date):
     return True
 
 
-def _pending_age_days(decided_at, today):
-    """Karar tarihinden bugune TAKVIM gunu. Parse edilemezse None (iptal etme)."""
-    try:
-        d0 = pd.Timestamp(str(decided_at)).normalize()
-        d1 = pd.Timestamp(str(today)).normalize()
-        return int((d1 - d0).days)
-    except Exception:
-        return None
+def _pending_trading_age_days(prices_index, decided_at, today):
+    """Pending'in ISLEM-GUNU yasi (#0i-B). Hesaplanamazsa None -> iptal ETME.
+
+    ESKI HALI TAKVIM GUNU SAYIYORDU (`_pending_age_days`, int((d1-d0).days)) ve
+    HAFTA SONU KOPRUSUNDE YANLIS IPTAL URETIYORDU. Canli olculdu, iki yonlu:
+      2026-08-28 (Cuma) karar -> 08-31 (Pzt) kapanis : takvim 3 -> IPTAL (log muhurlu)
+      2026-08-31 (Pzt)  karar -> 09-01 (Sal) kapanis : takvim 1 -> FILL
+    Ikisinde de ISLEM gunu 1'di; degisen tek sey aradaki takvim gunu sayisiydi.
+    Cuma kararlari bu yuzden Pazartesi fill olamiyordu (rebalans ~30 gunde bir ->
+    Cuma'ya denk gelme olasiligi ~%20).
+
+    TUTARSIZLIK GIDERILDI, YENI YETENEK EKLENMEDI: ayni dosyadaki rebalans sayaci
+    (`rebal_status` -> `_trading_days_between`, satir 139) ZATEN islem gunu
+    kullaniyordu. Ayni dosya "son secimden beri kac gun" sorusunu islem gunuyle,
+    "bu karar kac gunluk" sorusunu takvim gunuyle olcuyordu.
+
+    ADI BIRIMI SOYLER: eski ad (`_pending_age_days`) birimi gizliyordu; docstring'i
+    "TAKVIM" diyordu ama kimse rebalans sayaciyla celistigini fark etmemisti.
+
+    PENDING_MAX_AGE_DAYS DEGISMEDI (2). Yalniz "gun"un tanimi degisti.
+    """
+    return _trading_days_between(prices_index, decided_at, today)
 
 
 def step(data, signals, date=None, slippage=None, run_label=None):
@@ -615,7 +629,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             #      cikar; ayri stop gereksiz.
             pending = state.get("_pending_rebalance")
             if run_label == "kapanis" and pending and pending.get("status") == "pending":
-                age = _pending_age_days(pending.get("decided_at"), trade_date)
+                age = _pending_trading_age_days(prices.index, pending.get("decided_at"), trade_date)
                 if age is not None and age > PENDING_MAX_AGE_DAYS:
                     # OMUR ASIMI (#0i-②): 2 gunden bayat picks ile doldurma.
                     state.pop("_pending_rebalance", None)
@@ -789,7 +803,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 "pending_rebalance": ({
                     "decided_at": pending.get("decided_at"),
                     "picks_n": len(pending.get("picks") or []),
-                    "age_days": _pending_age_days(pending.get("decided_at"), trade_date),
+                    "age_days": _pending_trading_age_days(prices.index, pending.get("decided_at"), trade_date),
                     "status": pending.get("status"),
                     # kapsama-kontrolu fill'i bloklarsa GORUNUR olsun (sessiz kalmasin)
                     "fill_blocked": pending.get("fill_blocked"),

@@ -245,6 +245,67 @@ def main():
             bad(f"{yol}: F-DATAPATH SAPTI → {sha} (bkl {beklenen}) "
                 f"— F'in veri yolu degisti: KASITLI mi?")
 
+    # 6c. #0i-B — pending yasi ISLEM gunu mu (takvim DEGIL)
+    #
+    # CANLI VAKA: 2026-08-28 (Cuma) karari, 08-31 (Pzt) kapanisinda TAKVIM ile 3 gun
+    # sayilip PENDING_MAX_AGE_DAYS=2 esigine takildi ve IPTAL edildi (log muhurlu).
+    # 08-31 karari 09-01'de takvim 1 -> FILL oldu. Ikisinde de ISLEM gunu 1'di.
+    # Yani kok neden kontrollu karsitlikla kanitlandi: degisen tek sey takvim gunu.
+    #
+    # NEDEN BURADA: shadow.py golden-master kapsaminda DEGIL (backtest onu import
+    # etmiyor) ve korunan 5-SHA'da da YOK -> tek otomatik korumasi bu blok.
+    # Dosyanin DEGISMESI bekleniyor, o yuzden koruma SHA dondurmasi degil TEST.
+    #
+    # BILINEN SINIR: blok tek try/except ile sarili -> erken bir istisna sonraki
+    # assertion'lari ATLAR. SAHTE-YESIL URETMEZ (except -> bad(), bloklayici), ama
+    # BILGI KAYBETTIRIR: tek hata gorunur, digerleri olculmeden gecer. Mutasyon
+    # testinde fiilen yasandi (2026-09-01): sadik-olmayan mutasyon istisna firlatti
+    # ve asil iddiaya hic ulasilmadi; sadik mutasyonla tekrarlaninca iddia yakaladi.
+    print("\n[6c] #0i-B pending yasi ISLEM gunu (shadow.py — golden-master disi)")
+    try:
+        import pandas as _pd
+        import shadow as _sh
+        _idx = _pd.bdate_range("2026-08-03", "2026-09-30")     # hafta sonu YOK
+        _CUMA, _PZT, _SALI, _PER = "2026-08-28", "2026-08-31", "2026-09-01", "2026-09-03"
+        _yas = lambda a, b: _sh._pending_trading_age_days(_idx, a, b)
+        _iptal = lambda y: y is not None and y > _sh.PENDING_MAX_AGE_DAYS
+
+        for ad, alinan, beklenen in [
+            ("Cuma->Pzt yasi 1 islem gunu (takvim 3 DEGIL)", _yas(_CUMA, _PZT), 1),
+            ("Cuma->Pzt IPTAL OLMAMALI",                     _iptal(_yas(_CUMA, _PZT)), False),
+            ("Pzt->Sali yasi 1, IPTAL OLMAMALI",             _iptal(_yas(_PZT, _SALI)), False),
+            ("Pzt->Per yasi 3 islem gunu",                   _yas(_PZT, _PER), 3),
+            ("gercekten eski pending IPTAL OLMALI",          _iptal(_yas(_PZT, _PER)), True),
+            ("esik siniri: 2 -> iptal YOK",                  _iptal(2), False),
+            ("esik siniri: 3 -> iptal VAR",                  _iptal(3), True),
+            ("bozuk tarih -> None (fail-safe: iptal ETME)",  _iptal(_yas("x!", _PZT)), False),
+            ("decided_at bos -> iptal ETME",                 _iptal(_yas(None, _PZT)), False),
+            ("PENDING_MAX_AGE_DAYS sabiti degismedi",        _sh.PENDING_MAX_AGE_DAYS, 2),
+        ]:
+            if alinan == beklenen:
+                ok(ad)
+            else:
+                bad(f"#0i-B {ad}: beklenen {beklenen}, alinan {alinan}")
+
+        # IKI CAGRI YERI DE yeni fonksiyonu kullanmali. Yalniz iptal karari (satir ~632)
+        # yamalanip panel alani (~806) unutulursa, karar dogru olur ama PANEL hala
+        # takvim gunu gosterir -> "yanlis dil" (kullanici tespiti, 2026-09-01).
+        _src = open(os.path.join(ROOT, "shadow.py"), encoding="utf-8").read()
+        if "age = _pending_trading_age_days(prices.index" in _src:
+            ok("iptal karari islem-gunu fonksiyonunu cagiriyor")
+        else:
+            bad("#0i-B iptal karari eski/yanlis fonksiyonu cagiriyor")
+        if '"age_days": _pending_trading_age_days(prices.index' in _src:
+            ok("panel age_days alani da ayni fonksiyonu cagiriyor")
+        else:
+            bad("#0i-B panel age_days hala takvim gunu gosteriyor olabilir")
+        if "_pending_age_days(" not in _src:
+            ok("eski takvim-gunu fonksiyonu kalmadi")
+        else:
+            bad("#0i-B eski _pending_age_days cagrisi hala var")
+    except Exception as e:
+        bad(f"#0i-B testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
