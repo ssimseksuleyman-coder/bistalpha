@@ -105,6 +105,17 @@ def _py(x):
     return x
 
 
+# #0k (2026-09-02): CA dedektoru giris fiyatini DOGRU bara kiyaslayabilsin diye
+# her GIRIS kaydina fill konvansiyonu damgalanir. F/A/B/O'da damga history
+# kaydinin ustunde (`shadow._stamp_fill_convention`); G1'in history'sinde ticker
+# olmadigi icin burada TRADE kaydinin ustunde durur.
+# KOPYA UYARISI: asli `shadow.py`de. Neden kopya — `shadow` bu modulu import
+# ediyor, ters yon dairesel olurdu; `config` ise korunan-5'te (dokunulmaz).
+# Iki kopya selftest'te KARSILASTIRILIR, sessiz kayma olamaz.
+FILL_CONV_NEXT_OPEN = "next_open_deferred"   # opens_today ile dolan girisler
+FILL_CONV_SAME_DAY = "same_day_close"        # prices_today ile dolan girisler
+
+
 def _log(state, date, typ, tic, price, **extra):
     rec = {"date": str(date.date()) if hasattr(date, "date") else str(date),
            "type": typ, "ticker": str(tic), "price": round(_py(price), 2)}
@@ -178,7 +189,8 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
                                        "shares": float(alloc / ep), "w": float(w)}
             state["cash"] = float(state["cash"] - alloc)
             state["stats"]["buys"] += 1
-            _log(state, date, "BUY", tic, ep, reason="cold_start_reconcile", weight=round(w, 3))
+            _log(state, date, "BUY", tic, ep, reason="cold_start_reconcile", weight=round(w, 3),
+                 fill_convention=FILL_CONV_SAME_DAY)
             events["buys"].append({"ticker": str(tic), "price": round(_py(ep), 2)})
             mirrored.append(str(tic))
 
@@ -260,7 +272,8 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
                                                    "shares": float(alloc / ep), "w": w}
                         state["cash"] = float(state["cash"] - alloc)
                         state["stats"]["buys"] += 1
-                        _log(state, date, "BUY", tic, ep, weight=round(w, 2))
+                        _log(state, date, "BUY", tic, ep, weight=round(w, 2),
+                             fill_convention=FILL_CONV_NEXT_OPEN)
                         events["buys"].append({"ticker": str(tic), "price": round(_py(ep), 2)})
             # history olayi FILL'de yazilir -> sayac fill'de sifirlanir (F ile ayni)
             state["history"].append({"date": _dstr, "total": round(float(total), 4),
@@ -297,7 +310,8 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
                     if rf < 1.0:
                         state["stats"]["reentry_throttled"] += 1
                     _log(state, date, "REENTRY", tic, pt, prev_exit=round(w["exit"], 2),
-                         throttle=(round(rf, 2) if rf < 1.0 else None))
+                         throttle=(round(rf, 2) if rf < 1.0 else None),
+                         fill_convention=FILL_CONV_NEXT_OPEN)
                     events["reentries"].append({"ticker": str(tic), "price": round(_py(pt), 2),
                                                 "throttle": (round(rf, 2) if rf < 1.0 else None)})
                 state.pop("_pending_reentry", None)

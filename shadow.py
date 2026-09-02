@@ -376,38 +376,69 @@ def _stamp_fill_convention(state):
 # DONUK kalir, feed ise geriye donuk bolunur -> F duzeltilmemis peak'i
 # duzeltilmis fiyatla kiyaslar -> %57 cokus gorur -> phantom stop.
 #
-# DEDEKTOR: state.entry / feed[giris_tarihi]. Esik-tabanli DEGIL, oran-tabanli.
-# OLCUM (2026-08-05, 92 gozlem): temiz vakalar oran = 1.000000 (12/12 acik
-# pozisyon + 80/80 gecmis alim, 1e-6 ustu sapma SIFIR); YEOTK bedelsiz orani
-# 2.338 -> marj ~134x. Bu yuzden tolerans %1 fazlasiyla guvenli.
-# NOT: onceki bir olcumde %4.3 sapma gorulmustu — onlar SATIS (stop) kayitlariydi,
-# yani #0l'in duzelttigi gun-ici kitaplama artefakti; GIRIS fiyatlari temiz.
+# DEDEKTOR: state.entry / feed[giris_tarihi, DOGRU BAR]. Oran-tabanli.
+#
+# ⚠️ ASAGIDAKI 2026-08-05 OLCUMU ARTIK TEK BASINA GECERLI DEGIL (2026-09-02):
+#   "temiz vakalar oran = 1.000000 (12/12 acik pozisyon + 80/80 gecmis alim,
+#    1e-6 ustu sapma SIFIR); YEOTK orani 2.338 -> marj ~134x; tolerans %1
+#    fazlasiyla guvenli."
+# NEDEN GECERSIZ: o olcum alindiginda TUM fill'ler `same_day_close` idi, yani
+# `entry` ZATEN kapanis fiyatiydi -> oran zorunlu olarak 1.000000 cikiyordu.
+# Olculen sey dedektorun isabeti DEGIL, bir totolojiydi. `#0i` fill'i ACILISA
+# tasiyinca (2026-08-05 push, ilk etki 09-01 rebalansi) gurultu tabani 0 olmaktan
+# cikti ve giris gununun GUN-ICI ARALIGI oldu -> 2026-09-02'de 10 pozisyonun
+# 7'si sahte "CA" olarak duzeltildi (3'u yalnizca hareketi <%1 kaldigi icin
+# temiz gorundu; n_clean=3 SAHTE GUVENCEYDI).
+# ⇒ "marj 134x" bir daha guvence olarak KULLANILMAZ. Guvence artik DOGRU BAR
+#   secimidir (yukaridaki `_ca_detect_and_fix`), esik degil.
+# NOT (hala gecerli): onceki bir olcumde %4.3 sapma gorulmustu — onlar SATIS
+# (stop) kayitlariydi, yani #0l'in duzelttigi gun-ici kitaplama artefakti.
+#
+# TOLERANSI BUYUTMEK COZUM DEGIL — olculdu: 09-02 gun-ici hareketini ortmek
+# TOL >= %9.99 ister, gercek kucuk CA'yi (1.03) yakalamak TOL < %3 ister. Ikisi
+# ayni anda saglanamaz. Ikisi de `selftest.py` [6d]'de BIRLIKTE aranir.
 CA_RATIO_TOL = 0.01
 
 
 def _entry_dates(state, acc):
-    """Pozisyonlarin GIRIS TARIHI — kaynak HESABA GORE FARKLI (G1 F'in ikizi DEGIL).
+    """Pozisyonlarin GIRIS TARIHI + FILL KONVANSIYONU — kaynak HESABA GORE FARKLI.
 
     F/A/B/O : history[].trades  (pf.rebalance/close_positions trade listesi yazar)
+              konvansiyon history KAYDININ ustunde (`_stamp_fill_convention`)
     G1      : trades[]          (g1 history'si {date,total,n_pos} tutar, ticker YOK;
                                  giris izi _log -> state["trades"]'te, ve G1'de
                                  REENTRY de bir giristir)
+              konvansiyon TRADE kaydinin ustunde (g1_account._log, 2026-09-02'den
+              itibaren). ESKI G1 kayitlarinda YOK -> None doner, cagiran
+              "olculemedi" sayar (#0k, sahte-CA olayindan sonraki karar).
+
+    Returns: {ticker: (tarih, fill_convention|None)}
     """
     out = {}
     if acc == "G1":
         for t in (state.get("trades") or []):
             if t.get("type") in ("BUY", "REENTRY") and t.get("ticker"):
-                out[str(t["ticker"])] = t.get("date")
+                out[str(t["ticker"])] = (t.get("date"), t.get("fill_convention"))
     else:
         for e in (state.get("history") or []):
+            # `_stamp_fill_convention` her damgasiz kayda SAME_DAY yazar, ama o
+            # cagri bu dongunun ILERISINDE (satir ~768). Ilk-kosum yarisinda
+            # damgasiz kalmayalim diye AYNI varsayilan burada da uygulanir —
+            # tek kaynak: `_stamp_fill_convention`'in belgeledigi varsayilan.
+            konv = e.get("fill_convention") or FILL_CONV_SAME_DAY
             for t in (e.get("trades") or []):
                 if t.get("type") != "SELL" and t.get("ticker"):
-                    out[str(t["ticker"])] = e.get("date")
+                    out[str(t["ticker"])] = (e.get("date"), konv)
     return out
 
 
-def _ca_detect_and_fix(state, acc, prices, trade_date):
+def _ca_detect_and_fix(state, acc, prices, trade_date, opens=None):
     """Geriye donuk duzeltme tespit et; bulursa entry VE peak'i ATOMIK duzelt.
+
+    KIYAS BARI FILL KONVANSIYONUNA GORE SECILIR (#0k, 2026-09-02):
+    `next_open_deferred` -> giris gununun ACILIS bari (`opens`)
+    `same_day_close`     -> giris gununun KAPANIS bari (`prices`)
+    Konvansiyon bilinmiyorsa (eski G1 kayitlari) OLCULEMEDI sayilir, TEMIZ degil.
 
     ATOMIKLIK KRITIK: yalniz entry bolunurse peak eski (bolunmemis) yuksek
     fiyatta kalir -> stop seviyesi (peak-tabanli trailing) SACMALAR.
@@ -430,19 +461,28 @@ def _ca_detect_and_fix(state, acc, prices, trade_date):
     ed = _entry_dates(state, acc)
     fixed, unchecked = [], []
     for tic, pos in list((state.get("positions") or {}).items()):
-        d = ed.get(tic)
+        d, konv = ed.get(tic) or (None, None)
         if not d:
             unchecked.append((tic, "giris_tarihi_yok")); continue
         try:
             k = pd.Timestamp(d)
         except Exception:
             unchecked.append((tic, "tarih_parse_edilemedi")); continue
-        if tic not in prices.columns:
+        # --- #0k FILL-EKSENI: entry HANGI bara gore kitaplandiysa ONA kiyaslanir.
+        # Yanlis bar secilirse giris gununun NORMAL gun-ici hareketi "CA" sanilir
+        # (2026-09-02: 7 pozisyon boyle bozuldu). Toleransi buyutmek COZUM DEGIL —
+        # gun-ici hareketi orten esik gercek kucuk CA'yi da orter.
+        if konv is None:
+            unchecked.append((tic, "fill_convention_yok")); continue
+        ref = opens if konv == FILL_CONV_NEXT_OPEN else prices
+        if ref is None:
+            unchecked.append((tic, "acilis_serisi_yok")); continue
+        if tic not in ref.columns:
             unchecked.append((tic, "ticker_feedde_yok")); continue
-        if k not in prices.index:
+        if k not in ref.index:
             # feed penceresi 2 yil (YahooFeed period="2y") -> daha eski giris
             unchecked.append((tic, "tarih_feed_penceresi_disinda")); continue
-        f = prices.loc[k, tic]
+        f = ref.loc[k, tic]
         if pd.isna(f) or float(f) <= 0:
             unchecked.append((tic, "feed_fiyati_bos")); continue
         e = float(pos.get("entry") or 0)
@@ -599,7 +639,8 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             # "bakildi", sayilarla. `ca_fixed: null`in iki-anlamliligi boylece biter.
             ca_fixed, ca_unchecked, ca_checked = ([], [], None)
             if run_label == "kapanis":
-                ca_fixed, ca_unchecked, ca_checked = _ca_detect_and_fix(state, acc, prices, trade_date)
+                ca_fixed, ca_unchecked, ca_checked = _ca_detect_and_fix(
+                    state, acc, prices, trade_date, opens=opens)
             # #0i FAZ-5 (2026-08-01): "rebalance" bayragi ARTIK ICRA demek.
             # BULGU: eskiden `rebalance = should_rebalance` idi. Karar/icra ayrilinca
             # bu bayrak TERS bilgi vermeye basladi:
@@ -855,7 +896,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
         if run_label == "kapanis":
             g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = _ca_detect_and_fix(
-                g1_state, "G1", prices, trade_date)
+                g1_state, "G1", prices, trade_date, opens=opens)
         # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
         # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
         g1_state, g1_events = g1_mod.step(

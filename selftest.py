@@ -306,6 +306,94 @@ def main():
     except Exception as e:
         bad(f"#0i-B testi kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6d] #0k — CA kiyas bari FILL KONVANSIYONUNA gore secilmeli ────────────
+    # NEDEN VAR: 2026-09-02'de dedektor 10 pozisyonun 7'sini sahte "CA" diye
+    # duzeltti. Sebep: `#0i` fill'i ACILISA tasidi ama dedektor hala KAPANIS
+    # bariyla kiyasliyordu -> giris gununun normal gun-ici hareketi CA sanildi.
+    # Kalan 3 dogru olculdugu icin degil, hareketi tesadufen <%1 kaldigi icin
+    # temiz gorundu (n_clean=3 SAHTE GUVENCEYDI).
+    # TOLERANSI BUYUTMEK COZUM DEGIL: canli hareketi ortmek TOL>=%9.99 ister,
+    # gercek kucuk CA'yi (1.03) yakalamak TOL<%3 ister -> celiski. Bu yuzden
+    # asagida hem SIFIR-sahte-pozitif hem de 1.03'un YAKALANMASI birlikte aranir.
+    print("\n[6d] #0k CA kiyas bari fill konvansiyonuna gore (shadow.py — golden-master disi)")
+    try:
+        import pandas as _pd
+        import shadow as _sh
+        from bist_alpha import g1_account as _g1m
+
+        _G = "2026-09-01"
+        _KG = _pd.Timestamp(_G)
+        # 2026-09-02 canli olayi (olculdu): ticker -> (kayitli_entry, open, close)
+        # 10/10 entry = o gunun ACILIS fiyati.
+        _CANLI = {
+            "OZATD": (4827.50, 4827.50, 4820.00), "KTLEV": (57.30, 57.30, 56.55),
+            "BIGEN": (183.70, 183.70, 186.00),    "IEYHO": (207.80, 207.80, 208.50),
+            "ODINE": (2013.00, 2013.00, 1812.00), "HEDEF": (77.05, 77.05, 75.85),
+            "ALKLC": (425.75, 425.75, 427.00),    "SELEC": (334.50, 334.50, 338.00),
+            "CRFSA": (290.75, 290.75, 317.50),    "EUPWR": (101.80, 101.80, 92.35),
+        }
+        def _cer(d):
+            return _pd.DataFrame([d], index=[_KG])
+        def _stt(entryler, konv=_sh.FILL_CONV_NEXT_OPEN):
+            return {"positions": {t: {"entry": e, "peak": e} for t, e in entryler.items()},
+                    "history": [{"date": _G, "type": "rebalance", "fill_convention": konv,
+                                 "trades": [{"type": "BUY", "ticker": t} for t in entryler]}]}
+        _ent = {t: v[0] for t, v in _CANLI.items()}
+        _op = _cer({t: v[1] for t, v in _CANLI.items()})
+        _cl = _cer({t: v[2] for t, v in _CANLI.items()})
+
+        _f, _u, _c = _sh._ca_detect_and_fix(_stt(_ent), "F", _cl, "2026-09-02", opens=_op)
+        _f2, _u2, _c2 = _sh._ca_detect_and_fix(_stt(_ent), "F", _cl, "2026-09-02")   # opens YOK
+        _f3, _, _ = _sh._ca_detect_and_fix(_stt({"AAA": 300.0}), "F", _cer({"AAA": 101.0}),
+                                           "2026-09-02", opens=_cer({"AAA": 100.0}))
+        _f4, _, _ = _sh._ca_detect_and_fix(_stt({"BBB": 103.0}), "F", _cer({"BBB": 100.5}),
+                                           "2026-09-02", opens=_cer({"BBB": 100.0}))
+        _f5, _, _ = _sh._ca_detect_and_fix(_stt({"CCC": 50.0}, _sh.FILL_CONV_SAME_DAY), "F",
+                                           _cer({"CCC": 50.0}), "2026-09-02")
+        _f6, _, _ = _sh._ca_detect_and_fix(_stt({"CCC": 100.0}, _sh.FILL_CONV_SAME_DAY), "F",
+                                           _cer({"CCC": 50.0}), "2026-09-02")
+        _g1e = {"positions": {"ZZZ": {"entry": 100.0, "peak": 100.0}},
+                "trades": [{"date": _G, "type": "BUY", "ticker": "ZZZ", "price": 100.0}]}
+        _f7, _u7, _c7 = _sh._ca_detect_and_fix(_g1e, "G1", _cer({"ZZZ": 60.0}),
+                                               "2026-09-02", opens=_cer({"ZZZ": 60.0}))
+
+        for ad, alinan, beklenen in [
+            ("canli 7 sahte-CA: dogru bar ile SIFIR duzeltme", len(_f), 0),
+            ("canli vakada hicbiri 'olculemedi' degil",        len(_u), 0),
+            ("canli vakada n_clean == 10",                     _c["n_clean"], 10),
+            ("opens YOK -> eski kapanis barina DUSMEZ",        len(_f2), 0),
+            ("opens YOK -> 10/10 olculemedi",                  len(_u2), 10),
+            ("opens YOK -> n_clean 0 (olculemedi != TEMIZ)",   _c2["n_clean"], 0),
+            ("gercek CA (oran 3.00) yakalanir",                [x["ticker"] for x in _f3], ["AAA"]),
+            ("kucuk gercek CA (oran 1.03) yakalanir",          [x["ticker"] for x in _f4], ["BBB"]),
+            ("same_day_close + entry==close -> CA DEGIL",      len(_f5), 0),
+            ("same_day_close + gercek CA -> yakalanir",        [x["ticker"] for x in _f6], ["CCC"]),
+            ("G1 damgasiz kayit DUZELTILMEZ (tahmin YOK)",     len(_f7), 0),
+            ("G1 damgasiz sebep gorunur: fill_convention_yok", [r for _, r in _u7], ["fill_convention_yok"]),
+            ("G1 damgasiz n_clean 0 (temiz SAYILMAZ)",         _c7["n_clean"], 0),
+            ("FILL_CONV_NEXT_OPEN kopyalari ayni", _g1m.FILL_CONV_NEXT_OPEN, _sh.FILL_CONV_NEXT_OPEN),
+            ("FILL_CONV_SAME_DAY kopyalari ayni",  _g1m.FILL_CONV_SAME_DAY, _sh.FILL_CONV_SAME_DAY),
+            ("CA_RATIO_TOL degismedi (tolerans COZUM DEGIL)",  _sh.CA_RATIO_TOL, 0.01),
+        ]:
+            if alinan == beklenen:
+                ok(ad)
+            else:
+                bad(f"#0k {ad}: beklenen {beklenen}, alinan {alinan}")
+
+        # G1 girisleri damgayi GERCEKTEN yaziyor mu (kaynak kontrolu: davranis testi
+        # canli opens_today ister, damganin kodda durdugu burada dogrulanir).
+        _g1src = open(os.path.join(ROOT, "bist_alpha", "g1_account.py"), encoding="utf-8").read()
+        if _g1src.count("fill_convention=FILL_CONV_NEXT_OPEN") >= 2:
+            ok("G1 BUY+REENTRY girisleri next_open damgasi yaziyor")
+        else:
+            bad("#0k G1 giris damgasi eksik (BUY ve/veya REENTRY)")
+        if "fill_convention=FILL_CONV_SAME_DAY" in _g1src:
+            ok("G1 cold-start girisi same_day damgasi yaziyor")
+        else:
+            bad("#0k G1 cold-start damgasi eksik")
+    except Exception as e:
+        bad(f"#0k testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
