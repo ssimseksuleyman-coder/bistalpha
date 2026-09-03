@@ -1,16 +1,11 @@
 {
   "account": "A",
-  "cash": 0.005168221703159004,
+  "cash": 0.38773053451158296,
   "positions": {
     "OZATD": {
       "entry": 4827.5,
       "peak": 4827.5,
       "shares": 2.6010075198269737e-05
-    },
-    "KTLEV": {
-      "entry": 57.29999923706055,
-      "peak": 57.29999923706055,
-      "shares": 0.002191337516431152
     },
     "BIGEN": {
       "entry": 183.6999969482422,
@@ -19,38 +14,23 @@
     },
     "IEYHO": {
       "entry": 207.8000030517578,
-      "peak": 210.5,
+      "peak": 212.5,
       "shares": 0.0006042523396324127
-    },
-    "ODINE": {
-      "entry": 2013.0,
-      "peak": 2013.0,
-      "shares": 6.237637258800156e-05
-    },
-    "HEDEF": {
-      "entry": 77.05000305175781,
-      "peak": 77.05000305175781,
-      "shares": 0.0016296383263645121
     },
     "ALKLC": {
       "entry": 425.75,
-      "peak": 427.0,
+      "peak": 439.25,
       "shares": 0.0002949234011031055
     },
     "SELEC": {
       "entry": 334.5,
-      "peak": 338.0,
+      "peak": 350.0,
       "shares": 0.00037537709422913945
     },
     "CRFSA": {
       "entry": 290.75,
       "peak": 317.5,
       "shares": 0.0004318611797752267
-    },
-    "EUPWR": {
-      "entry": 101.80000305175781,
-      "peak": 101.80000305175781,
-      "shares": 0.0012334345211739068
     }
   },
   "history": [
@@ -606,6 +586,47 @@
         }
       ],
       "fill_convention": "next_open_deferred"
+    },
+    {
+      "date": "2026-09-03",
+      "event": "stop",
+      "total": 1.1474,
+      "n_pos": 6,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "KTLEV",
+          "price": 45.98,
+          "shares": 0.002191,
+          "reason": "stop",
+          "pnl_pct": -19.76
+        },
+        {
+          "type": "SELL",
+          "ticker": "ODINE",
+          "price": 1468.0,
+          "shares": 6.2e-05,
+          "reason": "stop",
+          "pnl_pct": -27.07
+        },
+        {
+          "type": "SELL",
+          "ticker": "HEDEF",
+          "price": 61.5,
+          "shares": 0.00163,
+          "reason": "stop",
+          "pnl_pct": -20.18
+        },
+        {
+          "type": "SELL",
+          "ticker": "EUPWR",
+          "price": 74.85,
+          "shares": 0.001233,
+          "reason": "stop",
+          "pnl_pct": -26.47
+        }
+      ],
+      "fill_convention": "same_day_close"
     }
   ]
 }

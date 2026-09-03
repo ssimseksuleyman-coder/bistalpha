@@ -1,56 +1,31 @@
 {
   "account": "O",
-  "cash": 0.005551790846525212,
+  "cash": 0.5705500767731092,
   "positions": {
     "OZATD": {
       "entry": 4827.5,
       "peak": 4827.5,
       "shares": 1.764811359777161e-05
     },
-    "KTLEV": {
-      "entry": 57.29999923706055,
-      "peak": 57.29999923706055,
-      "shares": 0.003717114726335769
-    },
-    "GUNDG": {
-      "entry": 1684.0,
-      "peak": 1684.0,
-      "shares": 8.431934718254398e-05
-    },
     "IEYHO": {
       "entry": 207.8000030517578,
-      "peak": 210.5,
+      "peak": 212.5,
       "shares": 0.000683319434889695
-    },
-    "ODINE": {
-      "entry": 2013.0,
-      "peak": 2013.0,
-      "shares": 4.2323034472549646e-05
-    },
-    "HEDEF": {
-      "entry": 77.05000305175781,
-      "peak": 77.05000305175781,
-      "shares": 0.0018428783261698342
     },
     "ALKLC": {
       "entry": 425.75,
-      "peak": 427.0,
+      "peak": 439.25,
       "shares": 0.0003335144583802796
     },
     "SELEC": {
       "entry": 334.5,
-      "peak": 338.0,
+      "peak": 350.0,
       "shares": 0.0004244956073405203
     },
     "CRFSA": {
       "entry": 290.75,
       "peak": 317.5,
       "shares": 0.0002930224192372913
-    },
-    "EUPWR": {
-      "entry": 101.80000305175781,
-      "peak": 101.80000305175781,
-      "shares": 0.0013948308094176643
     }
   },
   "history": [
@@ -606,6 +581,55 @@
         }
       ],
       "fill_convention": "next_open_deferred"
+    },
+    {
+      "date": "2026-09-03",
+      "event": "stop",
+      "total": 1.184,
+      "n_pos": 5,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "KTLEV",
+          "price": 45.98,
+          "shares": 0.003717,
+          "reason": "stop",
+          "pnl_pct": -19.76
+        },
+        {
+          "type": "SELL",
+          "ticker": "GUNDG",
+          "price": 1395.0,
+          "shares": 8.4e-05,
+          "reason": "stop",
+          "pnl_pct": -17.16
+        },
+        {
+          "type": "SELL",
+          "ticker": "ODINE",
+          "price": 1468.0,
+          "shares": 4.2e-05,
+          "reason": "stop",
+          "pnl_pct": -27.07
+        },
+        {
+          "type": "SELL",
+          "ticker": "HEDEF",
+          "price": 61.5,
+          "shares": 0.001843,
+          "reason": "stop",
+          "pnl_pct": -20.18
+        },
+        {
+          "type": "SELL",
+          "ticker": "EUPWR",
+          "price": 74.85,
+          "shares": 0.001395,
+          "reason": "stop",
+          "pnl_pct": -26.47
+        }
+      ],
+      "fill_convention": "same_day_close"
     }
   ]
 }
