@@ -414,7 +414,7 @@ Koruma ve tazelik ayri kapilardir:
   yeterli degildir.
 - Paper donemde tazelik manuel login + timestamp/hash kontroluyle
   `--live-fresh-ok` olarak isaretlenebilir.
-- 40k C1 pilotunda tazelik emir oncesi manuel login + timestamp/hash kontrolu
+- Kucuk-olcek C1 pilotunda tazelik emir oncesi manuel login + timestamp/hash kontrolu
   ve Telegram ikinci kanaliyla dogrulanabilir.
 - Olcek/terfi oncesi tazelik kontrolu Cloudflare Access Service Token ile
   otomatiklestirilmelidir. Token `local/` veya secret ortaminda kalir, repo'ya
@@ -614,7 +614,7 @@ gosterir.
 
 `live_fresh_ok=true` degilse olcek/terfi gecisi yapilmaz. `null`, kontrol
 edilmedi anlamina gelir; basarili veya taze kabul edilmez. Bu durum F motorunu
-durdurmaz, 40k C1 pilotunu tek basina bloke etmez; sadece yeni katman terfisini
+durdurmaz, kucuk-olcek C1 pilotunu tek basina bloke etmez; sadece yeni katman terfisini
 ve olcek gecisini kilitler.
 
 ## Kabul Durumu

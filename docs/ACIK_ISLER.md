@@ -17,12 +17,12 @@ Kalan:
 - 3 bagimsiz pilot-fill penceresi.
 - Broker secimi: Midas veya Deniz. Komisyon varsayimlari kullanici tarafindan
   teyit edilir ve karar yazili hale getirilir.
-- Pilot sermaye: 40k karari verildi. DSTKF tipi 2000+ TL pick'lerde 1-2 lot
+- Pilot sermaye: kucuk-olcek karari verildi. DSTKF tipi 2000+ TL pick'lerde 1-2 lot
   ile kaba slippage ve fill davranisi olculecek; bu sinir biliniyor.
 - `--pf` hook: `taban_readiness` gercek hesap dosyasini okuyacak. Pilot
   baslayinca eklenir; F motorunu degistirmez.
 
-Pilot (40k kalibrasyon) on-kosullari:
+Pilot (kucuk-olcek kalibrasyon) on-kosullari:
 
 - Broker secimi ve hesap akisi yazili.
 - Pilot sermaye transfer/limit karari tamam.
