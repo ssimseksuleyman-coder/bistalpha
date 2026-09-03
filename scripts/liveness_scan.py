@@ -156,6 +156,29 @@ def _cron_slots_utc(workflow: str) -> tuple:
 
 
 _SLOTS_TR = _load_slots_tr()
+
+# #1e — pencere sabiti de KANONIK kaynaktan (slotlarla ayni disiplin). Elle sabit
+# yazilsaydi `report_gate` penceresini degistirdiginde bu kontrol sessizce yanlis
+# esikte kalirdi — `#3`'un "slot tanimi uc yerde" tuzagi.
+_FALLBACK_WINDOW_MIN = 210
+
+
+def _load_window_minutes() -> int:
+    """report_gate.WINDOW_MINUTES = KANONIK (raporun KABUL edildigi son an)."""
+    try:
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import report_gate  # noqa: E402
+        val = int(report_gate.WINDOW_MINUTES)
+    except Exception as exc:
+        _SLOT_ISSUES.append(f"KANONIK pencere okunamadi (report_gate.WINDOW_MINUTES): {exc!r}")
+        return _FALLBACK_WINDOW_MIN
+    if val <= 0:
+        _SLOT_ISSUES.append(f"KANONIK pencere gecersiz: {val}")
+        return _FALLBACK_WINDOW_MIN
+    return val
+
+
+_WINDOW_MIN = _load_window_minutes()
 _DAEMON_SLOTS = tuple(sorted(_tr_to_utc(v) for v in _SLOTS_TR.values()))
 _CLOSE_SLOTS = ((_tr_to_utc(_SLOTS_TR["kapanis"]),) if "kapanis" in _SLOTS_TR
                 else _DAEMON_SLOTS[-1:])
@@ -210,6 +233,66 @@ def _missed_slots(last_run, now, sched):
                     n += 1
         day += timedelta(days=1)
     return n
+
+
+# ── #1e — RAPOR KAPSAMI (2026-09-03) ────────────────────────────────────────
+#
+# NEDEN VAR: yukaridaki `_missed_slots` "su DEFTER kac slottur yazilmadi" sorusunu
+# sorar — duran bir YAZICIYI yakalar. Bambaska bir soru sorulmuyordu: "bugunun
+# RAPORU teslim edildi mi". Slot donusurse (`#1c`) daemon yine kosar ve artefaktlari
+# yazar -> yazici canli GORUNUR, kaybolan yalniz rapordur.
+# OLCULDU (2026-09-03, tum defter): 48 is gununun 9'u eksik (~%19) ve HICBIRI alarm
+# uretmedi. `report_runs.json`i okuyan tek kod `report_gate`in KENDISI (kendi kapisi
+# icin); 17 liveness uyesinin hicbiri kapsam sormuyordu.
+# SINIF: "yoklugun imzasi yok" — eksik rapor bir YOKLUK, var-olana bakan denetimler
+# yoklugu gormez. Ayni sinifin cozulmus ornegi bu dosyada: `close_only` takvimi
+# (#0l), "daemon_cycle uc slotu BIRLIKTE sayar -> yalniz kapanis kacarsa gizlenir".
+# #1e ayni cozumun RAPOR TESLIMINE genellenmesi.
+
+def _missing_report_slots(sent, now_tr, slots_tr, window_min):
+    """Bugun penceresi KAPANMIS ama teslim edilmemis rapor slotlari.
+
+    None  = OLCULEMEDI (sent okunamadi) -> asla TAM sayilmaz
+    []    = olculdu, TAM
+    [...] = olculdu, EKSIK (kanonik slot sirasinda)
+
+    PENCERE KAPANISI = slot + WINDOW_MINUTES, yani `report_gate`in raporu KABUL
+    ettigi son an. Daha once eksik saymak SAHTE ALARM olurdu: 09:45'te acilis
+    henuz gecikmis degil. Esik UYDURULMADI, `report_gate.WINDOW_MINUTES`ten turedi
+    — hedef/pencere degisirse bu kontrol de kendiliginden kayar.
+
+    `manuel` marker slotu KAPATMAZ: manuel kosum bir TELAFI, teslim degil
+    (2026-08-27/28/31'de manuel vardi ama acilis slotu yine kayipti).
+    """
+    if sent is None:
+        return None
+    if now_tr.weekday() >= 5:          # hafta sonu: yapisal olarak slot yok
+        return []
+    gun = now_tr.date().isoformat()
+    eksik = []
+    for ad, hm in slots_tr.items():
+        h, mi = hm
+        hedef = now_tr.replace(hour=h, minute=mi, second=0, microsecond=0)
+        if now_tr <= hedef + timedelta(minutes=window_min):
+            continue                   # pencere hala ACIK -> gecikmis DEGIL
+        if f"{gun}:{ad}" not in sent:
+            eksik.append(ad)
+    return eksik
+
+
+def _coverage_verdict(missing):
+    """#1e verdict — esikler mevcut `_missed_slots` ailesiyle AYNI (yeni esik YOK).
+
+    None (olculemedi) -> RED: "okuyamadim" TEMIZ demek DEGIL (yanlis-sifir ailesi).
+    """
+    if missing is None:
+        return "RED"
+    if len(missing) >= 2:
+        return "RED"
+    if len(missing) == 1:
+        return "YELLOW"
+    return "GREEN"
+
 
 # ---------------------------------------------------------------------------
 # REGISTRY — hangi mekanizma canli olmali, damgasini nereye yazmali.
@@ -444,6 +527,22 @@ REGISTRY = {
         "schedule": "close_only",
         "note": "stop en son ne zaman/hangi bar icin degerlendirildi (#0l izi)",
     },
+    # --- 18. UYE: #1e RAPOR KAPSAMI (2026-09-03) ------------------------------
+    # Diger 17 uye "yazici duruyor mu" sorar (damga YASI). Bu uye "bugunun raporu
+    # GITTI mi" sorar (olayin YOKLUGU). Ayrim gercek: slot donusurse (`#1c`)
+    # daemon yine kosar, artefaktlari yazar -> 17 uye YESIL kalir, rapor kaybolur.
+    # OLCULDU (2026-09-03): 48 is gununun 9'u eksik (~%19), HICBIRI alarm uretmedi.
+    # `report_runs.json`i okuyan tek kod `report_gate`in kendisiydi (kendi kapisi icin).
+    "report_coverage": {
+        "kind": "producer",
+        "expected": "active",
+        "file": "docs/state/report_runs.json",
+        "ts_keys": [],                 # bu uye damga OKUMAZ (check_mode asagida)
+        "tz": 0.0,
+        "schedule": None,              # kendi pencere mantigi var (slot + WINDOW)
+        "check_mode": "report_coverage",
+        "note": "bugun penceresi kapanan rapor slotlari teslim edildi mi (#1e)",
+    },
 }
 
 
@@ -582,6 +681,53 @@ def _check_scanner_verdict(name, cfg, d, row):
         row.update(status="GREEN", reason="tarayici canli, verdict=GREEN")
     else:
         row.update(status="RED", reason=f"gecersiz verdict: {v!r}")
+    return row
+
+
+def _check_report_coverage(name, cfg, d, row):
+    """#1e — bugun penceresi KAPANMIS rapor slotlari teslim edildi mi.
+
+    DIGER UYELERDEN FARKI: bu uye bir damganin YASINA degil, bir olayin
+    YOKLUGUNA bakar. Diger 17 uye "yazici duruyor mu" sorar; slot donusurse
+    (`#1c`) daemon yine kosup artefaktlari yazar -> hepsi YESIL kalir, kaybolan
+    yalniz RAPORDUR. "Yoklugun imzasi yok" sinifinin dogrudan panzehiri.
+
+    TR saati modul konvansiyonuyla: naive utcnow + PRODUCER_TZ_OFFSET_H
+    (Turkiye kalici UTC+3, DST yok — bkz `_tr_to_utc`).
+    """
+    row["check_mode"] = "report_coverage (#1e)"
+    sent = d.get("sent") if isinstance(d, dict) else None
+    now_tr = datetime.utcnow() + timedelta(hours=PRODUCER_TZ_OFFSET_H)
+    row["gun_tr"] = now_tr.date().isoformat()
+    eksik = _missing_report_slots(sent, now_tr, _SLOTS_TR, _WINDOW_MIN)
+    row["missing_slots"] = eksik
+    row["window_minutes"] = _WINDOW_MIN
+
+    if eksik is None:
+        row.update(status="RED",
+                   reason="rapor defteri OKUNAMADI ('sent' yok) — kapsam "
+                          "OLCULEMEDI, temiz SAYILMAZ")
+        return row
+
+    # `manuel` bir TELAFI, teslim DEGIL -> slotu kapatmaz; yalniz NOT olur ki
+    # insan telafinin oldugunu gorsun (2026-08-27/28/31 deseni).
+    gun = now_tr.date().isoformat()
+    manuel = f"{gun}:manuel" in (sent or {})
+    row["manual_today"] = manuel
+    ek = " | manuel telafi VAR (slot kapanmaz)" if manuel else ""
+
+    verdict = _coverage_verdict(eksik)
+    if verdict == "GREEN":
+        row.update(status="GREEN",
+                   reason=f"penceresi kapanan tum slotlar teslim edildi{ek}")
+    elif verdict == "YELLOW":
+        row.update(status="YELLOW",
+                   reason=f"1 rapor TESLIM EDILMEDI: {eksik[0]} "
+                          f"(pencere +{_WINDOW_MIN}dk kapandi){ek}")
+    else:
+        row.update(status="RED",
+                   reason=f"{len(eksik)} rapor TESLIM EDILMEDI: {','.join(eksik)} "
+                          f"(pencere +{_WINDOW_MIN}dk kapandi){ek}")
     return row
 
 
@@ -732,6 +878,13 @@ def check(name, cfg, ever_prev=None):
     except Exception as e:
         row.update(status="RED", reason=f"damga dosyasi okunamadi: {e}")
         return row
+
+    # --- 18. uye (#1e rapor kapsami): DAMGA DEGIL, MARKER SOZLUGU okur ---------
+    # DALLANMA `_first(d, ts_keys)`DAN ONCE olmak ZORUNDA: `report_runs.json`in
+    # ust duzeyinde zaman damgasi YOK ({"sent": {...}}). Asagiya konsaydi uye
+    # "zaman damgasi YOK -> RED" dalina duserdi = SAHTE alarm, olculen sey degil.
+    if cfg.get("check_mode") == "report_coverage":
+        return _check_report_coverage(name, cfg, d, row)
 
     ts, ts_key = _first(d, cfg["ts_keys"])
     row.update(timestamp=ts, ts_key=ts_key)

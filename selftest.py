@@ -394,6 +394,91 @@ def main():
     except Exception as e:
         bad(f"#0k testi kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6e] #1e — RAPOR KAPSAMI: eksik rapor GORUNUR olmali ───────────────────
+    # NEDEN VAR: diger 17 liveness uyesi "yazici duruyor mu" sorar (damga YASI).
+    # Slot donusurse (`#1c`) daemon yine kosar ve artefaktlari yazar -> 17 uye
+    # YESIL kalir, kaybolan yalniz RAPORDUR. OLCULDU (2026-09-03): 48 is gununun
+    # 9'u eksik (~%19) ve HICBIRI alarm uretmedi.
+    # ESIKLER UYDURULMADI: pencere `report_gate.WINDOW_MINUTES`, slotlar
+    # `report_gate.SLOTS` -> hedef/pencere degisirse kontrol kendiliginden kayar.
+    print("\n[6e] #1e rapor kapsami (liveness_scan — golden-master disi)")
+    try:
+        import sys as _sys
+        _sp = os.path.join(ROOT, "scripts")
+        if _sp not in _sys.path:
+            _sys.path.insert(0, _sp)
+        from datetime import datetime as _dt
+        import liveness_scan as _L
+        import report_gate as _RG
+
+        _SL = {a: (t.hour, t.minute) for a, t in _RG.SLOTS}
+        _W = _RG.WINDOW_MINUTES
+        _F = _L._missing_report_slots
+        _V = _L._coverage_verdict
+        _G3 = "2026-09-03"                       # Persembe (is gunu)
+        def _T(g, s, m): return _dt(2026, 9, g, s, m)
+        def _snt(gun, *lab): return {f"{gun}:{l}": {"sent_at": "x"} for l in lab}
+
+        for ad, alinan, beklenen in [
+            # sabah SAHTE ALARM olmamali — pencere kapanmadan eksik sayilmaz
+            ("09:00 marker yok -> TAM (pencere acik)",  _F({}, _T(3, 9, 0), _SL, _W), []),
+            ("13:14 (pencereye 1dk) -> TAM",            _F({}, _T(3, 13, 14), _SL, _W), []),
+            # pencere kapaninca gorunur
+            ("13:20 acilis yok -> ['acilis']",          _F({}, _T(3, 13, 20), _SL, _W), ["acilis"]),
+            ("13:20 acilis var -> TAM",                 _F(_snt(_G3, "acilis"), _T(3, 13, 20), _SL, _W), []),
+            ("18:10 ikisi yok -> 2 eksik",              _F({}, _T(3, 18, 10), _SL, _W), ["acilis", "gunici"]),
+            ("22:20 3/3 var -> TAM",                    _F(_snt(_G3, "acilis", "gunici", "kapanis"), _T(3, 22, 20), _SL, _W), []),
+            ("22:20 kapanis yok -> ['kapanis']",        _F(_snt(_G3, "acilis", "gunici"), _T(3, 22, 20), _SL, _W), ["kapanis"]),
+            # `manuel` TELAFIDIR, teslim DEGIL -> slotu kapatmaz
+            ("manuel var ama acilis yok -> hala eksik", _F(_snt(_G3, "manuel"), _T(3, 13, 20), _SL, _W), ["acilis"]),
+            # hafta sonu yapisal olarak bos
+            ("Cumartesi -> TAM",                        _F({}, _T(5, 22, 20), _SL, _W), []),
+            # OLCULEMEDI != TAM (yanlis-sifir donus tipine gomulu)
+            ("sent=None -> None (TAM DEGIL)",           _F(None, _T(3, 22, 20), _SL, _W), None),
+            ("None ile [] ayni sey DEGIL",              _F(None, _T(3, 22, 20), _SL, _W) == [], False),
+            # CANLI VAKA: 2026-09-01 acilis kayip, gunici+kapanis var
+            ("canli 09-01 gun sonu -> ['acilis']",      _F(_snt("2026-09-01", "gunici", "kapanis"), _dt(2026, 9, 1, 22, 20), _SL, _W), ["acilis"]),
+            ("canli 09-01 12:00 -> henuz TAM",          _F(_snt("2026-09-01", "gunici", "kapanis"), _dt(2026, 9, 1, 12, 0), _SL, _W), []),
+            # verdict esikleri mevcut `_missed_slots` ailesiyle AYNI (yeni esik YOK)
+            ("verdict 0 eksik -> GREEN",                _V([]), "GREEN"),
+            ("verdict 1 eksik -> YELLOW",               _V(["acilis"]), "YELLOW"),
+            ("verdict 2 eksik -> RED",                  _V(["acilis", "gunici"]), "RED"),
+            ("verdict None (olculemedi) -> RED",        _V(None), "RED"),
+            # kanonik kaynak: pencere elle sabit DEGIL
+            ("pencere report_gate'ten turetiliyor",     _L._WINDOW_MIN, _RG.WINDOW_MINUTES),
+        ]:
+            if alinan == beklenen:
+                ok(ad)
+            else:
+                bad(f"#1e {ad}: beklenen {beklenen}, alinan {alinan}")
+
+        # --- DENETCI SEVIYESI: saf fonksiyon degil, uyenin KENDISI ------------
+        _row = _L._check_report_coverage("report_coverage", {}, {"sent": None}, {})
+        if _row.get("status") == "RED":
+            ok("uye: defter okunamayinca RED (temiz sayilmaz)")
+        else:
+            bad(f"#1e uye: okunamayan defter RED vermiyor -> {_row.get('status')}")
+
+        # --- REGISTRY + DALLANMA SIRASI --------------------------------------
+        _cfg = (getattr(_L, "REGISTRY", None) or {}).get("report_coverage")
+        if _cfg and _cfg.get("check_mode") == "report_coverage":
+            ok("registry'de 18. uye kayitli (check_mode dogru)")
+        else:
+            bad("#1e registry uyesi yok ya da check_mode yanlis")
+
+        # Dallanma `_first(d, ts_keys)`DAN ONCE olmali: report_runs.json'da ust
+        # duzey zaman damgasi YOK -> sonraya kayarsa uye "damga yok" diye SAHTE
+        # RED verir. Kaynak sirasi kontrol edilir (davranista sessizce bozulur).
+        _src = open(os.path.join(ROOT, "scripts", "liveness_scan.py"), encoding="utf-8").read()
+        _i_disp = _src.find('cfg.get("check_mode") == "report_coverage"')
+        _i_ts = _src.find('ts, ts_key = _first(d, cfg["ts_keys"])')
+        if 0 < _i_disp < _i_ts:
+            ok("dallanma ts-cikariminin ONUNDE (sahte 'damga yok' RED'i onlenir)")
+        else:
+            bad("#1e dallanma sirasi bozuk: report_coverage kontrolu ts-cikariminin ALTINDA")
+    except Exception as e:
+        bad(f"#1e testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
