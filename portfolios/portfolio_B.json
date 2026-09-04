@@ -1,30 +1,25 @@
 {
   "account": "B",
-  "cash": 0.4536303403893782,
+  "cash": 0.5700320049397737,
   "positions": {
     "OZATD": {
       "entry": 4827.5,
       "peak": 4827.5,
       "shares": 1.7648113597771612e-05
     },
-    "BIGEN": {
-      "entry": 183.6999969482422,
-      "peak": 186.0,
-      "shares": 0.000772965612489428
-    },
     "IEYHO": {
       "entry": 207.8000030517578,
-      "peak": 212.5,
+      "peak": 214.60000610351562,
       "shares": 0.0006833194348896952
     },
     "ALKLC": {
       "entry": 425.75,
-      "peak": 439.25,
+      "peak": 455.5,
       "shares": 0.0003335144583802797
     },
     "SELEC": {
       "entry": 334.5,
-      "peak": 350.0,
+      "peak": 356.0,
       "shares": 0.0004244956073405204
     },
     "CRFSA": {
@@ -624,6 +619,23 @@
           "shares": 0.001395,
           "reason": "stop",
           "pnl_pct": -26.47
+        }
+      ],
+      "fill_convention": "same_day_close"
+    },
+    {
+      "date": "2026-09-04",
+      "event": "stop",
+      "total": 1.1845,
+      "n_pos": 5,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "BIGEN",
+          "price": 151.5,
+          "shares": 0.000773,
+          "reason": "stop",
+          "pnl_pct": -17.53
         }
       ],
       "fill_convention": "same_day_close"
