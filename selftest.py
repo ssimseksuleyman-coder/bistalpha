@@ -501,6 +501,29 @@ def main():
 
         _due = getattr(_L2, "_heartbeat_due", None)
         _mk = getattr(_L2, "_heartbeat_marker", None)
+        _ENVK = ("GITHUB_RUN_ID", "GITHUB_SHA", "HB_VERDICT", "HB_HEALTH")
+
+        def _mk_envsiz():
+            """`env yokken` iddiasi ancak env GERCEKTEN temizlenerek olculebilir."""
+            _eski = {k: os.environ.pop(k, None) for k in _ENVK}
+            try:
+                return _mk(_BUGUN)
+            finally:
+                for k, v in _eski.items():
+                    if v is not None:
+                        os.environ[k] = v
+
+        def _mk_envli():
+            _eski = {k: os.environ.get(k) for k in _ENVK}
+            os.environ["GITHUB_RUN_ID"] = "TEST_RUN_42"
+            try:
+                return _mk(_BUGUN)
+            finally:
+                for k, v in _eski.items():
+                    if v is None:
+                        os.environ.pop(k, None)
+                    else:
+                        os.environ[k] = v
         if _due is None or _mk is None:
             bad("#1f _heartbeat_due / _heartbeat_marker YOK (yama henuz uygulanmadi)")
         else:
@@ -546,8 +569,14 @@ def main():
                  ["commit_sha", "github_run_id", "health", "verdict"]),
                 ("denetim alanlari env'den doluyor",
                  _mk(_BUGUN, verdict="YELLOW").get("verdict"), "YELLOW"),
-                ("env yokken None (kirilma yok)",
-                 _mk(_BUGUN).get("github_run_id"), None),
+                # "env yokken" iddiasi ENV'I GERCEKTEN TEMIZLEYEREK olculur.
+                # ILK YAZIMDA TEMIZLENMEMISTI: yerelde GITHUB_RUN_ID yok -> gecti,
+                # CI'da DAIMA set -> KIRILDI (962a21f, 2026-09-04 CI kirmizi).
+                # Ders: test, KONTROL ETMEDIGI bir ortam ozelligini iddia edemez.
+                ("env YOKKEN None (env temizlenerek olculdu)",
+                 _mk_envsiz().get("github_run_id"), None),
+                ("env VARKEN env'den okunuyor",
+                 _mk_envli().get("github_run_id"), "TEST_RUN_42"),
             ]:
                 if alinan == beklenen:
                     ok(ad)
