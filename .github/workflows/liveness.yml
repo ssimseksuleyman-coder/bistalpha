@@ -11,7 +11,17 @@ name: liveness
 
 on:
   schedule:
-    - cron: '0 17 * * 1-5'   # hafta-ici 17:00 UTC (20:00 TR) — tum ureticiler kostuktan SONRA
+    # #1f (2026-09-04): TEK cron 08-26'dan beri KRONIK GEC kosuyordu (+2.5-4.7 sa),
+    # iki gun hic kosmadi. bist-alpha.yml'in COKLU-RETRY deseni ayni gunlerde tutturdu.
+    # Retry TEK BASINA eklenemezdi: Telegram adimi her kosumda mesaj atiyordu ve
+    # "sessizlik = alarm" sozlesmesi gunde N heartbeat ile TERSINDEN bozulurdu.
+    # => gunluk tek-heartbeat kapisi ON SARTTIR; ikisi BIRLIKTE gelir.
+    - cron: '0 17 * * 1-5'    # hedef 17:00 UTC (20:00 TR)
+    - cron: '10 17 * * 1-5'
+    - cron: '25 17 * * 1-5'
+    - cron: '45 17 * * 1-5'
+    - cron: '10 18 * * 1-5'
+    - cron: '40 18 * * 1-5'
   workflow_dispatch:
   push:
     branches: [main]
@@ -47,6 +57,14 @@ jobs:
           HEALTH=$(echo "$OUT" | grep -oE 'HEALTH:.*' | tail -1 || echo "HEALTH: yok")
           echo "health=$HEALTH" >> $GITHUB_OUTPUT
           echo "red=${SCAN_RED:-0}" >> $GITHUB_OUTPUT
+          # #1f — gunluk tek-heartbeat kapisi. Satir okunamazsa VARSAYILAN true:
+          # supheDE GONDER (sozlesme "sessizlik = alarm"; susmak en tehlikeli yanlis).
+          # `|| true` ZORUNLU: adim `set -o pipefail` + Actions varsayilani `bash -e`.
+          # Satir yoksa (TARAYICI COKTU) grep non-zero doner ve adim KOMPLE DURUR ->
+          # Telegram adimina hic gelinmez = alarm gonderilmez. Fail-open niyeti
+          # fail-closed uygulanmis olurdu, hem de tam gerektigi anda.
+          DUE=$(echo "$OUT" | grep -oE 'HEARTBEAT_DUE: (true|false)' | tail -1 | awk '{print $2}' || true)
+          echo "due=${DUE:-true}" >> $GITHUB_OUTPUT
           # Kirmizi satirlari mesaja koy (ilk 5)
           REDLINES=$(echo "$OUT" | grep -E '^\s*!!' | head -5 | sed 's/^[[:space:]]*//' || true)
           {
@@ -68,14 +86,21 @@ jobs:
             git push origin "${GITHUB_REF_NAME}" || echo "push atlandi (catisma) — sonraki kosu self-heal"
           fi
 
-      - name: Telegram — HER kosuda (alarm ya da heartbeat)
+      - name: Telegram — ALARM her zaman, heartbeat gunde bir (#1f)
+        id: tg
         if: always()
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          echo "sent=false" >> $GITHUB_OUTPUT
           if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then
             echo "Telegram secret'lari yok — mesaj atlaniyor."; exit 0
+          fi
+          # #1f KAPI: RED her zaman gonderilir (dedup ALARM'a UYGULANMAZ).
+          # GREEN/YELLOW yalniz gunun ILK gonderiminde.
+          if [ "${{ steps.scan.outputs.red }}" != "1" ] && [ "${{ steps.scan.outputs.due }}" != "true" ]; then
+            echo "heartbeat bugun zaten gonderildi -> sessiz (retry kosumu)"; exit 0
           fi
           NL=$'\n'
           if [ "${{ steps.scan.outputs.red }}" = "1" ]; then
@@ -92,5 +117,29 @@ jobs:
             MSG="🟢 liveness heartbeat ($(date -u +%F)) — ${{ steps.scan.outputs.health }}"
             MSG="${MSG}${NL}(Bu mesaj kesilirse TARAYICI durmustur; sessizlik = alarm.)"
           fi
-          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-            -d chat_id="${TG_CHAT}" -d text="$MSG" > /dev/null || echo "Telegram gonderilemedi"
+          # `-f` KRITIK: -f YOKKEN curl HTTP 400/401'de bile exit 0 doner ve API
+          # REDDI BASARI sayilirdi -> damga yanlis yazilir, gunun heartbeat'i kaybolurdu.
+          URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
+          if curl -sf -X POST "$URL" -d chat_id="${TG_CHAT}" -d text="$MSG" > /dev/null; then
+            echo "sent=true" >> $GITHUB_OUTPUT
+            echo "Telegram gonderildi"
+          else
+            echo "Telegram GONDERILEMEDI — damga yazilmayacak, sonraki retry dener"
+          fi
+
+      # #1f — damga YALNIZ gercek gonderimden SONRA. Once yazilsaydi basarisiz bir
+      # gonderim gunun heartbeat'ini tamamen susturur = spam'den KOTU.
+      - name: Heartbeat damgasi (yalniz gonderim basariliysa)
+        if: steps.tg.outputs.sent == 'true'
+        run: |
+          python scripts/liveness_scan.py --heartbeat-mark
+          git config user.name "bist-alpha-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/state/liveness_heartbeat.json
+          if git diff --cached --quiet; then
+            echo "damga degismedi — commit atlaniyor."
+          else
+            git commit -m "liveness heartbeat damgasi $(date -u +%F)"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push origin "${GITHUB_REF_NAME}" || echo "push atlandi (catisma) — sonraki kosu self-heal"
+          fi

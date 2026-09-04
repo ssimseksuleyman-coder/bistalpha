@@ -30,6 +30,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "state" / "liveness.json"
+# #1f — GUNLUK TEK-HEARTBEAT DAMGASI (2026-09-04)
+# AYRI dosya, `report_runs.json` DEGIL: o dosyaya daemon da yaziyor => read-modify-write
+# yarisi (kayip guncelleme) + kavramsal kuplaj (liveness bilincli olarak izole).
+HEARTBEAT_OUT = ROOT / "docs" / "state" / "liveness_heartbeat.json"
 
 # ---------------------------------------------------------------------------
 # TAKVIM-FARKINDA BAYATLIK (2026-07-18 revizyon)
@@ -292,6 +296,66 @@ def _coverage_verdict(missing):
     if len(missing) == 1:
         return "YELLOW"
     return "GREEN"
+
+
+# -- #1f HEARTBEAT KAPISI ---------------------------------------------------
+#
+# rapor kapisinda supHE = BLOK; heartbeat kapisinda supHE = GONDER.
+# Ayni disiplin, TERS fail-safe yonu — cunku sozlesmeler zit:
+#   report_gate : "cift rapor atma"   -> malformed kayit BLOKLAR
+#   heartbeat   : "sessizlik = alarm" -> malformed kayit GONDERIR
+# Ters yon BILINCLI; selftest [6f] onu sabitliyor ki ileride "tutarlilik" adina
+# cevrilmesin.
+
+def _heartbeat_due(marker, now_tr, verdict):
+    """Bu kosumda Telegram mesaji gonderilmeli mi.
+
+    RED -> HER ZAMAN True. Dedup ALARM'a UYGULANMAZ: gunun 3. retry'inda olusan
+           bir RED de gonderilmeli, yoksa gurultuyu onlerken asil islevi oldururuz.
+    GREEN/YELLOW -> gunde BIR (TR gunu).
+    marker yok / bozuk / tarihi cozulemiyor -> True (supheDE GONDER).
+    """
+    if str(verdict).upper() == "RED":
+        return True
+    if not isinstance(marker, dict):
+        return True
+    gun = marker.get("sent_date")
+    if not isinstance(gun, str):
+        return True
+    try:
+        datetime.strptime(gun, "%Y-%m-%d")
+    except Exception:
+        return True
+    return gun != now_tr.strftime("%Y-%m-%d")
+
+
+def _heartbeat_marker(now_tr):
+    """Basarili gonderimden SONRA yazilacak kayit (once DEGIL)."""
+    return {"sent_date": now_tr.strftime("%Y-%m-%d"),
+            "sent_at": now_tr.isoformat(timespec="seconds"),
+            "note": "#1f gunluk tek-heartbeat damgasi. YALNIZ Telegram gercekten "
+                    "basariliysa yazilir; erken yazilirsa basarisiz gonderim gunun "
+                    "heartbeat'ini tamamen susturur (spam'den kotu)."}
+
+
+def _now_tr():
+    """Turkiye kalici UTC+3, DST yok (bkz _tr_to_utc)."""
+    return datetime.utcnow() + timedelta(hours=PRODUCER_TZ_OFFSET_H)
+
+
+def _load_heartbeat_marker():
+    """Okunamaz/bozuksa None -> cagiran GONDER tarafina duser."""
+    try:
+        return json.loads(HEARTBEAT_OUT.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _write_heartbeat_marker():
+    HEARTBEAT_OUT.parent.mkdir(parents=True, exist_ok=True)
+    HEARTBEAT_OUT.write_text(
+        json.dumps(_heartbeat_marker(_now_tr()), ensure_ascii=False, indent=2),
+        encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -1003,6 +1067,11 @@ def _slot_source_row():
 
 
 def main():
+    # #1f CLI: damgayi YAZ (workflow bunu Telegram BASARILI olduktan SONRA cagirir)
+    if "--heartbeat-mark" in sys.argv:
+        _write_heartbeat_marker()
+        print("heartbeat damgasi yazildi: " + _heartbeat_marker(_now_tr())["sent_date"])
+        return 0
     # "hic yazilmadi" vs "yaziyordu durdu" ayrimi icin onceki taramanin hafizasi
     ever_prev = _ever_written_map()
     rows = [check(n, c, ever_prev) for n, c in REGISTRY.items()]
@@ -1034,6 +1103,10 @@ def main():
                   f"yas={age:<7} {r['reason']}")
         print(f"\nHEALTH: liveness verdict={payload['verdict']} "
               f"red={len(red)} yellow={len(yellow)} total={len(rows)}")
+    # #1f — workflow bu satiri okuyup Telegram adimini kapatir/acar.
+    # RED'de her zaman true doner (dedup ALARM'a uygulanmaz).
+    due = _heartbeat_due(_load_heartbeat_marker(), _now_tr(), payload["verdict"])
+    print("HEARTBEAT_DUE: " + str(bool(due)).lower())
     return 1 if red else 0
 
 

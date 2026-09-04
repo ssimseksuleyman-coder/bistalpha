@@ -479,6 +479,105 @@ def main():
     except Exception as e:
         bad(f"#1e testi kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6f] #1f — GUNLUK TEK-HEARTBEAT KAPISI ────────────────────────────────
+    # NEDEN VAR: liveness cron'u 08-26'dan beri KRONIK GEC kosuyor (+2.5-4.7 sa).
+    # Cozum coklu-retry cron, AMA liveness.yml Telegram adimi `if: always()` ile
+    # HER kosumda mesaj atiyor (heartbeat sozlesmesi: "sessizlik = alarm").
+    # Retry eklenirse gunde N heartbeat olur ve sozlesme TERSINDEN bozulur:
+    # sessizligin anlamli kalmasi mesajin NADIR olmasina bagli.
+    # => retry cron TEK BASINA eklenemez; gunluk-tek-heartbeat kapisi ON SARTTIR.
+    #
+    # 🔑 TASARIM CUMLESI: rapor kapisinda supHE = BLOK; heartbeat kapisinda
+    #    supHE = GONDER. Ayni disiplin, TERS fail-safe yonu.
+    #    (report_gate._record_blocks: malformed kayit BLOKLAR — burada tersi.)
+    print("\n[6f] #1f gunluk tek-heartbeat kapisi (liveness_scan — golden-master disi)")
+    try:
+        import sys as _sys2
+        _sp2 = os.path.join(ROOT, "scripts")
+        if _sp2 not in _sys2.path:
+            _sys2.path.insert(0, _sp2)
+        from datetime import datetime as _dt2
+        import liveness_scan as _L2
+
+        _due = getattr(_L2, "_heartbeat_due", None)
+        _mk = getattr(_L2, "_heartbeat_marker", None)
+        if _due is None or _mk is None:
+            bad("#1f _heartbeat_due / _heartbeat_marker YOK (yama henuz uygulanmadi)")
+        else:
+            def _M(gun):
+                return {"sent_date": gun}
+            _BUGUN = _dt2(2026, 9, 4, 20, 0)
+            _YARIN = _dt2(2026, 9, 5, 0, 1)
+
+            for ad, alinan, beklenen in [
+                # 1-2: heartbeat gunde BIR
+                ("1  gunun ILK kosumu GREEN -> GONDER",
+                 _due(None, _BUGUN, "GREEN"), True),
+                ("2  gunun IKINCI kosumu GREEN -> SESSIZ",
+                 _due(_M("2026-09-04"), _BUGUN, "GREEN"), False),
+                ("2b gunun IKINCI kosumu YELLOW -> SESSIZ",
+                 _due(_M("2026-09-04"), _BUGUN, "YELLOW"), False),
+                # 3-4: ALARM asla dedup EDILMEZ
+                ("3  gunun IKINCI kosumu RED -> GONDER (dedup YOK)",
+                 _due(_M("2026-09-04"), _BUGUN, "RED"), True),
+                ("4  ucuncu kosum da RED -> yine GONDER",
+                 _due(_M("2026-09-04"), _BUGUN, "RED"), True),
+                # 5,8: TR gunu donunce sifirlanir
+                ("5  dunku damga, bugun ilk kosum -> GONDER",
+                 _due(_M("2026-09-03"), _BUGUN, "GREEN"), True),
+                ("8  gun siniri (04 damga, 05 00:01) -> GONDER",
+                 _due(_M("2026-09-04"), _YARIN, "GREEN"), True),
+                # 7: supHE = GONDER  (report_gate'in TERSI — bilincli)
+                ("7a damga YOK (dosya okunamadi) -> GONDER",
+                 _due(None, _BUGUN, "GREEN"), True),
+                ("7b damga BOZUK (dict degil) -> GONDER",
+                 _due("bozuk", _BUGUN, "GREEN"), True),
+                ("7c damga dict ama sent_date YOK -> GONDER",
+                 _due({}, _BUGUN, "GREEN"), True),
+                ("7d sent_date parse edilemez -> GONDER",
+                 _due({"sent_date": "x!"}, _BUGUN, "GREEN"), True),
+                # marker uretimi
+                ("_heartbeat_marker bugunun TR gununu yazar",
+                 _mk(_BUGUN).get("sent_date"), "2026-09-04"),
+            ]:
+                if alinan == beklenen:
+                    ok(ad)
+                else:
+                    bad(f"#1f {ad}: beklenen {beklenen}, alinan {alinan}")
+
+        # --- 6: "mark yalniz GERCEK gonderimden sonra" — workflow sirasi -------
+        # Saf fonksiyonla test EDILEMEZ (gonderim sonucu workflow'da olusur).
+        # Kaynak kontrolu: (a) curl basarisizligi YAKALANIYOR mu, (b) damga adimi
+        # Telegram adimindan SONRA mi.
+        _wf = open(os.path.join(ROOT, ".github", "workflows", "liveness.yml"),
+                   encoding="utf-8").read()
+        # `-f` bayragi -s/-S ile birlesik yazilabilir (curl -sf) -> regex ile ara.
+        # (Ilk yazimda literal "curl -f" ariyordum; yama `curl -sf` yazinca test
+        #  yanlis kirmizi verdi — testin kendisi de yasaya tabidir.)
+        import re as _re
+        _fbayrak = bool(_re.search(r"curl\s+-[a-zA-Z]*f", _wf))
+        if _fbayrak or ('"ok":true' in _wf) or ('"ok": true' in _wf):
+            ok("6a Telegram basarisi GERCEKTEN olculuyor (curl -f / ok:true)")
+        else:
+            bad("#1f 6a `curl -s` HTTP 400/401'de exit 0 doner -> API REDDI BASARI "
+                "sayilir; damga yanlis yazilir")
+        _i_tg = _wf.find("sendMessage")
+        _i_mk = _wf.find("heartbeat-mark")
+        if 0 < _i_tg < _i_mk:
+            ok("6b damga adimi Telegram adimindan SONRA")
+        else:
+            bad("#1f 6b damga adimi Telegram'dan ONCE ya da yok -> basarisiz gonderim "
+                "gunun heartbeat'ini tamamen susturur (spam'den KOTU)")
+
+        # --- marker dosyasi report_runs.json OLMAMALI (yaris + kuplaj) ---------
+        _hp = getattr(_L2, "HEARTBEAT_OUT", None)
+        if _hp is not None and "liveness_heartbeat" in str(_hp):
+            ok("damga AYRI dosyada (report_runs.json ile yaris yok)")
+        else:
+            bad(f"#1f damga dosyasi ayri degil: {_hp!r}")
+    except Exception as e:
+        bad(f"#1f testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
