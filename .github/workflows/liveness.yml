@@ -65,6 +65,9 @@ jobs:
           # fail-closed uygulanmis olurdu, hem de tam gerektigi anda.
           DUE=$(echo "$OUT" | grep -oE 'HEARTBEAT_DUE: (true|false)' | tail -1 | awk '{print $2}' || true)
           echo "due=${DUE:-true}" >> $GITHUB_OUTPUT
+          # #1f denetim alani: damgaya hangi verdict ile gonderildigi yazilsin.
+          VERDICT=$(echo "$OUT" | grep -oE 'verdict=[A-Z]+' | tail -1 | cut -d= -f2 || true)
+          echo "verdict=${VERDICT:-unknown}" >> $GITHUB_OUTPUT
           # Kirmizi satirlari mesaja koy (ilk 5)
           REDLINES=$(echo "$OUT" | grep -E '^\s*!!' | head -5 | sed 's/^[[:space:]]*//' || true)
           {
@@ -120,7 +123,11 @@ jobs:
           # `-f` KRITIK: -f YOKKEN curl HTTP 400/401'de bile exit 0 doner ve API
           # REDDI BASARI sayilirdi -> damga yanlis yazilir, gunun heartbeat'i kaybolurdu.
           URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
-          if curl -sf -X POST "$URL" -d chat_id="${TG_CHAT}" -d text="$MSG" > /dev/null; then
+          # IKI KATMANLI BASARI: (1) HTTP basari (`-f`; -f yoksa curl 400/401'de bile
+          # exit 0 doner) VE (2) Telegram cevabinda `"ok":true`. Yalnizca HTTP yeterli
+          # degil — API 200 donup govdede hata bildirebilir.
+          RESP=$(curl -sf -X POST "$URL" -d chat_id="${TG_CHAT}" -d text="$MSG" || true)
+          if echo "$RESP" | grep -q '"ok":true'; then
             echo "sent=true" >> $GITHUB_OUTPUT
             echo "Telegram gonderildi"
           else
@@ -131,6 +138,9 @@ jobs:
       # gonderim gunun heartbeat'ini tamamen susturur = spam'den KOTU.
       - name: Heartbeat damgasi (yalniz gonderim basariliysa)
         if: steps.tg.outputs.sent == 'true'
+        env:
+          HB_VERDICT: ${{ steps.scan.outputs.verdict }}
+          HB_HEALTH: ${{ steps.scan.outputs.health }}
         run: |
           python scripts/liveness_scan.py --heartbeat-mark
           git config user.name "bist-alpha-bot"

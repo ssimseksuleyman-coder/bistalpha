@@ -24,6 +24,7 @@ Cikis:     0 = kirmizi yok, 1 = en az bir KIRMIZI (workflow alarmi icin)
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -329,13 +330,24 @@ def _heartbeat_due(marker, now_tr, verdict):
     return gun != now_tr.strftime("%Y-%m-%d")
 
 
-def _heartbeat_marker(now_tr):
-    """Basarili gonderimden SONRA yazilacak kayit (once DEGIL)."""
+def _heartbeat_marker(now_tr, verdict=None, health=None):
+    """Basarili gonderimden SONRA yazilacak kayit (once DEGIL).
+
+    DENETIM ALANLARI (#1f guclendirme, 2026-09-04): damga "gonderildi" diyordu
+    ama "KIM gonderdi" demiyordu -> kendi denetlenebilirligi eksikti. Bu alanlarla
+    sonradan "hangi kosum gonderdi / hangisi susturdu?" sorusu OLCULEBILIR olur.
+    CI disinda env yok -> alanlar None kalir (kirilma yok).
+    """
     return {"sent_date": now_tr.strftime("%Y-%m-%d"),
             "sent_at": now_tr.isoformat(timespec="seconds"),
+            "verdict": verdict or os.environ.get("HB_VERDICT") or None,
+            "health": health or os.environ.get("HB_HEALTH") or None,
+            "commit_sha": (os.environ.get("GITHUB_SHA") or "")[:12] or None,
+            "github_run_id": os.environ.get("GITHUB_RUN_ID") or None,
             "note": "#1f gunluk tek-heartbeat damgasi. YALNIZ Telegram gercekten "
-                    "basariliysa yazilir; erken yazilirsa basarisiz gonderim gunun "
-                    "heartbeat'ini tamamen susturur (spam'den kotu)."}
+                    "basariliysa yazilir (HTTP basari VE Telegram cevabinda ok:true); "
+                    "erken yazilirsa basarisiz gonderim gunun heartbeat'ini tamamen "
+                    "susturur (spam'den kotu)."}
 
 
 def _now_tr():

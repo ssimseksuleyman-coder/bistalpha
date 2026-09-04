@@ -539,6 +539,15 @@ def main():
                 # marker uretimi
                 ("_heartbeat_marker bugunun TR gununu yazar",
                  _mk(_BUGUN).get("sent_date"), "2026-09-04"),
+                # DENETIM ALANLARI (#1f guclendirme): damga "kim gonderdi"yi de
+                # tasimali, yoksa damganin KENDISI denetlenemez.
+                ("damgada denetim alanlari VAR",
+                 sorted(set(_mk(_BUGUN)) & {"verdict", "health", "commit_sha", "github_run_id"}),
+                 ["commit_sha", "github_run_id", "health", "verdict"]),
+                ("denetim alanlari env'den doluyor",
+                 _mk(_BUGUN, verdict="YELLOW").get("verdict"), "YELLOW"),
+                ("env yokken None (kirilma yok)",
+                 _mk(_BUGUN).get("github_run_id"), None),
             ]:
                 if alinan == beklenen:
                     ok(ad)
@@ -556,8 +565,11 @@ def main():
         #  yanlis kirmizi verdi — testin kendisi de yasaya tabidir.)
         import re as _re
         _fbayrak = bool(_re.search(r"curl\s+-[a-zA-Z]*f", _wf))
-        if _fbayrak or ('"ok":true' in _wf) or ('"ok": true' in _wf):
-            ok("6a Telegram basarisi GERCEKTEN olculuyor (curl -f / ok:true)")
+        _oktrue = ('"ok":true' in _wf) or ('"ok": true' in _wf)
+        if _fbayrak and _oktrue:
+            ok("6a Telegram basarisi IKI KATMANLI olculuyor (curl -f VE ok:true)")
+        elif _fbayrak or _oktrue:
+            ok("6a Telegram basarisi olculuyor (tek katman)")
         else:
             bad("#1f 6a `curl -s` HTTP 400/401'de exit 0 doner -> API REDDI BASARI "
                 "sayilir; damga yanlis yazilir")
