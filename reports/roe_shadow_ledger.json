@@ -241,5 +241,103 @@
       "g3_ret": 10.86,
       "edge": 3.29
     }
+  },
+  {
+    "date": "2026-09-01",
+    "event_type": "rebalance",
+    "f_picks": [
+      "ALKLC",
+      "BIGEN",
+      "CRFSA",
+      "EUPWR",
+      "HEDEF",
+      "IEYHO",
+      "KTLEV",
+      "ODINE",
+      "OZATD",
+      "SELEC"
+    ],
+    "roe": {
+      "ALKLC": -0.1466,
+      "BIGEN": -0.0166,
+      "CRFSA": null,
+      "EUPWR": 0.0983,
+      "HEDEF": 0.4187,
+      "IEYHO": -0.3457,
+      "KTLEV": 1.4139,
+      "ODINE": 0.03,
+      "OZATD": -0.104,
+      "SELEC": 0.0696
+    },
+    "g3_picks": [
+      "EUPWR",
+      "HEDEF",
+      "KTLEV",
+      "ODINE",
+      "SELEC"
+    ],
+    "n_f": 10,
+    "n_g3": 5,
+    "filter_note": "medyan-split (ROE>=0.030)",
+    "fwd": null
+  },
+  {
+    "date": "2026-09-03",
+    "event_type": "stop",
+    "f_picks": [
+      "ALKLC",
+      "BIGEN",
+      "CRFSA",
+      "IEYHO",
+      "OZATD",
+      "SELEC"
+    ],
+    "roe": {
+      "ALKLC": -0.1466,
+      "BIGEN": -0.0166,
+      "CRFSA": null,
+      "IEYHO": -0.3457,
+      "OZATD": -0.104,
+      "SELEC": 0.0696
+    },
+    "g3_picks": [
+      "SELEC",
+      "BIGEN",
+      "OZATD",
+      "ALKLC",
+      "IEYHO"
+    ],
+    "n_f": 6,
+    "n_g3": 5,
+    "filter_note": "az-pick-floor: en yuksek-ROE 5 (medyan-split 3 biraktirdi)",
+    "fwd": null
+  },
+  {
+    "date": "2026-09-04",
+    "event_type": "stop",
+    "f_picks": [
+      "ALKLC",
+      "CRFSA",
+      "IEYHO",
+      "OZATD",
+      "SELEC"
+    ],
+    "roe": {
+      "ALKLC": -0.1466,
+      "CRFSA": null,
+      "IEYHO": -0.3457,
+      "OZATD": -0.104,
+      "SELEC": 0.0696
+    },
+    "g3_picks": [
+      "SELEC",
+      "OZATD",
+      "ALKLC",
+      "IEYHO"
+    ],
+    "n_f": 5,
+    "n_g3": 4,
+    "filter_note": "az-pick-floor: en yuksek-ROE 5 (medyan-split 2 biraktirdi)",
+    "fwd": null
   }
 ]
