@@ -530,7 +530,7 @@ def main():
             def _M(gun):
                 return {"sent_date": gun}
             _BUGUN = _dt2(2026, 9, 4, 20, 0)
-            _YARIN = _dt2(2026, 9, 5, 0, 1)
+            _GEC_RETRY = _dt2(2026, 9, 5, 0, 1)
 
             for ad, alinan, beklenen in [
                 # 1-2: heartbeat gunde BIR
@@ -545,11 +545,11 @@ def main():
                  _due(_M("2026-09-04"), _BUGUN, "RED"), True),
                 ("4  ucuncu kosum da RED -> yine GONDER",
                  _due(_M("2026-09-04"), _BUGUN, "RED"), True),
-                # 5,8: TR gunu donunce sifirlanir
+                # 5,8: UTC niyet gunu donunce sifirlanir; TR gece yarisi yetmez
                 ("5  dunku damga, bugun ilk kosum -> GONDER",
                  _due(_M("2026-09-03"), _BUGUN, "GREEN"), True),
-                ("8  gun siniri (04 damga, 05 00:01) -> GONDER",
-                 _due(_M("2026-09-04"), _YARIN, "GREEN"), True),
+                ("8  TR gun siniri niyet gununu degistirmez -> SESSIZ",
+                 _due(_M("2026-09-04"), _GEC_RETRY, "GREEN"), False),
                 # 7: supHE = GONDER  (report_gate'in TERSI — bilincli)
                 ("7a damga YOK (dosya okunamadi) -> GONDER",
                  _due(None, _BUGUN, "GREEN"), True),
@@ -560,7 +560,7 @@ def main():
                 ("7d sent_date parse edilemez -> GONDER",
                  _due({"sent_date": "x!"}, _BUGUN, "GREEN"), True),
                 # marker uretimi
-                ("_heartbeat_marker bugunun TR gununu yazar",
+                ("_heartbeat_marker normal kosumda gun anahtari yazar",
                  _mk(_BUGUN).get("sent_date"), "2026-09-04"),
                 # DENETIM ALANLARI (#1f guclendirme): damga "kim gonderdi"yi de
                 # tasimali, yoksa damganin KENDISI denetlenemez.
@@ -618,6 +618,90 @@ def main():
             bad(f"#1f damga dosyasi ayri degil: {_hp!r}")
     except Exception as e:
         bad(f"#1f testi kosmadi: {type(e).__name__}: {e}")
+
+    # ── [6g] #1j — GECIKMIS RETRY ERTESI GUN HEARTBEAT'INI CALMAMALI ──────────
+    # NEDEN VAR: #1f retry kapisi gunde tek heartbeat'i sagladi, ama geciken son
+    # retry 21:01 UTC = 00:01 TR'de kosunca `sent_date` TR gunuyle 09-05 yazildi.
+    # Tasidigi veri 09-04 aksami oldugu halde 09-05 slotu tukendi. Hafta sonu zarar
+    # dogurmadi; hafta ici ertesi gunun gercek sagligi Telegram'a hic ulasmayabilir.
+    #
+    # Testin omurgasi: 00:01 TR ile ertesi gun 20:10 TR ayni TR tarihindedir, ama
+    # farkli NIYET gunleridir. Mevcut `_heartbeat_due(marker, now_tr, verdict)`
+    # yalniz TR gunune baktigi icin ikisini ayiramaz; bu blok yama oncesi kirmizi
+    # vermelidir.
+    #
+    # EKSEN KARARI (c) — OLCUMLE SECILDI (2026-09-06):
+    #   (a) parametre TR kalsin, iceride cevir -> kirmizi verir ama eksenin ADI yok
+    #   (b) cagri yerlerini UTC'ye tasi        -> REDDEDILDI. `_heartbeat_due`
+    #       EKSEN-AGNOSTIK: `return gun != now.strftime(...)` — kendisine VERILEN
+    #       datetime'i bicimler, TR mi UTC mi bilmez. Dogrudan UTC besleyen test
+    #       YAMASIZ KODDA DA YESIL doner => VAKUM TEST, hicbir sey olcmez.
+    #       OLCULDU: _heartbeat_due({"sent_date":"2026-09-04"},
+    #                               datetime(2026,9,4,21,1), "GREEN") -> False
+    #   (c) SECILEN: niyet gunu ADI OLAN tek fonksiyona cikarilir (_intent_day),
+    #       her iki tuketici oradan gecer. Cagri yerleri (369/1085/1120) DEGISMEZ,
+    #       donusum TEK yerde, ofset kanonik PRODUCER_TZ_OFFSET_H'den.
+    #
+    # BU BLOK DAVRANIS SABITLER, IMPLEMENTASYON DEGIL: `_intent_day`in VARLIGINI
+    # sart kosmaz — iki fonksiyonun AYNI niyet gununu uretmesini sart kosar.
+    print("\n[6g] #1j gecikmis retry ertesi gun heartbeat'ini calmasin (test-once)")
+    try:
+        import sys as _sys3
+        _sp3 = os.path.join(ROOT, "scripts")
+        if _sp3 not in _sys3.path:
+            _sys3.path.insert(0, _sp3)
+        from datetime import datetime as _dt3, timedelta as _td3
+        import liveness_scan as _L3
+
+        _due = getattr(_L3, "_heartbeat_due", None)
+        _mk4 = getattr(_L3, "_heartbeat_marker", None)
+        _off = getattr(_L3, "PRODUCER_TZ_OFFSET_H", None)
+        if _due is None or _mk4 is None or _off is None:
+            bad(f"#1j gerekli semboller YOK (_heartbeat_due={_due is not None} "
+                f"_heartbeat_marker={_mk4 is not None} "
+                f"PRODUCER_TZ_OFFSET_H={_off is not None})")
+        else:
+            def _M3(gun):
+                return {"sent_date": gun}
+
+            def _TR3(y, m, d, h, mi):
+                """UTC an -> uretici (TR) saati.
+                Ofset KANONIK sabitten gelir; elle `3` YAZILMAZ — sabit degisirse
+                test uretimle sessizce ayrisirdi."""
+                return _dt3(y, m, d, h, mi) + _td3(hours=_off)
+
+            # 09-04 21:01 UTC = 09-05 00:01 TR -> TR gece yarisini ASAR, niyet gunu 09-04
+            _gec = _TR3(2026, 9, 4, 21, 1)
+            _ert = _TR3(2026, 9, 5, 17, 10)     # ertesi gunun normal kosusu, niyet 09-05
+
+            for ad, alinan, beklenen in [
+                ("1  20:59 UTC (23:59 TR), damga yok -> GONDER",
+                 _due(None, _TR3(2026, 9, 4, 20, 59), "GREEN"), True),
+                ("2  21:01 UTC (00:01 TR), 09-04 damgasi -> SESSIZ "
+                 "(hala 09-04 aksaminin gec retry'i)",
+                 _due(_M3("2026-09-04"), _gec, "GREEN"), False),
+                ("3  ertesi gun 17:10 UTC (20:10 TR), 09-04 damgasi -> GONDER",
+                 _due(_M3("2026-09-04"), _ert, "GREEN"), True),
+                # 4 — DAMGAYI YAZAN TARAF. Yalniz `_heartbeat_due` duzeltilirse 1-3
+                # yesile doner AMA HIRSIZLIK YASAR: marker TR ile ertesi gunu yazar,
+                # ilk basarili gonderim 21:00 UTC'yi asan bir gunde ertesi gun susar.
+                # YALNIZ sent_date okunur; env'e bagli alan (github_run_id vb.) YOK — C8.
+                ("4  21:01 UTC'de yazilan marker'in sent_date'i NIYET gunu (09-04) olmali",
+                 _mk4(_gec).get("sent_date"), "2026-09-04"),
+                # 5 — TUTARLILIK KILIDI, implementasyondan bagimsiz: ayni AN icin
+                # marker'in YAZDIGI gun ile `_heartbeat_due`nun KIYASLADIGI gun ayni
+                # eksende olmali. Bugun YESIL (ikisi de TR), tam yamadan sonra da YESIL;
+                # YALNIZ YARIM yamada (tek taraf cevrilirse) KIRMIZI olur.
+                ("5  ayni an: marker'in yazdigi damga o ani SESSIZ'e dusurmeli "
+                 "(iki fonksiyon ayni eksende)",
+                 _due(_M3(_mk4(_gec).get("sent_date")), _gec, "GREEN"), False),
+            ]:
+                if alinan == beklenen:
+                    ok(ad)
+                else:
+                    bad(f"#1j {ad}: beklenen {beklenen}, alinan {alinan}")
+    except Exception as e:
+        bad(f"#1j testi kosmadi: {type(e).__name__}: {e}")
 
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")

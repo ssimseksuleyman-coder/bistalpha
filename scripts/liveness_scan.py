@@ -244,18 +244,20 @@ def _missed_slots(last_run, now, sched):
 #
 # NEDEN VAR: yukaridaki `_missed_slots` "su DEFTER kac slottur yazilmadi" sorusunu
 # sorar — duran bir YAZICIYI yakalar. Bambaska bir soru sorulmuyordu: "bugunun
-# RAPORU teslim edildi mi". Slot donusurse (`#1c`) daemon yine kosar ve artefaktlari
-# yazar -> yazici canli GORUNUR, kaybolan yalniz rapordur.
-# OLCULDU (2026-09-03, tum defter): 48 is gununun 9'u eksik (~%19) ve HICBIRI alarm
-# uretmedi. `report_runs.json`i okuyan tek kod `report_gate`in KENDISI (kendi kapisi
-# icin); 17 liveness uyesinin hicbiri kapsam sormuyordu.
+# RAPOR MARKERI var mi". Slot donusurse (`#1c`) daemon yine kosar ve artefaktlari
+# yazar -> yazici canli GORUNUR, kaybolan yalniz rapor markeridir.
+# ILK HEAD OLCUMU (2026-09-03): 48 is gununun 9'u eksikti. 2026-09-07'de her gun
+# kendi commitinden okununca 8 eksik gun bulundu: 08-26 kapanis markerini sonraki
+# state revert'i silmisti. `report_runs.json`i okuyan tek kod `report_gate`in KENDISI
+# idi (kendi kapisi icin); 17 liveness uyesinin hicbiri kapsam sormuyordu.
 # SINIF: "yoklugun imzasi yok" — eksik rapor bir YOKLUK, var-olana bakan denetimler
 # yoklugu gormez. Ayni sinifin cozulmus ornegi bu dosyada: `close_only` takvimi
 # (#0l), "daemon_cycle uc slotu BIRLIKTE sayar -> yalniz kapanis kacarsa gizlenir".
-# #1e ayni cozumun RAPOR TESLIMINE genellenmesi.
+# #1e ayni cozumun RAPOR MARKER KAPSAMINA genellenmesi. Marker gercek Telegram
+# teslimiyle birebir degildir; bu sozlesme boslugu #1k'de izlenir.
 
 def _missing_report_slots(sent, now_tr, slots_tr, window_min):
-    """Bugun penceresi KAPANMIS ama teslim edilmemis rapor slotlari.
+    """Bugun penceresi KAPANMIS ama `sent` markeri bulunmayan rapor slotlari.
 
     None  = OLCULEMEDI (sent okunamadi) -> asla TAM sayilmaz
     []    = olculdu, TAM
@@ -308,12 +310,22 @@ def _coverage_verdict(missing):
 # Ters yon BILINCLI; selftest [6f] onu sabitliyor ki ileride "tutarlilik" adina
 # cevrilmesin.
 
+def _intent_day(now_tr):
+    """Liveness retry'sinin ait oldugu UTC uretici gunu.
+
+    Workflow cron'lari UTC gununde tanimli. Gecikmis bir retry TR gece yarisini
+    assa bile ertesi TR gununun heartbeat hakkini tuketmemeli.
+    """
+    now_utc = now_tr - timedelta(hours=PRODUCER_TZ_OFFSET_H)
+    return now_utc.strftime("%Y-%m-%d")
+
+
 def _heartbeat_due(marker, now_tr, verdict):
     """Bu kosumda Telegram mesaji gonderilmeli mi.
 
     RED -> HER ZAMAN True. Dedup ALARM'a UYGULANMAZ: gunun 3. retry'inda olusan
            bir RED de gonderilmeli, yoksa gurultuyu onlerken asil islevi oldururuz.
-    GREEN/YELLOW -> gunde BIR (TR gunu).
+    GREEN/YELLOW -> uretici niyet gununde BIR (UTC takvim gunu).
     marker yok / bozuk / tarihi cozulemiyor -> True (supheDE GONDER).
     """
     if str(verdict).upper() == "RED":
@@ -327,24 +339,28 @@ def _heartbeat_due(marker, now_tr, verdict):
         datetime.strptime(gun, "%Y-%m-%d")
     except Exception:
         return True
-    return gun != now_tr.strftime("%Y-%m-%d")
+    return gun != _intent_day(now_tr)
 
 
 def _heartbeat_marker(now_tr, verdict=None, health=None):
     """Basarili gonderimden SONRA yazilacak kayit (once DEGIL).
+
+    EKSENLER (#1j): sent_date UTC uretici/niyet gunudur; sent_at gercek TR
+    icra zamanidir. Alanlar ayni olayi farkli ve adlandirilmis eksenlerde tutar.
 
     DENETIM ALANLARI (#1f guclendirme, 2026-09-04): damga "gonderildi" diyordu
     ama "KIM gonderdi" demiyordu -> kendi denetlenebilirligi eksikti. Bu alanlarla
     sonradan "hangi kosum gonderdi / hangisi susturdu?" sorusu OLCULEBILIR olur.
     CI disinda env yok -> alanlar None kalir (kirilma yok).
     """
-    return {"sent_date": now_tr.strftime("%Y-%m-%d"),
+    return {"sent_date": _intent_day(now_tr),
             "sent_at": now_tr.isoformat(timespec="seconds"),
             "verdict": verdict or os.environ.get("HB_VERDICT") or None,
             "health": health or os.environ.get("HB_HEALTH") or None,
             "commit_sha": (os.environ.get("GITHUB_SHA") or "")[:12] or None,
             "github_run_id": os.environ.get("GITHUB_RUN_ID") or None,
-            "note": "#1f gunluk tek-heartbeat damgasi. YALNIZ Telegram gercekten "
+            "note": "#1f/#1j tek-heartbeat damgasi. sent_date=UTC niyet gunu; "
+                    "sent_at=TR icra zamani. YALNIZ Telegram gercekten "
                     "basariliysa yazilir (HTTP basari VE Telegram cevabinda ok:true); "
                     "erken yazilirsa basarisiz gonderim gunun heartbeat'ini tamamen "
                     "susturur (spam'den kotu)."}
@@ -604,10 +620,11 @@ REGISTRY = {
         "note": "stop en son ne zaman/hangi bar icin degerlendirildi (#0l izi)",
     },
     # --- 18. UYE: #1e RAPOR KAPSAMI (2026-09-03) ------------------------------
-    # Diger 17 uye "yazici duruyor mu" sorar (damga YASI). Bu uye "bugunun raporu
-    # GITTI mi" sorar (olayin YOKLUGU). Ayrim gercek: slot donusurse (`#1c`)
+    # Diger 17 uye "yazici duruyor mu" sorar (damga YASI). Bu uye "bugunun rapor
+    # MARKERI var mi" sorar (olayin YOKLUGU). Ayrim gercek: slot donusurse (`#1c`)
     # daemon yine kosar, artefaktlari yazar -> 17 uye YESIL kalir, rapor kaybolur.
-    # OLCULDU (2026-09-03): 48 is gununun 9'u eksik (~%19), HICBIRI alarm uretmedi.
+    # DUZELTILMIS TABAN (2026-09-07, her gun kendi commitinden): 48 is gununun 8'i
+    # eksik; ilk HEAD olcumu state-revert kontaminasyonuyla 9 demisti.
     # `report_runs.json`i okuyan tek kod `report_gate`in kendisiydi (kendi kapisi icin).
     "report_coverage": {
         "kind": "producer",
@@ -617,7 +634,7 @@ REGISTRY = {
         "tz": 0.0,
         "schedule": None,              # kendi pencere mantigi var (slot + WINDOW)
         "check_mode": "report_coverage",
-        "note": "bugun penceresi kapanan rapor slotlari teslim edildi mi (#1e)",
+        "note": "bugun penceresi kapanan rapor slotlarinin `sent` markeri var mi (#1e)",
     },
 }
 
@@ -761,7 +778,7 @@ def _check_scanner_verdict(name, cfg, d, row):
 
 
 def _check_report_coverage(name, cfg, d, row):
-    """#1e — bugun penceresi KAPANMIS rapor slotlari teslim edildi mi.
+    """#1e — bugun penceresi KAPANMIS rapor slotlarinin `sent` markeri var mi.
 
     DIGER UYELERDEN FARKI: bu uye bir damganin YASINA degil, bir olayin
     YOKLUGUNA bakar. Diger 17 uye "yazici duruyor mu" sorar; slot donusurse
@@ -795,14 +812,14 @@ def _check_report_coverage(name, cfg, d, row):
     verdict = _coverage_verdict(eksik)
     if verdict == "GREEN":
         row.update(status="GREEN",
-                   reason=f"penceresi kapanan tum slotlar teslim edildi{ek}")
+                   reason=f"penceresi kapanan tum slot markerlari var{ek}")
     elif verdict == "YELLOW":
         row.update(status="YELLOW",
-                   reason=f"1 rapor TESLIM EDILMEDI: {eksik[0]} "
+                   reason=f"1 rapor MARKERI YOK: {eksik[0]} "
                           f"(pencere +{_WINDOW_MIN}dk kapandi){ek}")
     else:
         row.update(status="RED",
-                   reason=f"{len(eksik)} rapor TESLIM EDILMEDI: {','.join(eksik)} "
+                   reason=f"{len(eksik)} rapor MARKERI YOK: {','.join(eksik)} "
                           f"(pencere +{_WINDOW_MIN}dk kapandi){ek}")
     return row
 
