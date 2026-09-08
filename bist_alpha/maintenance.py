@@ -22,8 +22,9 @@ def check_data_health(data, max_staleness_days=4):
     prices = data['prices']
 
     # 1) Son veri tarihi güncel mi?
-    last_date = prices.index[-1]
-    age = (datetime.now() - last_date.to_pydatetime()).days
+    last_date = pd.Timestamp(prices.index[-1])
+    now = pd.Timestamp.now(tz=last_date.tz)
+    age = (now - last_date).days
     if age > max_staleness_days:
         issues.append(f"Veri eski: son tarih {last_date.date()} ({age} gün önce)")
 

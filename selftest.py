@@ -906,6 +906,35 @@ def main():
             ok("selfheal.safe_feed atlandı (offline; --mode live ile canlı veri denenir)")
         n = maintenance.clean_temp()
         ok(f"maintenance.clean_temp ({n} öğe temizlendi)")
+
+        # Borsapy tarih indeksi timezone-aware gelebilir. Bakim kontrolu ayni
+        # veriye naive/aware eksenlerde ayni hükmü vermeli; eksen farki daemon'u
+        # düşürmemeli (2026-09-08 canli kapanis arizasi).
+        import pandas as pd
+        _now_naive = pd.Timestamp.now().floor("s")
+        _idx_naive = pd.date_range(end=_now_naive, periods=5, freq="D")
+        _idx_aware = _idx_naive.tz_localize("UTC")
+        _vals = pd.DataFrame(
+            {"AAA": [1, 2, 3, 4, 5], "BBB": [5, 4, 3, 2, 1]},
+            index=_idx_naive,
+        )
+        _naive_issues = maintenance.check_data_health({"prices": _vals})
+        _aware_vals = _vals.copy()
+        _aware_vals.index = _idx_aware
+        _aware_issues = maintenance.check_data_health({"prices": _aware_vals})
+        if _aware_issues == _naive_issues:
+            ok("maintenance timezone-aware/naive veri ayni hüküm")
+        else:
+            bad(f"maintenance TZ hükmü ayrıştı: naive={_naive_issues}, aware={_aware_issues}")
+
+        _stale_vals = _aware_vals.copy()
+        _stale_vals.index = _stale_vals.index - pd.Timedelta(days=10)
+        _stale_issues = maintenance.check_data_health({"prices": _stale_vals})
+        if any(str(issue).startswith("Veri eski:") for issue in _stale_issues):
+            ok("maintenance timezone-aware eski veriyi yakalar")
+        else:
+            bad(f"maintenance timezone-aware eski veri kaçtı: {_stale_issues}")
+
         selfheal.validate_and_repair_state("A")
         ok("selfheal.validate_and_repair_state")
         ok(f"optimizer hazır (suggest-only, SEKTOR_CAP={cfg.SEKTOR_CAP} değişmez)")
