@@ -16,7 +16,10 @@ from abc import ABC, abstractmethod
 from . import config
 
 
-def _drop_sparse_tail(frames, threshold=0.50):
+SPARSE_DAY_NAN_THRESHOLD = 0.50
+
+
+def _drop_sparse_tail(frames, threshold=SPARSE_DAY_NAN_THRESHOLD):
     """OHLCV tablolarinda sondaki yari-bos gunleri at; son saglikli kapanisi koru."""
     prices = frames.get("prices")
     if prices is None or prices.empty:
@@ -49,6 +52,39 @@ def _drop_sparse_tail(frames, threshold=0.50):
         ),
     }
     return cleaned, meta
+
+
+def sparse_market_days(data, threshold=SPARSE_DAY_NAN_THRESHOLD):
+    """XU100 islem gunlerindeki sistemik seyrek hisse satirlarini dondur.
+
+    XU100 indeksi feed'in kendi piyasa takvimidir; indeksin de tasimadigi gunler
+    tatil kabul edilir. Indeks olculemiyorsa mevcut feed davranisi korunur.
+    """
+    prices = data.get("prices")
+    bist = data.get("bist")
+    if prices is None or prices.empty or bist is None or getattr(bist, "empty", True):
+        return []
+
+    def _day_key(value):
+        return str(value.date()) if hasattr(value, "date") else str(value)[:10]
+
+    market_days = {_day_key(value) for value in bist.index}
+    price_positions = {
+        _day_key(value): pos for pos, value in enumerate(prices.index)
+    }
+    issues = []
+    for day in sorted(market_days):
+        pos = price_positions.get(day)
+        present = int(prices.iloc[pos].notna().sum()) if pos is not None else 0
+        coverage = present / float(prices.shape[1])
+        if coverage < (1.0 - threshold):
+            issues.append({
+                "date": day,
+                "coverage_pct": round(coverage * 100, 2),
+                "present": present,
+                "total": int(prices.shape[1]),
+            })
+    return issues
 
 
 class DataFeed(ABC):
@@ -275,7 +311,12 @@ class BorsaPyFeed(DataFeed):
                 pass
 
         # Toplu snapshot indir (cron-dostu, WebSocket değil)
-        raw = borsapy.download(tickers, period=self.period, interval="1d")
+        raw = borsapy.download(
+            tickers,
+            period=self.period,
+            interval="1d",
+            group_by="ticker",
+        )
 
         prices, mins, maxs, aofs, volumes, opens = {}, {}, {}, {}, {}, {}
         for tic in tickers:
@@ -305,9 +346,14 @@ class BorsaPyFeed(DataFeed):
         # XU100 endeksi
         _bist_ok = False
         try:
-            idx_raw = borsapy.index("XU100", period=self.period, interval="1d") \
+            idx_raw = (
+                borsapy.index("XU100").history(period=self.period, interval="1d")
                 if hasattr(borsapy, "index") else None
-            bist = idx_raw['close'] if idx_raw is not None and 'close' in idx_raw else pd.Series(dtype=float)
+            )
+            idx_cols = ({str(col).lower(): col for col in idx_raw.columns}
+                        if idx_raw is not None else {})
+            bist = (idx_raw[idx_cols["close"]]
+                    if "close" in idx_cols else pd.Series(dtype=float))
             _bist_ok = not bist.empty
         except Exception as e:
             print(f"[datafeed] XU100 borsapy fetch basarisiz: {e}")

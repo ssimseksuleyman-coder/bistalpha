@@ -148,6 +148,17 @@ def safe_feed():
                               label=f"{candidate} veri cekme")
             if data["prices"].shape[1] < 50 or data["prices"].empty:
                 raise ValueError("Veri yetersiz/bos")
+            sparse_days = datafeed.sparse_market_days(data)
+            if sparse_days:
+                sample = sparse_days[-3:]
+                raise ValueError(
+                    "XU100 islem gununde hisse kapsami yetersiz: "
+                    + ", ".join(
+                        f"{item['date']} %{item['coverage_pct']} "
+                        f"({item['present']}/{item['total']})"
+                        for item in sample
+                    )
+                )
             if candidate != source:
                 print(f"[selfheal] {source} coktu -> {candidate} yedegi kullaniliyor")
             attempts.append({"source": candidate, "status": "ok"})

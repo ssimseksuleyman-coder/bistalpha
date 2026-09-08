@@ -703,6 +703,184 @@ def main():
     except Exception as e:
         bad(f"#1j testi kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
+    # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
+    # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN
+    # kaldi. safe_feed yalniz `empty` ve kolon sayisini kontrol ettigi icin Yahoo'yu
+    # kabul etti, daha taze/tam Borsapy yedegine hic ulasmadi.
+    #
+    # ESIK ICAT EDILMEDI: datafeed._drop_sparse_tail varsayilani olan %50 kullanilir.
+    # TAKVIM ICAT EDILMEDI: beklenen gunler feed'in kendi `bist` (XU100) indeksidir.
+    # Boylece gercek tatil (gun hem BIST hem hisse matrisinde yok) sahte fallback
+    # uretmez. Bu blok test-once yazildi; ilk sart mevcut kodda KIRMIZI olmalidir.
+    print("\n[6h] #0b dolu-ama-delik primary daha tam yedege dusmeli (test-once)")
+    try:
+        import pandas as _pd4
+        from bist_alpha import selfheal as _SH4, datafeed as _DF4, config as _CFG4
+
+        _d0, _d1, _d2 = _pd4.to_datetime(["2026-09-04", "2026-09-07", "2026-09-08"])
+        _cols4 = [f"T{i:02d}" for i in range(60)]
+
+        def _prices4(index, sparse_day=None):
+            frame = _pd4.DataFrame(100.0, index=index, columns=_cols4)
+            if sparse_day is not None:
+                frame.loc[sparse_day] = float("nan")
+                frame.loc[sparse_day, _cols4[0]] = 100.0  # %1.67 dolu < kanonik %50
+            return frame
+
+        def _packet4(price_index, bist_index, sparse_day=None):
+            return {
+                "prices": _prices4(price_index, sparse_day=sparse_day),
+                "bist": _pd4.Series(100.0, index=bist_index),
+            }
+
+        class _Feed4:
+            def __init__(self, packet):
+                self.packet = packet
+
+            def get_latest(self):
+                return self.packet
+
+        _old_get_feed4 = _DF4.get_feed
+        _sentinel4 = object()
+        _old_source4 = getattr(_CFG4, "DATA_SOURCE", _sentinel4)
+        _old_chain4 = getattr(_CFG4, "DATA_FALLBACK_CHAIN", _sentinel4)
+        _old_allow4 = getattr(_CFG4, "ALLOW_FILE_FALLBACK", _sentinel4)
+        try:
+            _CFG4.DATA_SOURCE = "yahoo"
+            _CFG4.DATA_FALLBACK_CHAIN = "borsapy"
+            _CFG4.ALLOW_FILE_FALLBACK = False
+
+            # 1) XU100'da islem gunu var; primary hisse satiri sistemik seyrek.
+            _calls4 = []
+            _packets4 = {
+                "yahoo": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2], sparse_day=_d1),
+                "borsapy": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2]),
+            }
+
+            def _get_feed_gap4(name):
+                _calls4.append(name)
+                return _Feed4(_packets4[name])
+
+            _DF4.get_feed = _get_feed_gap4
+            _out4 = _SH4.safe_feed()
+            if _out4.get("_source_base") == "borsapy" and _calls4 == ["yahoo", "borsapy"]:
+                ok("islem-gunu satiri <%50 dolu -> primary reddedildi, borsapy secildi")
+            else:
+                bad("#0b delik primary fallback'i: beklenen borsapy/calls "
+                    f"['yahoo','borsapy'], alinan {_out4.get('_source_base')}/{_calls4}")
+
+            # 2) Gun XU100 indeksinde de yok: tatil; primary gereksiz reddedilmemeli.
+            _calls4 = []
+            _packets4 = {
+                "yahoo": _packet4([_d0, _d2], [_d0, _d2]),
+                "borsapy": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2]),
+            }
+            _DF4.get_feed = _get_feed_gap4
+            _out4 = _SH4.safe_feed()
+            if _out4.get("_source_base") == "yahoo" and _calls4 == ["yahoo"]:
+                ok("XU100'da da olmayan gun tatil -> primary korunur, sahte fallback yok")
+            else:
+                bad("#0b tatil false-positive: beklenen yahoo/calls ['yahoo'], "
+                    f"alinan {_out4.get('_source_base')}/{_calls4}")
+
+            # 3) XU100'da islem gunu var fakat primary'de hisse satiri tamamen yok.
+            _calls4 = []
+            _packets4 = {
+                "yahoo": _packet4([_d0, _d2], [_d0, _d1, _d2]),
+                "borsapy": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2]),
+            }
+            _DF4.get_feed = _get_feed_gap4
+            _out4 = _SH4.safe_feed()
+            if _out4.get("_source_base") == "borsapy" and _calls4 == ["yahoo", "borsapy"]:
+                ok("XU100 islem gununde hisse satiri YOK -> primary reddedildi")
+            else:
+                bad("#0b eksik islem-gunu satiri: beklenen borsapy/calls "
+                    f"['yahoo','borsapy'], alinan {_out4.get('_source_base')}/{_calls4}")
+
+            # 4) Gercek borsapy 0.10.2 sozlesmesi: coklu indirme varsayilan olarak
+            # (fiyat, sembol) kolonlari dondurur; adapter `group_by=ticker` istemeli.
+            # Endeks de `index(...).history(...)` uzerinden okunur.
+            import types as _types4
+            from bist_alpha import universe as _UNI4
+
+            _old_borsapy4 = sys.modules.get("borsapy", _sentinel4)
+            _old_tickers4 = _UNI4.all_bist_tickers
+            _old_meta4 = _UNI4.universe_meta
+            _bp_calls4 = []
+            _bp_dates4 = _pd4.to_datetime(["2026-09-07", "2026-09-08"], utc=True).tz_convert("Europe/Istanbul")
+
+            def _bp_frame4(base):
+                return _pd4.DataFrame({
+                    "Open": [base, base + 1],
+                    "High": [base + 2, base + 3],
+                    "Low": [base - 1, base],
+                    "Close": [base + 1, base + 2],
+                    "Volume": [1000.0, 1100.0],
+                }, index=_bp_dates4)
+
+            def _bp_download4(tickers, period="1mo", interval="1d",
+                              group_by="column", **_kwargs):
+                _bp_calls4.append(("download", group_by, tuple(tickers)))
+                frames = {ticker: _bp_frame4(100.0 + pos * 10)
+                          for pos, ticker in enumerate(tickers)}
+                raw = _pd4.concat(frames, axis=1)
+                return raw if group_by == "ticker" else raw.swaplevel(axis=1).sort_index(axis=1)
+
+            class _BPIndex4:
+                def history(self, period="1mo", interval="1d"):
+                    _bp_calls4.append(("index_history", period, interval))
+                    return _bp_frame4(9000.0)
+
+            def _bp_index4(symbol):
+                _bp_calls4.append(("index", symbol))
+                return _BPIndex4()
+
+            try:
+                sys.modules["borsapy"] = _types4.SimpleNamespace(
+                    download=_bp_download4,
+                    index=_bp_index4,
+                )
+                _UNI4.all_bist_tickers = lambda: ["AAA", "BBB"]
+                _UNI4.universe_meta = lambda: {}
+                _bp_out4 = _DF4.BorsaPyFeed().get_latest()
+                _bp_ok4 = (
+                    list(_bp_out4["prices"].columns) == ["AAA", "BBB"]
+                    and bool(_bp_out4.get("_bist_ok"))
+                    and ("download", "ticker", ("AAA", "BBB")) in _bp_calls4
+                    and ("index_history", "2y", "1d") in _bp_calls4
+                )
+                if _bp_ok4:
+                    ok("borsapy 0.10.2: ticker kolon grubu + index.history sozlesmesi")
+                else:
+                    bad(f"#0b borsapy adapter sozlesmesi: calls={_bp_calls4}, "
+                        f"cols={list(_bp_out4.get('prices', []).columns)}")
+            except Exception as e:
+                bad(f"#0b borsapy adapter sozlesmesi: {type(e).__name__}: {e}")
+            finally:
+                if _old_borsapy4 is _sentinel4:
+                    sys.modules.pop("borsapy", None)
+                else:
+                    sys.modules["borsapy"] = _old_borsapy4
+                _UNI4.all_bist_tickers = _old_tickers4
+                _UNI4.universe_meta = _old_meta4
+        finally:
+            _DF4.get_feed = _old_get_feed4
+            for _name4, _old4 in [
+                ("DATA_SOURCE", _old_source4),
+                ("DATA_FALLBACK_CHAIN", _old_chain4),
+                ("ALLOW_FILE_FALLBACK", _old_allow4),
+            ]:
+                if _old4 is _sentinel4:
+                    try:
+                        delattr(_CFG4, _name4)
+                    except AttributeError:
+                        pass
+                else:
+                    setattr(_CFG4, _name4, _old4)
+    except Exception as e:
+        bad(f"#0b [6h] testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
