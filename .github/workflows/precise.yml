@@ -15,6 +15,12 @@ on:
     - cron: '30 7 * * 1-5'   # gunici (hedef 11:30 UTC=14:30 TR)
     - cron: '0 12 * * 1-5'   # kapanis (hedef 15:40 UTC=18:40 TR)
   workflow_dispatch:
+    inputs:
+      force_fail:
+        description: "P0.3 hata alarmi kanalini kontrollu olarak sina"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -30,6 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350        # uyku (max ~5.5s) + calisma icin
     steps:
+      - name: P0.3 kontrollu hata testi
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.force_fail }}
+        run: |
+          echo "::error::P0.3 kontrollu hata — alarm kanali sinaniyor"
+          exit 1
+
       - uses: actions/checkout@v4
       - name: En son state'i al
         run: git pull --rebase --autostash || true
@@ -95,3 +107,48 @@ jobs:
           git diff --staged --quiet || git commit -m "precise state $(date +%F_%H%M)"
           git pull --rebase --autostash 2>/dev/null || true
           git push || echo "push atlandi (catisma/degisiklik yok)"
+
+      # P0.3: daemon/checkout/kurulum/state adimlarindan biri duserse, arkadan
+      # kosan yesil adimlar arizayi gizlemesin. Report/heartbeat dedup'i YOK:
+      # her failure/cancelled olayi ayri bildirilir. Suphede gonder; Telegram
+      # basarisi hem HTTP hem response ok:true ile kanitlanir.
+      # GitHub force-cancel kosullari atlayabilir; hic baslamayan kosum ve zorla
+      # iptal repo-disi pinger kapsamidir. Bu adim normal failure/cancel yoludur.
+      - name: P0.3 workflow hata alarmi
+        if: ${{ failure() || cancelled() }}
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALERT_WORKFLOW: ${{ github.workflow }}
+          ALERT_JOB: ${{ github.job }}
+          ALERT_STATUS: ${{ job.status }}
+          ALERT_EVENT: ${{ github.event_name }}
+          ALERT_SCHEDULE: ${{ github.event.schedule }}
+          ALERT_REF: ${{ github.ref }}
+          ALERT_SHA: ${{ github.sha }}
+          ALERT_ACTOR: ${{ github.actor }}
+          ALERT_RUN_ID: ${{ github.run_id }}
+          ALERT_RUN_ATTEMPT: ${{ github.run_attempt }}
+          ALERT_SERVER_URL: ${{ github.server_url }}
+          ALERT_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test -n "${TELEGRAM_TOKEN:-}" || { echo "::error::TELEGRAM_TOKEN yok"; exit 1; }
+          test -n "${TELEGRAM_CHAT_ID:-}" || { echo "::error::TELEGRAM_CHAT_ID yok"; exit 1; }
+          message="$(printf '%s\n' \
+            '🚨 BIST Alpha uretici workflow hatasi' \
+            "workflow: ${ALERT_WORKFLOW}" \
+            "job: ${ALERT_JOB}" \
+            "status: ${ALERT_STATUS}" \
+            "event: ${ALERT_EVENT}" \
+            "schedule: ${ALERT_SCHEDULE}" \
+            "ref: ${ALERT_REF}" \
+            "sha: ${ALERT_SHA}" \
+            "actor: ${ALERT_ACTOR}" \
+            "run_id: ${ALERT_RUN_ID} / attempt: ${ALERT_RUN_ATTEMPT}" \
+            "${ALERT_SERVER_URL}/${ALERT_REPOSITORY}/actions/runs/${ALERT_RUN_ID}")"
+          response="$(curl -sfS --retry 2 --connect-timeout 10 --max-time 30 \
+            -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          printf '%s' "$response" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'

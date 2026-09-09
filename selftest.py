@@ -1002,6 +1002,131 @@ def main():
     else:
         warn(".gitignore yok")
 
+    # 9a. P0.3 — URETICI WORKFLOW HATASI TELEGRAM'A ULASMALI
+    # precise/native daemon yolu kirildiginda sonraki always() adimlari yesil
+    # gorunebilir. Alarm job'in SON adimi olmali, failure ile cancelled'i
+    # kapsamali ve report_gate/gunluk dedup'tan bagimsiz her arizada gondermeli.
+    print("\n[9a] P0.3 uretici workflow hata alarmi (test-once)")
+
+    def _workflow_step_block(_text, _name_fragment):
+        _lines = _text.splitlines()
+        _start = next(
+            (i for i, line in enumerate(_lines)
+             if line.startswith("      - name:") and _name_fragment in line),
+            None,
+        )
+        if _start is None:
+            return ""
+        _end = len(_lines)
+        for i in range(_start + 1, len(_lines)):
+            if _lines[i].startswith("      - name:") or _lines[i].startswith("      - uses:"):
+                _end = i
+                break
+        return "\n".join(_lines[_start:_end])
+
+    _producer_alarm_blocks = []
+    for _workflow_path in [
+        ".github/workflows/precise.yml",
+        ".github/workflows/bist-alpha.yml",
+    ]:
+        _workflow_text = open(_workflow_path, encoding="utf-8").read()
+        _workflow_name = os.path.basename(_workflow_path)
+        import re as _re
+
+        _force_input_match = _re.search(
+            r"(?ms)^      force_fail:\s*$\n(?P<body>(?:        .*?(?:\n|$))+)",
+            _workflow_text,
+        )
+        _force_input_body = _force_input_match.group("body") if _force_input_match else ""
+        _dispatch_has_input = (
+            "required: false" in _force_input_body
+            and "default: false" in _force_input_body
+            and "type: boolean" in _force_input_body
+        )
+        if _dispatch_has_input:
+            ok(f"P0.3 {_workflow_name}: force_fail boolean + default false")
+        else:
+            bad(f"P0.3 {_workflow_name}: force_fail girdisi eksik/guvensiz varsayilan")
+
+        _force_block = _workflow_step_block(_workflow_text, "P0.3 kontrollu hata")
+        if (
+            "github.event_name == 'workflow_dispatch'" in _force_block
+            and "inputs.force_fail" in _force_block
+            and "exit 1" in _force_block
+            and "continue-on-error" not in _force_block
+        ):
+            ok(f"P0.3 {_workflow_name}: kontrollu hata kancasi")
+        else:
+            bad(f"P0.3 {_workflow_name}: kontrollu hata kancasi eksik/yanlis")
+
+        _alarm_block = _workflow_step_block(_workflow_text, "P0.3 workflow hata alarmi")
+        _producer_alarm_blocks.append(_alarm_block)
+        if "failure() || cancelled()" in _alarm_block:
+            ok(f"P0.3 {_workflow_name}: failure + normal-cancel kosulu")
+        else:
+            bad(f"P0.3 {_workflow_name}: failure + cancelled birlikte kapsanmiyor")
+
+        _telegram_proof = (
+            "TELEGRAM_TOKEN" in _alarm_block
+            and "TELEGRAM_CHAT_ID" in _alarm_block
+            and _re.search(r"curl\s+-[A-Za-z]*f[A-Za-z]*\b", _alarm_block)
+            and '\"ok\"[[:space:]]*:[[:space:]]*true' in _alarm_block
+            and "TELEGRAM_TOKEN yok" in _alarm_block
+            and "TELEGRAM_CHAT_ID yok" in _alarm_block
+            and "|| true" not in _alarm_block
+        )
+        if _telegram_proof:
+            ok(f"P0.3 {_workflow_name}: Telegram HTTP + ok:true kaniti")
+        else:
+            bad(f"P0.3 {_workflow_name}: Telegram basari kaniti eksik")
+
+        _manifest_fields = [
+            "github.workflow",
+            "job.status",
+            "github.event_name",
+            "github.event.schedule",
+            "github.ref",
+            "github.sha",
+            "github.actor",
+            "github.run_id",
+        ]
+        _missing_manifest = [field for field in _manifest_fields if field not in _alarm_block]
+        if not _missing_manifest:
+            ok(f"P0.3 {_workflow_name}: eyleme-yeterli hata manifesti")
+        else:
+            bad(f"P0.3 {_workflow_name}: manifest eksik {_missing_manifest}")
+
+        _step_headers = [
+            line.strip()
+            for line in _workflow_text.splitlines()
+            if line.startswith("      - name:") or line.startswith("      - uses:")
+        ]
+        _alarm_is_last = bool(
+            _step_headers
+            and _step_headers[-1].startswith("- name:")
+            and "P0.3 workflow hata alarmi" in _step_headers[-1]
+        )
+        _alarm_is_independent = (
+            "report_gate" not in _alarm_block
+            and "HEARTBEAT_DUE" not in _alarm_block
+            and "continue-on-error" not in _alarm_block
+        )
+        _alarm_run_body = _alarm_block.split("run: |", 1)[-1]
+        _shell_has_no_direct_expressions = "${{" not in _alarm_run_body
+        if _alarm_is_last and _alarm_is_independent and _shell_has_no_direct_expressions:
+            ok(f"P0.3 {_workflow_name}: son adim + dedup bagimsiz + env-sinirli")
+        else:
+            bad(f"P0.3 {_workflow_name}: son adim/bagimsizlik/env siniri bozuk")
+
+    if (
+        len(_producer_alarm_blocks) == 2
+        and _producer_alarm_blocks[0]
+        and _producer_alarm_blocks[0] == _producer_alarm_blocks[1]
+    ):
+        ok("P0.3 iki ureticide alarm sozlesmesi birebir ayni")
+    else:
+        bad("P0.3 producer alarm bloklari ayrismis")
+
     # 10. CLI çalışma testi (TESPİT 5 — eksik kontrol tamamlandı)
     print("\n[10] CLI çalışma (gerçekten çalışıyor mu)")
     import subprocess
