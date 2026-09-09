@@ -1,6 +1,6 @@
 {
   "account": "F",
-  "cash": 0.5700320049397737,
+  "cash": 0.64743548860461,
   "positions": {
     "OZATD": {
       "entry": 4827.5,
@@ -9,23 +9,18 @@
     },
     "IEYHO": {
       "entry": 207.8000030517578,
-      "peak": 217.0,
+      "peak": 221.8,
       "shares": 0.0006833194348896952
     },
     "ALKLC": {
       "entry": 425.75,
-      "peak": 460.0,
+      "peak": 475.0,
       "shares": 0.0003335144583802797
     },
     "SELEC": {
       "entry": 334.5,
-      "peak": 365.0,
+      "peak": 390.0,
       "shares": 0.0004244956073405204
-    },
-    "CRFSA": {
-      "entry": 290.75,
-      "peak": 317.5,
-      "shares": 0.00029302241923729135
     }
   },
   "history": [
@@ -636,6 +631,23 @@
           "shares": 0.000773,
           "reason": "stop",
           "pnl_pct": -17.53
+        }
+      ],
+      "fill_convention": "same_day_close"
+    },
+    {
+      "date": "2026-09-09",
+      "event": "stop",
+      "total": 1.2028,
+      "n_pos": 4,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "CRFSA",
+          "price": 265.75,
+          "shares": 0.000293,
+          "reason": "stop",
+          "pnl_pct": -8.6
         }
       ],
       "fill_convention": "same_day_close"
