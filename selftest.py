@@ -715,6 +715,8 @@ def main():
     # uretmez. Bu blok test-once yazildi; ilk sart mevcut kodda KIRMIZI olmalidir.
     print("\n[6h] #0b dolu-ama-delik primary daha tam yedege dusmeli (test-once)")
     try:
+        import tempfile as _tempfile4
+        from pathlib import Path as _Path4
         import pandas as _pd4
         from bist_alpha import selfheal as _SH4, datafeed as _DF4, config as _CFG4
 
@@ -746,7 +748,10 @@ def main():
         _old_source4 = getattr(_CFG4, "DATA_SOURCE", _sentinel4)
         _old_chain4 = getattr(_CFG4, "DATA_FALLBACK_CHAIN", _sentinel4)
         _old_allow4 = getattr(_CFG4, "ALLOW_FILE_FALLBACK", _sentinel4)
+        _old_feed_state4 = getattr(_SH4, "DATA_FEED_RUN_STATE", _sentinel4)
+        _feed_tmp4 = _tempfile4.TemporaryDirectory()
         try:
+            _SH4.DATA_FEED_RUN_STATE = _Path4(_feed_tmp4.name) / "data_feed_run.json"
             _CFG4.DATA_SOURCE = "yahoo"
             _CFG4.DATA_FALLBACK_CHAIN = "borsapy"
             _CFG4.ALLOW_FILE_FALLBACK = False
@@ -894,8 +899,157 @@ def main():
                         pass
                 else:
                     setattr(_CFG4, _name4, _old4)
+            if _old_feed_state4 is _sentinel4:
+                try:
+                    delattr(_SH4, "DATA_FEED_RUN_STATE")
+                except AttributeError:
+                    pass
+            else:
+                _SH4.DATA_FEED_RUN_STATE = _old_feed_state4
+            _feed_tmp4.cleanup()
     except Exception as e:
         bad(f"#0b [6h] testi kosmadi: {type(e).__name__}: {e}")
+
+    # -- [6i] P0.6 -- TUM KAYNAKLAR DUSERSE DENEME MANIFESTI KAYBOLMAMALI --
+    # Dashboard yalniz basarili rapordan sonra yazilir. Veri zinciri tamamen
+    # duserse kok nedeni exception metninde birakmak, state commit adimina
+    # kalici bir artefakt vermez. Ayni sema basari ve toplam-ret yolunda yazilir.
+    print("\n[6i] P0.6 kaynak deneme manifesti basari ve toplam rette kalici")
+    try:
+        import json as _json5
+        import tempfile as _tempfile5
+        from pathlib import Path as _Path5
+        import pandas as _pd5
+        from bist_alpha import selfheal as _SH5, datafeed as _DF5, config as _CFG5
+
+        class _FailFeed5:
+            def __init__(self, source):
+                self.source = source
+
+            def get_latest(self):
+                raise RuntimeError(f"{self.source}-down")
+
+        class _OkFeed5:
+            def get_latest(self):
+                idx = _pd5.to_datetime(["2026-09-08", "2026-09-09"])
+                cols = [f"M{i:02d}" for i in range(60)]
+                return {
+                    "prices": _pd5.DataFrame(100.0, index=idx, columns=cols),
+                    "bist": _pd5.Series(100.0, index=idx),
+                    "_source_pool_count": 60,
+                }
+
+        _sentinel5 = object()
+        _old_path5 = getattr(_SH5, "DATA_FEED_RUN_STATE", _sentinel5)
+        _expected_path5 = (
+            _Path5(_SH5.__file__).resolve().parents[1]
+            / "docs" / "state" / "data_feed_run.json"
+        )
+        if (_old_path5 is not _sentinel5
+                and _Path5(_old_path5).is_absolute()
+                and _Path5(_old_path5) == _expected_path5):
+            ok("manifest yolu cwd'den bagimsiz ve repo kokune sabit")
+        else:
+            bad(f"P0.6 manifest yolu repo kokune sabit degil: {_old_path5}")
+        _old_writer5 = _SH5._write_data_feed_run
+        _old_retry5 = _SH5.with_retry
+        _old_get_feed5 = _DF5.get_feed
+        _old_source5 = getattr(_CFG5, "DATA_SOURCE", _sentinel5)
+        _old_chain5 = getattr(_CFG5, "DATA_FALLBACK_CHAIN", _sentinel5)
+        _old_allow5 = getattr(_CFG5, "ALLOW_FILE_FALLBACK", _sentinel5)
+        try:
+            with _tempfile5.TemporaryDirectory() as _td5:
+                _state5 = _Path5(_td5) / "data_feed_run.json"
+                _SH5.DATA_FEED_RUN_STATE = _state5
+                _SH5.with_retry = lambda fn, **_kwargs: fn()
+                _CFG5.DATA_SOURCE = "yahoo"
+                _CFG5.DATA_FALLBACK_CHAIN = "borsapy,file"
+                _CFG5.ALLOW_FILE_FALLBACK = False
+
+                _DF5.get_feed = lambda source: _FailFeed5(source)
+                try:
+                    _SH5.safe_feed()
+                    bad("P0.6 toplam ret RuntimeError vermedi")
+                except RuntimeError:
+                    pass
+
+                if not _state5.exists():
+                    bad("P0.6 toplam rette data_feed_run.json yazilmadi")
+                else:
+                    _failed5 = _json5.loads(_state5.read_text(encoding="utf-8"))
+                    _statuses5 = [(a.get("source"), a.get("status"))
+                                  for a in _failed5.get("source_attempts", [])]
+                    if (_failed5.get("status") == "failed"
+                            and _failed5.get("primary_source") == "yahoo"
+                            and _failed5.get("selected_source") is None
+                            and _statuses5 == [("yahoo", "failed"),
+                                              ("borsapy", "failed"),
+                                              ("file", "skipped")]):
+                        ok("toplam rette kaynak/status/reason zinciri kalici")
+                    else:
+                        bad(f"P0.6 toplam-ret manifesti yanlis: {_failed5}")
+
+                    _timed5 = all(
+                        a.get("started_at") and a.get("finished_at")
+                        and isinstance(a.get("duration_s"), (int, float))
+                        and (a.get("error") or a.get("reason"))
+                        for a in _failed5.get("source_attempts", [])
+                    )
+                    if _failed5.get("generated_at") and _timed5:
+                        ok("toplam-ret manifesti zaman/sure ve ret nedenlerini tasiyor")
+                    else:
+                        bad("P0.6 toplam-ret manifestinde zaman/sure/ret nedeni eksik")
+
+                _DF5.get_feed = lambda source: _OkFeed5()
+                _out5 = _SH5.safe_feed()
+                _success5 = (_json5.loads(_state5.read_text(encoding="utf-8"))
+                             if _state5.exists() else {})
+                _ok_attempt5 = _success5.get("source_attempts", [{}])[-1]
+                if (_out5.get("_source_base") == "yahoo"
+                        and _success5.get("status") == "ok"
+                        and _success5.get("selected_source") == "yahoo"
+                        and _ok_attempt5.get("status") == "ok"
+                        and _ok_attempt5.get("returned_symbols") == 60
+                        and _ok_attempt5.get("expected_pool") == 60
+                        and _ok_attempt5.get("last_data_date") == "2026-09-09"):
+                    ok("basarili kaynak ayni manifesti olculen alanlarla ok yeniliyor")
+                else:
+                    bad(f"P0.6 basari manifesti yazilmadi/yanlis: {_success5}")
+
+                def _broken_writer5(*_args, **_kwargs):
+                    raise OSError("manifest-readonly")
+
+                _SH5._write_data_feed_run = _broken_writer5
+                _out_write_fail5 = _SH5.safe_feed()
+                if _out_write_fail5.get("_source_base") == "yahoo":
+                    ok("manifest yazma hatasi saglikli kaynak kararini degistirmiyor")
+                else:
+                    bad("P0.6 manifest hatasi saglikli kaynagi fallback'e itti")
+        finally:
+            _SH5._write_data_feed_run = _old_writer5
+            _SH5.with_retry = _old_retry5
+            _DF5.get_feed = _old_get_feed5
+            if _old_path5 is _sentinel5:
+                try:
+                    delattr(_SH5, "DATA_FEED_RUN_STATE")
+                except AttributeError:
+                    pass
+            else:
+                _SH5.DATA_FEED_RUN_STATE = _old_path5
+            for _name5, _old5 in [
+                ("DATA_SOURCE", _old_source5),
+                ("DATA_FALLBACK_CHAIN", _old_chain5),
+                ("ALLOW_FILE_FALLBACK", _old_allow5),
+            ]:
+                if _old5 is _sentinel5:
+                    try:
+                        delattr(_CFG5, _name5)
+                    except AttributeError:
+                        pass
+                else:
+                    setattr(_CFG5, _name5, _old5)
+    except Exception as e:
+        bad(f"P0.6 [6i] testi kosmadi: {type(e).__name__}: {e}")
 
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")

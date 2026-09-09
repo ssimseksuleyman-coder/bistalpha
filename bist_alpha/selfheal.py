@@ -11,7 +11,79 @@ import time
 import os
 import json
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+DATA_FEED_RUN_STATE = (
+    Path(__file__).resolve().parents[1] / "docs" / "state" / "data_feed_run.json"
+)
+
+
+def _utc_timestamp():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _feed_attempt_metrics(data):
+    """Return JSON-safe facts already available from a feed response."""
+    if not isinstance(data, dict):
+        return {}
+    prices = data.get("prices")
+    if prices is None:
+        return {}
+    metrics = {
+        "returned_symbols": int(prices.shape[1]),
+        "expected_pool": data.get("_source_pool_count"),
+    }
+    try:
+        last = prices.index[-1]
+        metrics["last_data_date"] = (
+            str(last.date()) if hasattr(last, "date") else str(last)[:10]
+        )
+    except Exception:
+        metrics["last_data_date"] = None
+    return metrics
+
+
+def _write_data_feed_run(primary_source, status, attempts,
+                         selected_source=None, error=None):
+    """Persist the latest feed decision even when no dashboard can be built."""
+    payload = {
+        "schema_version": 1,
+        "generated_at": _utc_timestamp(),
+        "status": status,
+        "primary_source": primary_source,
+        "selected_source": selected_source,
+        "attempt_count": len(attempts),
+        "source_attempts": attempts,
+    }
+    if error:
+        payload["error"] = str(error)[:500]
+    path = Path(DATA_FEED_RUN_STATE)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+    tmp.replace(path)
+    return payload
+
+
+def _persist_data_feed_run(primary_source, status, attempts,
+                           selected_source=None, error=None):
+    """Keep observability failure separate from the feed selection decision."""
+    try:
+        return _write_data_feed_run(
+            primary_source,
+            status,
+            attempts,
+            selected_source=selected_source,
+            error=error,
+        )
+    except Exception as exc:
+        print(f"[selfheal] data feed run manifesti yazilamadi: {exc}")
+        return None
 
 
 def with_retry(fn, retries=3, delay=5, label="işlem"):
@@ -135,13 +207,22 @@ def safe_feed():
     last_error = None
 
     for candidate in _fallback_sources(source, config):
+        started_at = _utc_timestamp()
+        started_clock = time.monotonic()
         if candidate == "file" and candidate != source and not allow_file_fallback:
+            finished_at = _utc_timestamp()
             attempts.append({
                 "source": candidate,
                 "status": "skipped",
                 "reason": "ALLOW_FILE_FALLBACK=0",
+                "started_at": started_at,
+                "finished_at": finished_at,
+                "duration_s": round(time.monotonic() - started_clock, 3),
             })
+            _persist_data_feed_run(source, "running", attempts)
             continue
+        data = None
+        sparse_days = []
         try:
             feed = datafeed.get_feed(candidate)
             data = with_retry(feed.get_latest, retries=3, delay=10,
@@ -161,15 +242,35 @@ def safe_feed():
                 )
             if candidate != source:
                 print(f"[selfheal] {source} coktu -> {candidate} yedegi kullaniliyor")
-            attempts.append({"source": candidate, "status": "ok"})
+            attempt = {
+                "source": candidate,
+                "status": "ok",
+                "started_at": started_at,
+                "finished_at": _utc_timestamp(),
+                "duration_s": round(time.monotonic() - started_clock, 3),
+            }
+            attempt.update(_feed_attempt_metrics(data))
+            attempts.append(attempt)
+            _persist_data_feed_run(
+                source, "ok", attempts, selected_source=candidate)
             return _tag_source(data, candidate, source, attempts)
         except Exception as e:
             last_error = e
-            attempts.append({
+            attempt = {
                 "source": candidate,
                 "status": "failed",
                 "error": str(e)[:300],
-            })
+                "error_type": type(e).__name__,
+                "started_at": started_at,
+                "finished_at": _utc_timestamp(),
+                "duration_s": round(time.monotonic() - started_clock, 3),
+            }
+            attempt.update(_feed_attempt_metrics(data))
+            if sparse_days:
+                attempt["sparse_market_days"] = sparse_days[-3:]
+            attempts.append(attempt)
+            _persist_data_feed_run(source, "running", attempts, error=e)
             print(f"[selfheal] {candidate} veri kaynagi basarisiz: {e}")
 
+    _persist_data_feed_run(source, "failed", attempts, error=last_error)
     raise RuntimeError(f"{source} ve yedek veri kaynaklari alinamadi: {attempts}") from last_error
