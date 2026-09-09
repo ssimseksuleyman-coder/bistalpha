@@ -855,6 +855,22 @@ def main():
                 else:
                     bad(f"#0b borsapy adapter sozlesmesi: calls={_bp_calls4}, "
                         f"cols={list(_bp_out4.get('prices', []).columns)}")
+
+                _daily_frames4 = [
+                    _bp_out4[key]
+                    for key in ("prices", "mins", "maxs", "aofs", "volumes", "opens", "bist")
+                ]
+                _daily_axis_ok4 = all(
+                    isinstance(frame.index, _pd4.DatetimeIndex)
+                    and frame.index.tz is None
+                    and all(ts == ts.normalize() for ts in frame.index)
+                    and list(frame.index) == list(_pd4.to_datetime(["2026-09-07", "2026-09-08"]))
+                    for frame in _daily_frames4
+                )
+                if _daily_axis_ok4:
+                    ok("borsapy gunluk indeks sozlesmesi timezone-naive gece yarisi")
+                else:
+                    bad("#0b borsapy gunluk indeks sozlesmesi: tz-aware/saatli indeks sizdi")
             except Exception as e:
                 bad(f"#0b borsapy adapter sozlesmesi: {type(e).__name__}: {e}")
             finally:

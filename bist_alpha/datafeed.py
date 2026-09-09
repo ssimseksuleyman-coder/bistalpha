@@ -19,6 +19,20 @@ from . import config
 SPARSE_DAY_NAN_THRESHOLD = 0.50
 
 
+def _normalize_daily_axis(frame, timezone="Europe/Istanbul"):
+    """Gunluk feed indeksini kaynaklar arasinda tek sozlesmeye indirger."""
+    if frame is None or getattr(frame, "empty", True):
+        return frame
+    out = frame.copy()
+    index = pd.DatetimeIndex(pd.to_datetime(out.index))
+    if index.tz is not None:
+        index = index.tz_convert(timezone).tz_localize(None)
+    out.index = index.normalize()
+    if out.index.has_duplicates:
+        out = out.loc[~out.index.duplicated(keep="last")]
+    return out.sort_index()
+
+
 def _drop_sparse_tail(frames, threshold=SPARSE_DAY_NAN_THRESHOLD):
     """OHLCV tablolarinda sondaki yari-bos gunleri at; son saglikli kapanisi koru."""
     prices = frames.get("prices")
@@ -359,14 +373,17 @@ class BorsaPyFeed(DataFeed):
             print(f"[datafeed] XU100 borsapy fetch basarisiz: {e}")
             bist = pd.Series(dtype=float)
 
-        frames, cleaning = _drop_sparse_tail({
+        frames = {
             "prices": prices,
             "mins": pd.DataFrame(mins).sort_index(),
             "maxs": pd.DataFrame(maxs).sort_index(),
             "aofs": pd.DataFrame(aofs).sort_index(),
             "volumes": pd.DataFrame(volumes).sort_index(),
             "opens": pd.DataFrame(opens).sort_index(),
-        })
+        }
+        frames = {key: _normalize_daily_axis(frame) for key, frame in frames.items()}
+        bist = _normalize_daily_axis(bist)
+        frames, cleaning = _drop_sparse_tail(frames)
         prices = frames["prices"]
         if prices.empty:
             raise ValueError("BorsaPyFeed temizleme sonrasi saglikli kapanis kalmadi")
