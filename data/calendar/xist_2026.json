@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "market": "XIST",
+  "authority": "Borsa Istanbul A.S.",
+  "timezone": "Europe/Istanbul",
+  "valid_from": "2026-01-01",
+  "valid_through": "2026-12-31",
+  "session_hours": {
+    "regular_open": "09:40",
+    "regular_close": "18:10",
+    "half_day_close": "13:00"
+  },
+  "full_day_closures": [
+    "2026-01-01",
+    "2026-03-20",
+    "2026-03-21",
+    "2026-03-22",
+    "2026-04-23",
+    "2026-05-01",
+    "2026-05-19",
+    "2026-05-27",
+    "2026-05-28",
+    "2026-05-29",
+    "2026-05-30",
+    "2026-07-15",
+    "2026-08-30",
+    "2026-10-29"
+  ],
+  "half_days": [
+    {
+      "date": "2026-03-19",
+      "close": "13:00"
+    },
+    {
+      "date": "2026-05-26",
+      "close": "13:00"
+    },
+    {
+      "date": "2026-10-28",
+      "close": "13:00"
+    }
+  ],
+  "source": {
+    "title": "Borsa Istanbul A.S. Equity Market 2026 Holiday Schedule",
+    "url": "https://www.borsaistanbul.com/files/equity-market-2026-holiday-schedule.pdf",
+    "sha256": "3a1b39913abc188788da533c5e25000b6bb0a9f94057d21a61f068ef17efe85d",
+    "retrieved_at": "2026-09-09",
+    "trading_hours_url": "https://www.borsaistanbul.com/en/markets/equity-market/trading-hours"
+  },
+  "renewal_policy": {
+    "warning_days_before_expiry": 35,
+    "max_observed_publication_lead_days": 28,
+    "operational_margin_days": 7,
+    "publication_history": [
+      {
+        "calendar_year": 2024,
+        "published_on": "2023-12-22",
+        "lead_days": 10
+      },
+      {
+        "calendar_year": 2025,
+        "published_on": "2024-12-25",
+        "lead_days": 7
+      },
+      {
+        "calendar_year": 2026,
+        "published_on": "2025-12-04",
+        "lead_days": 28
+      }
+    ]
+  },
+  "source_check_contract": {
+    "statuses": [
+      "UNCHANGED",
+      "CHANGED",
+      "UNREACHABLE"
+    ],
+    "unreachable_is_changed": false
+  }
+}

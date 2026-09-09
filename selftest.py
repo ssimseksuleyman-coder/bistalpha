@@ -1051,6 +1051,239 @@ def main():
     except Exception as e:
         bad(f"P0.6 [6i] testi kosmadi: {type(e).__name__}: {e}")
 
+    # -- [6j] P0.6 -- BAGIMSIZ XIST TAKVIMI VE TAZELIK SOZLESMESI --
+    # Takvim, dogrulanan fiyat kaynagindan turetilmez. Yetkili artefakt Borsa
+    # Istanbul'un yillik Pay Piyasasi takvimidir; exchange_calendars yalniz
+    # capraz kontroldur. Bu blok once artefakti, sonra henuz uygulanmamis API ve
+    # datafeed entegrasyonunu sinar. Ilk kosumda artefakt yesil, entegrasyon
+    # sartlari kirmizi olmalidir.
+    print("\n[6j] P0.6 bagimsiz XIST takvimi ve tazelik kapisi (test-once)")
+    try:
+        import json as _json6
+        import re as _re6
+        from datetime import datetime as _datetime6
+        from pathlib import Path as _Path6
+        from zoneinfo import ZoneInfo as _ZoneInfo6
+        import pandas as _pd6
+        from bist_alpha import datafeed as _DF6
+
+        _calendar_path6 = (
+            _Path6(__file__).resolve().parent
+            / "data" / "calendar" / "xist_2026.json"
+        )
+        _calendar_doc6 = _json6.loads(
+            _calendar_path6.read_text(encoding="utf-8")
+        )
+
+        _source6 = _calendar_doc6.get("source", {})
+        _source_ok6 = (
+            _calendar_doc6.get("market") == "XIST"
+            and _calendar_doc6.get("timezone") == "Europe/Istanbul"
+            and _calendar_doc6.get("valid_from") == "2026-01-01"
+            and _calendar_doc6.get("valid_through") == "2026-12-31"
+            and _source6.get("url")
+            == "https://www.borsaistanbul.com/files/equity-market-2026-holiday-schedule.pdf"
+            and _source6.get("sha256")
+            == "3a1b39913abc188788da533c5e25000b6bb0a9f94057d21a61f068ef17efe85d"
+            and bool(_re6.fullmatch(r"[0-9a-f]{64}", _source6.get("sha256", "")))
+        )
+        if _source_ok6:
+            ok("XIST takvim artefakti yetkili kaynak ve gercek SHA-256 tasiyor")
+        else:
+            bad(f"P0.6 XIST takvim kaynak metadatasi yanlis: {_source6}")
+
+        _closed6 = set(_calendar_doc6.get("full_day_closures", []))
+        _expected_closed6 = {
+            "2026-01-01", "2026-03-20", "2026-03-21", "2026-03-22",
+            "2026-04-23", "2026-05-01", "2026-05-19", "2026-05-27",
+            "2026-05-28", "2026-05-29", "2026-05-30", "2026-07-15",
+            "2026-08-30", "2026-10-29",
+        }
+        _half6 = {
+            item.get("date"): item.get("close")
+            for item in _calendar_doc6.get("half_days", [])
+        }
+        _hours6 = _calendar_doc6.get("session_hours", {})
+        if (_closed6 == _expected_closed6
+                and _half6 == {
+                    "2026-03-19": "13:00",
+                    "2026-05-26": "13:00",
+                    "2026-10-28": "13:00",
+                }
+                and _hours6.get("regular_close") == "18:10"):
+            ok("2026 tam tatil, resmi 13:00 yarim gun ve 18:10 seans saatleri sabit")
+        else:
+            bad("P0.6 XIST resmi tatil/seans listesi eksik veya farkli")
+
+        _renewal6 = _calendar_doc6.get("renewal_policy", {})
+        _lead_days6 = [
+            row.get("lead_days")
+            for row in _renewal6.get("publication_history", [])
+        ]
+        _source_states6 = _calendar_doc6.get("source_check_contract", {})
+        if (_lead_days6 == [10, 7, 28]
+                and _renewal6.get("warning_days_before_expiry")
+                == max(_lead_days6) + _renewal6.get("operational_margin_days", -1)
+                == 35
+                and _source_states6.get("statuses")
+                == ["UNCHANGED", "CHANGED", "UNREACHABLE"]
+                and _source_states6.get("unreachable_is_changed") is False):
+            ok("yenileme 35 gun ve kaynak UNREACHABLE/CHANGED ayrimi olcumden turetilmis")
+        else:
+            bad("P0.6 takvim yenileme veya kaynak-kontrol sozlesmesi yanlis")
+
+        try:
+            from bist_alpha import market_calendar as _MC6
+        except ImportError:
+            _MC6 = None
+
+        _tz6 = _ZoneInfo6("Europe/Istanbul")
+        if _MC6 is None:
+            for _missing6 in (
+                "son kapanmis seans API'si",
+                "tazelik/bar-tamligi ayrimi",
+                "yenileme ve kapsam-disi fail-closed",
+                "kaynak UNREACHABLE/CHANGED siniflandirmasi",
+            ):
+                bad(f"P0.6 bagimsiz takvim uygulamasi yok: {_missing6}")
+        else:
+            _loaded6 = _MC6.load_calendar(_calendar_path6)
+
+            try:
+                _session_cases6 = [
+                    ("normal-acilis-oncesi",
+                     _datetime6(2026, 9, 7, 9, 45, tzinfo=_tz6), "2026-09-04"),
+                    ("normal-kapanis-sonrasi",
+                     _datetime6(2026, 9, 7, 18, 40, tzinfo=_tz6), "2026-09-07"),
+                    ("yarim-gun-12:59",
+                     _datetime6(2026, 3, 19, 12, 59, tzinfo=_tz6), "2026-03-18"),
+                    ("yarim-gun-13:01",
+                     _datetime6(2026, 3, 19, 13, 1, tzinfo=_tz6), "2026-03-19"),
+                    ("bayram-tam-kapali",
+                     _datetime6(2026, 3, 20, 18, 40, tzinfo=_tz6), "2026-03-19"),
+                ]
+                _session_results6 = [
+                    (name, str(_MC6.expected_last_closed_session(now, _loaded6))[:10], expected)
+                    for name, now, expected in _session_cases6
+                ]
+                if all(actual == expected
+                       for _name, actual, expected in _session_results6):
+                    ok("normal/tatil/13:00 yarim gun son kapanmis seansi dogru")
+                else:
+                    bad(f"P0.6 son kapanmis seans vakalari: {_session_results6}")
+            except Exception as e:
+                bad(f"P0.6 son kapanmis seans API'si: {type(e).__name__}: {e}")
+
+            try:
+                _fresh6 = _MC6.assess_freshness(
+                    "2026-09-09",
+                    _datetime6(2026, 9, 9, 14, 30, tzinfo=_tz6),
+                    _loaded6,
+                )
+                _stale6 = _MC6.assess_freshness(
+                    "2026-09-07",
+                    _datetime6(2026, 9, 9, 14, 30, tzinfo=_tz6),
+                    _loaded6,
+                )
+                _after_close6 = _MC6.assess_freshness(
+                    "2026-09-08",
+                    _datetime6(2026, 9, 9, 18, 40, tzinfo=_tz6),
+                    _loaded6,
+                )
+                if (_fresh6.get("freshness_status") == "FRESH"
+                        and _fresh6.get("expected_last_closed_session") == "2026-09-08"
+                        and _fresh6.get("bar_completeness") == "unknown"
+                        and _stale6.get("reject_code") == "STALE_LAST_DATA"
+                        and _after_close6.get("reject_code") == "STALE_LAST_DATA"):
+                    ok("tazelik gecisi bar tamligi iddia etmiyor; bayatlik slot saatine bagli")
+                else:
+                    bad("P0.6 tazelik/bar-tamligi sozlesmesi yanlis")
+            except Exception as e:
+                bad(f"P0.6 tazelik API'si: {type(e).__name__}: {e}")
+
+            try:
+                _renew_ok6 = _MC6.renewal_status(
+                    _datetime6(2026, 11, 25, 12, 0, tzinfo=_tz6), False, _loaded6)
+                _renew_warn6 = _MC6.renewal_status(
+                    _datetime6(2026, 11, 26, 12, 0, tzinfo=_tz6), False, _loaded6)
+                _renew_expired6 = _MC6.renewal_status(
+                    _datetime6(2027, 1, 1, 9, 45, tzinfo=_tz6), False, _loaded6)
+                if (_renew_ok6.get("status") == "OK"
+                        and _renew_warn6.get("status") == "WARNING"
+                        and _renew_warn6.get("days_remaining") == 35
+                        and _renew_expired6.get("reject_code") == "CALENDAR_UNAVAILABLE"):
+                    ok("35 gun yenileme uyarisi ve kapsam-disinda fail-closed")
+                else:
+                    bad("P0.6 takvim yenileme/kapsam-disi sozlesmesi yanlis")
+            except Exception as e:
+                bad(f"P0.6 yenileme API'si: {type(e).__name__}: {e}")
+
+            try:
+                _hash6 = _source6["sha256"]
+                _source_results6 = (
+                    _MC6.classify_source_check(True, _hash6, _hash6),
+                    _MC6.classify_source_check(True, "0" * 64, _hash6),
+                    _MC6.classify_source_check(False, None, _hash6),
+                )
+                if _source_results6 == ("UNCHANGED", "CHANGED", "UNREACHABLE"):
+                    ok("kaynak cekilemedi ile olculdu-ve-degisti ayriliyor")
+                else:
+                    bad(f"P0.6 kaynak durumlari yanlis: {_source_results6}")
+            except Exception as e:
+                bad(f"P0.6 kaynak-kontrol API'si: {type(e).__name__}: {e}")
+
+        _d4_6, _d7_6, _d8_6, _d9_6 = _pd6.to_datetime(
+            ["2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09"]
+        )
+        _cols6 = [f"C{i:02d}" for i in range(60)]
+        _external_sessions6 = _pd6.DatetimeIndex(
+            [
+                day for day in _pd6.date_range("2026-01-01", "2026-09-09", freq="B")
+                if day.strftime("%Y-%m-%d") not in _closed6
+            ]
+        )
+
+        # Feed'in kendi BIST serisi de 09-07'yi kaybetse bagimsiz takvim kaybi gorur.
+        _missing_day_packet6 = {
+            "prices": _pd6.DataFrame(
+                100.0, index=[_d4_6, _d8_6, _d9_6], columns=_cols6),
+            "bist": _pd6.Series(100.0, index=[_d4_6, _d8_6, _d9_6]),
+        }
+        try:
+            _missing_days6 = _DF6.sparse_market_days(
+                _missing_day_packet6,
+                expected_sessions=_external_sessions6,
+                expected_last_closed_session=_d9_6,
+            )
+            if any(str(row.get("date"))[:10] == "2026-09-07"
+                   for row in _missing_days6):
+                ok("feed+BIST ortak 09-07 kaybi bagimsiz takvimle gorunur")
+            else:
+                bad("P0.6 bagimsiz takvim ortak 09-07 kaybini yakalamadi")
+        except Exception as e:
+            bad(f"P0.6 bagimsiz sureklilik entegrasyonu yok: {type(e).__name__}: {e}")
+
+        # Takvim tam yil olsa da feed baslangicindan onceki seanslar sorgulanmaz.
+        _short_packet6 = {
+            "prices": _pd6.DataFrame(
+                100.0, index=[_d4_6, _d7_6, _d8_6, _d9_6], columns=_cols6),
+            "bist": _pd6.Series(100.0, index=[_d4_6, _d7_6, _d8_6, _d9_6]),
+        }
+        try:
+            _short_sparse6 = _DF6.sparse_market_days(
+                _short_packet6,
+                expected_sessions=_external_sessions6,
+                expected_last_closed_session=_d9_6,
+            )
+            if _short_sparse6 == []:
+                ok("tam-yil takvim kisa-gecmisli eksiksiz feed'e sahte alarm vermiyor")
+            else:
+                bad(f"P0.6 feed baslangici oncesi sahte eksik seanslar: {_short_sparse6[:3]}")
+        except Exception as e:
+            bad(f"P0.6 kisa-feed pencere siniri uygulanmadi: {type(e).__name__}: {e}")
+    except Exception as e:
+        bad(f"P0.6 [6j] testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
