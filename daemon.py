@@ -566,7 +566,13 @@ def _write_dashboard_state(report, label, data=None, universe=None,
     except Exception as e:
         state["accounts"]["G1"] = {"error": f"yuklenemedi: {e}"}
     with open(os.path.join(out_dir, "dashboard.json"), "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2, default=str)
+        # P0.3 adim 3 — SON SAVUNMA: NaN/Infinity cikplak yazilirsa dosya
+        # gecerli JSON OLMAZ (ECMA-404) ve panelin `response.json()` cagrisi
+        # SyntaxError atar -> dashboard KOMPLE olur. Olculdu 2026-09-10;
+        # 120 surum tarandi, gecmiste olmamis (gizli risk). Degerleme
+        # tarafi artik NaN uretmiyor, bu satir ikinci kilit.
+        json.dump(pf._sanitize_json(state), f, ensure_ascii=False,
+                  indent=2, default=str)
 
 
 def _run_bulten_only():

@@ -264,13 +264,53 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=
     return state
 
 
-def current_value(state, prices_today):
-    """Portföyün güncel toplam değeri."""
+def _valuation(state, prices_today):
+    """(toplam, unpriced) — degerlemenin TEK hesabi.
+
+    `current_value` ve `value_coverage` ikisi de burayi cagirir; ayri yazilsalar
+    ayni sayiyi iki farkli yerde hesaplayan ikinci uygulama dogardi.
+
+    P0.3 adim 3 — olculen davranis (2026-09-10, yama oncesi), bes ayri sonuc:
+      fiyat yok  -> `entry` yazilir, SESSIZ. Ornek: gercek 310.0 yerine 210.0
+      NaN        -> TUM portfoy degeri `nan` olur
+      0          -> pozisyon 0 degerlenir
+      negatif    -> deger DUSER (10 + 2*(-5) = 0.0)
+      cop metin  -> TypeError, kosumu dusurur
+    NaN'in bedeli en agiri: `daemon.py` dashboard'i duz `json.dump` ile yazar
+    (`allow_nan` kapatilmamis) -> dosyaya cikplak `NaN` girer -> `JSON.parse`
+    ECMA-404 geregi SyntaxError atar -> PANELIN TAMAMI olur. 120 surum tarandi,
+    gecmiste HIC olmamis: gerceklesmemis gizli risk.
+
+    KARAR: `entry` FALLBACK'I KORUNUYOR ama artik ETIKETLI.
+    Atlamak pozisyonun TAMAMINI silerdi (daha buyuk hata); `entry` o pozisyon
+    icin bilinen son GERCEKLESMIS fiyattir. Uc secenegin de kusurlu oldugu bir
+    yerde en az yanlis olani secip ADINI KOYMAK, sessizce uydurmaktan iyidir.
+    NaN/inf/0/negatif/metin ARTIK `entry`ye duser — yani deger asla NaN olmaz
+    ve asla dusurulmez.
+    """
     total = state["cash"]
+    unpriced = []
     for tic, pos in state["positions"].items():
-        p = prices_today.get(tic, pos['entry'])
-        total += pos['shares'] * p
-    return total
+        p, sebep = usable_price((prices_today or {}).get(tic))
+        if sebep:
+            unpriced.append((tic, sebep))
+            p = pos["entry"]
+        total += pos["shares"] * p
+    return total, unpriced
+
+
+def current_value(state, prices_today):
+    """Portföyün güncel toplam değeri. Imza DEGISMEDI (alti cagiran var)."""
+    return _valuation(state, prices_today)[0]
+
+
+def value_coverage(state, prices_today):
+    """Degerlemede fiyatlanamayan pozisyonlar: [(ticker, sebep), ...].
+
+    Deger tek basina "eksiksiz mi" sorusunu cevaplamaz; bu fonksiyon cevaplar.
+    Yayimlayan cagiranlar (rapor/dashboard) ikisini BIRLIKTE tasimali.
+    """
+    return _valuation(state, prices_today)[1]
 
 
 def held_tickers(state):

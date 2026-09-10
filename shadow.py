@@ -813,6 +813,12 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             pf.save(state, state_dir=config.STATE_DIR)
             results[acc] = {
                 "value": round(pf.current_value(state, prices_today), 4),
+                # P0.3 adim 3: deger TEK BASINA "eksiksiz mi" sorusunu
+                # cevaplamaz. Fiyatlanamayan pozisyon `entry` ile degerlenir
+                # (atlamak pozisyonun TAMAMINI silerdi) — ama artik ETIKETLI.
+                "value_unpriced": ([{"ticker": t, "reason": r}
+                                    for t, r in pf.value_coverage(state, prices_today)]
+                                   or None),
                 "n_pos": len(state["positions"]),
                 "sells": sells,
                 # P0.3 GORUNURLUK: `ca_unchecked` ile ayni bicim — stop'u

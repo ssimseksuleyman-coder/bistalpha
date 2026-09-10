@@ -88,8 +88,10 @@ def _close_reentry(state, pnl, via):
 
 
 def _value(state, prices_today):
-    return state["cash"] + sum(p["shares"] * prices_today.get(t, p["entry"])
-                               for t, p in state["positions"].items())
+    """P0.3 adim 3: F ile AYNI hesap. Onceki hal `portfolio.current_value`in
+    ikiziydi ve ayni bes kusuru tasiyordu (NaN yayma dahil). State sekli
+    ayni (cash + positions[shares/entry]) -> delege etmek ikizi kapatir."""
+    return pf.current_value(state, prices_today)
 
 
 def _py(x):

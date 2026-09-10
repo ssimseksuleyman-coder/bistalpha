@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "d6916b4db458",   # P0.3 adim 2+2b (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "af900e6bcbf3",   # P0.3 adim 2/2b/3 (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2352,6 +2352,52 @@ def main():
             ("3c [DEGISECEK] eksiklik cagirana BILDIRILMIYOR (tek deger doner)",
              isinstance(_PF10.current_value(_s10c, {}), float), True))
 
+        # --- 2b) DEGERLEME (P0.3 adim 3) --------------------------------------
+        # Deger YAYIMLANAN bir sayi (daemon.py:545 -> F getirisi). Uc secenek de
+        # kusurluydu: `entry` UYDURUR, atlamak pozisyonu TAMAMEN siler, NaN
+        # PANELI OLDURUR. Secim: `entry` korunur ama ETIKETLENIR; NaN asla uretilmez.
+        _dsts10 = lambda: _st10(cash=10.0, AAA=_p10(100.0, shares=2.0))
+        for _ad10, _f10, _sb10 in (
+                ("fiyatsiz", _YOK10, "fiyat_yok"),
+                ("NaN", float("nan"), "fiyat_gecersiz"),
+                ("inf", float("inf"), "fiyat_gecersiz"),
+                ("sifir", 0.0, "fiyat_pozitif_degil"),
+                ("negatif", -5.0, "fiyat_pozitif_degil"),
+                ("cop metin", "abc", "fiyat_sayi_degil"),
+                ("np.bool_", _np10.bool_(True), "fiyat_sayi_degil")):
+            _pr10 = {} if _f10 is _YOK10 else {"AAA": _f10}
+            _iddialar10.append(
+                (f"2c degerleme {_ad10}: entry'ye duser AMA etiketli",
+                 (round(_PF10.current_value(_dsts10(), _pr10), 2),
+                  _PF10.value_coverage(_dsts10(), _pr10)),
+                 (210.0, [("AAA", _sb10)])))
+        _iddialar10.append(
+            ("2d [KORUNACAK] normal fiyatta dogru deger, etiket YOK",
+             (round(_PF10.current_value(_dsts10(), {"AAA": 150.0}), 2),
+              _PF10.value_coverage(_dsts10(), {"AAA": 150.0})), (310.0, [])))
+        # NaN ASLA YAYILMAZ: eskiden tum portfoy degeri nan oluyordu ve
+        # `daemon.py` dashboard'i duz json.dump ile yaziyordu -> dosyada cikplak
+        # `NaN` -> `JSON.parse` SyntaxError -> PANELIN TAMAMI olur.
+        import math as _math10
+        _iddialar10.append(
+            ("2e NaN fiyat portfoy degerini NaN yapmiyor",
+             _math10.isnan(_PF10.current_value(_dsts10(), {"AAA": float("nan")})), False))
+        # SON SAVUNMA: dashboard yazicisi NaN'i temizler.
+        import json as _json10
+        _iddialar10.append(
+            ("2f dashboard yazimi NaN'i None'a cevirir (panel olmez)",
+             _json10.dumps(_PF10._sanitize_json({"v": float("nan")})), '{"v": null}'))
+        _dm10 = (_root9 / "daemon.py").read_text(encoding="utf-8")
+        _iddialar10.append(
+            ("2g daemon dashboard'i sanitize EDEREK yaziyor",
+             "_sanitize_json(state)" in _dm10, True))
+        # G1 IKIZI KAPANDI: ayni sayiyi verir (delege).
+        _iddialar10.append(
+            ("2h G1 _value F ile AYNI sonucu verir (ikiz kapandi)",
+             round(_G110._value({"cash": 10.0,
+                                 "positions": {"AAA": {"entry": 100.0, "shares": 2.0}}},
+                                {"AAA": float("nan")}), 2), 210.0))
+
         # --- 3) rebalance: ASIMETRI -------------------------------------------
         # SATIS tarafi (167) fiyatsizken ENTRY'den satiyor -> pnl tam %0.00.
         # ALIS tarafi (183-184) fiyatsizken ALMIYOR -> zaten fail-closed.
@@ -2388,7 +2434,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "d6916b4db458"   # P0.3 adim 2+2b (eski 09ad265d9fd5)
+        _sha10 = "af900e6bcbf3"   # P0.3 adim 2/2b/3 (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")
