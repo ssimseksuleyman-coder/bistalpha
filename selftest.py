@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "af900e6bcbf3",   # P0.3 adim 2/2b/3 (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "cb6da6ec3100",   # P0.3 adim 2/2b/3 (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2398,6 +2398,28 @@ def main():
                                  "positions": {"AAA": {"entry": 100.0, "shares": 2.0}}},
                                 {"AAA": float("nan")}), 2), 210.0))
 
+        # --- 2i) FALLBACK'IN KENDISI (bagimsiz okumada bulundu) ---------------
+        # Adim 3 fiyat yolunu kapatti ama `entry` fallback'ini DOGRULAMIYORDU:
+        # entry NaN -> deger YINE nan; entry None/metin -> TypeError, kosum duser.
+        # Ayni kusurun ikinci kopyasiydi. Artik entry de `usable_price`ten gecer.
+        def _dbz10(entry):
+            return _st10(cash=10.0, AAA={"entry": entry, "peak": 100.0, "shares": 2.0})
+        for _ad10, _e10 in (("NaN", float("nan")), ("None", None),
+                            ("metin", "abc"), ("sifir", 0.0)):
+            _iddialar10.append(
+                (f"2i entry {_ad10} + fiyat yok: deger SONLU, ayri etiket",
+                 (round(_PF10.current_value(_dbz10(_e10), {}), 2),
+                  _PF10.value_coverage(_dbz10(_e10), {})),
+                 (10.0, [("AAA", "fiyat_ve_entry_gecersiz")])))
+        _iddialar10.append(
+            ("2i2 entry NaN ama FIYAT VARSA fiyat kullanilir, etiket YOK",
+             (round(_PF10.current_value(_dbz10(float("nan")), {"AAA": 150.0}), 2),
+              _PF10.value_coverage(_dbz10(float("nan")), {"AAA": 150.0})),
+             (310.0, [])))
+        _iddialar10.append(
+            ("2i3 [KORUNACAK] entry saglamsa eski etiket korunur",
+             _PF10.value_coverage(_dbz10(100.0), {}), [("AAA", "fiyat_yok")]))
+
         # --- 3) rebalance: ASIMETRI -------------------------------------------
         # SATIS tarafi (167) fiyatsizken ENTRY'den satiyor -> pnl tam %0.00.
         # ALIS tarafi (183-184) fiyatsizken ALMIYOR -> zaten fail-closed.
@@ -2434,7 +2456,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "af900e6bcbf3"   # P0.3 adim 2/2b/3 (eski 09ad265d9fd5)
+        _sha10 = "cb6da6ec3100"   # P0.3 adim 2/2b/3 (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")

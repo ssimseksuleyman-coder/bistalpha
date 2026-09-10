@@ -293,8 +293,20 @@ def _valuation(state, prices_today):
     for tic, pos in state["positions"].items():
         p, sebep = usable_price((prices_today or {}).get(tic))
         if sebep:
-            unpriced.append((tic, sebep))
-            p = pos["entry"]
+            # FALLBACK'IN KENDISI DE DOGRULANIR (olculdu 2026-09-10):
+            # `entry` NaN ise deger YINE `nan` oluyordu, None/metin ise
+            # TypeError ile kosum dusuyordu. Fiyat yolunu kapatip fallback
+            # yolunu acik birakmak, ayni kusurun ikinci kopyasiydi.
+            p, entry_sebep = usable_price(pos.get("entry"))
+            if entry_sebep:
+                # Ne fiyat ne entry kullanilabilir -> pozisyonun degeri
+                # GERCEKTEN bilinmiyor. 0 eksik gosterir, NaN her seyi zehirler,
+                # istisna kosumu dusurur; en az yanlis olan 0 ve AYRI etiket
+                # (salt fiyat eksikligiyle karistirilmasin: bu BOZUK STATE'tir).
+                unpriced.append((tic, "fiyat_ve_entry_gecersiz"))
+                p = 0.0
+            else:
+                unpriced.append((tic, sebep))
         total += pos["shares"] * p
     return total, unpriced
 
