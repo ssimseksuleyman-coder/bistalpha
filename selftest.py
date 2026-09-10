@@ -2155,6 +2155,122 @@ def main():
     except Exception as e:
         bad(f"P0.6 [6m] testi kosmadi: {type(e).__name__}: {e}")
 
+
+    # -- [6n] P0.3 KARAKTERIZASYON -- portfolio.py'nin EKSIK FIYAT davranisi --
+    # NIYET: DAVRANIS DEGISTIRMEK DEGIL, BUGUNKU DAVRANISI KILITLEMEK.
+    # portfolio.py 5-SHA ile DONUK (09ad265d9fd5) cunku golden-master onu
+    # KAPSAMIYOR (backtest.py'de 0 referans). Yani dondurma "bu dosya dogru"
+    # demiyor; "bu dosya test edilmiyor, hic degilse degistigini gorelim" diyor.
+    # Test edilmeyen bir dosyayi duzeltmenin dogru sirasi: ONCE testle kapsa,
+    # SONRA testin altinda degistir, SONRA yeniden dondur.
+    # Bu blok ILK adimdir: hicbir davranisi degistirmez.
+    #
+    # ISARETLER:
+    #   [DEGISECEK] = P0.3 yamasinda bu iddia TERSINE donecek; simdi kusuru
+    #                 belgeliyor. Yama sonrasi bu satirlar guncellenmezse yama
+    #                 sessizce gecmis olur -> guncelleme ZORUNLU.
+    #   [KORUNACAK] = mevcut davranis DOGRU; yama onu bozarsa bu satir kizarir.
+    print("\n[6n] P0.3 karakterizasyon: portfolio.py eksik fiyat davranisi")
+    try:
+        from bist_alpha import portfolio as _PF10
+
+        def _st10(cash=100.0, **poz):
+            return {"account": "TEST", "cash": cash, "positions": dict(poz),
+                    "history": []}
+
+        def _p10(entry, peak=None, shares=1.0):
+            return {"entry": entry, "peak": peak if peak is not None else entry,
+                    "shares": shares}
+
+        _iddialar10 = []
+
+        # --- 1) check_stops: FIYATSIZ POZISYON ---------------------------------
+        # portfolio.py:96-98  `pt = prices.get(tic); if pt is None: continue`
+        # Fiyati olmayan pozisyon SESSIZCE dusuyor: ne satis, ne kayit, ne sayac.
+        # Stop KACIRILIR ve kacirildigi HICBIR YERDE gorunmez.
+        _s10 = _st10(AAA=_p10(100.0, peak=200.0))     # stop = 170.0, cok altinda
+        _sells10 = _PF10.check_stops(_s10, {})        # fiyat YOK
+        _iddialar10.append(
+            ("1  [DEGISECEK] fiyatsiz pozisyon sessizce atlaniyor (satis yok)",
+             len(_sells10), 0))
+        _iddialar10.append(
+            ("1b [DEGISECEK] atlanan pozisyon icin HICBIR iz yok",
+             _s10.get("unchecked", "ALAN_YOK"), "ALAN_YOK"))
+        _iddialar10.append(
+            ("1c [KORUNACAK] fiyatsizken peak DE guncellenmiyor (mutasyon yok)",
+             _s10["positions"]["AAA"]["peak"], 200.0))
+
+        # Karsi-yon (pozitif kontrol): fiyat VARSA ve stop altindaysa SATAR.
+        _s10b = _st10(AAA=_p10(100.0, peak=200.0))
+        _sells10b = _PF10.check_stops(_s10b, {"AAA": 150.0})   # 150 < 170
+        _iddialar10.append(
+            ("2  [KORUNACAK] fiyat varsa ve stop altindaysa SATAR",
+             len(_sells10b), 1))
+        _iddialar10.append(
+            ("2b [KORUNACAK] satis kaydi fiyati tasiyor",
+             _sells10b[0]["price"] if _sells10b else None, 150.0))
+
+        # --- 2) current_value: UYDURMA FIYAT ----------------------------------
+        # portfolio.py:208  `p = prices.get(tic, pos['entry'])`
+        # Fiyat yoksa GIRIS FIYATI yaziliyor -> pozisyon "girisinden beri hic
+        # hareket etmemis" gibi degerleniyor. Bu sayi daemon.py:545'te
+        # yayimlanan F getirisine donusuyor.
+        _s10c = _st10(cash=10.0, AAA=_p10(100.0, shares=2.0))
+        _iddialar10.append(
+            ("3  [DEGISECEK] current_value fiyatsizken ENTRY kullaniyor",
+             _PF10.current_value(_s10c, {}), 210.0))          # 10 + 2*100
+        _iddialar10.append(
+            ("3b [KORUNACAK] fiyat varsa gercek fiyati kullaniyor",
+             _PF10.current_value(_s10c, {"AAA": 150.0}), 310.0))
+        _iddialar10.append(
+            ("3c [DEGISECEK] eksiklik cagirana BILDIRILMIYOR (tek deger doner)",
+             isinstance(_PF10.current_value(_s10c, {}), float), True))
+
+        # --- 3) rebalance: ASIMETRI -------------------------------------------
+        # SATIS tarafi (167) fiyatsizken ENTRY'den satiyor -> pnl tam %0.00.
+        # ALIS tarafi (183-184) fiyatsizken ALMIYOR -> zaten fail-closed.
+        _s10d = _st10(cash=0.0, AAA=_p10(100.0, shares=1.0))
+        _PF10.rebalance(_s10d, {"BBB": 1.0}, {"BBB": 50.0}, trade_date="2026-01-01")
+        _satis10 = [t for t in _s10d["history"][-1]["trades"] if t["type"] == "SELL"]
+        _iddialar10.append(
+            ("4  [DEGISECEK] rebalance fiyatsiz pozisyonu ENTRY'den satiyor",
+             _satis10[0]["price"] if _satis10 else None, 100.0))
+        _iddialar10.append(
+            ("4b [DEGISECEK] uydurma satisin pnl'i tam %0.00 gorunuyor",
+             _satis10[0]["pnl_pct"] if _satis10 else None, 0.0))
+
+        _s10e = _st10(cash=100.0)
+        _PF10.rebalance(_s10e, {"CCC": 1.0}, {}, trade_date="2026-01-01")
+        _iddialar10.append(
+            ("5  [KORUNACAK] rebalance ALIS tarafi fiyatsizken ALMIYOR",
+             len(_s10e["positions"]), 0))
+
+        # --- 4) stop_level: peak yoksa entry -----------------------------------
+        # Bu bilincli bir eski-JSON korumasi (satir 80), kusur DEGIL.
+        _iddialar10.append(
+            ("6  [KORUNACAK] stop_level peak yoksa entry'ye dusuyor",
+             _PF10.stop_level({"entry": 100.0, "shares": 1.0}),
+             _PF10.stop_level({"entry": 100.0, "peak": 100.0, "shares": 1.0})))
+
+        for _ad10, _alinan10, _beklenen10 in _iddialar10:
+            if _alinan10 == _beklenen10:
+                ok(f"P0.3 karakterizasyon {_ad10}")
+            else:
+                bad(f"P0.3 karakterizasyon {_ad10}: beklenen {_beklenen10!r}, "
+                    f"alinan {_alinan10!r}")
+
+        # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
+        # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
+        # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
+        _sha10 = "09ad265d9fd5"
+        if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
+            ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
+               "(davranis yamasi bu satiri da guncellemek zorunda)")
+        else:
+            bad("P0.3 karakterizasyon 7  portfolio.py baseline'i kayip")
+    except Exception as e:
+        bad(f"P0.3 [6n] karakterizasyon kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
