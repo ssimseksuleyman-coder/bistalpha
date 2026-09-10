@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "b70147ef6c50",   # P0.3 adim 2/2b/3/4 (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "ac55ba2b14d6",   # P0.3 adim 2/2b/3/4/4b (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2473,6 +2473,48 @@ def main():
             ("4e [KORUNACAK] fiyat hic yoksa eski davranis (entry) korunur",
              _reb10({"BBB": 50.0}), (100.0, 3.992, 199.6)))
 
+        # --- 4f) close_positions (bagimsiz okumada bulundu) --------------------
+        # `or` zinciri NaN'i YAKALAMIYORDU (NaN truthy). Olculdu 2026-09-10:
+        # NaN fiyat kasayi `nan` yapip STATE'E yaziyordu; metin TypeError ile
+        # kosumu dusuruyordu; entry 0 -> ZeroDivisionError; entry NaN -> pnl nan.
+        def _kap10(prices, entry=100.0):
+            _s = _st10(cash=0.0, AAA={"entry": entry, "peak": 100.0, "shares": 2.0})
+            _tr = _PF10.close_positions(
+                _s, [{"ticker": "AAA", "price": 150.0, "reason": "stop",
+                      "giveback": 0.0}], prices, trade_date="2026-01-01")
+            return (_tr[0]["price"], _tr[0]["pnl_pct"], round(_s["cash"], 2))
+
+        _iddialar10.append(
+            ("4f [KORUNACAK] normal fiyat: davranis birebir ayni",
+             _kap10({"AAA": 150.0}), (150.0, 50.0, 299.4)))
+        for _ad10, _pr10 in (("NaN", {"AAA": float("nan")}),
+                             ("metin", {"AAA": "abc"}),
+                             ("sifir", {"AAA": 0.0}),
+                             ("fiyat yok", {})):
+            _iddialar10.append(
+                (f"4g [DEGISTI] close_positions {_ad10}: dogrulanmis satis "
+                 "fiyatina duser, kasa SONLU", _kap10(_pr10), (150.0, 50.0, 299.4)))
+        for _ad10, _e10 in (("entry 0", 0.0), ("entry NaN", float("nan"))):
+            _iddialar10.append(
+                (f"4h [DEGISTI] {_ad10}: pnl HESAPLANAMAZ (None), kosum dusmez",
+                 _kap10({"AAA": 150.0}, entry=_e10), (150.0, None, 299.4)))
+
+        # --- 4i) URETILIP KULLANILMAYAN OLCUM (kendi yamamda) -----------------
+        # `_reb_unpriced` hesaplaniyor ama hicbir yerde okunmuyordu — tam da bu
+        # isin duzelttigi kusurun kendi yamamdaki hali. Artik history'ye gecer.
+        _sreb10 = _st10(cash=0.0, AAA={"entry": 100.0, "peak": 100.0, "shares": 2.0})
+        _PF10.rebalance(_sreb10, {"BBB": 1.0}, {"BBB": 50.0}, trade_date="2026-01-01")
+        _iddialar10.append(
+            ("4i devir kaydinda `unpriced` alani var (olcumun tuketicisi)",
+             _sreb10["history"][-1].get("unpriced"),
+             [{"ticker": "AAA", "reason": "fiyat_yok"}]))
+        _sreb10b = _st10(cash=0.0, AAA={"entry": 100.0, "peak": 100.0, "shares": 2.0})
+        _PF10.rebalance(_sreb10b, {"BBB": 1.0}, {"AAA": 150.0, "BBB": 50.0},
+                        trade_date="2026-01-01")
+        _iddialar10.append(
+            ("4i2 [KORUNACAK] temiz devirde alan None (gurultu yok)",
+             _sreb10b["history"][-1].get("unpriced"), None))
+
         # --- 5) FILL KAPISI (BIRINCIL koruma) — KANIT TURU: VEKIL --------------
         # `shadow.step` agir kurulum ister (data/signals); burada olculen sey
         # METIN YUZEYI. Davranis kaniti ikinci kilitte (yukarida) ve kapinin
@@ -2501,7 +2543,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "b70147ef6c50"   # P0.3 adim 2/2b/3/4 (eski 09ad265d9fd5)
+        _sha10 = "ac55ba2b14d6"   # P0.3 adim 2/2b/3/4/4b (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")

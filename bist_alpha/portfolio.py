@@ -184,17 +184,34 @@ def close_positions(state, sells, prices_today, slippage=0.0, trade_date=None):
         pos = state.get("positions", {}).get(tic)
         if not pos:
             continue
-        price = prices_today.get(tic) or item.get("price") or pos["entry"]
+        # P0.3 adim 4b — `or` zinciri NaN'i YAKALAMIYORDU (NaN truthy'dir).
+        # Olculdu 2026-09-10: NaN fiyat kasayi `nan` yapip STATE'E YAZIYORDU,
+        # metin TypeError ile kosumu dusuruyordu. Zincirin NIYETI dogruydu
+        # (fiyat yoksa satis kaydindaki dogrulanmis fiyata dus) — kirik olan
+        # SECIM yontemiydi. Ayni sirayla, ama her adim `usable_price`ten gecer.
+        price = None
+        for _aday in (prices_today.get(tic), item.get("price"), pos.get("entry")):
+            price, _ = usable_price(_aday)
+            if price is not None:
+                break
+        if price is None:
+            # Hicbir aday kullanilabilir degil: kasaya uydurma para yazmaktansa
+            # 0 yazilir (sonlu kalir, NaN yayilmaz) ve satir etiketlenir.
+            price = 0.0
         proceeds = pos["shares"] * price * (1 - friction)
         state["cash"] += proceeds
-        pnl_pct = (price / pos["entry"] - 1) * 100
+        # pnl bir BOLMEDIR: entry 0 -> ZeroDivisionError (kosum duser),
+        # entry NaN -> pnl nan. Ikisi de olculdu. Entry kullanilamazsa pnl
+        # HESAPLANAMAZ -> None. "Bilinmiyor" ile "0.00" ayni sey degildir.
+        _entry, _esebep = usable_price(pos.get("entry"))
+        pnl_pct = None if _esebep else (price / _entry - 1) * 100
         trades.append({
             "type": "SELL",
             "ticker": tic,
             "price": round(price, 2),
             "shares": round(pos["shares"], 6),
             "reason": item.get("reason", "stop"),
-            "pnl_pct": round(pnl_pct, 2),
+            "pnl_pct": (None if pnl_pct is None else round(pnl_pct, 2)),
         })
         del state["positions"][tic]
     if trades:
@@ -261,10 +278,15 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=
                     "weight": round(w, 4),
                     "reason": reason,
                 })
+    # P0.3 adim 4b: `_reb_unpriced` uretilip HICBIR YERDE kullanilmiyordu —
+    # tam da bu isin duzelttigi kusur (olcum var, tuketici yok). Devir
+    # sirasinda hangi pozisyonun `entry` ile degerlendigi kayda gecer.
     state["history"].append({"date": _trade_date(trade_date),
                              "event": reason,
                              "total": round(current_value(state, prices_today), 4),
                              "n_pos": len(state["positions"]),
+                             "unpriced": ([{"ticker": t, "reason": r}
+                                           for t, r in _reb_unpriced] or None),
                              "trades": trades})
     return state
 
