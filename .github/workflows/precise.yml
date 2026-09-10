@@ -98,6 +98,59 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 scripts/content_sanity.py
 
+      - name: P0.6 stop gozlemi (bagimsiz, her kosuda)
+        # `id` VAR cunku runner GITHUB_OUTPUT'a breached/unpriced/positions/gate
+        # yaziyor; id olmadan bu ciktilar hicbir yerden adreslenemez ve yazilip
+        # okunmayan bir yuzey olarak kalirdi.
+        id: stop_obs
+        # P0.6/madde-7 — bagimsiz stop observer. Ana yol (daemon) DUSSE BILE calisir:
+        # 2026-09-08'de veri kapisi Yahoo'yu reddetti, daemon exit 1 verdi ve O GUN
+        # STOPLAR HIC DEGERLENDIRILMEDI. `if: always()` bunu kirar.
+        # KAPIYI BILEREK ATLAR: kapinin reddi SUREKLILIK hakkindadir, anlik fiyat
+        # gecerliligi hakkinda degil (olculdu 2026-09-10: reddedilen Yahoo, tutulan
+        # pozisyonlarin guncel fiyatini %0.00-0.11 farkla dogru verdi).
+        # YALNIZ TESPIT: emir yok, portfolio state mutasyonu yok.
+        # Alarm YALNIZ breached'de; `missing` ize gider (alarm korlugu onlemi).
+        # Hata gizleyici bayrak KULLANILMAZ: gozlemcinin kendi hatasi gorunur olmali.
+        if: always()
+        env:
+          TZ: Europe/Istanbul
+          STOP_OBS_LABEL: ${{ github.workflow }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -uo pipefail
+          # P0.6 stop observer — bagimsiz kosum, ana rapor yolundan ayri
+          python3 scripts/stop_observer_run.py 2>&1 | tee /tmp/stop_obs.log
+          rc=${PIPESTATUS[0]}
+          if grep -q 'breached=true' /tmp/stop_obs.log; then
+            detay="$(grep 'STOP ALTINDA' /tmp/stop_obs.log | head -10)"
+            message="$(printf '%s\n' '🛑 STOP ALTINDA POZISYON (bagimsiz gozlem)' 'workflow: ${{ github.workflow }}' 'run: ${{ github.run_id }}' "$detay" '(tespit amaclidir; emir verilmedi, state degismedi)')"
+            alarm_rc=0
+            if ! resp="$(curl -sfS --retry 2 --connect-timeout 10 --max-time 30 -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text=${message}")"; then
+              echo "::error::stop alarmi HTTP olarak gonderilemedi"
+              alarm_rc=1
+            elif ! printf '%s' "$resp" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'; then
+              echo "::error::stop alarmi Telegram tarafindan onaylanmadi"
+              alarm_rc=1
+            else
+              echo "stop alarmi gonderildi"
+            fi
+          else
+            alarm_rc=0
+          fi
+          if [ "$rc" -ne 0 ]; then exit "$rc"; fi
+          exit "$alarm_rc"
+
+      - name: P0.6 stop izini Actions artefakti olarak sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stop-observer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: docs/state/stop_observer.json
+          if-no-files-found: warn
+          retention-days: 90
+
       - name: State commit (kalicilik)
         if: always()
         run: |

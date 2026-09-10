@@ -1554,6 +1554,488 @@ def main():
     except Exception as e:
         bad(f"P0.6 [6k] testi kosmadi: {type(e).__name__}: {e}")
 
+    # -- [6l] P0.6/madde-7 -- BAGIMSIZ STOP GOZLEMI HER KOSUDA CALISIR --
+    # Bu kapı rapor/heartbeat akışından ayrıdır: yalnız tespit + alarm yapar,
+    # portföy state'ini değiştirmez. Fiyatı olmayan pozisyon da sessizce
+    # atlanmaz; stop_eval izi içinde status=missing olarak kalır.
+    print("\n[6l] P0.6/madde-7 bagimsiz stop gozlemi (test-once)")
+    try:
+        import copy as _copy8
+        import inspect as _inspect8
+        from pathlib import Path as _Path8
+        from bist_alpha import portfolio as _PF8
+
+        _root8 = _Path8(__file__).resolve().parent
+
+        def _step_block8(_text, _fragment):
+            _lines8 = _text.splitlines()
+            _start8 = next(
+                (i for i, line in enumerate(_lines8)
+                 if line.startswith("      - name:") and _fragment in line),
+                None,
+            )
+            if _start8 is None:
+                return "", None
+            _end8 = len(_lines8)
+            for i in range(_start8 + 1, len(_lines8)):
+                if _lines8[i].startswith("      - name:") or _lines8[i].startswith("      - uses:"):
+                    _end8 = i
+                    break
+            return "\n".join(_lines8[_start8:_end8]), _start8
+
+        _workflow_specs8 = [
+            (".github/workflows/bist-alpha.yml", "Portfoy state commit"),
+            (".github/workflows/precise.yml", "State commit"),
+        ]
+        _workflow_contract_ok8 = True
+        for _workflow_path8, _commit_fragment8 in _workflow_specs8:
+            _workflow_text8 = (_root8 / _workflow_path8).read_text(encoding="utf-8")
+            _stop_block8, _stop_line8 = _step_block8(_workflow_text8, "P0.6 stop gozlemi")
+            _commit_block8, _commit_line8 = _step_block8(_workflow_text8, _commit_fragment8)
+            _run8 = _stop_block8.split("run:", 1)[-1]
+            _before_stop8 = (
+                "\n".join(_workflow_text8.splitlines()[:_stop_line8])
+                if _stop_line8 is not None else ""
+            )
+            _checks8 = {
+                "ayri always adimi": bool(_stop_block8 and "if: always()" in _stop_block8),
+                "state commit oncesi": bool(
+                    _stop_line8 is not None and _commit_line8 is not None
+                    and _stop_line8 < _commit_line8
+                ),
+                "ana rapor komutundan ayri": bool(
+                    _stop_block8 and "daemon.py --once" not in _run8
+                ),
+                # SOZLESME DARALTILDI (2026-09-10, olcumle).
+                # ESKI HALI: "steps.gate.outputs.run adimda HIC gecmesin".
+                # OLCUM: bist-alpha.yml haftaici 32 cron tetigi aliyor (6:45-50-55,
+                # 7:00..30, 11:30..55, 12:00..20, 15:40..55, 16:00..30) + her push.
+                # Ayni dosyada zaten yazili: `gate.run` burada 'true' OLMUYOR (raporu
+                # precise uretiyor) ve state commit'i `run == 'true'`e bagli. Yani
+                # kosulsuz `always()` ile stop gozlemi gunde ~32 kez kosar, izi HIC
+                # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar —
+                # "uretilip tuketilmeyen cikti" kusurunu 10 kat buyuterek.
+                # KORUNAN NIYET: gozlemci ANA YOLUN BASARISINA kosullanmasin.
+                # `gate.run` bir ARIZA kosulu degil, "bu tetikte is var mi" kosulu.
+                # IZIN VERILEN TEK BICIM `!= 'false'`: kapi bozulup bos donerse
+                # gozlemci YINE kosar. `== 'true'` YASAK — bu dosyada bekciyi 40
+                # kosuda 0 kez calistiran hata tam olarak oydu (2026-07-22 kaydi).
+                "arizaya kosullu degil": bool(
+                    _stop_block8
+                    and "success()" not in _stop_block8
+                    and ".outcome" not in _stop_block8
+                ),
+                "slot kapisi yalniz != 'false' bicimiyle": bool(
+                    _stop_block8 and (
+                        "steps.gate.outputs.run" not in _stop_block8
+                        or ("steps.gate.outputs.run != 'false'" in _stop_block8
+                            and "steps.gate.outputs.run ==" not in _stop_block8)
+                    )
+                ),
+                "stop izi ve komutu": bool(
+                    "stop_eval" in _run8 or "stop observer" in _run8.lower()
+                ),
+                "alarm kanali": bool(
+                    "TELEGRAM_TOKEN" in _stop_block8
+                    and "TELEGRAM_CHAT_ID" in _stop_block8
+                ),
+                "dedup yok": bool(
+                    "report_gate" not in _stop_block8
+                    and "HEARTBEAT_DUE" not in _stop_block8
+                    and "sent_date" not in _stop_block8
+                ),
+                "stop gozlemi hatasi gorunur": bool(
+                    "continue-on-error" not in _stop_block8
+                ),
+                # KARAR (2026-09-10): alarm YALNIZ breached'de. `missing` veri-kalitesi
+                # durumudur, kendiliginden cozulmez -> gunde ~6 Telegram = alarm korlugu.
+                # `missing` ize ve operasyon kapisina gider, Telegram'a DEGIL.
+                "alarm yalniz breached": bool("breached" in _run8),
+                # KARAR (2026-09-10): gozlemci stop_eval.json'a YAZMAZ. O artefaktin
+                # bayatligi #0l'in kor-nokta sinyali (`_write_stop_eval` yalniz kapanista
+                # yazar). Her kosuda yazmak o sinyali oldururdu -> AYRI artefakt.
+                "stop_eval.json'a yazmaz": bool("stop_eval.json" not in _run8),
+                "stop alarmi basarisizligi gorunur": bool(
+                    "if ! resp=" in _run8 and "alarm_rc=1" in _run8
+                    and "curl -sfS" in _run8
+                ),
+                "iz kalici artefakt": bool(
+                    "actions/upload-artifact@v4" in _workflow_text8
+                    and _stop_line8 is not None
+                    and _workflow_text8.find("actions/upload-artifact@v4", _stop_line8)
+                    > _stop_line8
+                ),
+            }
+            if _workflow_path8 == ".github/workflows/bist-alpha.yml":
+                _checks8["native gozlemci bagimliliklari kurulu"] = bool(
+                    "      - uses: actions/setup-python@v5\n"
+                    "        with:\n"
+                    "          python-version: '3.12'\n"
+                    "          cache: 'pip'\n"
+                    "      - run: pip install -r requirements.txt" in _before_stop8
+                )
+            _bad_checks8 = [name for name, passed in _checks8.items() if not passed]
+            if not _bad_checks8:
+                ok(f"P0.6 {_workflow_path8}: bagimsiz stop adimi sozlesmesi")
+            else:
+                bad(f"P0.6 {_workflow_path8}: stop adimi eksik/yanlis {_bad_checks8}")
+                _workflow_contract_ok8 = False
+
+        # KARAR (2026-09-10): gozlemci portfolio.py'ye YAZILMAZ. O dosya 5-SHA
+        # DONUK (09ad265d9fd5); icine fonksiyon eklemek [6b]'yi kirar ve A1'i ihlal
+        # ettirir. Ayri modul hem SHA'yi korur hem "bagimsiz yol"u fiziksellestirir.
+        # OTORITE ERISIM BICIMI DE SOZLESME: gozlemci `portfolio.stop_level(pos)`
+        # seklinde MODUL ATTRIBUTE uzerinden cagirmali. `from ... import stop_level`
+        # yapilirsa asagidaki monkeypatch TUTMAZ -> otorite dogrulanamaz hale gelir.
+        try:
+            from bist_alpha import stop_observer as _SO8
+        except Exception:
+            _SO8 = None
+        _evaluate_stops8 = getattr(_SO8, "evaluate_stops", None) if _SO8 else None
+        if not callable(_evaluate_stops8):
+            bad("P0.6 stop gozlemi API'si yok: bist_alpha/stop_observer.evaluate_stops")
+        else:
+            _state8 = {
+                "positions": {
+                    "AAA": {"entry": 100.0, "peak": 100.0, "shares": 1.0},
+                    "BBB": {"entry": 100.0, "peak": 100.0, "shares": 1.0},
+                },
+                "cash": 0.0,
+            }
+            _before8 = _copy8.deepcopy(_state8)
+            _old_stop_level8 = _PF8.stop_level
+            _PF8.stop_level = lambda _pos: 97.0
+            try:
+                _observations8 = _evaluate_stops8(_state8, {"AAA": 96.0})
+                _observations_again8 = _evaluate_stops8(_state8, {"AAA": 96.0})
+                _observations_nan8 = _evaluate_stops8(_state8, {"AAA": float("nan")})
+            finally:
+                _PF8.stop_level = _old_stop_level8
+
+            _rows8 = {
+                row.get("ticker"): row for row in _observations8
+                if isinstance(row, dict)
+            } if isinstance(_observations8, list) else {}
+            _rows_again8 = {
+                row.get("ticker"): row for row in _observations_again8
+                if isinstance(row, dict)
+            } if isinstance(_observations_again8, list) else {}
+            _rows_nan8 = {
+                row.get("ticker"): row for row in _observations_nan8
+                if isinstance(row, dict)
+            } if isinstance(_observations_nan8, list) else {}
+            _priced8 = _rows8.get("AAA", {})
+            _missing8 = _rows8.get("BBB", {})
+            if (
+                set(_rows8) == {"AAA", "BBB"}
+                and _priced8.get("status") == "priced"
+                and _priced8.get("price") == 96.0
+                and _priced8.get("stop_level") == 97.0
+                and _priced8.get("breached") is True
+                and _missing8.get("status") == "missing"
+                and _missing8.get("price") is None
+                and _missing8.get("breached") is None
+                and _rows_again8.get("AAA", {}).get("status") == "priced"
+                and _rows_again8.get("BBB", {}).get("status") == "missing"
+                and _rows_nan8.get("AAA", {}).get("status") == "missing"
+                and _rows_nan8.get("AAA", {}).get("reason") == "price_invalid"
+                and _state8 == _before8
+            ):
+                ok("P0.6 stop izi: priced/missing, stop_level otoritesi, tekrar ve state degismez")
+            else:
+                bad(
+                    "P0.6 stop izi sozlesmesi eksik/yanlis: "
+                    f"rows={_rows8}, again={_rows_again8}, state_changed={_state8 != _before8}"
+                )
+
+        # Entegrasyon kapisi: observer, portfolio.load()'un goreli cwd'sine
+        # baglanamaz. Eksik/bozuk state, gercekten bos pozisyondan ayrilmalidir.
+        # Fiyat adapter'i de tek sembolde duz DataFrame'i kabul etmelidir.
+        try:
+            import json as _json8
+            import tempfile as _tempfile8
+            import pandas as _pd8
+            from scripts import stop_observer_run as _SOR8
+
+            _tmp_state8 = _tempfile8.TemporaryDirectory()
+            try:
+                _state_dir8 = _Path8(_tmp_state8.name)
+                (_state_dir8 / "portfolio_A.json").write_text(
+                    _json8.dumps({"account": "A", "positions": {}}),
+                    encoding="utf-8",
+                )
+                (_state_dir8 / "portfolio_B.json").write_text("{", encoding="utf-8")
+                _states8, _statuses8 = _SO8.load_states(
+                    ["A", "B", "C"], state_dir=_state_dir8
+                )
+                _payload8 = _SO8.build_payload(
+                    {"A": []}, [],
+                    account_status={
+                        "A": {"account": "A", "status": "loaded"},
+                        "B": {"account": "B", "status": "missing"},
+                    },
+                )
+                _flat8 = _pd8.DataFrame(
+                    {"Close": [101.0]},
+                    index=_pd8.to_datetime(["2026-09-10"]),
+                )
+                _multi8 = _pd8.concat({"AAA": _flat8}, axis=1)
+                _loader_ok8 = (
+                    set(_states8) == {"A"}
+                    and _statuses8["A"].get("status") == "loaded"
+                    and _statuses8["B"].get("status") == "unreadable"
+                    and _statuses8["C"].get("status") == "missing"
+                    and _payload8.get("unavailable_account_count") == 1
+                )
+                # `_last_close` (fiyat, bar_gunu) doner: bar gunu fiyatla BIRLIKTE
+                # tasinmazsa panel bayat fiyat uzerinden kendinden emin YESIL
+                # gosterir. Iki sekil de hem degeri hem gunu ayni vermeli.
+                _shape_ok8 = (
+                    _SOR8._last_close(_flat8, ("AAA",)) == (101.0, "2026-09-10")
+                    and _SOR8._last_close(_multi8, ("AAA",)) == (101.0, "2026-09-10")
+                )
+                if _loader_ok8 and _shape_ok8:
+                    ok("P0.6 entegrasyon: state durumu ve tek-sembol fiyat sekli ayrik")
+                else:
+                    bad(
+                        "P0.6 entegrasyon kapisi eksik/yanlis: "
+                        f"statuses={_statuses8}, shape_ok={_shape_ok8}"
+                    )
+                _main_source8 = _inspect8.getsource(_SOR8.main)
+                if "state_dir=ROOT / \"portfolios\"" in _main_source8:
+                    ok("P0.6 state yolu cwd'den bagimsiz: runner repo kokunu kullaniyor")
+                else:
+                    bad("P0.6 state yolu runner'da repo kokune sabit degil")
+
+                _old_load_states8 = _SO8.load_states
+                _old_write_payload8 = _SO8.write_payload
+                _old_emit8 = _SOR8._emit
+                _statuses_empty8 = {
+                    acc: {
+                        "account": acc,
+                        "status": "loaded" if acc == "F" else "missing",
+                    }
+                    for acc in _SOR8.HESAPLAR
+                }
+                _payload_empty8 = {}
+                try:
+                    _SO8.load_states = lambda _accounts, state_dir=None: (
+                        {"F": {"account": "F", "positions": {}}},
+                        _statuses_empty8,
+                    )
+                    _SO8.write_payload = lambda _payload, path=None: (
+                        _payload_empty8.update(_payload) or "test"
+                    )
+                    _SOR8._emit = lambda _breached, _payload: None
+                    _empty_with_missing_rc8 = _SOR8.main()
+                finally:
+                    _SO8.load_states = _old_load_states8
+                    _SO8.write_payload = _old_write_payload8
+                    _SOR8._emit = _old_emit8
+                # SOZLESME DEGISTI (2026-09-10, onaylanan cikis-kodu ayrimi).
+                # ESKI: eksik hesap -> exit 1. Bu, `missing` -> job failure -> P0.3
+                # -> Telegram zincirini kuruyordu ve "missing Telegram'a GITMEZ"
+                # karariyla (stop_observer.py, karar 3) CELISIYORDU.
+                # YENI: sinyal kaybolmadi, CIKIS KODUNDAN KAPIYA tasindi.
+                # Bu testin niyeti ayni kaldi — "eksik hesap sessizce basari
+                # sayilmasin" — yalnizca hangi kanalda goruldugu degisti.
+                _kapi_empty8 = ((_payload_empty8.get("gate") or {}).get("verdict") or "").upper()
+                if _empty_with_missing_rc8 == 0 and _kapi_empty8 == "YELLOW":
+                    ok("P0.6 bos pozisyon + eksik hesap: exit 0 ama operasyon kapisi SARI")
+                else:
+                    bad("P0.6 eksik hesap bos-pozisyon dalinda kapiya yansimadi "
+                        f"(rc={_empty_with_missing_rc8}, kapi={_kapi_empty8 or '-'})")
+            finally:
+                _tmp_state8.cleanup()
+        except Exception as e:
+            bad(f"P0.6 entegrasyon kapisi kosmadi: {type(e).__name__}: {e}")
+
+        # #0l KORUMASI: gozlemci her kosuda calisacak; stop_eval.json'a yazarsa
+        # o artefaktin BAYATLIGI ile tasidigi "o gun stop degerlendirilmedi" sinyali
+        # olur. `_write_stop_eval` kapanis-disi erken donusu KORUNMALI.
+        import shadow as _SH8
+        _we8 = _inspect8.getsource(_SH8._write_stop_eval)
+        if 'run_label != "kapanis"' in _we8 and "return" in _we8.split('run_label != "kapanis"')[1][:40]:
+            ok("P0.6 #0l korumasi: _write_stop_eval kapanis-disi hala erken donuyor")
+        else:
+            bad("P0.6 #0l korumasi KIRILDI: stop_eval.json artik her kosuda yazilabilir")
+    except Exception as e:
+        bad(f"P0.6 [6l] testi kosmadi: {type(e).__name__}: {e}")
+
+
+    # -- [6m] P0.6/madde-7 -- unpriced/missing OPERASYON KAPISI --
+    # NEDEN: [6l] olcumu URETIYOR ama hicbir sey TUKETMIYORDU. "missing fail-closed"
+    # yazip yalnizca kaydetmek, sistemin kendi kusurunu (karar tuketicisi olmayan
+    # cikti) tekrar etmektir.
+    # CIKIS KODU IKI FARKLI SEYI KARISTIRMAMALI:
+    #   KISMI (bazi pozisyon fiyatsiz)  -> exit 0 · iz + KAPI SARI · Telegram YOK
+    #   TOPLAM (hic state / hic fiyat)  -> exit 1 · adim kirmizi · P0.3 alarmi DOGRU
+    # Aksi halde `missing` -> exit 1 -> job failure -> P0.3 -> Telegram olur ve
+    # "missing Telegram'a gitmez" karariyla CELISIR.
+    print("\n[6m] P0.6/madde-7 unpriced operasyon kapisi (test-once)")
+    try:
+        import importlib.util as _ilu9
+        from pathlib import Path as _Path9
+
+        _root9 = _Path9(__file__).resolve().parent
+        _spec9 = _ilu9.spec_from_file_location(
+            "_stop_obs_run9", _root9 / "scripts" / "stop_observer_run.py")
+        _run9 = _ilu9.module_from_spec(_spec9)
+        _spec9.loader.exec_module(_run9)
+        _SO9 = _run9.stop_observer
+
+        def _poz9(entry=100.0, peak=100.0):
+            return {"entry": entry, "peak": peak, "shares": 1.0}
+
+        _yakalanan9 = {}
+
+        def _kur9(states, statuses, prices):
+            _yakalanan9.clear()
+            _run9.stop_observer.load_states = lambda *a, **k: (states, statuses)
+            _run9.fetch_prices = lambda t: (
+                prices, [{"source": "test", "status": "ok"}], {},
+                {k: "2026-09-10" for k in prices},
+            )
+            _run9.stop_observer.write_payload = lambda p, path=None: (
+                _yakalanan9.update(p) or "test")
+
+        _orj_load9 = _SO9.load_states
+        _orj_write9 = _SO9.write_payload
+        _orj_fetch9 = _run9.fetch_prices
+        _orj_hes9 = _run9.HESAPLAR
+        _run9.HESAPLAR = ["F"]
+        try:
+            _st9 = {"F": {"positions": {"AAA": _poz9(), "BBB": _poz9()}, "cash": 0.0}}
+            _ok9 = {"F": {"account": "F", "status": "loaded", "position_count": 2}}
+
+            # 1) KISMI: bir pozisyon fiyatsiz -> exit 0, kapi SARI, Telegram tetigi YOK
+            _kur9(_st9, _ok9, {"AAA": 150.0})
+            _rc_kismi9 = _run9.main()
+            _p_kismi9 = dict(_yakalanan9)
+
+            # 2) HIC FIYAT: pozisyon var, hicbir kaynak vermedi -> exit 1, kapi KIRMIZI
+            _kur9(_st9, _ok9, {})
+            _rc_fiyatsiz9 = _run9.main()
+            _p_fiyatsiz9 = dict(_yakalanan9)
+
+            # 3) HIC STATE: hicbir hesap yuklenemedi -> exit 1, kapi KIRMIZI
+            _kur9({}, {"F": {"account": "F", "status": "unreadable", "error": "x"}}, {})
+            _rc_statesiz9 = _run9.main()
+            _p_statesiz9 = dict(_yakalanan9)
+
+            # 4) HEPSI PRICED: -> exit 0, kapi YESIL, breach yok
+            _kur9(_st9, _ok9, {"AAA": 150.0, "BBB": 150.0})
+            _rc_temiz9 = _run9.main()
+            _p_temiz9 = dict(_yakalanan9)
+
+            # 5) KISMI HESAP: F yuklendi, G1 okunamadi, fiyatlar tam.
+            # Bir hesap dosyasinin yoklugu ARIZA DEGIL -> exit 0, kapi SARI.
+            # `not unavailable` sarti burada exit 1 verir ve P0.3 -> Telegram tetikler;
+            # bu, "missing Telegram'a gitmez" karariyla CELISIR.
+            _run9.HESAPLAR = ["F", "G1"]
+            _kur9(
+                _st9,
+                {**_ok9, "G1": {"account": "G1", "status": "missing"}},
+                {"AAA": 150.0, "BBB": 150.0},
+            )
+            _rc_kismi_hesap9 = _run9.main()
+            _p_kismi_hesap9 = dict(_yakalanan9)
+            _run9.HESAPLAR = ["F"]
+        finally:
+            _SO9.load_states = _orj_load9
+            _SO9.write_payload = _orj_write9
+            _run9.fetch_prices = _orj_fetch9
+            _run9.HESAPLAR = _orj_hes9
+
+        def _kapi9(p):
+            return ((p.get("gate") or {}).get("verdict") or "").upper()
+
+        def _satir9(p, ticker):
+            for _satirlar in (p.get("accounts") or {}).values():
+                for _r in _satirlar or []:
+                    if _r.get("ticker") == ticker:
+                        return _r
+            return {}
+
+        _sartlar9 = [
+            ("1  KISMI: exit 0 (missing tek basina ariza DEGIL)", _rc_kismi9, 0),
+            ("1b KISMI: unpriced_count=1", _p_kismi9.get("unpriced_count"), 1),
+            ("1c KISMI: kapi SARI", _kapi9(_p_kismi9), "YELLOW"),
+            ("1d KISMI: breach yok -> Telegram tetigi yok", _p_kismi9.get("breach"), False),
+            ("2  HIC FIYAT: exit 1 (gozlem YAPILAMADI)", _rc_fiyatsiz9, 1),
+            ("2b HIC FIYAT: kapi KIRMIZI", _kapi9(_p_fiyatsiz9), "RED"),
+            ("3  HIC STATE: exit 1", _rc_statesiz9, 1),
+            ("3b HIC STATE: kapi KIRMIZI", _kapi9(_p_statesiz9), "RED"),
+            ("4  HEPSI PRICED: exit 0", _rc_temiz9, 0),
+            ("4b HEPSI PRICED: kapi YESIL", _kapi9(_p_temiz9), "GREEN"),
+            ("4c HEPSI PRICED: unpriced_count=0", _p_temiz9.get("unpriced_count"), 0),
+            ("5a KISMI HESAP: exit 0 (dosya yoklugu ariza DEGIL)", _rc_kismi_hesap9, 0),
+            ("5b KISMI HESAP: kapi SARI", _kapi9(_p_kismi_hesap9), "YELLOW"),
+            ("5c KISMI HESAP: unavailable_account_count=1",
+             _p_kismi_hesap9.get("unavailable_account_count"), 1),
+            # BAYAT FIYAT gorunur olmali: gozlem TAZE olup fiyat ESKI olabilir.
+            # Tarih tasinmazsa panel bayat fiyat uzerinden kendinden emin YESIL
+            # gosterir — "yanlis-guven" sinifi. Hukme cevrilmez, GORUNUR kilinir.
+            ("6  fiyat bar gunu satirda", _satir9(_p_temiz9, "AAA").get("price_date"),
+             "2026-09-10"),
+            ("6b price_asof ozeti oldest", (_p_temiz9.get("price_asof") or {}).get("oldest"),
+             "2026-09-10"),
+            ("6c price_asof ozeti distinct", (_p_temiz9.get("price_asof") or {}).get("distinct"),
+             1),
+            ("6d fiyatsiz satirda tarih YOK (uydurulmaz)",
+             _satir9(_p_kismi9, "BBB").get("price_date"), None),
+            ("6e fiyatsiz gun ozete girmez",
+             (_p_kismi9.get("price_asof") or {}).get("distinct"), 1),
+            # Iki kaynagin karsilastirmasi ARTEFAKTA olmali, yalniz logda degil:
+            # Actions logu 90 gunde silinir, artefakt git'te kalir. Bir stop
+            # tartismali hale gelirse kanit o gun kaybolmus olmamali.
+            ("7  cross_source_check alani artefaktta",
+             isinstance(_p_temiz9.get("cross_source_check"), dict), True),
+        ]
+        for _ad9, _alinan9, _beklenen9 in _sartlar9:
+            if _alinan9 == _beklenen9:
+                ok(f"P0.6 kapi {_ad9}")
+            else:
+                bad(f"P0.6 kapi {_ad9}: beklenen {_beklenen9!r}, alinan {_alinan9!r}")
+
+        # 5) TUKETICI: kapi hukmu panelde OKUNMALI. Uretilip okunmayan olcum,
+        #    tam da bu isin duzeltmeye calistigi kusurdur.
+        # KANIT TURU = VEKIL (D12): burada olculen sey METIN YUZEYI, calisan JS
+        # davranisi DEGIL. Sebep: bu makinede `node` YOK ve docs/test-health.js
+        # hicbir yerden kosulmuyor -> selftest JS'i CALISTIRAMAZ.
+        # Vekil oldugu icin tek kelime degil, tek tek BAGLAMA NOKTALARI aranir.
+        #
+        # JS DAVRANISI AYRICA OLCULDU (2026-09-10, tarayicide 7 senaryo):
+        #   yok->n(verdict g) · GREEN->g · YELLOW->a(verdict a) · RED->r(verdict r)
+        #   breach->alt satirda gorunur · gate yok->n · damga bozuk->"yas okunamadi"
+        # Bu olcum TEK SEFERLIK ve TEKRARLANMIYOR; regresyonu yakalayacak kosucu
+        # repoda YOK. Acik is: JS kosucusu (bkz ACIK_ISLER, test-health.js olu).
+        _idx9 = (_root9 / "docs" / "index.html").read_text(encoding="utf-8")
+        _hl9 = (_root9 / "docs" / "health-logic.js").read_text(encoding="utf-8")
+        _hh9 = (_root9 / "docs" / "health.html").read_text(encoding="utf-8")
+        _kanca9 = [
+            ("index.html artefakti cekiyor", "state/stop_observer.json" in _idx9),
+            ("index.html veriye bagliyor", "data.stop_observer = " in _idx9),
+            ("index.html kapi satirini GOSTERIYOR (slice kurbani degil)",
+             "'stop_observer'" in _idx9 and "core.push(stopRow)" in _idx9),
+            ("health-logic cekirdek metrik uretiyor",
+             '"stop_observer", true,' in _hl9),
+            ("health-logic hukmu normalize ediyor",
+             "normalizeVerdict(soGate && soGate.verdict)" in _hl9),
+            ("health-logic yoklugu YESIL saymiyor", '|| "n";' in _hl9),
+            ("health-logic fiyat bar gununu gosteriyor",
+             "price_asof" in _hl9 and "soFiyatGun" in _hl9),
+            ("health.html artefakti cekiyor", "state/stop_observer.json" in _hh9),
+            ("health.html veriye bagliyor", "data.stop_observer = " in _hh9),
+        ]
+        _eksik9 = [ad for ad, tut in _kanca9 if not tut]
+        if not _eksik9:
+            ok(f"P0.6 kapi 5  TUKETICI bagli [VEKIL: metin yuzeyi] ({len(_kanca9)}/{len(_kanca9)} kanca)")
+        else:
+            bad("P0.6 kapi 5  TUKETICI EKSIK: " + " | ".join(_eksik9))
+    except Exception as e:
+        bad(f"P0.6 [6m] testi kosmadi: {type(e).__name__}: {e}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:

@@ -66,6 +66,10 @@
 <script src="health-logic.js"></script>
 <script>
 const SOURCES = ["state/dashboard.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/dashboard.json"];
+// P0.6/madde-7 — stop gozlemi dashboard.json'da DEGIL, ayri artefaktta.
+// Bu sayfa cekmezse stop kapisi burada kalici "olculemedi" gorunur; sayfanin
+// isi tam da bunu gostermek oldugu icin ayri kaynak listesi eklendi.
+const STOP_SOURCES = ["state/stop_observer.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/stop_observer.json"];
 const BG = {g:"bg-g", a:"bg-a", r:"bg-r", n:"bg-n"};
 const CLS = {g:"g", a:"a", r:"r", n:"n"};
 const COL = {g:"var(--green)", a:"var(--amber)", r:"var(--red)", n:"var(--na)"};
@@ -223,6 +227,18 @@ async function load() {
   if (!data) {
     document.getElementById("app").innerHTML = '<div class="err">dashboard.json okunamadi: ' + esc(lastErr) + '</div>';
     return;
+  }
+  // Stop artefakti AYRI cekilir; yoklugu sayfayi dusurmez, "olculemedi" olur.
+  data.stop_observer = null;
+  for (const url of STOP_SOURCES) {
+    try {
+      const r = await fetch(url + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      data.stop_observer = await r.json();
+      break;
+    } catch (e) {
+      data.stop_observer = null;
+    }
   }
   const result = window.BistHealth.evaluate(data, Date.now());
   let html = '<div class="gate"><div class="beacon ' + BG[result.verdict] + '" style="color:' + COL[result.verdict] + '"></div><div><div class="verdict ' + CLS[result.verdict] + '">OPERASYON: ' + VTXT[result.verdict] + '</div><div class="note">' + esc(result.note) + '</div></div></div><div class="grid">';

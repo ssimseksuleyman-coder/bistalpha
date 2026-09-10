@@ -690,7 +690,13 @@ function renderOperationGate(data) {
   const evaluator = window.BistHealth && window.BistHealth.evaluate;
   const result = evaluator ? evaluator(data, Date.now()) : null;
   const verdict = result?.verdict || data.operation_health?.verdict || 'n';
-  const core = result?.metrics?.filter(m => m.core).slice(0, 5) || [];
+  const coreAll = result?.metrics?.filter(m => m.core) || [];
+  const core = coreAll.slice(0, 5);
+  // P0.6/madde-7: stop kapisi cekirdek listede 5. siradan SONRA geliyor; slice
+  // onu hukme katip EKRANDA GORUNMEZ birakirdi. Hesaplanan ama gosterilmeyen
+  // metrik, tam da bu isin duzelttigi kusurdur -> her zaman eklenir.
+  const stopRow = coreAll.find(m => m.key === 'stop_observer');
+  if (stopRow && core.indexOf(stopRow) < 0) core.push(stopRow);
   const health = data.operation_health || {};
   const gateLabel = verdict === 'r'
     ? 'Sinyal dusuk guven: once operasyonu duzelt'
@@ -1306,6 +1312,17 @@ async function loadDashboard() {
     } catch (_) {
       livenessInfo = null;
     }
+    // P0.6/madde-7 — bagimsiz stop gozlemi AYRI artefakttir (stop_eval.json DEGIL:
+    // o dosyanin bayatligi #0l'in kor-nokta sinyali, bu her kosuda yazilir).
+    // Cekilemezse null birakilir; health-logic bunu "olculemedi" sayar, YESIL saymaz.
+    let stopObserverInfo = null;
+    try {
+      const soResponse = await fetch('state/stop_observer.json?ts=' + Date.now(), { cache: 'no-store' });
+      if (soResponse.ok) stopObserverInfo = await soResponse.json();
+    } catch (_) {
+      stopObserverInfo = null;
+    }
+    data.stop_observer = stopObserverInfo;
     const accounts = data.accounts || {};
     renderTop(data.top10 || [], data);
     renderDecisionCards(data);

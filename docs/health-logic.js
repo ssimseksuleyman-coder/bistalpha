@@ -225,6 +225,54 @@
       consistency ? (consistency.note || "hesaplar karsilastirildi") : "dashboard.json henuz bu metrigi uretmiyor"
     ));
 
+    // -- P0.6/madde-7: BAGIMSIZ STOP GOZLEMI KAPISI --------------------------
+    // NEDEN CEKIRDEK: gozlem yapilamiyorsa stop korumasi KORDUR. 2026-09-08'de
+    // veri kapisi ana yolu dusurdu ve O GUN STOPLAR HIC DEGERLENDIRILMEDI;
+    // bunun panelde gorunur bir karsiligi yoktu.
+    // ESLEME: GREEN->g · YELLOW->a · RED->r · artefakt/hukum yok -> "n".
+    // "n" bilerek "g" DEGIL: yokluk guvence degildir. coreWorst "n"leri disarida
+    // birakir, yani yokluk paneli yesile BOYAMAZ; ayri "olculemedi" olarak durur.
+    // BAYATLIK YARGILANMIYOR: iki yas da asagida GORUNUR ama harfe cevrilmez —
+    // gece ve haftasonu icin olculmus taban yok; esik uydurmak yerine olcum birakildi.
+    // IKI AYRI YAS VAR ve karistirilmamali:
+    //   generated_at -> gozlem NE ZAMAN kostu
+    //   price_asof   -> fiyatin BAR GUNU. Gozlem taze olup fiyat bayat olabilir
+    //                   (islem durdurma/tatil/kaynak gecikmesi); bu gorunmezse
+    //                   panel bayat fiyat uzerinden kendinden emin YESIL gosterir.
+    const so = d.stop_observer && typeof d.stop_observer === "object" ? d.stop_observer : null;
+    const soGate = so && so.gate && typeof so.gate === "object" ? so.gate : null;
+    const soVerdict = normalizeVerdict(soGate && soGate.verdict) || "n";
+    const soTs = so ? timestampMs(so.generated_at) : null;
+    const soAgeMin = (soTs == null || !Number.isFinite(nowMs))
+      ? null
+      : Math.max(0, Math.round((nowMs - soTs) / 60000));
+    const soAsof = so && so.price_asof && typeof so.price_asof === "object"
+      ? so.price_asof
+      : {};
+    const soOldest = str(soAsof.oldest);
+    const soNewest = str(soAsof.newest);
+    const soFiyatGun = soOldest
+      ? "fiyat " + (soNewest && soNewest !== soOldest ? soOldest + ".." + soNewest : soOldest)
+      : (num(so && so.position_count) ? "fiyat gunu yok" : null);
+    const soSub = so
+      ? [
+          "pozisyon " + (num(so.position_count) ?? 0),
+          "fiyatsiz " + (num(so.unpriced_count) ?? 0),
+          so.breach === true ? "STOP ALTINDA POZISYON VAR" : null,
+          soFiyatGun,
+          soAgeMin == null ? "yas okunamadi" : "yas " + soAgeMin + " dk",
+        ].filter(Boolean).join(" | ")
+      : "stop_observer.json okunamadi";
+    out.push(metric(
+      "stop_observer", true, "Bagimsiz stop gozlemi", "stop gozlemi yapilabildi mi",
+      so ? String((soGate && soGate.verdict) || "-") : "-",
+      soSub,
+      soVerdict,
+      so
+        ? String((soGate && (soGate.detail || soGate.reason)) || "kapi hukmu uretilmemis")
+        : "artefakt yok -> gozlem OLCULEMEDI (guvenli SAYILMAZ)"
+    ));
+
     const kap = (d.official_sources && d.official_sources.kap) || {};
     const kapStatus = kap.status || "missing";
     out.push(metric(
