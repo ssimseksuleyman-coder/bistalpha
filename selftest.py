@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "09ad265d9fd5",
+        "bist_alpha/portfolio.py": "e8b156d86a5f",   # P0.3 adim 2 (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2192,28 +2192,74 @@ def main():
 
         _iddialar10 = []
 
-        # --- 1) check_stops: FIYATSIZ POZISYON ---------------------------------
-        # portfolio.py:96-98  `pt = prices.get(tic); if pt is None: continue`
-        # Fiyati olmayan pozisyon SESSIZCE dusuyor: ne satis, ne kayit, ne sayac.
-        # Stop KACIRILIR ve kacirildigi HICBIR YERDE gorunmez.
-        _s10 = _st10(AAA=_p10(100.0, peak=200.0))     # stop = 170.0, cok altinda
-        _sells10 = _PF10.check_stops(_s10, {})        # fiyat YOK
+        # --- 1) check_stops: KULLANILAMAZ FIYAT (P0.3 adim 2 SONRASI) ---------
+        # SOZLESME DEGISTI. Yama oncesi dort ayri kusur olculmustu; hepsi ayni
+        # kuralin ihlaliydi: KULLANILABILIR SAYI OLMAYAN SEY FIYAT DEGILDIR.
+        #   fiyat yok / NaN / inf / 0 / negatif / bool / cop-metin -> `unchecked`
+        #   duzgun sayi (float ya da '150' gibi cevrilebilir metin) -> normal yol
+        # METIN KASTEN KABUL EDILIYOR: iyi-bicimli sayisal metni REDDETMEK, tip
+        # kozmetigi ugruna GERCEK BIR STOP'U KACIRMAK olurdu (sinirsiz zarar);
+        # kabul etmenin bedeli ise sifir (deger dogru). Fail-safe yonu cevirmeyi
+        # gosteriyor. Cevrilemeyen her sey `unchecked`e gider.
+        _s10 = _st10(AAA=_p10(100.0, peak=200.0))     # stop = 190.0
+        # (gain 100% >= 30% -> TRAIL_TIGHT 0.05 -> 200*0.95 = 190;
+        #  entry*(1-0.15)=85 daha dusuk, max() 190 secer.
+        #  ILK YAZDIGIMDA "170" DEMISTIM — YANLISTI, olcup duzeltildi.)
+        _sells10, _unch10 = _PF10.check_stops(_s10, {})      # fiyat YOK
         _iddialar10.append(
-            ("1  [DEGISECEK] fiyatsiz pozisyon sessizce atlaniyor (satis yok)",
-             len(_sells10), 0))
+            ("1  [KORUNACAK] fiyatsiz pozisyon SATIS uretmiyor", len(_sells10), 0))
         _iddialar10.append(
-            ("1b [DEGISECEK] atlanan pozisyon icin HICBIR iz yok",
-             _s10.get("unchecked", "ALAN_YOK"), "ALAN_YOK"))
+            ("1b [DEGISTI] fiyatsiz pozisyon artik IZ birakiyor",
+             _unch10, [("AAA", "fiyat_yok")]))
         _iddialar10.append(
             ("1c [KORUNACAK] fiyatsizken peak DE guncellenmiyor (mutasyon yok)",
              _s10["positions"]["AAA"]["peak"], 200.0))
+        _iddialar10.append(
+            ("1h [DEGISTI] state'e yazilmiyor (kalici JSON kirlenmiyor)",
+             _s10.get("unchecked", "ALAN_YOK"), "ALAN_YOK"))
+
+        def _tek10(fiyat):
+            _st = _st10(AAA=_p10(100.0, peak=200.0))
+            return _PF10.check_stops(_st, {"AAA": fiyat})
+
+        _sn10, _un10 = _tek10(float("nan"))
+        _iddialar10.append(
+            ("1d [DEGISTI] NaN artik sessiz degil (yanlis-guvenli kapandi)",
+             (len(_sn10), _un10), (0, [("AAA", "fiyat_gecersiz")])))
+        _si10, _ui10 = _tek10(float("inf"))
+        _iddialar10.append(
+            ("1d2 [YENI] inf de gecersiz", (len(_si10), _ui10),
+             (0, [("AAA", "fiyat_gecersiz")])))
+        _sz10, _uz10 = _tek10(0.0)
+        _iddialar10.append(
+            ("1e [DEGISTI] SIFIR fiyat artik SATIS URETMIYOR "
+             "(veri arizasi -> uydurma emir kapandi)",
+             (len(_sz10), _uz10), (0, [("AAA", "fiyat_pozitif_degil")])))
+        _sg10, _ug10 = _tek10(-5.0)
+        _iddialar10.append(
+            ("1f [DEGISTI] NEGATIF fiyat da satis uretmiyor",
+             (len(_sg10), _ug10), (0, [("AAA", "fiyat_pozitif_degil")])))
+        _sb10, _ub10 = _tek10(True)
+        _iddialar10.append(
+            ("1i [YENI] bool fiyat degildir (float(True)=1.0 -> 1.00'dan SATIS "
+             "uretiyordu; olculdu)", (len(_sb10), _ub10),
+             (0, [("AAA", "fiyat_sayi_degil")])))
+        _sc10, _uc10 = _tek10("abc")
+        _iddialar10.append(
+            ("1g [DEGISTI] cop metin kosumu DUSURMUYOR, ize gidiyor "
+             "(eskiden yakalanmayan TypeError'di)",
+             (len(_sc10), _uc10), (0, [("AAA", "fiyat_sayi_degil")])))
+        _sm10, _um10 = _tek10("150")
+        _iddialar10.append(
+            ("1j [KARAR] iyi-bicimli sayisal metin KABUL EDILIYOR "
+             "(reddetmek gercek stop'u kacirirdi)", (len(_sm10), _um10), (1, [])))
 
         # Karsi-yon (pozitif kontrol): fiyat VARSA ve stop altindaysa SATAR.
         _s10b = _st10(AAA=_p10(100.0, peak=200.0))
-        _sells10b = _PF10.check_stops(_s10b, {"AAA": 150.0})   # 150 < 170
+        _sells10b, _unch10b = _PF10.check_stops(_s10b, {"AAA": 150.0})   # 150 < 190
         _iddialar10.append(
             ("2  [KORUNACAK] fiyat varsa ve stop altindaysa SATAR",
-             len(_sells10b), 1))
+             (len(_sells10b), _unch10b), (1, [])))
         _iddialar10.append(
             ("2b [KORUNACAK] satis kaydi fiyati tasiyor",
              _sells10b[0]["price"] if _sells10b else None, 150.0))
@@ -2270,7 +2316,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "09ad265d9fd5"
+        _sha10 = "e8b156d86a5f"   # P0.3 adim 2 ile guncellendi (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")

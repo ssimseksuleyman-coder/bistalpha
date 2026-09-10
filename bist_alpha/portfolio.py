@@ -89,12 +89,50 @@ def check_stops(state, prices_today):
     """
     Güncel fiyatlarla stop kontrolü. SAT edilmesi gerekenleri döner.
     prices_today: {ticker: price}
-    Returns: [{'ticker', 'price', 'reason', 'giveback'}]
+
+    Returns: (sells, unchecked)
+      sells     = [{'ticker', 'price', 'reason', 'giveback'}]
+      unchecked = [(ticker, sebep), ...] — stop'u OLCULEMEYEN pozisyonlar
+
+    P0.3 — KURAL: KULLANILABILIR SAYI OLMAYAN SEY FIYAT DEGILDIR.
+    Olculen davranis (2026-09-10, yama oncesi) DORT ayri kusur gosterdi:
+      fiyat yok  -> sessizce `continue`; stop KACIRILIR ve kimse bilmez
+      NaN        -> `NaN < stop` her zaman False -> sessizce "stop yok"
+      0 / negatif-> GERCEK SATIS uretiyordu; veri arizasi uydurma fiyattan emir
+      metin      -> yakalanmayan TypeError, kosumu dusuruyordu
+    Dordu de artik `unchecked`e gider. Hicbiri satis uretmez, hicbiri sessizce
+    dusmez.
+
+    FAIL-SAFE YONU (koddan ONCE yazildi): bilinmiyor != guvenli, ama bilinmiyor
+    != breached de DEGIL. "Breached varsay" veri bosluğundan SATIS uretirdi ki
+    en kotusu odur. Dogru davranis: OLCEMEDIGINI SOYLE, karari cagirana birak.
+
+    TUPLE DONUSU BILINCLI: opsiyonel out-parametre sessizce gecilebilirdi ve
+    bu, "sessizce kaybolan bilgi" kusurunun opt-in halini uretirdi. Tek uretim
+    cagirani var (shadow.py) -> maliyeti bir satir.
     """
     sells = []
+    unchecked = []
     for tic, pos in state["positions"].items():
-        pt = prices_today.get(tic)
-        if pt is None:
+        ham = (prices_today or {}).get(tic)
+        if ham is None:
+            unchecked.append((tic, "fiyat_yok"))
+            continue
+        if isinstance(ham, bool):
+            # float(True) == 1.0 -> bool bir fiyat gibi gecer ve 1.00'dan
+            # SATIS uretir. Olculdu (2026-09-10); 0/negatif ile ayni sinif.
+            unchecked.append((tic, "fiyat_sayi_degil"))
+            continue
+        try:
+            pt = float(ham)
+        except (TypeError, ValueError):
+            unchecked.append((tic, "fiyat_sayi_degil"))
+            continue
+        if not math.isfinite(pt):
+            unchecked.append((tic, "fiyat_gecersiz"))
+            continue
+        if pt <= 0:
+            unchecked.append((tic, "fiyat_pozitif_degil"))
             continue
         if "peak" not in pos or not pos["peak"]:  # eski JSON koruması
             pos["peak"] = pos.get("entry", pt)
@@ -105,7 +143,7 @@ def check_stops(state, prices_today):
             giveback = (pos['peak'] - pt) / pos['peak'] * 100
             sells.append({"ticker": tic, "price": round(pt, 2),
                           "reason": "stop", "giveback": round(giveback, 2)})
-    return sells
+    return sells, unchecked
 
 
 def _trade_date(trade_date=None):

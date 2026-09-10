@@ -630,6 +630,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             #    rebalans ayni gun D+1 OPEN'dan alir (10:00).
             #    Yeni sira: CA-DUZELTME -> FILL (varsa) -> STOP -> KARAR.
             sells, stop_trades, new_trades = [], [], []
+            stop_unchecked = []   # P0.3: stop'u OLCULEMEYEN pozisyonlar
             # 0) #0k — CORPORATE-ACTION duzeltmesi, STOP'tan ONCE.
             # Neden once: geriye donuk bolunme entry/peak'i feed'le uyumsuz
             # birakir; duzeltilmeden stop'a girilirse phantom-stop DOGAR.
@@ -740,7 +741,9 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             #                 olarak korunuyor (limit degisirse / eski rejim).
             #   FILL YOK   -> mevcut pozisyonlara normal stop (#0l davranisi aynen).
             if run_label == "kapanis":
-                sells = pf.check_stops(state, prices_today)
+                # P0.3: fiyati kullanilamaz olan pozisyon artik SESSIZCE
+                # dusmuyor; sebebiyle birlikte doner ve asagida raporlanir.
+                sells, stop_unchecked = pf.check_stops(state, prices_today)
                 if sells:
                     stop_trades = pf.close_positions(state, sells, prices_today,
                                                      slippage=slippage, trade_date=trade_date)
@@ -812,6 +815,11 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 "value": round(pf.current_value(state, prices_today), 4),
                 "n_pos": len(state["positions"]),
                 "sells": sells,
+                # P0.3 GORUNURLUK: `ca_unchecked` ile ayni bicim — stop'u
+                # olculemeyen pozisyon "temiz" ile karistirilmasin.
+                "stop_unchecked": ([{"ticker": t, "reason": r}
+                                    for t, r in stop_unchecked]
+                                   if stop_unchecked else None),
                 "stop_trades": stop_trades,
                 # #0i: ICRA edildi mi (fill bu kosuda kitaplandi). Karar icin
                 # "rebalance_decided" / "pending_rebalance" alanlarina bak.
