@@ -701,12 +701,31 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                     # #0i'nin OLCMEK ISTEDIGI seyi (D+1 open'dan gercekci fill)
                     # kirletir. Olcum gosterdi ki ikameye ihtiyac YOK.
                     hedef = list((pending.get("weights") or {}).keys())
-                    eksik = [t for t in hedef if t not in opens_today]
+                    # P0.3 adim 4 — KAPI SATIS TARAFINI DA KAPSAR.
+                    # Yukaridaki kural ("%100 norm, HER SAPMA anomali") yalniz
+                    # ALIS tickerlarina bakiyordu; TUTULAN pozisyonlar
+                    # denetlenmiyordu. Olculdu (2026-09-10): tutulan bir
+                    # pozisyonun fiyati eksikse `pf.rebalance` onu ENTRY'den
+                    # satar ve bu, YENI PORTFOYUN TAMAMININ boyutlandirmasini
+                    # degistirir (ornek: 5.988 lot yerine 3.992 -> %33 kucuk);
+                    # NaN ise state'e `shares: nan` yazilir, sifir ise portfoy
+                    # sifirlanir. Tek satirlik veri boslugu tum devre yayilir.
+                    # Cozum yeni politika DEGIL: ayni kati kurali islemin
+                    # diger yarisina genisletmek. Ertelenir, pending korunur,
+                    # omur sayaci isler (>2 gun -> mevcut iptal kurali).
+                    tutulan = list((state.get("positions") or {}).keys())
+                    eksik_alis = [t for t in hedef if t not in opens_today]
+                    eksik_satis = [t for t in tutulan if t not in opens_today]
+                    eksik = eksik_alis + [t for t in eksik_satis if t not in eksik_alis]
                     if eksik:
                         pending["fill_blocked"] = {
                             "at": trade_date,
                             "missing_n": len(eksik),
                             "missing_sample": eksik[:5],
+                            # Hangi yarim eksik: alis ile satis ayri sebeplerdir
+                            # ("hedef fiyati yok" != "tutulani satamiyoruz").
+                            "missing_buy": eksik_alis[:5] or None,
+                            "missing_sell": eksik_satis[:5] or None,
                         }
                         print(f"[shadow] {acc} FILL ERTELENDI — hedefin {len(eksik)}/{len(hedef)} "
                               f"tickerinda D+1 open YOK: {eksik[:5]} | pending KORUNDU "

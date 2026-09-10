@@ -220,14 +220,19 @@ def rebalance(state, picks_with_weights, prices_today, slippage=0.0, trade_date=
     friction = config.COMMISSION / 2 + slippage
     scale = max(0.0, min(1.0, scale))  # [0, 1] sınır
     trades = []
-    # Toplam değer
-    total = state["cash"]
-    for tic, pos in state["positions"].items():
-        p = prices_today.get(tic, pos['entry'])
-        total += pos['shares'] * p
+    # Toplam değer — `_valuation` ile AYNI hesap (ikinci uygulama dogmasin).
+    # P0.3 adim 4: eskiden ham `prices.get(tic, entry)` idi; NaN girdiginde
+    # `total` nan olur, `deployed` nan olur ve state'e `shares: nan` YAZILIRDI.
+    # Birincil koruma shadow.py fill kapisidir (eksik fiyatta fill ERTELENIR);
+    # bu satir IKINCI KILIT — kapi bir gun atlanirsa bozuk state yazilmasin.
+    total, _reb_unpriced = _valuation(state, prices_today)
     # Tümünü sat
     for tic, pos in list(state["positions"].items()):
-        p = prices_today.get(tic, pos['entry'])
+        p, _sebep = usable_price(prices_today.get(tic))
+        if _sebep:
+            p, _esebep = usable_price(pos.get("entry"))
+            if _esebep:
+                p = 0.0
         state["cash"] += pos['shares'] * p * (1 - friction)
         trades.append({
             "type": "SELL",

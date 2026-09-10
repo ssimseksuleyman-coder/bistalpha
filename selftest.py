@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "cb6da6ec3100",   # P0.3 adim 2/2b/3 (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "b70147ef6c50",   # P0.3 adim 2/2b/3/4 (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2446,6 +2446,51 @@ def main():
              _PF10.stop_level({"entry": 100.0, "shares": 1.0}),
              _PF10.stop_level({"entry": 100.0, "peak": 100.0, "shares": 1.0})))
 
+        # --- 4) REBALANCE (P0.3 adim 4) ---------------------------------------
+        # Olculdu (2026-09-10, yama oncesi): tutulan bir pozisyonun fiyati
+        # eksikse `rebalance` onu ENTRY'den satar ve bu YENI PORTFOYUN TAMAMININ
+        # boyutlandirmasini degistirir (5.988 lot yerine 3.992 = %33 kucuk);
+        # NaN ise state'e `shares: nan` YAZILIR; sifir ise portfoy sifirlanir.
+        # BIRINCIL koruma shadow.py fill kapisidir; buradaki IKINCI KILIT.
+        def _reb10(fiyatlar):
+            _s = _st10(cash=0.0, AAA={"entry": 100.0, "peak": 100.0, "shares": 2.0})
+            _PF10.rebalance(_s, {"BBB": 1.0}, fiyatlar, trade_date="2026-01-01")
+            _h = _s["history"][-1]
+            _sat = [t for t in _h["trades"] if t["type"] == "SELL"][0]
+            _al = [t for t in _h["trades"] if t["type"] == "BUY"]
+            return (_sat["price"], _al[0]["shares"] if _al else 0.0, _h["total"])
+
+        _iddialar10.append(
+            ("4c [KORUNACAK] normal fiyatta rebalance BIREBIR ayni "
+             "(A1: saglam veride davranis degismedi)",
+             _reb10({"AAA": 150.0, "BBB": 50.0}), (150.0, 5.988, 299.4)))
+        for _ad10, _f10 in (("NaN", float("nan")), ("sifir", 0.0),
+                            ("cop metin", "abc"), ("np.bool_", _np10.bool_(True))):
+            _iddialar10.append(
+                (f"4d [DEGISTI] rebalance {_ad10}: entry'ye duser, NaN/sifir lot YOK",
+                 _reb10({"AAA": _f10, "BBB": 50.0}), (100.0, 3.992, 199.6)))
+        _iddialar10.append(
+            ("4e [KORUNACAK] fiyat hic yoksa eski davranis (entry) korunur",
+             _reb10({"BBB": 50.0}), (100.0, 3.992, 199.6)))
+
+        # --- 5) FILL KAPISI (BIRINCIL koruma) — KANIT TURU: VEKIL --------------
+        # `shadow.step` agir kurulum ister (data/signals); burada olculen sey
+        # METIN YUZEYI. Davranis kaniti ikinci kilitte (yukarida) ve kapinin
+        # kendi kurali dosyada yazili ("%100 norm, HER SAPMA anomali").
+        _sh10 = (_root9 / "shadow.py").read_text(encoding="utf-8")
+        _kapi10s = [
+            ("tutulan pozisyonlar hesaplaniyor", 'tutulan = list((state.get("positions")' in _sh10),
+            ("satis tarafi eksigi ayri", "eksik_satis = [t for t in tutulan" in _sh10),
+            ("eksik = alis + satis birlesimi", "eksik = eksik_alis + [t for t in eksik_satis" in _sh10),
+            ("hangi yarim eksik kaydediliyor", '"missing_sell": eksik_satis[:5] or None,' in _sh10),
+        ]
+        _eks10 = [a for a, t in _kapi10s if not t]
+        if not _eks10:
+            ok(f"P0.3 karakterizasyon 5 fill kapisi SATIS tarafini da kapsiyor "
+               f"[VEKIL] ({len(_kapi10s)}/{len(_kapi10s)})")
+        else:
+            bad("P0.3 karakterizasyon 5 fill kapisi eksik: " + " | ".join(_eks10))
+
         for _ad10, _alinan10, _beklenen10 in _iddialar10:
             if _alinan10 == _beklenen10:
                 ok(f"P0.3 karakterizasyon {_ad10}")
@@ -2456,7 +2501,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "cb6da6ec3100"   # P0.3 adim 2/2b/3 (eski 09ad265d9fd5)
+        _sha10 = "b70147ef6c50"   # P0.3 adim 2/2b/3/4 (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")
