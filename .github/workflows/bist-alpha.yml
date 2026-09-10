@@ -59,6 +59,13 @@ jobs:
 
       - name: Kendi kendini test etme ve F golden-master
         if: github.event_name != 'schedule'
+        # SELFTEST_REQUIRE_NODE: CI'da JS senaryolarini ATLAMAK YASAK.
+        # Actions loglari kimlik dogrulamasi ister; "adim yesil" tek basina
+        # kosucunun kostugunu SOYLEMEZ. Bu bayrak sayesinde node yoksa selftest
+        # BLOKLAR -> "CI yesil" ifadesi "node vardi ve senaryolar gecti"yi
+        # MANTIKEN icerir. Bayragin varligi selftest [6m] kancasiyla denetlenir.
+        env:
+          SELFTEST_REQUIRE_NODE: "1"
         run: python3 selftest.py
 
       - name: Planli tetik kapisi

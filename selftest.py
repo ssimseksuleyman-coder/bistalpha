@@ -2076,6 +2076,12 @@ def main():
              "price_asof" in _hl9 and "soFiyatGun" in _hl9),
             ("health.html artefakti cekiyor", "state/stop_observer.json" in _hh9),
             ("health.html veriye bagliyor", "data.stop_observer = " in _hh9),
+            # KANIT ZINCIRININ KENDISI DENETLENIR: CI'da node zorunlulugu bu
+            # bayraga bagli. Bayrak workflow'dan dusrulse "CI yesil" bir daha
+            # "JS kostu" demezdi ve bunu KIMSE fark etmezdi (sessiz bozulma).
+            ("bist-alpha.yml selftest adimi node'u ZORUNLU kiliyor",
+             'SELFTEST_REQUIRE_NODE: "1"' in (_root9 / ".github" / "workflows"
+                                              / "bist-alpha.yml").read_text(encoding="utf-8")),
         ]
         _eksik9 = [ad for ad, tut in _kanca9 if not tut]
         if not _eksik9:
@@ -2097,7 +2103,13 @@ def main():
         # CI'da yokluk BLOKLAYICI yapilinca "CI yesil" ifadesi "node vardi ve
         # senaryolar gecti"yi MANTIKEN icerir -> log okumadan kanit.
         # Yerelde uyari kalir: node opsiyonel, ama sessiz de atlanmaz.
-        _ci9 = (os.environ.get("GITHUB_ACTIONS") == "true"
+        # ANAHTAR ACIK OLARAK WORKFLOW'DAN GELIR (`SELFTEST_REQUIRE_NODE: "1"`).
+        # Yalnizca `GITHUB_ACTIONS`e guvenmek, kanit zincirini DOGRULANAMAYAN bir
+        # varsayima baglardi ("GitHub bu degiskeni set eder" — repodan okunamaz).
+        # Acik bayrak repoda YAZILI ve asagida kanca ile denetleniyor.
+        # GITHUB_ACTIONS/CI yedek olarak kalir: bayrak unutulursa yine siki davranir.
+        _ci9 = (os.environ.get("SELFTEST_REQUIRE_NODE") == "1"
+                or os.environ.get("GITHUB_ACTIONS") == "true"
                 or os.environ.get("CI", "").lower() in ("1", "true"))
         if not _node9 and _ci9:
             bad("P0.6 kapi 8  JS kosucusu CI'DA KOSMADI: node bulunamadi. "
