@@ -2091,7 +2091,18 @@ def main():
         import shutil as _sh9
         import subprocess as _sp9
         _node9 = _sh9.which("node")
-        if not _node9:
+        # CI'DA ATLAMA YASAK — ve bu sadece siki davranmak degil, DOGRULANABILIRLIK
+        # sorunudur: Actions loglari kimlik dogrulamasi ister (403), yani "adim yesil"
+        # tek basina kosucunun KOSTUGUNU soylemez; node yokken de yesil kalirdi.
+        # CI'da yokluk BLOKLAYICI yapilinca "CI yesil" ifadesi "node vardi ve
+        # senaryolar gecti"yi MANTIKEN icerir -> log okumadan kanit.
+        # Yerelde uyari kalir: node opsiyonel, ama sessiz de atlanmaz.
+        _ci9 = (os.environ.get("GITHUB_ACTIONS") == "true"
+                or os.environ.get("CI", "").lower() in ("1", "true"))
+        if not _node9 and _ci9:
+            bad("P0.6 kapi 8  JS kosucusu CI'DA KOSMADI: node bulunamadi. "
+                "CI'da node BEKLENIR; sessiz atlama 'testler kostu' yanilsamasi uretir")
+        elif not _node9:
             warn("JS senaryo kosucusu ATLANDI (node yok) — docs/test-health.js "
                  "bu makinede olculemedi, kapsam boslugu")
         else:
