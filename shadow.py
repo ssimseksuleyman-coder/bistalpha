@@ -927,6 +927,10 @@ def step(data, signals, date=None, slippage=None, run_label=None):
         "ca_fixed": g1_ca_fixed or None,
         "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
                          if g1_ca_unchecked else None),
+        # P0.3 adim 2b: G1 de stop'u olculemeyen pozisyonu bildirir (F ile ayni bicim).
+        "stop_unchecked": ([{"ticker": t, "reason": r}
+                            for t, r in ((g1_events or {}).get("stop_unchecked") or [])]
+                           or None),
         "rebalance": bool((g1_events or {}).get("buys")),
         "rebalance_decided": bool(g1_state.get("_pending_rebalance")),
         "rebalance_due": g1_should_rebalance,

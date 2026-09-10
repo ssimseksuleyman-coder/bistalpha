@@ -220,7 +220,7 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     """
     friction = config.COMMISSION / 2 + slippage
     _ensure(state)
-    events = {"buys": [], "sells": [], "reentries": []}
+    events = {"buys": [], "sells": [], "reentries": [], "stop_unchecked": []}
     opens_today = opens_today or {}
     _dstr = str(date.date()) if hasattr(date, "date") else str(date)
     # #0i — BU KOSUDA rebalans fill'i kitaplandi mi. Karar blogu bunu GORMELI:
@@ -331,10 +331,16 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     # kadar G1'in re-entry'sini de kapsamalidir.
     if eval_stops:
         for tic, pos in list(state["positions"].items()):
-            pt = prices_today.get(tic)
-            if pt is None:
+            # P0.3 adim 2b — F ile AYNI kapi (pf.usable_price). Onceki hal
+            # yalniz `None` bakiyordu; olculdu (2026-09-10): NaN sessizce
+            # "stop yok" okunuyordu, 0/negatif fiyat pozisyonu SILIP kasaya
+            # 0 (hatta negatif) yaziyordu, cop metin ValueError ile kosumu
+            # dusuruyordu. F'te satis yalniz ONERILIYOR, burada ICRA ediliyor
+            # -> ayni kusurun bedeli burada daha agir.
+            pt, _sebep = pf.usable_price(prices_today.get(tic))
+            if _sebep:
+                events["stop_unchecked"].append((str(tic), _sebep))
                 continue
-            pt = float(_py(pt))
             if pt > pos["peak"]:
                 pos["peak"] = float(pt)
             if pt < pf.stop_level(pos):

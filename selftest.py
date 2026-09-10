@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "e8b156d86a5f",   # P0.3 adim 2 (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "d6916b4db458",   # P0.3 adim 2+2b (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2218,6 +2218,8 @@ def main():
             ("1h [DEGISTI] state'e yazilmiyor (kalici JSON kirlenmiyor)",
              _s10.get("unchecked", "ALAN_YOK"), "ALAN_YOK"))
 
+        _YOK10 = object()   # "anahtar hic yok" ile "deger None" ayrilir
+
         def _tek10(fiyat):
             _st = _st10(AAA=_p10(100.0, peak=200.0))
             return _PF10.check_stops(_st, {"AAA": fiyat})
@@ -2263,6 +2265,76 @@ def main():
         _iddialar10.append(
             ("2b [KORUNACAK] satis kaydi fiyati tasiyor",
              _sells10b[0]["price"] if _sells10b else None, 150.0))
+
+        # --- 1k) ORTAK OTORITE + NUMPY (P0.3 adim 2b) -------------------------
+        # `usable_price` TEK kapidir: check_stops ve g1_account ayni fonksiyonu
+        # cagirir. Ikisi zaten `stop_level`i paylasiyordu; fiyat dogrulamasini
+        # ayri yazmak kayittaki "IKIZI ama BIREBIR DEGIL" ayrismasini buyuturdu.
+        import numpy as _np10
+        _kapi10 = [
+            (None, "fiyat_yok"), ("abc", "fiyat_sayi_degil"),
+            ("", "fiyat_sayi_degil"), ([1], "fiyat_sayi_degil"),
+            (True, "fiyat_sayi_degil"), (False, "fiyat_sayi_degil"),
+            (float("nan"), "fiyat_gecersiz"), (float("inf"), "fiyat_gecersiz"),
+            (0.0, "fiyat_pozitif_degil"), (-5.0, "fiyat_pozitif_degil"),
+        ]
+        for _ham10, _bek10 in _kapi10:
+            _iddialar10.append(
+                (f"1k usable_price({_ham10!r}) -> {_bek10}",
+                 _PF10.usable_price(_ham10)[1], _bek10))
+        for _ham10, _bek10 in ((150.0, 150.0), ("150", 150.0),
+                               (_np10.float64(150.0), 150.0)):
+            _iddialar10.append(
+                (f"1k2 usable_price({type(_ham10).__name__}) kabul",
+                 _PF10.usable_price(_ham10), (_bek10, None)))
+
+        # NUMPY BOOL — olculdu 2026-09-10: `isinstance(np.bool_(True), bool)`
+        # FALSE'tur, ciplak bool kontrolu onu KACIRIR ve float() 1.0 yapar ->
+        # 1.00'dan SATIS. Fiyatlar pandas/numpy'den geldigi icin bu NORMAL girdi
+        # tipidir, uc durum degil. `.item()` normalizasyonu once cagrilir.
+        _iddialar10.append(
+            ("1k3 np.bool_ KACMIYOR (adim 2'de acik kalmisti)",
+             _PF10.usable_price(_np10.bool_(True))[1], "fiyat_sayi_degil"))
+        _snb10, _unb10 = _tek10(_np10.bool_(True))
+        _iddialar10.append(
+            ("1k4 np.bool_ check_stops'ta da satis uretmiyor",
+             (len(_snb10), _unb10), (0, [("AAA", "fiyat_sayi_degil")])))
+
+        # --- 1m) G1 IKIZI (P0.3 adim 2b) --------------------------------------
+        # `g1_account` F'in ikizidir ama F'te satis ONERILIR, burada ICRA EDILIR
+        # -> ayni kusurun bedeli agir. Yama oncesi olculdu (2026-09-10):
+        #   sifir  -> pozisyon SILINDI, kasa 0.00, stops+1
+        #   negatif-> pozisyon SILINDI, kasa -4.99
+        # Artik ikisi de pozisyonu KORUR ve sebebiyle ize gider.
+        from bist_alpha import g1_account as _G110
+
+        def _g1kur10():
+            _g = _G110._new_state()
+            _g["positions"] = {"AAA": {"entry": 100.0, "peak": 200.0,
+                                       "shares": 1.0, "w": 1.0}}
+            _g["cash"] = 0.0
+            return _g
+
+        def _g1tek10(fiyat):
+            _g = _g1kur10()
+            _pr = {} if fiyat is _YOK10 else {"AAA": fiyat}
+            _g2, _ev = _G110.step(None, None, _g, "2026-09-10", _pr, False,
+                                  eval_stops=True)
+            return ("AAA" in _g2["positions"], round(_g2["cash"], 2),
+                    _g2["stats"]["stops"], _ev.get("stop_unchecked"))
+
+        for _ad10, _f10, _sb10 in (
+                ("fiyatsiz", _YOK10, "fiyat_yok"),
+                ("NaN", float("nan"), "fiyat_gecersiz"),
+                ("SIFIR", 0.0, "fiyat_pozitif_degil"),
+                ("NEGATIF", -5.0, "fiyat_pozitif_degil"),
+                ("np.bool_", _np10.bool_(True), "fiyat_sayi_degil")):
+            _iddialar10.append(
+                (f"1m G1 {_ad10}: pozisyon KORUNUR, kasa 0, iz var",
+                 _g1tek10(_f10), (True, 0.0, 0, [("AAA", _sb10)])))
+        _iddialar10.append(
+            ("1m2 [KORUNACAK] G1 normal fiyatta stop ICRA eder",
+             _g1tek10(150.0)[:3], (False, 149.7, 1)))
 
         # --- 2) current_value: UYDURMA FIYAT ----------------------------------
         # portfolio.py:208  `p = prices.get(tic, pos['entry'])`
@@ -2316,7 +2388,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "e8b156d86a5f"   # P0.3 adim 2 ile guncellendi (eski 09ad265d9fd5)
+        _sha10 = "d6916b4db458"   # P0.3 adim 2+2b (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")

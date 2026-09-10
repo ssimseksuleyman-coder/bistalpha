@@ -85,6 +85,47 @@ def stop_level(pos):
     return max(entry * (1 - config.ABS_STOP_PCT), peak * (1 - trail))
 
 
+def usable_price(raw):
+    """Ham degeri KULLANILABILIR FIYAT'a cevirir ya da REDDIN SEBEBINI soyler.
+
+    Doner: (fiyat, None)  |  (None, sebep)
+
+    TEK OTORITE (P0.3 adim 2b): `check_stops` ve `g1_account` ayni kapiyi
+    cagirir. Ikisi zaten `stop_level`i paylasiyordu; fiyat dogrulamasini iki
+    yerde ayri yazmak, kayitta "IKIZI ama BIREBIR DEGIL" diye gecen ayrismayi
+    buyuturdu.
+
+    NUMPY NORMALIZASYONU ONCE (olculdu 2026-09-10): fiyatlar pandas/numpy'den
+    gelir ve `isinstance(np.bool_(True), bool)` FALSE'tur -> cikplak bool
+    kontrolu numpy bool'u KACIRIR ve `float()` onu 1.0 yapar; sonuc 1.00'dan
+    SATIS. `.item()` once cagrilinca np.bool_ -> python bool olur ve yakalanir.
+    (`_py` de tam bu yuzden bool'u ilk sirada ele aliyor.)
+
+    Sebepler tek kelime hazinesi: fiyat_yok · fiyat_sayi_degil ·
+    fiyat_gecersiz (NaN/inf) · fiyat_pozitif_degil.
+    """
+    if raw is None:
+        return None, "fiyat_yok"
+    item = getattr(raw, "item", None)      # numpy/pandas scalar -> native
+    if callable(item):
+        try:
+            raw = item()
+        except Exception:
+            pass
+    if isinstance(raw, bool):
+        # float(True) == 1.0 -> bool her kapidan gecip 1.00'dan SATIS uretirdi.
+        return None, "fiyat_sayi_degil"
+    try:
+        p = float(raw)
+    except (TypeError, ValueError):
+        return None, "fiyat_sayi_degil"
+    if not math.isfinite(p):
+        return None, "fiyat_gecersiz"
+    if p <= 0:
+        return None, "fiyat_pozitif_degil"
+    return p, None
+
+
 def check_stops(state, prices_today):
     """
     Güncel fiyatlarla stop kontrolü. SAT edilmesi gerekenleri döner.
@@ -114,25 +155,9 @@ def check_stops(state, prices_today):
     sells = []
     unchecked = []
     for tic, pos in state["positions"].items():
-        ham = (prices_today or {}).get(tic)
-        if ham is None:
-            unchecked.append((tic, "fiyat_yok"))
-            continue
-        if isinstance(ham, bool):
-            # float(True) == 1.0 -> bool bir fiyat gibi gecer ve 1.00'dan
-            # SATIS uretir. Olculdu (2026-09-10); 0/negatif ile ayni sinif.
-            unchecked.append((tic, "fiyat_sayi_degil"))
-            continue
-        try:
-            pt = float(ham)
-        except (TypeError, ValueError):
-            unchecked.append((tic, "fiyat_sayi_degil"))
-            continue
-        if not math.isfinite(pt):
-            unchecked.append((tic, "fiyat_gecersiz"))
-            continue
-        if pt <= 0:
-            unchecked.append((tic, "fiyat_pozitif_degil"))
+        pt, sebep = usable_price((prices_today or {}).get(tic))
+        if sebep:
+            unchecked.append((tic, sebep))
             continue
         if "peak" not in pos or not pos["peak"]:  # eski JSON koruması
             pos["peak"] = pos.get("entry", pt)
