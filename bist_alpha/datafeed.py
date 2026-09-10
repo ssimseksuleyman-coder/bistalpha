@@ -68,37 +68,75 @@ def _drop_sparse_tail(frames, threshold=SPARSE_DAY_NAN_THRESHOLD):
     return cleaned, meta
 
 
-def sparse_market_days(data, threshold=SPARSE_DAY_NAN_THRESHOLD):
-    """XU100 islem gunlerindeki sistemik seyrek hisse satirlarini dondur.
-
-    XU100 indeksi feed'in kendi piyasa takvimidir; indeksin de tasimadigi gunler
-    tatil kabul edilir. Indeks olculemiyorsa mevcut feed davranisi korunur.
-    """
+def market_day_coverage(data, expected_sessions=None,
+                        expected_last_closed_session=None):
+    """Measure per-session symbol coverage on the selected calendar axis."""
     prices = data.get("prices")
     bist = data.get("bist")
-    if prices is None or prices.empty or bist is None or getattr(bist, "empty", True):
+    if prices is None or prices.empty:
         return []
 
     def _day_key(value):
         return str(value.date()) if hasattr(value, "date") else str(value)[:10]
 
-    market_days = {_day_key(value) for value in bist.index}
+    if expected_sessions is None:
+        if bist is None or getattr(bist, "empty", True):
+            return []
+        market_days = {_day_key(value) for value in bist.index}
+    else:
+        market_days = {_day_key(value) for value in expected_sessions}
+
     price_positions = {
         _day_key(value): pos for pos, value in enumerate(prices.index)
     }
-    issues = []
-    for day in sorted(market_days):
+    first_price_day = min(price_positions)
+    last_checked_day = (
+        _day_key(expected_last_closed_session)
+        if expected_last_closed_session is not None
+        else max(market_days, default=max(price_positions))
+    )
+    if (expected_last_closed_session is not None
+            and first_price_day > last_checked_day):
+        # A current intraday-only packet cannot prove the last closed session.
+        checked_days = [last_checked_day]
+    else:
+        checked_days = sorted(
+            day for day in market_days
+            if first_price_day <= day <= last_checked_day
+        )
+    coverage_rows = []
+    for day in checked_days:
         pos = price_positions.get(day)
         present = int(prices.iloc[pos].notna().sum()) if pos is not None else 0
         coverage = present / float(prices.shape[1])
-        if coverage < (1.0 - threshold):
-            issues.append({
-                "date": day,
-                "coverage_pct": round(coverage * 100, 2),
-                "present": present,
-                "total": int(prices.shape[1]),
-            })
-    return issues
+        coverage_rows.append({
+            "date": day,
+            "coverage_pct": round(coverage * 100, 2),
+            "present": present,
+            "total": int(prices.shape[1]),
+        })
+    return coverage_rows
+
+
+def sparse_market_days(data, threshold=SPARSE_DAY_NAN_THRESHOLD,
+                       expected_sessions=None,
+                       expected_last_closed_session=None):
+    """Return market sessions whose symbol coverage is below the shared floor.
+
+    When an independent calendar is supplied, it is authoritative. The legacy
+    feed-BIST axis remains available for callers that have not selected an
+    external authority yet.
+    """
+    rows = market_day_coverage(
+        data,
+        expected_sessions=expected_sessions,
+        expected_last_closed_session=expected_last_closed_session,
+    )
+    minimum_coverage = 1.0 - threshold
+    return [
+        row for row in rows
+        if (row["present"] / float(row["total"])) < minimum_coverage
+    ]
 
 
 class DataFeed(ABC):

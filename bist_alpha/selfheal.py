@@ -10,14 +10,26 @@
 import time
 import os
 import json
+import math
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 DATA_FEED_RUN_STATE = (
     Path(__file__).resolve().parents[1] / "docs" / "state" / "data_feed_run.json"
 )
+PRODUCER_TIMEZONE = "Europe/Istanbul"
+
+FETCH_ERROR = "FETCH_ERROR"
+EMPTY_PRICES = "EMPTY_PRICES"
+INSUFFICIENT_POOL_COVERAGE = "INSUFFICIENT_POOL_COVERAGE"
+MISSING_BIST_REFERENCE = "MISSING_BIST_REFERENCE"
+CALENDAR_UNAVAILABLE = "CALENDAR_UNAVAILABLE"
+STALE_LAST_DATA = "STALE_LAST_DATA"
+SPARSE_MARKET_DAY = "SPARSE_MARKET_DAY"
+FILE_FALLBACK_DISABLED = "FILE_FALLBACK_DISABLED"
 
 
 def _utc_timestamp():
@@ -49,7 +61,7 @@ def _write_data_feed_run(primary_source, status, attempts,
                          selected_source=None, error=None):
     """Persist the latest feed decision even when no dashboard can be built."""
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": _utc_timestamp(),
         "status": status,
         "primary_source": primary_source,
@@ -111,11 +123,23 @@ def _fallback_sources(primary, config):
     return sources
 
 
+def _summarize_attempt_for_dashboard(attempt):
+    """Keep the full day-by-day trace in the manifest, not the dashboard."""
+    summary = dict(attempt)
+    checked_days = summary.pop("checked_market_days", [])
+    summary["checked_market_day_count"] = len(checked_days)
+    summary["latest_checked_market_day"] = checked_days[-1] if checked_days else None
+    return summary
+
+
 def _tag_source(data, source, primary, attempts):
     """Dashboard/health icin kaynagin nasil secildigini gorunur kil."""
     data["_source_base"] = source
     data["_source_primary"] = primary
-    data["_source_attempts"] = attempts[-5:]
+    data["_source_attempts"] = [
+        _summarize_attempt_for_dashboard(attempt)
+        for attempt in attempts[-5:]
+    ]
     if source != primary:
         data["_source_fallback_from"] = primary
         if source == "file":
@@ -125,6 +149,163 @@ def _tag_source(data, source, primary, attempts):
     else:
         data["_source"] = source
     return data
+
+
+def _producer_now(now=None):
+    timezone_local = ZoneInfo(PRODUCER_TIMEZONE)
+    if now is None:
+        return datetime.now(timezone_local)
+    if now.tzinfo is None:
+        return now.replace(tzinfo=timezone_local)
+    return now.astimezone(timezone_local)
+
+
+def _calendar_gate_context(now, calendar_path=None):
+    from . import market_calendar
+
+    local_now = _producer_now(now)
+    calendar = market_calendar.load_calendar(
+        calendar_path,
+        year=local_now.year,
+    )
+    renewal = market_calendar.renewal_status(
+        local_now,
+        next_calendar_available=False,
+        calendar=calendar,
+    )
+    if renewal.get("reject_code"):
+        raise market_calendar.CalendarUnavailableError(
+            f"Takvim kapsam disi: {local_now.date().isoformat()}"
+        )
+    expected_last = market_calendar.expected_last_closed_session(
+        local_now,
+        calendar,
+    )
+    expected_sessions = market_calendar.sessions_between(
+        calendar["_valid_from"],
+        expected_last,
+        calendar,
+    )
+    return {
+        "now": local_now,
+        "calendar": calendar,
+        "calendar_status": renewal.get("status"),
+        "calendar_days_remaining": renewal.get("days_remaining"),
+        "expected_last_closed_session": expected_last,
+        "expected_sessions": expected_sessions,
+    }
+
+
+def _candidate_gate_assessment(data, context):
+    """Build the one structured measurement used for both record and decision."""
+    from . import datafeed, market_calendar
+
+    assessment = _feed_attempt_metrics(data)
+    assessment.update({
+        "calendar_status": context["calendar_status"],
+        "calendar_days_remaining": context["calendar_days_remaining"],
+        "expected_last_closed_session": (
+            context["expected_last_closed_session"].isoformat()
+        ),
+        "freshness_status": None,
+        "bar_completeness": "unknown",
+        "checked_market_days": [],
+        "sparse_market_days": [],
+        "reject_code": None,
+        "reject_codes": [],
+    })
+    prices = data.get("prices") if isinstance(data, dict) else None
+    violations = []
+    if prices is None or getattr(prices, "empty", True):
+        violations.append(EMPTY_PRICES)
+        assessment["reject_code"] = violations[0]
+        assessment["reject_codes"] = violations
+        return assessment
+
+    returned_symbols = int(prices.shape[1])
+    expected_pool = data.get("_source_pool_count")
+    minimum_ratio = 1.0 - datafeed.SPARSE_DAY_NAN_THRESHOLD
+    try:
+        expected_pool = int(expected_pool)
+    except (TypeError, ValueError):
+        expected_pool = 0
+    minimum_symbols = math.ceil(expected_pool * minimum_ratio) if expected_pool else None
+    assessment.update({
+        "returned_symbols": returned_symbols,
+        "expected_pool": expected_pool or None,
+        "minimum_required_symbols": minimum_symbols,
+        "pool_coverage_pct": (
+            round(returned_symbols / float(expected_pool) * 100, 2)
+            if expected_pool else None
+        ),
+    })
+    if not expected_pool or returned_symbols < minimum_symbols:
+        violations.append(INSUFFICIENT_POOL_COVERAGE)
+
+    bist = data.get("bist")
+    if (data.get("_bist_ok") is not True
+            or bist is None or getattr(bist, "empty", True)):
+        violations.append(MISSING_BIST_REFERENCE)
+
+    try:
+        freshness = market_calendar.assess_freshness(
+            assessment.get("last_data_date"),
+            context["now"],
+            context["calendar"],
+        )
+        assessment.update(freshness)
+        if freshness.get("reject_code"):
+            violations.append(freshness["reject_code"])
+    except (TypeError, ValueError):
+        assessment["freshness_status"] = "STALE"
+        violations.append(STALE_LAST_DATA)
+
+    coverage = datafeed.market_day_coverage(
+        data,
+        expected_sessions=context["expected_sessions"],
+        expected_last_closed_session=context["expected_last_closed_session"],
+    )
+    sparse_days = [
+        row for row in coverage
+        if (row["present"] / float(row["total"])) < minimum_ratio
+    ]
+    assessment["checked_market_days"] = coverage
+    assessment["sparse_market_days"] = sparse_days
+    if sparse_days:
+        violations.append(SPARSE_MARKET_DAY)
+
+    assessment["reject_codes"] = list(dict.fromkeys(violations))
+    assessment["reject_code"] = (
+        assessment["reject_codes"][0] if assessment["reject_codes"] else None
+    )
+    return assessment
+
+
+def _gate_rejection_message(assessment):
+    code = assessment.get("reject_code")
+    if code == EMPTY_PRICES:
+        return "Fiyat tablosu yok veya bos"
+    if code == INSUFFICIENT_POOL_COVERAGE:
+        return (
+            "Kaynak havuzu kapsami yetersiz: "
+            f"{assessment.get('returned_symbols')}/{assessment.get('expected_pool')} "
+            f"(minimum {assessment.get('minimum_required_symbols')})"
+        )
+    if code == MISSING_BIST_REFERENCE:
+        return "BIST referans serisi yok veya olculemedi"
+    if code == STALE_LAST_DATA:
+        return (
+            f"Son veri bayat: {assessment.get('last_data_date')} < "
+            f"{assessment.get('expected_last_closed_session')}"
+        )
+    if code == SPARSE_MARKET_DAY:
+        sample = assessment.get("sparse_market_days", [])[-3:]
+        return "BIST islem gununde hisse kapsami yetersiz: " + ", ".join(
+            f"{item['date']} %{item['coverage_pct']} "
+            f"({item['present']}/{item['total']})"
+            for item in sample
+        )
+    return f"Veri gate reddi: {code}"
 
 
 def validate_and_repair_state(account, state_dir="portfolios"):
@@ -190,14 +371,15 @@ def guarded(fn, notify_fn=None, label="döngü"):
         return None
 
 
-def safe_feed():
+def safe_feed(*, now=None, calendar_path=None):
     """
-    Fetch primary data; if it fails, try live-ish fallback before file fallback.
+    Select the first source that passes the independent calendar/data gate.
 
     Default chain with DATA_SOURCE=yahoo:
       yahoo -> borsapy -> file
 
-    File fallback is still gated by ALLOW_FILE_FALLBACK.
+    File fallback is diagnostic-only unless ALLOW_FILE_FALLBACK is explicitly
+    enabled. Production workflows keep it disabled.
     """
     from . import config, datafeed
 
@@ -205,6 +387,26 @@ def safe_feed():
     allow_file_fallback = getattr(config, "ALLOW_FILE_FALLBACK", False)
     attempts = []
     last_error = None
+
+    try:
+        context = _calendar_gate_context(now, calendar_path=calendar_path)
+    except Exception as exc:
+        attempt = {
+            "source": source,
+            "status": "failed",
+            "reject_code": CALENDAR_UNAVAILABLE,
+            "reject_codes": [CALENDAR_UNAVAILABLE],
+            "error": str(exc)[:300],
+            "error_type": type(exc).__name__,
+            "started_at": _utc_timestamp(),
+            "finished_at": _utc_timestamp(),
+            "duration_s": 0.0,
+        }
+        attempts.append(attempt)
+        _persist_data_feed_run(source, "failed", attempts, error=exc)
+        raise RuntimeError(
+            f"Bagimsiz XIST takvimi kullanilamiyor: {exc}"
+        ) from exc
 
     for candidate in _fallback_sources(source, config):
         started_at = _utc_timestamp()
@@ -215,6 +417,8 @@ def safe_feed():
                 "source": candidate,
                 "status": "skipped",
                 "reason": "ALLOW_FILE_FALLBACK=0",
+                "reject_code": FILE_FALLBACK_DISABLED,
+                "reject_codes": [FILE_FALLBACK_DISABLED],
                 "started_at": started_at,
                 "finished_at": finished_at,
                 "duration_s": round(time.monotonic() - started_clock, 3),
@@ -222,43 +426,17 @@ def safe_feed():
             _persist_data_feed_run(source, "running", attempts)
             continue
         data = None
-        sparse_days = []
         try:
             feed = datafeed.get_feed(candidate)
             data = with_retry(feed.get_latest, retries=3, delay=10,
                               label=f"{candidate} veri cekme")
-            if data["prices"].shape[1] < 50 or data["prices"].empty:
-                raise ValueError("Veri yetersiz/bos")
-            sparse_days = datafeed.sparse_market_days(data)
-            if sparse_days:
-                sample = sparse_days[-3:]
-                raise ValueError(
-                    "XU100 islem gununde hisse kapsami yetersiz: "
-                    + ", ".join(
-                        f"{item['date']} %{item['coverage_pct']} "
-                        f"({item['present']}/{item['total']})"
-                        for item in sample
-                    )
-                )
-            if candidate != source:
-                print(f"[selfheal] {source} coktu -> {candidate} yedegi kullaniliyor")
-            attempt = {
-                "source": candidate,
-                "status": "ok",
-                "started_at": started_at,
-                "finished_at": _utc_timestamp(),
-                "duration_s": round(time.monotonic() - started_clock, 3),
-            }
-            attempt.update(_feed_attempt_metrics(data))
-            attempts.append(attempt)
-            _persist_data_feed_run(
-                source, "ok", attempts, selected_source=candidate)
-            return _tag_source(data, candidate, source, attempts)
         except Exception as e:
             last_error = e
             attempt = {
                 "source": candidate,
                 "status": "failed",
+                "reject_code": FETCH_ERROR,
+                "reject_codes": [FETCH_ERROR],
                 "error": str(e)[:300],
                 "error_type": type(e).__name__,
                 "started_at": started_at,
@@ -266,11 +444,36 @@ def safe_feed():
                 "duration_s": round(time.monotonic() - started_clock, 3),
             }
             attempt.update(_feed_attempt_metrics(data))
-            if sparse_days:
-                attempt["sparse_market_days"] = sparse_days[-3:]
             attempts.append(attempt)
             _persist_data_feed_run(source, "running", attempts, error=e)
             print(f"[selfheal] {candidate} veri kaynagi basarisiz: {e}")
+            continue
+
+        assessment = _candidate_gate_assessment(data, context)
+        attempt = {
+            "source": candidate,
+            "status": "failed" if assessment.get("reject_code") else "ok",
+            "started_at": started_at,
+            "finished_at": _utc_timestamp(),
+            "duration_s": round(time.monotonic() - started_clock, 3),
+        }
+        attempt.update(assessment)
+        if assessment.get("reject_code"):
+            reason = _gate_rejection_message(assessment)
+            last_error = ValueError(reason)
+            attempt["error"] = reason[:300]
+            attempt["error_type"] = "DataGateRejected"
+            attempts.append(attempt)
+            _persist_data_feed_run(source, "running", attempts, error=last_error)
+            print(f"[selfheal] {candidate} veri kaynagi reddedildi: {reason}")
+            continue
+
+        if candidate != source:
+            print(f"[selfheal] {source} reddedildi -> {candidate} yedegi kullaniliyor")
+        attempts.append(attempt)
+        _persist_data_feed_run(
+            source, "ok", attempts, selected_source=candidate)
+        return _tag_source(data, candidate, source, attempts)
 
     _persist_data_feed_run(source, "failed", attempts, error=last_error)
     raise RuntimeError(f"{source} ve yedek veri kaynaklari alinamadi: {attempts}") from last_error

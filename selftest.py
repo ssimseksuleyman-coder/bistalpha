@@ -716,12 +716,20 @@ def main():
     print("\n[6h] #0b dolu-ama-delik primary daha tam yedege dusmeli (test-once)")
     try:
         import tempfile as _tempfile4
+        from datetime import datetime as _datetime4
         from pathlib import Path as _Path4
+        from zoneinfo import ZoneInfo as _ZoneInfo4
         import pandas as _pd4
         from bist_alpha import selfheal as _SH4, datafeed as _DF4, config as _CFG4
 
         _d0, _d1, _d2 = _pd4.to_datetime(["2026-09-04", "2026-09-07", "2026-09-08"])
         _cols4 = [f"T{i:02d}" for i in range(60)]
+        _tz4 = _ZoneInfo4("Europe/Istanbul")
+        _now4 = _datetime4(2026, 9, 8, 14, 30, tzinfo=_tz4)
+        _calendar_path4 = (
+            _Path4(__file__).resolve().parent
+            / "data" / "calendar" / "xist_2026.json"
+        )
 
         def _prices4(index, sparse_day=None):
             frame = _pd4.DataFrame(100.0, index=index, columns=_cols4)
@@ -734,6 +742,8 @@ def main():
             return {
                 "prices": _prices4(price_index, sparse_day=sparse_day),
                 "bist": _pd4.Series(100.0, index=bist_index),
+                "_bist_ok": True,
+                "_source_pool_count": len(_cols4),
             }
 
         class _Feed4:
@@ -768,23 +778,26 @@ def main():
                 return _Feed4(_packets4[name])
 
             _DF4.get_feed = _get_feed_gap4
-            _out4 = _SH4.safe_feed()
+            _out4 = _SH4.safe_feed(now=_now4, calendar_path=_calendar_path4)
             if _out4.get("_source_base") == "borsapy" and _calls4 == ["yahoo", "borsapy"]:
                 ok("islem-gunu satiri <%50 dolu -> primary reddedildi, borsapy secildi")
             else:
                 bad("#0b delik primary fallback'i: beklenen borsapy/calls "
                     f"['yahoo','borsapy'], alinan {_out4.get('_source_base')}/{_calls4}")
 
-            # 2) Gun XU100 indeksinde de yok: tatil; primary gereksiz reddedilmemeli.
+            # 2) Resmi takvimde 07-15 kapali: kaynakta satir olmamasi gercek tatil.
             _calls4 = []
+            _h0_4, _h2_4 = _pd4.to_datetime(["2026-07-14", "2026-07-16"])
             _packets4 = {
-                "yahoo": _packet4([_d0, _d2], [_d0, _d2]),
-                "borsapy": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2]),
+                "yahoo": _packet4([_h0_4, _h2_4], [_h0_4, _h2_4]),
+                "borsapy": _packet4([_h0_4, _h2_4], [_h0_4, _h2_4]),
             }
             _DF4.get_feed = _get_feed_gap4
-            _out4 = _SH4.safe_feed()
+            _holiday_now4 = _datetime4(2026, 7, 16, 14, 30, tzinfo=_tz4)
+            _out4 = _SH4.safe_feed(
+                now=_holiday_now4, calendar_path=_calendar_path4)
             if _out4.get("_source_base") == "yahoo" and _calls4 == ["yahoo"]:
-                ok("XU100'da da olmayan gun tatil -> primary korunur, sahte fallback yok")
+                ok("resmi tatilde satir yok -> primary korunur, sahte fallback yok")
             else:
                 bad("#0b tatil false-positive: beklenen yahoo/calls ['yahoo'], "
                     f"alinan {_out4.get('_source_base')}/{_calls4}")
@@ -796,7 +809,7 @@ def main():
                 "borsapy": _packet4([_d0, _d1, _d2], [_d0, _d1, _d2]),
             }
             _DF4.get_feed = _get_feed_gap4
-            _out4 = _SH4.safe_feed()
+            _out4 = _SH4.safe_feed(now=_now4, calendar_path=_calendar_path4)
             if _out4.get("_source_base") == "borsapy" and _calls4 == ["yahoo", "borsapy"]:
                 ok("XU100 islem gununde hisse satiri YOK -> primary reddedildi")
             else:
@@ -918,7 +931,9 @@ def main():
     try:
         import json as _json5
         import tempfile as _tempfile5
+        from datetime import datetime as _datetime5
         from pathlib import Path as _Path5
+        from zoneinfo import ZoneInfo as _ZoneInfo5
         import pandas as _pd5
         from bist_alpha import selfheal as _SH5, datafeed as _DF5, config as _CFG5
 
@@ -936,6 +951,7 @@ def main():
                 return {
                     "prices": _pd5.DataFrame(100.0, index=idx, columns=cols),
                     "bist": _pd5.Series(100.0, index=idx),
+                    "_bist_ok": True,
                     "_source_pool_count": 60,
                 }
 
@@ -957,6 +973,14 @@ def main():
         _old_source5 = getattr(_CFG5, "DATA_SOURCE", _sentinel5)
         _old_chain5 = getattr(_CFG5, "DATA_FALLBACK_CHAIN", _sentinel5)
         _old_allow5 = getattr(_CFG5, "ALLOW_FILE_FALLBACK", _sentinel5)
+        _now5 = _datetime5(
+            2026, 9, 9, 14, 30,
+            tzinfo=_ZoneInfo5("Europe/Istanbul"),
+        )
+        _calendar_path5 = (
+            _Path5(__file__).resolve().parent
+            / "data" / "calendar" / "xist_2026.json"
+        )
         try:
             with _tempfile5.TemporaryDirectory() as _td5:
                 _state5 = _Path5(_td5) / "data_feed_run.json"
@@ -968,7 +992,7 @@ def main():
 
                 _DF5.get_feed = lambda source: _FailFeed5(source)
                 try:
-                    _SH5.safe_feed()
+                    _SH5.safe_feed(now=_now5, calendar_path=_calendar_path5)
                     bad("P0.6 toplam ret RuntimeError vermedi")
                 except RuntimeError:
                     pass
@@ -1001,7 +1025,7 @@ def main():
                         bad("P0.6 toplam-ret manifestinde zaman/sure/ret nedeni eksik")
 
                 _DF5.get_feed = lambda source: _OkFeed5()
-                _out5 = _SH5.safe_feed()
+                _out5 = _SH5.safe_feed(now=_now5, calendar_path=_calendar_path5)
                 _success5 = (_json5.loads(_state5.read_text(encoding="utf-8"))
                              if _state5.exists() else {})
                 _ok_attempt5 = _success5.get("source_attempts", [{}])[-1]
@@ -1020,7 +1044,8 @@ def main():
                     raise OSError("manifest-readonly")
 
                 _SH5._write_data_feed_run = _broken_writer5
-                _out_write_fail5 = _SH5.safe_feed()
+                _out_write_fail5 = _SH5.safe_feed(
+                    now=_now5, calendar_path=_calendar_path5)
                 if _out_write_fail5.get("_source_base") == "yahoo":
                     ok("manifest yazma hatasi saglikli kaynak kararini degistirmiyor")
                 else:
@@ -1054,9 +1079,9 @@ def main():
     # -- [6j] P0.6 -- BAGIMSIZ XIST TAKVIMI VE TAZELIK SOZLESMESI --
     # Takvim, dogrulanan fiyat kaynagindan turetilmez. Yetkili artefakt Borsa
     # Istanbul'un yillik Pay Piyasasi takvimidir; exchange_calendars yalniz
-    # capraz kontroldur. Bu blok once artefakti, sonra henuz uygulanmamis API ve
-    # datafeed entegrasyonunu sinar. Ilk kosumda artefakt yesil, entegrasyon
-    # sartlari kirmizi olmalidir.
+    # capraz kontroldur. Bu blok artefakti, takvim API'sini ve datafeed
+    # entegrasyonunu sinar. Test-once commit'inde artefakt yesil, entegrasyon
+    # sartlari kirmiziydi; uretim yamasi artik ayni sartlari yesile cevirir.
     print("\n[6j] P0.6 bagimsiz XIST takvimi ve tazelik kapisi (test-once)")
     try:
         import json as _json6
@@ -1283,6 +1308,251 @@ def main():
             bad(f"P0.6 kisa-feed pencere siniri uygulanmadi: {type(e).__name__}: {e}")
     except Exception as e:
         bad(f"P0.6 [6j] testi kosmadi: {type(e).__name__}: {e}")
+
+    # -- [6k] P0.6 -- BAGIMSIZ TAKVIM CANLI VERI KAPISINA BAGLI MI --
+    # [6j] takvim motorunu ve sureklilik hesabini sinar. Bu blok ise ayni
+    # olcumlerin safe_feed kaynak secimini gercekten yetkilendirdigini sabitler.
+    print("\n[6k] P0.6 takvim-farkinda veri gate'i (test-once)")
+    try:
+        import json as _json7
+        import tempfile as _tempfile7
+        from datetime import datetime as _datetime7
+        from pathlib import Path as _Path7
+        from zoneinfo import ZoneInfo as _ZoneInfo7
+        import pandas as _pd7
+        from bist_alpha import selfheal as _SH7, datafeed as _DF7, config as _CFG7
+
+        _tz7 = _ZoneInfo7("Europe/Istanbul")
+        _calendar_path7 = (
+            _Path7(__file__).resolve().parent
+            / "data" / "calendar" / "xist_2026.json"
+        )
+        _now7 = _datetime7(2026, 9, 9, 14, 30, tzinfo=_tz7)
+
+        def _packet7(dates, returned=60, expected=60, bist_dates=None,
+                     bist_ok=True, sparse_date=None):
+            idx = _pd7.to_datetime(dates)
+            cols = [f"G{i:03d}" for i in range(returned)]
+            prices = _pd7.DataFrame(100.0, index=idx, columns=cols)
+            if sparse_date is not None:
+                sparse_ts = _pd7.Timestamp(sparse_date)
+                prices.loc[sparse_ts] = float("nan")
+                prices.loc[sparse_ts, cols[0]] = 100.0
+            market_idx = _pd7.to_datetime(dates if bist_dates is None else bist_dates)
+            return {
+                "prices": prices,
+                "bist": _pd7.Series(100.0, index=market_idx, dtype=float),
+                "_bist_ok": bist_ok,
+                "_source_pool_count": expected,
+            }
+
+        class _Feed7:
+            def __init__(self, value):
+                self.value = value
+
+            def get_latest(self):
+                if isinstance(self.value, BaseException):
+                    raise self.value
+                return self.value
+
+        _sentinel7 = object()
+        _old_path7 = getattr(_SH7, "DATA_FEED_RUN_STATE", _sentinel7)
+        _old_retry7 = _SH7.with_retry
+        _old_get_feed7 = _DF7.get_feed
+        _old_source7 = getattr(_CFG7, "DATA_SOURCE", _sentinel7)
+        _old_chain7 = getattr(_CFG7, "DATA_FALLBACK_CHAIN", _sentinel7)
+        _old_allow7 = getattr(_CFG7, "ALLOW_FILE_FALLBACK", _sentinel7)
+        _tmp7 = _tempfile7.TemporaryDirectory()
+        _state7 = _Path7(_tmp7.name) / "data_feed_run.json"
+
+        def _run_case7(packets, now=_now7, chain="borsapy", calendar_path=_calendar_path7):
+            _state7.unlink(missing_ok=True)
+            calls = []
+
+            def _get_feed7(source):
+                calls.append(source)
+                return _Feed7(packets[source])
+
+            _DF7.get_feed = _get_feed7
+            _CFG7.DATA_FALLBACK_CHAIN = chain
+            result = None
+            error = None
+            try:
+                result = _SH7.safe_feed(now=now, calendar_path=calendar_path)
+            except Exception as exc:
+                error = exc
+            manifest = (
+                _json7.loads(_state7.read_text(encoding="utf-8"))
+                if _state7.exists() else {}
+            )
+            return result, error, manifest, calls
+
+        try:
+            _SH7.DATA_FEED_RUN_STATE = _state7
+            _SH7.with_retry = lambda fn, **_kwargs: fn()
+            _CFG7.DATA_SOURCE = "yahoo"
+            _CFG7.ALLOW_FILE_FALLBACK = False
+
+            # 1) 94/94 dolu gorunse bile gercek 625 havuzuna gore yetersizdir.
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-09-08", "2026-09-09"], 94, 625),
+                "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
+            })
+            _first7 = _manifest7.get("source_attempts", [{}])[0]
+            if (_result7 and _result7.get("_source_base") == "borsapy"
+                    and _calls7 == ["yahoo", "borsapy"]
+                    and _first7.get("reject_code") == "INSUFFICIENT_POOL_COVERAGE"):
+                ok("94/625 kaynak kapsami reddedilir; donen kolonlar payda olmaz")
+            else:
+                bad(f"P0.6 havuz kapsami gate'i yok/yanlis: calls={_calls7}, "
+                    f"first={_first7}, error={_error7}")
+
+            # 2) Gun ici kosumda son kapanmis seans birebir bulunmalidir.
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-09-07"]),
+                "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
+            })
+            _first7 = _manifest7.get("source_attempts", [{}])[0]
+            if (_result7 and _result7.get("_source_base") == "borsapy"
+                    and _first7.get("reject_code") == "STALE_LAST_DATA"):
+                ok("bayat son veri STALE_LAST_DATA ile sonraki kaynaga gecer")
+            else:
+                bad(f"P0.6 tazelik gate'i yok/yanlis: calls={_calls7}, "
+                    f"first={_first7}, error={_error7}")
+
+            # 2b) Yalniz bugunun yarim bari, son kapanmis seansi kanitlamaz.
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-09-09"]),
+                "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
+            })
+            _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _expected_day7 = next((
+                row for row in _first7.get("checked_market_days", [])
+                if row.get("date") == "2026-09-08"
+            ), {})
+            if (_result7 and _result7.get("_source_base") == "borsapy"
+                    and _first7.get("reject_code") == "SPARSE_MARKET_DAY"
+                    and _expected_day7.get("present") == 0
+                    and _expected_day7.get("total") == 60):
+                ok("yalniz yarim guncel bar, kapanmis seans yerine gecmez")
+            else:
+                bad(f"P0.6 bos kapanmis-seans araligi temiz sayildi: "
+                    f"calls={_calls7}, first={_first7}, error={_error7}")
+
+            # 3) Bagimsiz takvim olsa da kaynak BIST referansini olcebilmelidir.
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-09-08", "2026-09-09"],
+                                   bist_dates=[], bist_ok=False),
+                "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
+            })
+            _first7 = _manifest7.get("source_attempts", [{}])[0]
+            if (_result7 and _result7.get("_source_base") == "borsapy"
+                    and _first7.get("reject_code") == "MISSING_BIST_REFERENCE"):
+                ok("olculemeyen BIST referansi temiz sayilmaz")
+            else:
+                bad(f"P0.6 BIST referans gate'i yok/yanlis: calls={_calls7}, "
+                    f"first={_first7}, error={_error7}")
+
+            # 4) Feed ve kendi BIST'i ayni seansi kaybetse de resmi takvim gorur.
+            _gap_now7 = _datetime7(2026, 9, 8, 14, 30, tzinfo=_tz7)
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-09-04", "2026-09-08"]),
+                "borsapy": _packet7(["2026-09-04", "2026-09-07", "2026-09-08"]),
+            }, now=_gap_now7)
+            _attempts7 = _manifest7.get("source_attempts", [])
+            _first7 = _attempts7[0] if _attempts7 else {}
+            _last7 = _attempts7[-1] if _attempts7 else {}
+            _day7 = next((row for row in _last7.get("checked_market_days", [])
+                          if row.get("date") == "2026-09-07"), {})
+            _dashboard_attempts7 = (
+                _result7.get("_source_attempts", []) if _result7 else []
+            )
+            _dashboard_last7 = (
+                _dashboard_attempts7[-1] if _dashboard_attempts7 else {}
+            )
+            if (_result7 and _result7.get("_source_base") == "borsapy"
+                    and _first7.get("reject_code") == "SPARSE_MARKET_DAY"
+                    and _last7.get("reject_code") is None
+                    and _last7.get("expected_last_closed_session") == "2026-09-07"
+                    and _last7.get("freshness_status") == "FRESH"
+                    and _last7.get("bar_completeness") == "unknown"
+                    and _day7.get("present") == _day7.get("total") == 60
+                    and "checked_market_days" not in _dashboard_last7
+                    and _dashboard_last7.get("checked_market_day_count")
+                    == len(_last7.get("checked_market_days", []))
+                    and _dashboard_last7.get("latest_checked_market_day")
+                    == _last7.get("checked_market_days", [])[-1]):
+                ok("ortak gun kaybi reddedilir; basarili manifest ayni gate olcumunu tasir")
+            else:
+                bad(f"P0.6 takvim-manifest entegrasyonu yok/yanlis: "
+                    f"calls={_calls7}, attempts={_attempts7}, error={_error7}")
+
+            # 5) File fallback atlanmasi serbest metin degil kararli kod tasir.
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": RuntimeError("yahoo-down"),
+                "file": _packet7(["2026-09-08", "2026-09-09"]),
+            }, chain="file")
+            _file7 = next((row for row in _manifest7.get("source_attempts", [])
+                           if row.get("source") == "file"), {})
+            if (_error7 and _file7.get("status") == "skipped"
+                    and _file7.get("reject_code") == "FILE_FALLBACK_DISABLED"):
+                ok("file fallback pilot kararinda atlanir ve kodlu iz birakir")
+            else:
+                bad(f"P0.6 file-fallback sozlesmesi yok/yanlis: "
+                    f"calls={_calls7}, file={_file7}, error={_error7}")
+
+            # 6) Takvim kapsam disinda ise saglikli gorunen feed de yetkili degildir.
+            _future_now7 = _datetime7(2027, 1, 1, 9, 45, tzinfo=_tz7)
+            _result7, _error7, _manifest7, _calls7 = _run_case7({
+                "yahoo": _packet7(["2026-12-31"]),
+                "borsapy": _packet7(["2026-12-31"]),
+            }, now=_future_now7)
+            _first7 = _manifest7.get("source_attempts", [{}])[0]
+            if (_error7 and _first7.get("reject_code") == "CALENDAR_UNAVAILABLE"
+                    and _calls7 == []):
+                ok("takvim kapsam-disinda fail-closed; veri kaynagi bosuna cagrilmaz")
+            else:
+                bad(f"P0.6 takvim fail-closed yok/yanlis: calls={_calls7}, "
+                    f"first={_first7}, error={_error7}")
+
+            # 7) Iki canli uretici file fallback'i karar yolunda acamaz.
+            _root7 = _Path7(__file__).resolve().parent
+            _workflow_texts7 = [
+                (_root7 / ".github" / "workflows" / name).read_text(encoding="utf-8")
+                for name in ("bist-alpha.yml", "precise.yml")
+            ]
+            _audit_text7 = (_root7 / "scripts" / "system_control_audit.py").read_text(
+                encoding="utf-8")
+            if (all('ALLOW_FILE_FALLBACK: "0"' in text for text in _workflow_texts7)
+                    and 'ALLOW_FILE_FALLBACK: "1"' not in _audit_text7):
+                ok("iki ureticide file fallback kapali; audit ters sozlesme aramiyor")
+            else:
+                bad("P0.6 file fallback uretici/audit sozlesmesi hizali degil")
+        finally:
+            _SH7.with_retry = _old_retry7
+            _DF7.get_feed = _old_get_feed7
+            if _old_path7 is _sentinel7:
+                try:
+                    delattr(_SH7, "DATA_FEED_RUN_STATE")
+                except AttributeError:
+                    pass
+            else:
+                _SH7.DATA_FEED_RUN_STATE = _old_path7
+            for _name7, _old7 in [
+                ("DATA_SOURCE", _old_source7),
+                ("DATA_FALLBACK_CHAIN", _old_chain7),
+                ("ALLOW_FILE_FALLBACK", _old_allow7),
+            ]:
+                if _old7 is _sentinel7:
+                    try:
+                        delattr(_CFG7, _name7)
+                    except AttributeError:
+                        pass
+                else:
+                    setattr(_CFG7, _name7, _old7)
+            _tmp7.cleanup()
+    except Exception as e:
+        bad(f"P0.6 [6k] testi kosmadi: {type(e).__name__}: {e}")
 
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")

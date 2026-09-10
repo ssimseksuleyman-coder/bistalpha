@@ -502,15 +502,20 @@ def check_workflow(checks: list[Check]) -> None:
         "Restore workflow pieces before relying on 7/24 operation.",
     )
 
-    has_fallback = "DATA_FALLBACK_CHAIN" in text and 'ALLOW_FILE_FALLBACK: "1"' in text
+    has_fallback = (
+        "DATA_FALLBACK_CHAIN" in text
+        and "borsapy" in text
+        and 'ALLOW_FILE_FALLBACK: "0"' in text
+    )
     add(
         checks,
         "Application steps / live operations",
         "Data-source fallback chain",
         "pass" if has_fallback else "warn",
-        "Workflow has Yahoo plus fallback chain." if has_fallback else "Fallback chain not visible in workflow.",
+        ("Workflow has a live fallback and keeps stale file fallback outside the decision path."
+         if has_fallback else "Live fallback/file-fallback policy is not visible in workflow."),
         [],
-        "Keep fallback enabled so Yahoo outages do not kill the report.",
+        "Keep a live fallback, but do not let stale file data authorize portfolio decisions.",
     )
 
 
