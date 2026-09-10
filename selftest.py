@@ -2310,6 +2310,56 @@ def main():
     except Exception as _eA:
         warn(f"denetim artefakti tazeligi okunamadi: {type(_eA).__name__}: {_eA}")
 
+    # 9-EK2. ELLE ADIM -> KODA TASINDI (D13 otomatiklesme saati, 2026-09-10)
+    # `docs/DEGISIKLIK_YONETIMI.md -> Commit Oncesi Kontrol` iki adim yaziyor:
+    #   `git diff --check`  ve  `python -m py_compile ...`
+    # Ikisini de HICBIR SEY ZORLAMIYORDU; ben de bugun ikisini birden atladim.
+    # OLCULDU (2026-09-10): repoda 67 .py var, 36'si selftest metninde HIC ANILMIYOR
+    # — aralarinda precise_runner.py (her precise kosumunu suren), reporter.py (her
+    # Telegram raporunu yazan) ve scripts/sanitize_public_state.py (Deniz gizlilik
+    # temizleyicisi). Birinde syntax hatasi olsa SESSIZCE yayina cikar ve ancak
+    # uretimde, rapor slotunda patlardi.
+    # NOT: su an 67/67 derleniyor -> bu ONLEYICI bir kapi, mevcut bir kiriga yama degil.
+    # BLOKLAYICI/UYARI AYRIMI: derlenmeyen dosya BLOKLAR (calismayan kod);
+    # `git diff --check` UYARIR (bosluk/catisma isareti — kozmetikten catismaya
+    # uzanir, bloklamak listenin devre disi birakilmasini davet eder).
+    print("\n[9-EK2] Derleme + calisma agaci hijyeni (repo standardi, artik otomatik)")
+    try:
+        import py_compile as _pcB
+        import subprocess as _spB
+        import tempfile as _tfB
+        _atlaB = (".git", "local", "__pycache__", "node_modules", ".venv",
+                  "deniz_snapshots")
+        _tumB = []
+        for _kokB, _dizB, _dosB in os.walk(ROOT):
+            _dizB[:] = [d for d in _dizB if d not in _atlaB]
+            for _fB in _dosB:
+                if _fB.endswith(".py"):
+                    _tumB.append(os.path.join(_kokB, _fB))
+        _bozukB = []
+        with _tfB.TemporaryDirectory() as _tdB:
+            for _pB in _tumB:
+                try:
+                    _pcB.compile(_pB, cfile=os.path.join(_tdB, "x.pyc"), doraise=True)
+                except Exception as _eB:
+                    _bozukB.append(
+                        f"{os.path.relpath(_pB, ROOT)}: {type(_eB).__name__}"
+                    )
+        if _bozukB:
+            bad(f"DERLENMEYEN {len(_bozukB)}/{len(_tumB)} dosya: " + " | ".join(_bozukB[:5]))
+        else:
+            ok(f"{len(_tumB)} python dosyasinin tamami derleniyor")
+
+        _dcB = _spB.run(["git", "diff", "--check"], capture_output=True, text=True,
+                        cwd=ROOT, encoding="utf-8", errors="replace")
+        _satirB = [s for s in (_dcB.stdout or "").splitlines() if s.strip()]
+        if _satirB:
+            warn(f"git diff --check {len(_satirB)} sorun buldu: " + _satirB[0][:110])
+        else:
+            ok("git diff --check temiz (bosluk/catisma isareti yok)")
+    except Exception as _eB2:
+        bad(f"[9-EK2] kosmadi: {type(_eB2).__name__}: {_eB2}")
+
     # 9a. P0.3 — URETICI WORKFLOW HATASI TELEGRAM'A ULASMALI
     # precise/native daemon yolu kirildiginda sonraki always() adimlari yesil
     # gorunebilir. Alarm job'in SON adimi olmali, failure ile cancelled'i
