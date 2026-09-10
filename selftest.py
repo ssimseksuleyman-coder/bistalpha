@@ -2019,6 +2019,14 @@ def main():
             # tartismali hale gelirse kanit o gun kaybolmus olmamali.
             ("7  cross_source_check alani artefaktta",
              isinstance(_p_temiz9.get("cross_source_check"), dict), True),
+            # D6 — DAMGA EKSENI. `health-logic.js timestampMs` ofset YOKSA
+            # +03:00 varsayar. Damga 'Z'sini kaybederse panel 3 SAATLIK sahte
+            # bayatlik uretir ve HICBIR SEY kizarmaz (kayitli tuzak: "negatif
+            # yas / +3 saatlik sahte bayatlik"). Yazan taraf `_utc_timestamp`
+            # 'Z' ekliyor ama bunu PINLEYEN test yoktu -> bekcisiz dogruluk.
+            ("8g damga ofset tasiyor (D6: ofsetsiz damga paneli 3 saat kaydirir)",
+             bool(__import__("re").search(
+                 r"[zZ]|[+-]\d\d:?\d\d$", str(_p_temiz9.get("generated_at")))), True),
         ]
 
         # -- BAYATLIK HUKMU (SAF fonksiyonlar, ZAMAN ENJEKTE EDILIR) -----------
