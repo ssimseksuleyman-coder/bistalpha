@@ -179,17 +179,56 @@ def any_breach(account_rows):
     return False
 
 
-def gate_verdict(position_count, unpriced_count, unavailable_count, loaded_count):
+def assess_price_freshness(bar_dates, now=None):
+    """Fiyat bar gunu, takvimin BEKLEDIGI son kapali seanstan eski mi?
+
+    ESIK UYDURULMADI — yargi sistemin KENDI takvim otoritesinden gelir:
+    `market_calendar.assess_freshness` zaten `actual >= expected` karsilastirmasini
+    ve `STALE_LAST_DATA` ret kodunu uretiyor. (Bu fonksiyonu yeniden yazmak ucuncu
+    bir takvim uygulamasi dogururdu; otorite tek kalir.)
+
+    En ESKI bar gunune bakilir: tek bir sembol islem durdurmadaysa gozlem o sembol
+    icin bayattir ve ortalama bunu gizler.
+
+    FAIL-SAFE YONU: takvim okunamaz/kapsamiyorsa hukum VERILMEZ -> "UNKNOWN".
+    Ne yanlis alarm (sahte BAYAT) ne de sessiz guvence (sahte TAZE) uretilir;
+    durum gorunur kalir ve kapi hukmunu DEGISTIRMEZ.
+    """
+    gunler = sorted({g for g in (bar_dates or []) if g})
+    if not gunler:
+        return {"status": "UNKNOWN", "reason": "fiyatlanan pozisyon yok"}
+    try:
+        from . import market_calendar
+        takvim = market_calendar.load_calendar()
+        sonuc = market_calendar.assess_freshness(
+            gunler[0], now or datetime.now(timezone.utc), takvim
+        )
+        return {
+            "status": sonuc["freshness_status"],
+            "oldest_bar": sonuc["last_data_date"],
+            "expected_last_closed_session": sonuc["expected_last_closed_session"],
+            "reject_code": sonuc["reject_code"],
+        }
+    except Exception as exc:
+        return {"status": "UNKNOWN",
+                "reason": f"{type(exc).__name__}: {str(exc)[:120]}"}
+
+
+def gate_verdict(position_count, unpriced_count, unavailable_count, loaded_count,
+                 freshness=None):
     """Operasyon kapisi hukmu — TUKETICISI OLAN cikti (P0.6 kapi karari).
 
     RED    : gozlem YAPILAMADI. Hicbir hesap yuklenemedi, ya da pozisyon var
              fakat HICBIRI fiyatlanamadi. Bu bir arizadir; adim da exit 1 verir
              ve P0.3 alarmi dogru sekilde ateslenir.
-    YELLOW : gozlem YAPILDI ama EKSIK. Bazi pozisyon fiyatsiz ya da bazi hesap
-             okunamadi. Ariza DEGIL -> exit 0, Telegram YOK; kapi yukselir.
-    GREEN  : tum hesaplar yuklendi, tum pozisyonlar fiyatlandi.
+    YELLOW : gozlem YAPILDI ama EKSIK ya da BAYAT. Bazi pozisyon fiyatsiz, bazi
+             hesap okunamadi, ya da fiyat beklenen son seanstan eski. Ariza DEGIL
+             -> exit 0, Telegram YOK; kapi yukselir.
+    GREEN  : tum hesaplar yuklendi, tum pozisyonlar fiyatlandi, fiyat bayat degil.
 
     "Bilinmiyor" ile "guvenli" ayni sey degildir: eksik gozlem YESIL veremez.
+    Ama "olculemedi" de "kotu" degildir: tazelik UNKNOWN ise hukum DEGISMEZ
+    (bkz assess_price_freshness fail-safe yonu).
     """
     if loaded_count == 0:
         return {"verdict": "RED", "reason": "no_account_state",
@@ -197,11 +236,27 @@ def gate_verdict(position_count, unpriced_count, unavailable_count, loaded_count
     if position_count and unpriced_count >= position_count:
         return {"verdict": "RED", "reason": "no_priced_position",
                 "detail": "pozisyon var, hicbiri fiyatlanamadi"}
+
+    sarilar = []
     if unpriced_count or unavailable_count:
-        return {"verdict": "YELLOW", "reason": "partial_coverage",
-                "detail": f"unpriced={unpriced_count} unavailable_account={unavailable_count}"}
+        sarilar.append((
+            "partial_coverage",
+            f"unpriced={unpriced_count} unavailable_account={unavailable_count}",
+        ))
+    taze = (freshness or {}).get("status")
+    if taze == "STALE":
+        sarilar.append((
+            "stale_price",
+            "en eski bar {} < beklenen kapali seans {}".format(
+                (freshness or {}).get("oldest_bar", "?"),
+                (freshness or {}).get("expected_last_closed_session", "?"),
+            ),
+        ))
+    if sarilar:
+        return {"verdict": "YELLOW", "reason": sarilar[0][0],
+                "detail": " | ".join(d for _, d in sarilar)}
     return {"verdict": "GREEN", "reason": "full_coverage",
-            "detail": f"positions={position_count}"}
+            "detail": f"positions={position_count} · fiyat tazeligi {taze or 'UNKNOWN'}"}
 
 
 def build_payload(account_rows, price_sources, run_label=None, account_status=None,
@@ -231,6 +286,7 @@ def build_payload(account_rows, price_sources, run_label=None, account_status=No
         for row in rows or []
         if row.get("status") == "priced" and row.get("price_date")
     })
+    tazelik = assess_price_freshness(bar_gunleri)
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": _utc_timestamp(),
@@ -246,10 +302,14 @@ def build_payload(account_rows, price_sources, run_label=None, account_status=No
             "newest": bar_gunleri[-1] if bar_gunleri else None,
             "distinct": len(bar_gunleri),
         },
+        "price_freshness": tazelik,
         "account_status": statuses,
         "unavailable_account_count": unavailable,
-        "gate": gate_verdict(toplam, eksik, unavailable,
-                             sum(1 for i in statuses.values() if i.get("status") == "loaded")),
+        "gate": gate_verdict(
+            toplam, eksik, unavailable,
+            sum(1 for i in statuses.values() if i.get("status") == "loaded"),
+            freshness=tazelik,
+        ),
         "breach": any_breach(account_rows),
         "accounts": {acc: rows for acc, rows in (account_rows or {}).items()},
         "note": (

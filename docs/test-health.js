@@ -217,5 +217,82 @@ console.log("\n[6] Gecerli bar orani (select_valid) — 2026-08-26 vakasi");
     evaluate(oh, MON_PM).metrics.find(m => m.key === "select_valid").status, "r");
 }
 
+console.log("\n[8] P0.6/madde-7 bagimsiz stop gozlemi kapisi");
+{
+  // Bu dosya 2026-09-10'a kadar HICBIR YERDEN kosulmuyordu (yalnizca varligi
+  // aranıyordu). Artik selftest node varsa kosturuyor -> senaryo eklemek anlamli.
+  // Kapi hukmunu PYTHON uretir (stop_observer.gate_verdict); burada olculen sey
+  // panelin o hukmu DOGRU TASIYIP TASIMADIGI, hukmu yeniden hesaplamak DEGIL.
+  const base = () => ({
+    last_data_date: "2026-06-29",
+    price_count: 600,
+    source_pool_count: 605,
+    source: "yahoo",
+    source_pool_fallback: false,
+    timestamp: "2026-06-29T09:45:00",
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
+  });
+  const iz = (verdict, extra) => Object.assign({
+    schema_version: 1,
+    generated_at: "2026-06-29T11:30:00Z",
+    position_count: 4,
+    unpriced_count: 0,
+    breach: false,
+    price_asof: { oldest: "2026-06-29", newest: "2026-06-29", distinct: 1 },
+    price_freshness: { status: "FRESH" },
+    gate: { verdict: verdict, reason: "r", detail: "d" },
+  }, extra || {});
+  const satir = (d) => evaluate(d, MON_PM).metrics.find(m => m.key === "stop_observer");
+
+  // ARTEFAKT YOK -> "n" (olculemedi), "g" DEGIL: yokluk guvence degildir.
+  // Ve verdict'i BOZMAMALI (coreWorst "n"leri disarida birakir).
+  const yok = base();
+  check("artefakt yok -> n", satir(yok).status, "n");
+  check("artefakt yok -> verdict bozulmaz", evaluate(yok, MON_PM).verdict, "g");
+  check("artefakt yok -> cekirdek metrik", satir(yok).core, true);
+
+  const yesil = base(); yesil.stop_observer = iz("GREEN");
+  check("GREEN -> g", satir(yesil).status, "g");
+  check("GREEN -> verdict yesil", evaluate(yesil, MON_PM).verdict, "g");
+
+  const sari = base(); sari.stop_observer = iz("YELLOW", { unpriced_count: 1 });
+  check("YELLOW -> a", satir(sari).status, "a");
+  check("YELLOW -> verdict sari", evaluate(sari, MON_PM).verdict, "a");
+
+  const kirmizi = base(); kirmizi.stop_observer = iz("RED", { unpriced_count: 4 });
+  check("RED -> r", satir(kirmizi).status, "r");
+  check("RED -> verdict kirmizi", evaluate(kirmizi, MON_PM).verdict, "r");
+
+  // Breach ALT SATIRDA gorunur ama harfi degistirmez: breach bir TICARET olayidir,
+  // gozlem saglikli calismistir (kapi "gozlem yapilabildi mi" sorusunu olcer).
+  const ihlal = base(); ihlal.stop_observer = iz("GREEN", { breach: true });
+  check("breach gorunur", satir(ihlal).sub.indexOf("STOP ALTINDA") >= 0, true);
+  check("breach harfi degistirmez", satir(ihlal).status, "g");
+
+  // Bayatlik: hukum Python'da verilir (gate zaten YELLOW gelir), panel TASIR.
+  const bayat = base();
+  bayat.stop_observer = iz("YELLOW", {
+    price_asof: { oldest: "2026-06-22", newest: "2026-06-29", distinct: 3 },
+    price_freshness: { status: "STALE", oldest_bar: "2026-06-22" },
+  });
+  check("bayat aralik gorunur", satir(bayat).sub.indexOf("2026-06-22..2026-06-29") >= 0, true);
+  check("bayat isareti gorunur", satir(bayat).sub.indexOf("BAYAT") >= 0, true);
+
+  const bilinmez = base();
+  bilinmez.stop_observer = iz("GREEN", { price_freshness: { status: "UNKNOWN" } });
+  check("tazelik olculemedi gorunur",
+    satir(bilinmez).sub.indexOf("tazelik olculemedi") >= 0, true);
+  check("tazelik olculemedi harfi bozmaz", satir(bilinmez).status, "g");
+
+  // Bozuk/eksik iz cokmemeli.
+  let coktu = false;
+  try {
+    const bozuk = base();
+    bozuk.stop_observer = { generated_at: "x", gate: null, price_asof: "metin" };
+    satir(bozuk);
+  } catch (e) { coktu = true; }
+  check("bozuk iz cokmez", coktu, false);
+}
+
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");
 process.exit(fail === 0 ? 0 : 1);

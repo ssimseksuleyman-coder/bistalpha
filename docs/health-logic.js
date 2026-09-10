@@ -232,8 +232,10 @@
     // ESLEME: GREEN->g · YELLOW->a · RED->r · artefakt/hukum yok -> "n".
     // "n" bilerek "g" DEGIL: yokluk guvence degildir. coreWorst "n"leri disarida
     // birakir, yani yokluk paneli yesile BOYAMAZ; ayri "olculemedi" olarak durur.
-    // BAYATLIK YARGILANMIYOR: iki yas da asagida GORUNUR ama harfe cevrilmez —
-    // gece ve haftasonu icin olculmus taban yok; esik uydurmak yerine olcum birakildi.
+    // BAYATLIK ARTIK YARGILANIYOR — ama PYTHON tarafinda, takvim otoritesine gore
+    // (`market_calendar.assess_freshness`, esik yok). Panel hukmu URETMEZ, TASIR:
+    // ikinci bir tazelik uygulamasi dogarsa iki taraf ayni gune farkli hukum verir.
+    // Burada yalnizca gorunur kilinir: gate zaten YELLOW gelir, satirda "BAYAT" yazar.
     // IKI AYRI YAS VAR ve karistirilmamali:
     //   generated_at -> gozlem NE ZAMAN kostu
     //   price_asof   -> fiyatin BAR GUNU. Gozlem taze olup fiyat bayat olabilir
@@ -251,8 +253,12 @@
       : {};
     const soOldest = str(soAsof.oldest);
     const soNewest = str(soAsof.newest);
+    const soTazelik = String(((so && so.price_freshness) || {}).status || "").toUpperCase();
+    const soTazeEk = soTazelik === "STALE"
+      ? " BAYAT"
+      : soTazelik === "UNKNOWN" ? " (tazelik olculemedi)" : "";
     const soFiyatGun = soOldest
-      ? "fiyat " + (soNewest && soNewest !== soOldest ? soOldest + ".." + soNewest : soOldest)
+      ? "fiyat " + (soNewest && soNewest !== soOldest ? soOldest + ".." + soNewest : soOldest) + soTazeEk
       : (num(so && so.position_count) ? "fiyat gunu yok" : null);
     const soSub = so
       ? [

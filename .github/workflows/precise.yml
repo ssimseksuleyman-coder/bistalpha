@@ -142,6 +142,29 @@ jobs:
           if [ "$rc" -ne 0 ]; then exit "$rc"; fi
           exit "$alarm_rc"
 
+      - name: P0.6 stop gozlemi ozeti (kosu arayuzunde)
+        # Bu adim `stop_obs` cikti degerlerinin TUKETICISIDIR. Onlar
+        # GITHUB_OUTPUT'a yaziliyordu ama hicbir sey okumuyordu; yazilip
+        # okunmayan yuzey, bu isin duzelttigi kusurun ta kendisi.
+        # Ozet kosu sayfasinda gorunur -> "bugun kostu mu, ne dedi" sorusu
+        # log acmadan cevaplanir. Panel kalici tuketici, bu kosu-basina olan.
+        if: always()
+        run: |
+          {
+            echo "### P0.6 bagimsiz stop gozlemi"
+            echo ""
+            echo "| alan | deger |"
+            echo "| --- | --- |"
+            echo "| operasyon kapisi | ${{ steps.stop_obs.outputs.gate }} |"
+            echo "| stop altinda | ${{ steps.stop_obs.outputs.breached }} |"
+            echo "| pozisyon | ${{ steps.stop_obs.outputs.positions }} |"
+            echo "| fiyatsiz | ${{ steps.stop_obs.outputs.unpriced }} |"
+            echo "| okunamayan hesap | ${{ steps.stop_obs.outputs.state_unavailable }} |"
+            echo "| adim sonucu | ${{ steps.stop_obs.outcome }} |"
+            echo ""
+            echo "Yalniz tespit: emir verilmedi, portfolio state degismedi."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: P0.6 stop izini Actions artefakti olarak sakla
         if: always()
         uses: actions/upload-artifact@v4

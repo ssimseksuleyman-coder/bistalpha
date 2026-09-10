@@ -1887,6 +1887,13 @@ def main():
         def _poz9(entry=100.0, peak=100.0):
             return {"entry": entry, "peak": peak, "shares": 1.0}
 
+        # Sabit tarih KULLANILMAZ: kapi artik tazeligi takvime gore yargiliyor,
+        # sabit bir gun yazilirsa bu testler birkac gun sonra KENDILIGINDEN
+        # kirmiziya doner (zamana bagli test = sahte alarm fabrikasi).
+        # Bugunun gunu her zaman "beklenen son kapali seans"tan >= olur -> FRESH.
+        from datetime import date as _date9
+        _bugun9 = _date9.today().isoformat()
+
         _yakalanan9 = {}
 
         def _kur9(states, statuses, prices):
@@ -1894,7 +1901,7 @@ def main():
             _run9.stop_observer.load_states = lambda *a, **k: (states, statuses)
             _run9.fetch_prices = lambda t: (
                 prices, [{"source": "test", "status": "ok"}], {},
-                {k: "2026-09-10" for k in prices},
+                {k: _bugun9 for k in prices},
             )
             _run9.stop_observer.write_payload = lambda p, path=None: (
                 _yakalanan9.update(p) or "test")
@@ -1977,9 +1984,9 @@ def main():
             # Tarih tasinmazsa panel bayat fiyat uzerinden kendinden emin YESIL
             # gosterir — "yanlis-guven" sinifi. Hukme cevrilmez, GORUNUR kilinir.
             ("6  fiyat bar gunu satirda", _satir9(_p_temiz9, "AAA").get("price_date"),
-             "2026-09-10"),
+             _bugun9),
             ("6b price_asof ozeti oldest", (_p_temiz9.get("price_asof") or {}).get("oldest"),
-             "2026-09-10"),
+             _bugun9),
             ("6c price_asof ozeti distinct", (_p_temiz9.get("price_asof") or {}).get("distinct"),
              1),
             ("6d fiyatsiz satirda tarih YOK (uydurulmaz)",
@@ -1991,6 +1998,48 @@ def main():
             # tartismali hale gelirse kanit o gun kaybolmus olmamali.
             ("7  cross_source_check alani artefaktta",
              isinstance(_p_temiz9.get("cross_source_check"), dict), True),
+        ]
+
+        # -- BAYATLIK HUKMU (SAF fonksiyonlar, ZAMAN ENJEKTE EDILIR) -----------
+        # ESKIDEN: "esik uydurmadan yargilanamaz" denip yalniz olcum birakilmisti.
+        # BU YANLISTI: sistemin KENDI takvim otoritesi (market_calendar.
+        # assess_freshness) esiksiz bir hukum zaten uretiyordu — bakilmamisti.
+        # Testler `now` enjekte eder; gercek saate bagli DEGILDIR.
+        from datetime import datetime as _dt9, timezone as _tz9
+        _simdi9 = _dt9(2026, 9, 10, 13, 0, tzinfo=_tz9.utc)   # 16:00 TR, seans acik
+        _tz_bayat9 = _SO9.assess_price_freshness(["2026-09-03"], now=_simdi9)
+        _tz_taze9 = _SO9.assess_price_freshness([_bugun9], now=_simdi9) \
+            if _bugun9 >= "2026-09-10" else _SO9.assess_price_freshness(["2026-09-10"], now=_simdi9)
+        _tz_kapsamdisi9 = _SO9.assess_price_freshness(
+            ["2031-01-06"], now=_dt9(2031, 1, 6, 13, 0, tzinfo=_tz9.utc))
+        _tz_bos9 = _SO9.assess_price_freshness([], now=_simdi9)
+        _sartlar9 += [
+            ("8  bayat bar STALE", _tz_bayat9.get("status"), "STALE"),
+            ("8b bayat ret kodu", _tz_bayat9.get("reject_code"), "STALE_LAST_DATA"),
+            ("8c beklenen kapali seans yazili",
+             _tz_bayat9.get("expected_last_closed_session"), "2026-09-09"),
+            ("8d guncel bar FRESH", _tz_taze9.get("status"), "FRESH"),
+            # FAIL-SAFE: takvim kapsamiyorsa hukum VERILMEZ. Ne sahte BAYAT
+            # (yanlis alarm) ne sahte TAZE (sessiz guvence) uretilir.
+            ("8e takvim kapsamiyor -> UNKNOWN", _tz_kapsamdisi9.get("status"), "UNKNOWN"),
+            ("8f fiyatlanan pozisyon yok -> UNKNOWN", _tz_bos9.get("status"), "UNKNOWN"),
+            # Kapi hukmu: STALE sariya cevirir, UNKNOWN hukmu DEGISTIRMEZ,
+            # RED her ikisini de yener (gozlem hic yapilamadiysa tazelik ikincildir).
+            ("9  STALE -> kapi SARI",
+             _SO9.gate_verdict(2, 0, 0, 1, freshness={"status": "STALE"})["verdict"], "YELLOW"),
+            ("9b STALE sebebi yazili",
+             _SO9.gate_verdict(2, 0, 0, 1, freshness={"status": "STALE"})["reason"], "stale_price"),
+            ("9c FRESH -> kapi YESIL",
+             _SO9.gate_verdict(2, 0, 0, 1, freshness={"status": "FRESH"})["verdict"], "GREEN"),
+            ("9d UNKNOWN hukmu bozmaz",
+             _SO9.gate_verdict(2, 0, 0, 1, freshness={"status": "UNKNOWN"})["verdict"], "GREEN"),
+            ("9e RED, STALE'i yener",
+             _SO9.gate_verdict(2, 0, 0, 0, freshness={"status": "STALE"})["verdict"], "RED"),
+            ("9f eksik kapsama + STALE ikisi de detayda",
+             "stale_price" in _SO9.gate_verdict(2, 1, 0, 1,
+                                                freshness={"status": "STALE"})["detail"]
+             or "beklenen" in _SO9.gate_verdict(2, 1, 0, 1,
+                                                freshness={"status": "STALE"})["detail"], True),
         ]
         for _ad9, _alinan9, _beklenen9 in _sartlar9:
             if _alinan9 == _beklenen9:
@@ -2033,6 +2082,32 @@ def main():
             ok(f"P0.6 kapi 5  TUKETICI bagli [VEKIL: metin yuzeyi] ({len(_kanca9)}/{len(_kanca9)} kanca)")
         else:
             bad("P0.6 kapi 5  TUKETICI EKSIK: " + " | ".join(_eksik9))
+
+        # 8) JS SENARYO KOSUCUSU — vekil kontrolu KONU kanitina cevirir.
+        # docs/test-health.js 2026-09-10'a kadar HICBIR YERDEN kosulmuyordu:
+        # `system_control_audit` yalnizca DOSYANIN VAR OLDUGUNU ariyordu. Yani
+        # 29 senaryo yazilmis, sifir kez kosmustu — "kod var != kod calisiyor".
+        # ATLAMA SESSIZ DEGIL: node yoksa uyari basilir, kapsam boslugu gorunur kalir.
+        import shutil as _sh9
+        import subprocess as _sp9
+        _node9 = _sh9.which("node")
+        if not _node9:
+            warn("JS senaryo kosucusu ATLANDI (node yok) — docs/test-health.js "
+                 "bu makinede olculemedi, kapsam boslugu")
+        else:
+            _js9 = _sp9.run(
+                [_node9, str(_root9 / "docs" / "test-health.js")],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", cwd=str(_root9 / "docs"), timeout=120,
+            )
+            _cikti9 = (_js9.stdout or "") + (_js9.stderr or "")
+            _son9 = [s for s in _cikti9.splitlines() if s.startswith("SONUC:")]
+            if _js9.returncode == 0:
+                ok(f"P0.6 kapi 8  JS senaryolari GECTI ({_son9[0] if _son9 else 'sonuc satiri yok'})")
+            else:
+                _kalan9 = [s.strip() for s in _cikti9.splitlines() if "XX " in s][:5]
+                bad("P0.6 kapi 8  JS senaryolari KALDI: "
+                    + (" | ".join(_kalan9) or _cikti9[-300:]))
     except Exception as e:
         bad(f"P0.6 [6m] testi kosmadi: {type(e).__name__}: {e}")
 
