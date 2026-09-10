@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-10T07:00:14Z",
+  "status": "ok",
+  "primary_source": "yahoo",
+  "selected_source": "borsapy",
+  "attempt_count": 2,
+  "source_attempts": [
+    {
+      "source": "yahoo",
+      "status": "failed",
+      "error": "XU100 islem gununde hisse kapsami yetersiz: 2026-09-07 %17.5 (109/623), 2026-09-09 %0.0 (0/623)",
+      "error_type": "ValueError",
+      "started_at": "2026-09-10T06:53:55Z",
+      "finished_at": "2026-09-10T06:54:27Z",
+      "duration_s": 31.604,
+      "returned_symbols": 623,
+      "expected_pool": 625,
+      "last_data_date": "2026-09-08",
+      "sparse_market_days": [
+        {
+          "date": "2026-09-07",
+          "coverage_pct": 17.5,
+          "present": 109,
+          "total": 623
+        },
+        {
+          "date": "2026-09-09",
+          "coverage_pct": 0.0,
+          "present": 0,
+          "total": 623
+        }
+      ]
+    },
+    {
+      "source": "borsapy",
+      "status": "ok",
+      "started_at": "2026-09-10T06:54:27Z",
+      "finished_at": "2026-09-10T07:00:14Z",
+      "duration_s": 347.295,
+      "returned_symbols": 625,
+      "expected_pool": 625,
+      "last_data_date": "2026-09-09"
+    }
+  ]
+}

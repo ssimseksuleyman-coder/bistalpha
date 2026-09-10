@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-09-09T18:46:39",
-  "label": "kapanis",
+  "timestamp": "2026-09-10T10:00:16",
+  "label": "acilis",
   "date": "2026-09-09",
   "mode": "F",
   "source": "borsapy_fallback_from_yahoo",
@@ -11,11 +11,38 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "error": "XU100 islem gununde hisse kapsami yetersiz: 2026-09-07 %17.5 (109/623)"
+      "error": "XU100 islem gununde hisse kapsami yetersiz: 2026-09-07 %17.5 (109/623), 2026-09-09 %0.0 (0/623)",
+      "error_type": "ValueError",
+      "started_at": "2026-09-10T06:53:55Z",
+      "finished_at": "2026-09-10T06:54:27Z",
+      "duration_s": 31.604,
+      "returned_symbols": 623,
+      "expected_pool": 625,
+      "last_data_date": "2026-09-08",
+      "sparse_market_days": [
+        {
+          "date": "2026-09-07",
+          "coverage_pct": 17.5,
+          "present": 109,
+          "total": 623
+        },
+        {
+          "date": "2026-09-09",
+          "coverage_pct": 0.0,
+          "present": 0,
+          "total": 623
+        }
+      ]
     },
     {
       "source": "borsapy",
-      "status": "ok"
+      "status": "ok",
+      "started_at": "2026-09-10T06:54:27Z",
+      "finished_at": "2026-09-10T07:00:14Z",
+      "duration_s": 347.295,
+      "returned_symbols": 625,
+      "expected_pool": 625,
+      "last_data_date": "2026-09-09"
     }
   ],
   "source_pool_count": 625,
@@ -35,10 +62,10 @@
   "official_sources": {
     "kap": {
       "status": "ok",
-      "updated_at": "2026-09-08T22:26:33",
+      "updated_at": "2026-09-09T22:16:26",
       "added": 6,
-      "total_events": 358,
-      "latest_event_date": "2026-09-08",
+      "total_events": 364,
+      "latest_event_date": "2026-09-09",
       "opens_trade": false,
       "note": "KAP resmi kaynak defteri; olcer, F motoruna emir uretmez.",
       "error": null
@@ -968,7 +995,7 @@
     "firsatlar": []
   },
   "catalyst_ledger": {
-    "updated_at": "2026-09-09T18:46:38",
+    "updated_at": "2026-09-10T10:00:15",
     "as_of": "2026-09-09",
     "source_count": 1,
     "tracked_events": 18,
@@ -1139,24 +1166,8 @@
       "A": {
         "value": 1.1429,
         "n_pos": 4,
-        "sells": [
-          {
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "reason": "stop",
-            "giveback": 16.3
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000432,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "rebalance_decided": false,
         "rebalance_due": false,
@@ -1165,30 +1176,13 @@
         "rebal_elapsed": 6,
         "rebal_due_in": 24,
         "rebal_thin_deferred": null,
-        "gate_checked": {
-          "blocked": false,
-          "reason": null
-        },
+        "gate_checked": null,
         "rebal_gate_deferred": null,
-        "ca_checked": {
-          "n_positions": 5,
-          "n_fixed": 0,
-          "n_unchecked": 0,
-          "n_clean": 5
-        },
+        "ca_checked": null,
         "ca_fixed": null,
         "ca_unchecked": null,
         "pending_rebalance": null,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000432,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-09-09",
           "event": "stop",
@@ -1210,24 +1204,8 @@
       "B": {
         "value": 1.2028,
         "n_pos": 4,
-        "sells": [
-          {
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "reason": "stop",
-            "giveback": 16.3
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "rebalance_decided": false,
         "rebalance_due": false,
@@ -1236,30 +1214,13 @@
         "rebal_elapsed": 6,
         "rebal_due_in": 24,
         "rebal_thin_deferred": null,
-        "gate_checked": {
-          "blocked": false,
-          "reason": null
-        },
+        "gate_checked": null,
         "rebal_gate_deferred": null,
-        "ca_checked": {
-          "n_positions": 5,
-          "n_fixed": 0,
-          "n_unchecked": 0,
-          "n_clean": 5
-        },
+        "ca_checked": null,
         "ca_fixed": null,
         "ca_unchecked": null,
         "pending_rebalance": null,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-09-09",
           "event": "stop",
@@ -1281,24 +1242,8 @@
       "F": {
         "value": 1.2028,
         "n_pos": 4,
-        "sells": [
-          {
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "reason": "stop",
-            "giveback": 16.3
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "rebalance_decided": false,
         "rebalance_due": false,
@@ -1307,30 +1252,13 @@
         "rebal_elapsed": 6,
         "rebal_due_in": 24,
         "rebal_thin_deferred": null,
-        "gate_checked": {
-          "blocked": false,
-          "reason": null
-        },
+        "gate_checked": null,
         "rebal_gate_deferred": null,
-        "ca_checked": {
-          "n_positions": 5,
-          "n_fixed": 0,
-          "n_unchecked": 0,
-          "n_clean": 5
-        },
+        "ca_checked": null,
         "ca_fixed": null,
         "ca_unchecked": null,
         "pending_rebalance": null,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-09-09",
           "event": "stop",
@@ -1352,24 +1280,8 @@
       "O": {
         "value": 1.2033,
         "n_pos": 4,
-        "sells": [
-          {
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "reason": "stop",
-            "giveback": 16.3
-          }
-        ],
-        "stop_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "sells": [],
+        "stop_trades": [],
         "rebalance": false,
         "rebalance_decided": false,
         "rebalance_due": false,
@@ -1378,30 +1290,13 @@
         "rebal_elapsed": 6,
         "rebal_due_in": 24,
         "rebal_thin_deferred": null,
-        "gate_checked": {
-          "blocked": false,
-          "reason": null
-        },
+        "gate_checked": null,
         "rebal_gate_deferred": null,
-        "ca_checked": {
-          "n_positions": 5,
-          "n_fixed": 0,
-          "n_unchecked": 0,
-          "n_clean": 5
-        },
+        "ca_checked": null,
         "ca_fixed": null,
         "ca_unchecked": null,
         "pending_rebalance": null,
-        "new_trades": [
-          {
-            "type": "SELL",
-            "ticker": "CRFSA",
-            "price": 265.75,
-            "shares": 0.000293,
-            "reason": "stop",
-            "pnl_pct": -8.6
-          }
-        ],
+        "new_trades": [],
         "last_event": {
           "date": "2026-09-09",
           "event": "stop",
@@ -1506,19 +1401,9 @@
         "reentry_paused": 13,
         "n_pos": 1,
         "rebal_thin_deferred": null,
-        "ca_checked": {
-          "n_positions": 1,
-          "n_fixed": 0,
-          "n_unchecked": 1,
-          "n_clean": 0
-        },
+        "ca_checked": null,
         "ca_fixed": null,
-        "ca_unchecked": [
-          {
-            "ticker": "IEYHO",
-            "reason": "fill_convention_yok"
-          }
-        ],
+        "ca_unchecked": null,
         "rebalance": false,
         "rebalance_decided": false,
         "rebalance_due": false,
@@ -1536,17 +1421,17 @@
     }
   },
   "operation_health": {
-    "label": "kapanis",
-    "target_time": "18:40",
-    "delay_minutes": 6,
+    "label": "acilis",
+    "target_time": "09:45",
+    "delay_minutes": 15,
     "sla": {
       "status": "on_time",
       "root_cause": "zamaninda",
       "event": "schedule",
-      "gate_label": "kapanis",
+      "gate_label": "acilis",
       "gate_reason": "",
-      "target_time": "18:40",
-      "delay_minutes": 6
+      "target_time": "09:45",
+      "delay_minutes": 15
     },
     "telegram": {
       "sent": true,
@@ -1566,7 +1451,7 @@
     "last_data_date": "2026-09-09",
     "data_cleaning": {},
     "data_health": {
-      "timestamp": "2026-09-09 18:46",
+      "timestamp": "2026-09-10 10:00",
       "data_issues": [],
       "data_cleaning": {},
       "healthy": true,
@@ -1575,7 +1460,7 @@
       "temp_removed": 2
     },
     "verdict": "amber",
-    "updated_at": "2026-09-09T18:46:39"
+    "updated_at": "2026-09-10T10:00:16"
   },
   "account_governance": {
     "F": {
@@ -3297,7 +3182,7 @@
     }
   },
   "forward_test": {
-    "updated_at": "2026-09-09T18:46:39",
+    "updated_at": "2026-09-10T10:00:16",
     "days_tracked": 45,
     "valid_days_tracked": 44,
     "invalid_snapshot_count": 1,
@@ -4599,7 +4484,7 @@
           }
         ],
         "first_generated_at": "2026-09-09 14:56",
-        "last_generated_at": "2026-09-09 18:46",
+        "last_generated_at": "2026-09-10 10:00",
         "as_of": "2026-09-09",
         "age_trading_days": 0,
         "avg_return_pct": 3.06,
@@ -4609,7 +4494,7 @@
     ]
   },
   "missed_opportunities": {
-    "updated_at": "2026-09-09T18:46:39",
+    "updated_at": "2026-09-10T10:00:16",
     "tracked_days": 68,
     "current_candidates": 12,
     "hot_missed_count": 117,
@@ -4784,7 +4669,7 @@
     }
   },
   "opportunity_ledger": {
-    "updated_at": "2026-09-09T18:46:39",
+    "updated_at": "2026-09-10T10:00:16",
     "tracked_days": 43,
     "latest_date": "2026-09-09",
     "current_candidates": 0,
@@ -4827,7 +4712,7 @@
     ]
   },
   "performance_ledger": {
-    "updated_at": "2026-09-09T18:46:39",
+    "updated_at": "2026-09-10T10:00:16",
     "tracked_days": 68,
     "latest_date": "2026-09-09",
     "latest_regime": "bull",
@@ -5227,7 +5112,7 @@
     }
   },
   "quality_ledger": {
-    "updated_at": "2026-09-09T18:46:44",
+    "updated_at": "2026-09-10T10:00:20",
     "as_of": "2026-09-09",
     "source_meta": {
       "source_name": "KAP resmi finansal bildirimleri",
@@ -5258,12 +5143,12 @@
     "cluster_21d": {
       "k": 14,
       "n": 60,
-      "edge": -2.43,
-      "se": 1.97,
-      "edge_in_se": -1.23,
+      "edge": -2.46,
+      "se": 1.98,
+      "edge_in_se": -1.24,
       "largest_cluster": 10
     },
-    "excess_avg_21d_pct": -2.43,
+    "excess_avg_21d_pct": -2.46,
     "n_unique_dates_21d": 14,
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
@@ -5409,7 +5294,7 @@
         "current_return_pct": -6.35,
         "age_trading_days": 6,
         "return_5d_pct": -9.7,
-        "excess_5d_pct": -9.55,
+        "excess_5d_pct": -9.77,
         "return_21d_pct": null,
         "excess_21d_pct": null,
         "return_63d_pct": null,
@@ -5736,7 +5621,7 @@
     "note": "Temel kalite defteri olcer; yalnizca KAP/sirket/BIST gibi resmi kaynakla dogrulanan veri kullanir. F motoruna emir uretmez."
   },
   "macro_surprise_ledger": {
-    "updated_at": "2026-09-09T18:46:49",
+    "updated_at": "2026-09-10T10:00:24",
     "as_of": "2026-09-09",
     "tracked_events": 259,
     "source_count": 259,
@@ -6078,7 +5963,7 @@
     "note": "Macro Surprise defteri olcer; fiyat sinyalinden bagimsizdir ve F motoruna emir uretmez."
   },
   "broker_bulletin_ledger": {
-    "updated_at": "2026-09-09T18:46:49",
+    "updated_at": "2026-09-10T10:00:24",
     "as_of": "2026-09-09",
     "input_files": 0,
     "input_error_count": 0,
@@ -6117,9 +6002,9 @@
     "note": "Broker bulletin ledger measures source quality. It is not a trading engine and cannot promote without official/KAP/company confirmation."
   },
   "flow_ledger": {
-    "updated_at": "2026-09-09T18:46:52",
+    "updated_at": "2026-09-10T10:00:26",
     "as_of": "2026-09-09",
-    "tracked_events": 90,
+    "tracked_events": 94,
     "opens_trade": false,
     "matured_5d": 67,
     "matured_21d": 18,
@@ -6130,16 +6015,16 @@
     "cluster_21d": {
       "k": 7,
       "n": 18,
-      "edge": 1.79,
+      "edge": 1.72,
       "se": 2.09,
-      "edge_in_se": 0.85,
+      "edge_in_se": 0.82,
       "largest_cluster": 5
     },
-    "excess_avg_21d_pct": 1.79,
+    "excess_avg_21d_pct": 1.72,
     "n_unique_dates_21d": 7,
     "avg_63d_return_pct": null,
     "hit_63d_pct": null,
-    "kap_buyback_events": 90,
+    "kap_buyback_events": 94,
     "foreign_flow_events": 0,
     "takas_events": 0,
     "local_input_files": 0,
@@ -6155,6 +6040,114 @@
       "promotion_gate": "closed_until_20_mature_21d_events"
     },
     "latest_candidates": [
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
+        "event_date": "2026-09-09",
+        "ticker": "AHGAZ",
+        "entry_date": "2026-09-09",
+        "entry_price": 38.42,
+        "entry_pos": 745,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 38.42,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
+        "event_date": "2026-09-09",
+        "ticker": "DAGI",
+        "entry_date": "2026-09-09",
+        "entry_price": 9.42,
+        "entry_pos": 745,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 9.42,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
+        "event_date": "2026-09-09",
+        "ticker": "ENERY",
+        "entry_date": "2026-09-09",
+        "entry_price": 11.09,
+        "entry_pos": 745,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 11.09,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
+      {
+        "source_id": "kap_buyback",
+        "source": "KAP resmi geri alim bildirimi",
+        "source_tier": "primary",
+        "source_score": 3,
+        "type": "geri_alim",
+        "signal": "official_buyback",
+        "event_date": "2026-09-09",
+        "ticker": "MAGEN",
+        "entry_date": "2026-09-09",
+        "entry_price": 37.2,
+        "entry_pos": 745,
+        "opens_trade": false,
+        "kap_confirmed": true,
+        "note": "Payların Geri Alınmasına İlişkin Bildirim",
+        "source_url": "",
+        "current_price": 37.2,
+        "age_trading_days": 0,
+        "current_return_pct": 0.0,
+        "return_5d_pct": null,
+        "excess_5d_pct": null,
+        "return_21d_pct": null,
+        "excess_21d_pct": null,
+        "return_63d_pct": null,
+        "excess_63d_pct": null,
+        "status": "open"
+      },
       {
         "source_id": "kap_buyback",
         "source": "KAP resmi geri alim bildirimi",
@@ -6316,120 +6309,12 @@
         "return_63d_pct": null,
         "excess_63d_pct": null,
         "status": "open"
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-09-07",
-        "ticker": "AHGAZ",
-        "entry_date": "2026-09-08",
-        "entry_price": 38.64,
-        "entry_pos": 744,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 38.42,
-        "status": "open",
-        "current_return_pct": -0.57,
-        "age_trading_days": 1,
-        "return_5d_pct": null,
-        "excess_5d_pct": null,
-        "return_21d_pct": null,
-        "excess_21d_pct": null,
-        "return_63d_pct": null,
-        "excess_63d_pct": null
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-09-07",
-        "ticker": "DAGI",
-        "entry_date": "2026-09-08",
-        "entry_price": 9.82,
-        "entry_pos": 744,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 9.42,
-        "status": "open",
-        "current_return_pct": -4.07,
-        "age_trading_days": 1,
-        "return_5d_pct": null,
-        "excess_5d_pct": null,
-        "return_21d_pct": null,
-        "excess_21d_pct": null,
-        "return_63d_pct": null,
-        "excess_63d_pct": null
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-09-07",
-        "ticker": "EKIM",
-        "entry_date": "2026-09-07",
-        "entry_price": 17.81,
-        "entry_pos": 743,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 17.61,
-        "status": "open",
-        "current_return_pct": -1.12,
-        "age_trading_days": 2,
-        "return_5d_pct": null,
-        "excess_5d_pct": null,
-        "return_21d_pct": null,
-        "excess_21d_pct": null,
-        "return_63d_pct": null,
-        "excess_63d_pct": null
-      },
-      {
-        "source_id": "kap_buyback",
-        "source": "KAP resmi geri alim bildirimi",
-        "source_tier": "primary",
-        "source_score": 3,
-        "type": "geri_alim",
-        "signal": "official_buyback",
-        "event_date": "2026-09-07",
-        "ticker": "ENERY",
-        "entry_date": "2026-09-08",
-        "entry_price": 10.83,
-        "entry_pos": 744,
-        "opens_trade": false,
-        "kap_confirmed": true,
-        "note": "Payların Geri Alınmasına İlişkin Bildirim",
-        "source_url": "",
-        "current_price": 11.09,
-        "status": "open",
-        "current_return_pct": 2.4,
-        "age_trading_days": 1,
-        "return_5d_pct": null,
-        "excess_5d_pct": null,
-        "return_21d_pct": null,
-        "excess_21d_pct": null,
-        "return_63d_pct": null,
-        "excess_63d_pct": null
       }
     ],
     "by_type": [
       {
         "type": "geri_alim",
-        "n": 90,
+        "n": 94,
         "mature_21d": 18,
         "avg_21d_return_pct": 3.53,
         "hit_21d_pct": 61.1
