@@ -1562,6 +1562,7 @@ def main():
     try:
         import copy as _copy8
         import inspect as _inspect8
+        import re as _re8
         from pathlib import Path as _Path8
         from bist_alpha import portfolio as _PF8
 
@@ -1658,6 +1659,22 @@ def main():
                 "stop alarmi basarisizligi gorunur": bool(
                     "if ! resp=" in _run8 and "alarm_rc=1" in _run8
                     and "curl -sfS" in _run8
+                ),
+                # CIKTI TUKETICISI GUARD'I: runner `breached/unpriced/positions/
+                # gate` degerlerini GITHUB_OUTPUT'a yaziyor. Bunlari okuyan ozet
+                # adimi silinirse degerler yine YAZILIP OKUNMAYAN yuzeye doner ve
+                # kimse fark etmez — bu isin duzelttigi kusurun aynisi.
+                # `id: stop_obs` de sarttir: id yoksa ciktilar adreslenemez.
+                # SUBSTRING DEGIL SINIRLI ESLESME: ilk yazdigim hal
+                # `"id: stop_obs" in blok` idi ve `id: stop_obsX` mutasyonunu
+                # KACIRIYORDU (bozuk id, dogru id'nin ustkumesi). Mutasyon testi
+                # 3/3'ten 1/3 yakaladi ve kontrolu cop olmaktan kurtardi.
+                # ("kaba-arama IPUCU uretir, KANIT degil" — kendi yasasi.)
+                "cikti tuketicisi bagli (id + ozet adimi)": bool(
+                    _stop_block8
+                    and _re8.search(r"^\s*id:\s*stop_obs\s*$", _stop_block8, _re8.M)
+                    and _re8.search(r"steps\.stop_obs\.outputs\.gate\s*\}\}", _workflow_text8)
+                    and "GITHUB_STEP_SUMMARY" in _workflow_text8
                 ),
                 "iz kalici artefakt": bool(
                     "actions/upload-artifact@v4" in _workflow_text8
@@ -2254,6 +2271,44 @@ def main():
             ok(".gitignore portfolios/'u koruyor (state kalıcı)")
     else:
         warn(".gitignore yok")
+
+    # 9-EK. DENETIM ARTEFAKTI BAYAT MI — "koruma kendini korumadan muaf sanir"
+    # docs/state/system_control_audit.json PUBLIC yayimlaniyor (bkz
+    # GIZLILIK_CANLI_GECIS_KARARI + CLOUDFLARE_ACCESS_KURULUM public URL'i) ve
+    # DORT belge onu her degisiklikte `--write` ile tazelemeyi soyluyor.
+    # 2026-09-10'da olculdu: damga 2026-07-16 idi -> 56 GUN bayat, ve o bayat
+    # kopya `Duplicate basename scan` icin `pass` gosteriyordu, gercek `warn`.
+    # Kimse tazelemedigi gibi kimse BAYATLIGI DA OLCMUYORDU (sinyal sifir).
+    # ESIK UYDURULMADI: reponun kendi kurali "her degisiklikte" -> artefakttan
+    # SONRA gelen bir kod commit'i varsa bayattir. Kiyas noktasi git'in kendisi.
+    # BLOKLAYICI DEGIL UYARI: bloklamak salt-dokuman commit'lerini de dusururdu;
+    # amac kapi kurmak degil, 56 gun suren SESSIZLIGI bitirmek.
+    print("\n[9-EK] Denetim artefakti tazeligi")
+    try:
+        import io as _ioA
+        import json as _jsonA
+        import subprocess as _spA
+        _audit_pathA = os.path.join(ROOT, "docs", "state", "system_control_audit.json")
+        if not os.path.exists(_audit_pathA):
+            warn("system_control_audit.json YOK — public denetim artefakti uretilmemis")
+        else:
+            _auditA = _jsonA.load(_ioA.open(_audit_pathA, encoding="utf-8"))
+            _damgaA = str(_auditA.get("generated_at") or "")[:19]
+            _sonKodA = _spA.run(
+                ["git", "log", "-1", "--format=%cI", "--",
+                 "bist_alpha", "scripts", "selftest.py", ".github/workflows"],
+                capture_output=True, text=True, cwd=ROOT, encoding="utf-8",
+            ).stdout.strip()[:19]
+            if not _damgaA or not _sonKodA:
+                warn(f"denetim artefakti tazeligi OLCULEMEDI (damga={_damgaA!r} kod={_sonKodA!r})")
+            elif _damgaA < _sonKodA:
+                warn(f"denetim artefakti BAYAT: damga {_damgaA} < son kod commit'i {_sonKodA} "
+                     "-> `python scripts/system_control_audit.py --write "
+                     "docs/state/system_control_audit.json`")
+            else:
+                ok(f"denetim artefakti taze (damga {_damgaA} >= son kod {_sonKodA})")
+    except Exception as _eA:
+        warn(f"denetim artefakti tazeligi okunamadi: {type(_eA).__name__}: {_eA}")
 
     # 9a. P0.3 — URETICI WORKFLOW HATASI TELEGRAM'A ULASMALI
     # precise/native daemon yolu kirildiginda sonraki always() adimlari yesil

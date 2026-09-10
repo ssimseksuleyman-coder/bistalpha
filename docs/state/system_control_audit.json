@@ -1,17 +1,19 @@
 {
-  "generated_at": "2026-07-16T00:08:30",
+  "generated_at": "2026-09-10T17:31:37",
   "overall": "yellow",
   "summary": {
-    "pass": 35,
-    "warn": 2
+    "warn": 3,
+    "pass": 34
   },
   "checks": [
     {
       "category": "Duplicate / redundant files",
       "control": "Duplicate basename scan",
-      "status": "pass",
-      "summary": "No notable duplicate basenames found.",
-      "evidence": [],
+      "status": "warn",
+      "summary": "Same-name files exist and should stay intentional.",
+      "evidence": [
+        "acik_isler.md: docs/ACIK_ISLER.md, local/ACIK_ISLER.md"
+      ],
       "action": "Keep only if each copy has a different role; otherwise merge or archive in private workspace."
     },
     {
@@ -66,7 +68,7 @@
       "category": "Data integrity / validation",
       "control": "State JSON parse",
       "status": "pass",
-      "summary": "19 state JSON files parsed.",
+      "summary": "26 state JSON files parsed.",
       "evidence": [],
       "action": "Fix malformed generated state before trusting the panel."
     },
@@ -82,10 +84,8 @@
       "category": "Data integrity / validation",
       "control": "Live price coverage",
       "status": "pass",
-      "summary": "Coverage 99.67% (611/613); missing 2.",
-      "evidence": [
-        "ALTINS1, DMLKTG"
-      ],
+      "summary": "Coverage 100.00% (625/625); missing 0.",
+      "evidence": [],
       "action": "Investigate if coverage falls below 99% or missing list grows."
     },
     {
@@ -132,7 +132,7 @@
       "category": "Operational / code quality",
       "control": "Python syntax compile",
       "status": "pass",
-      "summary": "56 Python files compile.",
+      "summary": "67 Python files compile.",
       "evidence": [],
       "action": "Fix syntax errors before deploy."
     },
@@ -156,9 +156,9 @@
       "category": "Application steps / live operations",
       "control": "Data-source fallback chain",
       "status": "pass",
-      "summary": "Workflow has Yahoo plus fallback chain.",
+      "summary": "Workflow has a live fallback and keeps stale file fallback outside the decision path.",
       "evidence": [],
-      "action": "Keep fallback enabled so Yahoo outages do not kill the report."
+      "action": "Keep a live fallback, but do not let stale file data authorize portfolio decisions."
     },
     {
       "category": "Dependency / third-party updates",
@@ -252,9 +252,9 @@
       "category": "Risk / execution controls",
       "control": "Operation gate",
       "status": "pass",
-      "summary": "Operation gate reports 'on_time'.",
+      "summary": "Operation gate reports 'late'.",
       "evidence": [
-        "{'label': 'kapanis', 'target_time': '18:40', 'delay_minutes': 1, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'kapanis', 'gate_reason': '', 'target_time': '18:40', 'delay_minutes': 1}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'yahoo', 'fallback': False, 'price_count': 611, 'source_pool_count': 613, 'missing_symbols': 2, 'missing_symbol_pct': 0.33, 'missing_symbol_list': ['ALTINS1', 'DMLKTG'"
+        "{'label': 'gunici', 'target_time': '14:30', 'delay_minutes': 23, 'sla': {'status': 'late', 'root_cause': 'github_actions_cron_gecikmesi', 'event': 'schedule', 'gate_label': 'gunici', 'gate_reason': 'due:2026-09-10:gunici', 'target_time': '14:30', 'delay_minutes': 23}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_sym"
       ],
       "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
     },
