@@ -134,10 +134,14 @@ jobs:
         # Hata gizleyici bayrak KULLANILMAZ: gozlemcinin kendi hatasi gorunur olmali.
         #
         # NEDEN `!= 'false'` (precise.yml'de YOK, burada VAR):
-        # Bu dosya haftaici 32 cron tetigi aliyor, ama raporu precise uretiyor ->
+        # Bu dosya haftaici 32 cron tetigi TANIMLIYOR ama GitHub bunlarin cogunu
+        # dusuruyor: 2026-09-10 olcumu 4, 09-09 olcumu 6 fiili schedule kosumu
+        # (300 kosumluk gecmisten sayildi). Ilk yazdigimda 32'yi FIILI sandim.
+        # Karar degismiyor, gerekcenin buyuklugu duzeldi. Raporu precise uretiyor ->
         # asagidaki state commit `run == 'true'`e bagli ve pratikte kosmuyor.
-        # Kosulsuz `always()` ile gozlem gunde ~32 kez kosar, izi HIC commit'lenmez
-        # ve her tetik ayri bir P0.3 alarm yuzeyi acar. Kapi 'false' derken bu
+        # Kosulsuz `always()` ile gozlem her fiili tetikte kosar, izi HIC
+        # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar. Kapi 'false'
+        # derken bu
         # workflow zaten IS YAPMIYOR; o tetiklerde gozlem de gereksiz.
         # `== 'true'` DEGIL cunku kapi bozulup bos donerse gozlem yine kosmali —
         # ve bu dosyada bekciyi 40 kosuda 0 kez calistiran hata tam olarak `== 'true'`di.

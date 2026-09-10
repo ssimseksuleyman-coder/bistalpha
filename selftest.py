@@ -1609,11 +1609,15 @@ def main():
                 ),
                 # SOZLESME DARALTILDI (2026-09-10, olcumle).
                 # ESKI HALI: "steps.gate.outputs.run adimda HIC gecmesin".
-                # OLCUM: bist-alpha.yml haftaici 32 cron tetigi aliyor (6:45-50-55,
+                # OLCUM: bist-alpha.yml haftaici 32 cron tetigi TANIMLIYOR (6:45-50-55,
                 # 7:00..30, 11:30..55, 12:00..20, 15:40..55, 16:00..30) + her push.
+                # ⚠️ TANIMLI 32; FIILEN kosan cok daha az — GitHub schedule
+                # tetiklerini dusuruyor: 2026-09-10'da 4, 09-09'da 6 (olculdu).
+                # Karar ayni kaliyor (izi commit'lenmeyen kosum + alarm yuzeyi),
+                # yalniz buyukluk duzeldi. Kapi: BUGUN_UC_KONTROL -> K4.
                 # Ayni dosyada zaten yazili: `gate.run` burada 'true' OLMUYOR (raporu
                 # precise uretiyor) ve state commit'i `run == 'true'`e bagli. Yani
-                # kosulsuz `always()` ile stop gozlemi gunde ~32 kez kosar, izi HIC
+                # kosulsuz `always()` ile stop gozlemi her FIILI tetikte kosar, izi HIC
                 # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar —
                 # "uretilip tuketilmeyen cikti" kusurunu 10 kat buyuterek.
                 # KORUNAN NIYET: gozlemci ANA YOLUN BASARISINA kosullanmasin.
