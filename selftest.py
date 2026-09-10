@@ -2515,6 +2515,48 @@ def main():
             ("4i2 [KORUNACAK] temiz devirde alan None (gurultu yok)",
              _sreb10b["history"][-1].get("unpriced"), None))
 
+        # --- 6) P0.3 KAPANIS TARAMASI — kalan yollar (KANIT TURU: VEKIL) ------
+        # Bagimsiz okumada (2026-09-11) portfolio.py disinda ALTI yol daha ayni
+        # sinifta bulundu: G1 fill kapisi yalniz alis tarafina bakiyordu, G1 fill
+        # degerleme/satis ve cold-start `entry`ye dusuyordu, G1 re-entry yalniz
+        # `None` bakip NaN/0/metin GECIRIYORDU (ve o blok POZISYON ACAR), panelde
+        # her pozisyonun "guncel" fiyati eksikse sessizce giris fiyatiydi.
+        # Bu kontroller METIN YUZEYIDIR: `g1.step` re-entry dali ek kosullar
+        # ister ve kurulumsuz denenince iyi/kotu fiyatta AYNI sonucu verir
+        # (vakum test) -> davranis kaniti yerine baglanti kaniti yazilir.
+        _g1src10 = (_root9 / "bist_alpha" / "g1_account.py").read_text(encoding="utf-8")
+        _dm10b = (_root9 / "daemon.py").read_text(encoding="utf-8")
+        _sh10b = (_root9 / "shadow.py").read_text(encoding="utf-8")
+        _kapanis10 = [
+            ("G1 fill kapisi tutulanlari da denetler",
+             "_tutulan = list((state.get(\"positions\") or {}).keys())" in _g1src10),
+            ("G1 fill degerleme usable_price'tan gecer",
+             "_p, _s = pf.usable_price(opens_today.get(tic))" in _g1src10),
+            ("G1 fill satis fiyati + pnl korumasi",
+             "_e2, _es2 = pf.usable_price(pos.get(\"entry\"))" in _g1src10),
+            ("G1 re-entry fiyat kapisi (POZISYON ACAN blok)",
+             "pt, _rs = pf.usable_price(prices_today.get(tic))" in _g1src10),
+            ("G1 cold-start referans kapisi (nan <= 0 FALSE idi)",
+             "p, _rs2 = pf.usable_price(prices_today.get(tic))" in _g1src10),
+            ("panel pozisyon fiyatinin KAYNAGI yazili (F/A/B/O)",
+             '"current_source": _cur_src,' in _dm10b),
+            ("panel pozisyon fiyatinin KAYNAGI yazili (G1)",
+             '"current_source": _gcur_src,' in _dm10b),
+            ("panel G1 pnl bolme korumasi",
+             "None if pf.usable_price(p.get(\"entry\"))[1]" in _dm10b),
+            ("konsol ciktisinda kaynak gorunur",
+             '_ek = "" if not _cs else f" ({_cs})"' in _sh10b),
+            ("portfolio.py'de ham entry-fallback KALMADI",
+             "prices_today.get(tic, pos['entry'])" not in
+             (_root9 / "bist_alpha" / "portfolio.py").read_text(encoding="utf-8")),
+        ]
+        _eksik10b = [a for a, t in _kapanis10 if not t]
+        if not _eksik10b:
+            ok(f"P0.3 kapanis 6 kalan fiyat yollari baglandi [VEKIL] "
+               f"({len(_kapanis10)}/{len(_kapanis10)})")
+        else:
+            bad("P0.3 kapanis 6 EKSIK: " + " | ".join(_eksik10b))
+
         # --- 5) FILL KAPISI (BIRINCIL koruma) — KANIT TURU: VEKIL --------------
         # `shadow.step` agir kurulum ister (data/signals); burada olculen sey
         # METIN YUZEYI. Davranis kaniti ikinci kilitte (yukarida) ve kapinin

@@ -510,13 +510,22 @@ def _write_dashboard_state(report, label, data=None, universe=None,
             s = pf.load(acc, state_dir="portfolios")
             positions = []
             for t, p in s.get("positions", {}).items():
-                cur = prices_today.get(t, p["entry"])
+                # P0.3: panelde gorunen "guncel" fiyat, eksikse SESSIZCE
+                # giris fiyatiydi -> okuyan onu gercek zannederdi. Sayi
+                # korunur (panel bicimlemesi kirilmasin) ama KAYNAGI yazilir.
+                cur, _cs = pf.usable_price(prices_today.get(t))
+                if _cs:
+                    cur = p["entry"]
+                _cur_src = _cs or "live"
                 stop = pf.stop_level(p)
                 positions.append({
                     "ticker": t,
                     "entry": round(p["entry"], 2),
                     "peak": round(p["peak"], 2),
                     "current": round(cur, 2),
+                    # P0.3: sayinin KAYNAGI. "live" ise gercek fiyat; aksi
+                    # halde neden entry'ye dusuldugu yazili (sessiz uydurma yok).
+                    "current_source": _cur_src,
                     "stop": round(stop, 2),
                     "pnl_pct": round((cur / p["entry"] - 1) * 100, 2),
                     "shares": round(p.get("shares", 0), 6),
@@ -547,15 +556,21 @@ def _write_dashboard_state(report, label, data=None, universe=None,
         g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
         g1_positions = []
         for t, p in g1_state.get("positions", {}).items():
-            cur = prices_today.get(t, p["entry"])
+            cur, _gcs = pf.usable_price(prices_today.get(t))
+            if _gcs:
+                cur = p["entry"]
+            _gcur_src = _gcs or "live"
             stop = pf.stop_level(p)
             g1_positions.append({
                 "ticker": t,
                 "entry": round(p["entry"], 2),
                 "peak": round(p["peak"], 2),
                 "current": round(cur, 2),
+                "current_source": _gcur_src,   # P0.3: sayinin kaynagi
                 "stop": round(stop, 2),
-                "pnl_pct": round((cur / p["entry"] - 1) * 100, 2),
+                # pnl bir BOLME: entry bozuksa hesaplanamaz -> None.
+                "pnl_pct": (None if pf.usable_price(p.get("entry"))[1]
+                            else round((cur / p["entry"] - 1) * 100, 2)),
                 "shares": round(p.get("shares", 0), 6),
                 "origin": p.get("origin", "rebalance"),
             })

@@ -152,15 +152,21 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
     # G1 toplam sermayesi (mevcut dejenere tohum dahil, bugunku fiyattan)
     total = float(state["cash"])
     for tic, pos in state["positions"].items():
-        total += float(pos["shares"] * float(_py(prices_today.get(tic, pos["entry"]))))
+        _p, _s = pf.usable_price(prices_today.get(tic))
+        if _s:
+            _p, _s2 = pf.usable_price(pos.get("entry"))
+            if _s2:
+                _p = 0.0
+        total += float(pos["shares"] * _p)
 
     # F'in mevcut yatirim degeri + goreli piyasa-degeri agirliklari (BUGUNKU fiyat)
     ref_pos = ref_state.get("positions", {})
     ref_cash = float(ref_state.get("cash", 0.0))
     ref_val = {}
     for tic, pos in ref_pos.items():
-        p = prices_today.get(tic)
-        if p is None or float(_py(p)) <= 0:
+        # P0.3: `nan <= 0` FALSE oldugu icin NaN bu kapidan GECIYORDU.
+        p, _rs2 = pf.usable_price(prices_today.get(tic))
+        if _rs2:
             continue
         ref_val[str(tic)] = float(pos["shares"]) * float(_py(p))
     ref_invested = sum(ref_val.values())
@@ -169,8 +175,14 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
 
     # mevcut (dejenere) tohumu bugunku fiyattan tasfiye et — izi trades'e dusur
     for tic, pos in list(state["positions"].items()):
-        p = float(_py(prices_today.get(tic, pos["entry"])))
-        pnl = float((p / pos["entry"] - 1) * 100)
+        _p3, _s5 = pf.usable_price(prices_today.get(tic))
+        if _s5:
+            _p3, _s6 = pf.usable_price(pos.get("entry"))
+            if _s6:
+                _p3 = 0.0
+        p = float(_p3)
+        _e3, _es3 = pf.usable_price(pos.get("entry"))
+        pnl = 0.0 if _es3 else float((p / _e3 - 1) * 100)
         state["cash"] = float(state["cash"] + pos["shares"] * p * (1 - friction))
         del state["positions"][tic]
         _log(state, date, "SELL", tic, p, reason="cold_start_reconcile", pnl_pct=round(pnl, 2))
@@ -240,7 +252,13 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     _pr = state.get("_pending_rebalance")
     if _pr and _pr.get("status") == "pending":
         _hedef = list((_pr.get("targets") or {}).keys())
-        _eksik = [t for t in _hedef if t not in opens_today]
+        # P0.3: F ile SIMETRI — kapi TUTULAN pozisyonlari da denetler.
+        # Yorum zaten "F ile ayni kati kural" diyordu ama yalniz ALIS
+        # tarafina bakiyordu; F 2026-09-10'da iki tarafi kapsar hale geldi.
+        _tutulan = list((state.get("positions") or {}).keys())
+        _eksik = ([t for t in _hedef if t not in opens_today]
+                  + [t for t in _tutulan
+                     if t not in opens_today and t not in _hedef])
         if _eksik:
             # KAPSAMA KONTROLU (F ile ayni katı kural): eksikse KITAPLAMA.
             _pr["fill_blocked"] = {"at": _dstr, "missing_n": len(_eksik),
@@ -249,11 +267,24 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
             state["watch"].clear()
             total = float(state["cash"])
             for tic, pos in state["positions"].items():
-                total += float(pos["shares"] * float(_py(opens_today.get(tic, pos["entry"]))))
+                # P0.3: ham `get(tic, entry)` NaN girdiginde total'i nan yapar
+                # ve state'e `shares: nan` yazilmasina yol acar (F'te olculdu).
+                _p, _s = pf.usable_price(opens_today.get(tic))
+                if _s:
+                    _p, _s2 = pf.usable_price(pos.get("entry"))
+                    if _s2:
+                        _p = 0.0
+                total += float(pos["shares"] * _p)
             # SAT — D+1 OPEN'dan (F'te pf.rebalance sat+al ATOMIK; burada da oyle)
             for tic, pos in list(state["positions"].items()):
-                p = float(_py(opens_today.get(tic, pos["entry"])))
-                pnl = float((p / pos["entry"] - 1) * 100)
+                _p2, _s3 = pf.usable_price(opens_today.get(tic))
+                if _s3:
+                    _p2, _s4 = pf.usable_price(pos.get("entry"))
+                    if _s4:
+                        _p2 = 0.0
+                p = float(_p2)
+                _e2, _es2 = pf.usable_price(pos.get("entry"))
+                pnl = 0.0 if _es2 else float((p / _e2 - 1) * 100)
                 state["cash"] = float(state["cash"] + pos["shares"] * p * (1 - friction))
                 if pos.get("origin") == "reentry":
                     _close_reentry(state, pnl, "rebalance")
@@ -369,10 +400,12 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     for tic, w in list(state["watch"].items()):
         if tic in state["positions"]:
             state["watch"].pop(tic, None); continue
-        pt = prices_today.get(tic)
-        if pt is None:
+        # P0.3: yalniz `None` bakiliyordu -> NaN/0/negatif/metin GECIYORDU
+        # ve bu blok POZISYON ACIYOR (re-entry). Kotu fiyattan giris,
+        # kotu fiyattan cikistan daha pahalidir.
+        pt, _rs = pf.usable_price(prices_today.get(tic))
+        if _rs:
             continue
-        pt = float(_py(pt))
         if pt > w["exit"] and re_factor == 0.0:
             state["stats"]["reentry_paused"] += 1
             continue

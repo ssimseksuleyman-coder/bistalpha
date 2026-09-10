@@ -1061,8 +1061,11 @@ def status():
         print(f"\nHesap {acc}: değer {val:.3f} (getiri %{ret:.1f}), {len(state['positions'])} pozisyon")
         for t, p in list(state["positions"].items())[:12]:
             st = pf.stop_level(p)
-            cur = prices_today.get(t, p['entry'])
-            print(f"   {t:7s} giriş {p['entry']:.1f} | güncel {cur:.1f} | stop {st:.1f}")
+            cur, _cs = pf.usable_price(prices_today.get(t))
+            if _cs:
+                cur = p['entry']   # konsol ciktisi; kaynak parantezde yazilir
+            _ek = "" if not _cs else f" ({_cs})"
+            print(f"   {t:7s} giriş {p['entry']:.1f} | güncel {cur:.1f}{_ek} | stop {st:.1f}")
 
 
 def main():
