@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-10T16:05:49Z",
+  "tz": 0.0,
+  "run_label": "BIST Tam-Zamanli (precise)",
+  "writer": "bist_alpha.stop_observer",
+  "price_sources": [
+    {
+      "source": "borsapy",
+      "status": "ok",
+      "returned": 4,
+      "bar_dates": {
+        "ALKLC": "2026-09-10",
+        "IEYHO": "2026-09-10",
+        "OZATD": "2026-09-10",
+        "SELEC": "2026-09-10"
+      }
+    },
+    {
+      "source": "yahoo",
+      "status": "ok",
+      "returned": 4,
+      "bar_dates": {
+        "ALKLC": "2026-09-10",
+        "IEYHO": "2026-09-10",
+        "OZATD": "2026-09-10",
+        "SELEC": "2026-09-10"
+      }
+    }
+  ],
+  "cross_source_check": {
+    "ALKLC": {
+      "borsapy": 475.5,
+      "yahoo": 475.5,
+      "diff_pct": 0.0,
+      "bar_dates": {
+        "borsapy": "2026-09-10",
+        "yahoo": "2026-09-10"
+      }
+    },
+    "IEYHO": {
+      "borsapy": 225.5,
+      "yahoo": 225.5,
+      "diff_pct": 0.0,
+      "bar_dates": {
+        "borsapy": "2026-09-10",
+        "yahoo": "2026-09-10"
+      }
+    },
+    "OZATD": {
+      "borsapy": 4450.0,
+      "yahoo": 4450.0,
+      "diff_pct": 0.0,
+      "bar_dates": {
+        "borsapy": "2026-09-10",
+        "yahoo": "2026-09-10"
+      }
+    },
+    "SELEC": {
+      "borsapy": 400.0,
+      "yahoo": 400.0,
+      "diff_pct": 0.0,
+      "bar_dates": {
+        "borsapy": "2026-09-10",
+        "yahoo": "2026-09-10"
+      }
+    }
+  },
+  "position_count": 17,
+  "unpriced_count": 0,
+  "price_asof": {
+    "oldest": "2026-09-10",
+    "newest": "2026-09-10",
+    "distinct": 1
+  },
+  "price_freshness": {
+    "status": "FRESH",
+    "oldest_bar": "2026-09-10",
+    "expected_last_closed_session": "2026-09-10",
+    "reject_code": null
+  },
+  "account_status": {
+    "F": {
+      "account": "F",
+      "path": "portfolios/portfolio_F.json",
+      "status": "loaded",
+      "position_count": 4
+    },
+    "A": {
+      "account": "A",
+      "path": "portfolios/portfolio_A.json",
+      "status": "loaded",
+      "position_count": 4
+    },
+    "B": {
+      "account": "B",
+      "path": "portfolios/portfolio_B.json",
+      "status": "loaded",
+      "position_count": 4
+    },
+    "O": {
+      "account": "O",
+      "path": "portfolios/portfolio_O.json",
+      "status": "loaded",
+      "position_count": 4
+    },
+    "G1": {
+      "account": "G1",
+      "path": "portfolios/portfolio_G1.json",
+      "status": "loaded",
+      "position_count": 1
+    }
+  },
+  "unavailable_account_count": 0,
+  "gate": {
+    "verdict": "GREEN",
+    "reason": "full_coverage",
+    "detail": "positions=17 · fiyat tazeligi FRESH"
+  },
+  "breach": false,
+  "accounts": {
+    "F": [
+      {
+        "ticker": "ALKLC",
+        "status": "priced",
+        "price": 475.5,
+        "price_date": "2026-09-10",
+        "stop_level": 404.175,
+        "breached": false,
+        "entry": 425.75,
+        "peak": 475.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "IEYHO",
+        "status": "priced",
+        "price": 225.5,
+        "price_date": "2026-09-10",
+        "stop_level": 191.67499999999998,
+        "breached": false,
+        "entry": 207.8000030517578,
+        "peak": 225.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "OZATD",
+        "status": "priced",
+        "price": 4450.0,
+        "price_date": "2026-09-10",
+        "stop_level": 4103.375,
+        "breached": false,
+        "entry": 4827.5,
+        "peak": 4827.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "SELEC",
+        "status": "priced",
+        "price": 400.0,
+        "price_date": "2026-09-10",
+        "stop_level": 360.0,
+        "breached": false,
+        "entry": 334.5,
+        "peak": 400.0,
+        "reason": "priced"
+      }
+    ],
+    "A": [
+      {
+        "ticker": "ALKLC",
+        "status": "priced",
+        "price": 475.5,
+        "price_date": "2026-09-10",
+        "stop_level": 404.175,
+        "breached": false,
+        "entry": 425.75,
+        "peak": 475.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "IEYHO",
+        "status": "priced",
+        "price": 225.5,
+        "price_date": "2026-09-10",
+        "stop_level": 191.67499999999998,
+        "breached": false,
+        "entry": 207.8000030517578,
+        "peak": 225.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "OZATD",
+        "status": "priced",
+        "price": 4450.0,
+        "price_date": "2026-09-10",
+        "stop_level": 4103.375,
+        "breached": false,
+        "entry": 4827.5,
+        "peak": 4827.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "SELEC",
+        "status": "priced",
+        "price": 400.0,
+        "price_date": "2026-09-10",
+        "stop_level": 360.0,
+        "breached": false,
+        "entry": 334.5,
+        "peak": 400.0,
+        "reason": "priced"
+      }
+    ],
+    "B": [
+      {
+        "ticker": "ALKLC",
+        "status": "priced",
+        "price": 475.5,
+        "price_date": "2026-09-10",
+        "stop_level": 404.175,
+        "breached": false,
+        "entry": 425.75,
+        "peak": 475.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "IEYHO",
+        "status": "priced",
+        "price": 225.5,
+        "price_date": "2026-09-10",
+        "stop_level": 191.67499999999998,
+        "breached": false,
+        "entry": 207.8000030517578,
+        "peak": 225.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "OZATD",
+        "status": "priced",
+        "price": 4450.0,
+        "price_date": "2026-09-10",
+        "stop_level": 4103.375,
+        "breached": false,
+        "entry": 4827.5,
+        "peak": 4827.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "SELEC",
+        "status": "priced",
+        "price": 400.0,
+        "price_date": "2026-09-10",
+        "stop_level": 360.0,
+        "breached": false,
+        "entry": 334.5,
+        "peak": 400.0,
+        "reason": "priced"
+      }
+    ],
+    "O": [
+      {
+        "ticker": "ALKLC",
+        "status": "priced",
+        "price": 475.5,
+        "price_date": "2026-09-10",
+        "stop_level": 404.175,
+        "breached": false,
+        "entry": 425.75,
+        "peak": 475.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "IEYHO",
+        "status": "priced",
+        "price": 225.5,
+        "price_date": "2026-09-10",
+        "stop_level": 191.67499999999998,
+        "breached": false,
+        "entry": 207.8000030517578,
+        "peak": 225.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "OZATD",
+        "status": "priced",
+        "price": 4450.0,
+        "price_date": "2026-09-10",
+        "stop_level": 4103.375,
+        "breached": false,
+        "entry": 4827.5,
+        "peak": 4827.5,
+        "reason": "priced"
+      },
+      {
+        "ticker": "SELEC",
+        "status": "priced",
+        "price": 400.0,
+        "price_date": "2026-09-10",
+        "stop_level": 360.0,
+        "breached": false,
+        "entry": 334.5,
+        "peak": 400.0,
+        "reason": "priced"
+      }
+    ],
+    "G1": [
+      {
+        "ticker": "IEYHO",
+        "status": "priced",
+        "price": 225.5,
+        "price_date": "2026-09-10",
+        "stop_level": 214.225,
+        "breached": false,
+        "entry": 152.0,
+        "peak": 225.5,
+        "reason": "priced"
+      }
+    ]
+  },
+  "note": "P0.6/madde-7 bagimsiz stop gozlemi. YALNIZ TESPIT — emir/state mutasyonu YOK. stop_eval.json'dan AYRIDIR: o artefaktin bayatligi #0l'in kor-nokta sinyalidir, bu dosya her kosuda yazilir."
+}
