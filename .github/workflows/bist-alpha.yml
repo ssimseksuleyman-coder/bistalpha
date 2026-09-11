@@ -102,7 +102,9 @@ jobs:
           # 2026-09-11: bu yol gunici'yi HER GUN teslim ediyor (09-09 14:56, 09-10
           # 14:53; 107 "state HHMM" commit) — asagidaki "gate.run hic true olmuyor"
           # notu 07-22 olcumudur, artik gecersiz.
-          python3 -c "from bist_alpha import run_trace as r; r.phase('state_assert')"
+          # Faz yardimcilari `|| true`: iz ARIZA URETMEZ (fail-safe 1). Bu satir dusseydi
+          # adim daemon'dan SONRA, mark'tan ONCE duserdi = senaryo D (gonderildi, isaretlenmedi).
+          python3 -c "from bist_alpha import run_trace as r; r.phase('state_assert')" || true
           python3 - <<'PY' || { python3 -c "from bist_alpha import run_trace as r; r.end('FAILED', 'dashboard state assert dustu')"; exit 1; }
           import json
           from pathlib import Path
@@ -119,7 +121,7 @@ jobs:
           print(f"OK dinamik kaynak: {d['source']} | BIST havuzu: {d.get('source_pool_count')} | canlı veri: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
           PY
           # P0.5: precise_runner ile simetrik — mark ayri asama (izde FAILED@mark gorunsun)
-          python3 -c "from bist_alpha import run_trace as r; r.phase('mark')"
+          python3 -c "from bist_alpha import run_trace as r; r.phase('mark')" || true
           python3 scripts/report_gate.py mark "${{ steps.gate.outputs.label }}" || { python3 -c "from bist_alpha import run_trace as r; r.end('FAILED', 'report_gate mark dustu')"; exit 1; }
 
       # BEKCI BURADAN KALDIRILDI (2026-07-22). Buradaki `gate.run` hic 'true'

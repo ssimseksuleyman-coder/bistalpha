@@ -2771,6 +2771,17 @@ def main():
                      (_t["error"].startswith("ValueError: fiyat_yok"), len(_t["error"]) <= 312), (True, True)))
         _i12.append(("4c begin onceki izi SIFIRLAR (slot/phases yeni)",
                      (_t["slot"], _t["phases"]), ("kapanis", ["begin", "shadow:G1"])))
+        # 4d SHA = FIILI HEAD (git rev-parse), GITHUB_SHA (tetik) DEGIL: iki workflow da
+        #    kosumdan once `git pull --rebase` yapiyor, kosan kod HEAD'dir. Panel bu
+        #    alani "hangi kod kostu" diye gosteriyor -> proxy olamaz. Yerelde env yok:
+        #    eski kod None yazardi (vakum degil: beklenen HEAD[:12], None ile kirmizi).
+        _head4d = _sp12.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+                            cwd=ROOT).stdout.strip()[:12]
+        _i12.append(("4d begin sha == git HEAD[:12] + sha_source 'git' [OLCUM]",
+                     (_t.get("sha"), _t.get("sha_source"), len(_head4d)), (_head4d, "git", 12)))
+        _RT12.begin("x", sha="ABCDEF1234567890", path=_p12)
+        _i12.append(("4e begin(sha=...) arg kazanir, kaynak 'arg'",
+                     (_RT12.read(_p12)["sha"], _RT12.read(_p12)["sha_source"]), ("ABCDEF123456", "arg")))
         # 5) iz yok: read None, ozet [NO_TRACE]; end(OK) izsiz -> NO_TRACE (uydurma OK yok)
         _p5 = _os12.path.join(_d12, "yok.json")
         _i12.append(("5 iz yok: read None + [NO_TRACE]", (_RT12.read(_p5), _RT12.summary_line(_p5)), (None, "[NO_TRACE]")))
@@ -2939,13 +2950,20 @@ def main():
                      (_iA >= 0, _iB > _iA, _iC > _iB, _iD > _iC), (True, True, True, True)))
         _i12.append(("12b' bist-alpha.yml: bayat 'pratikte kosmuyor' iddiasi duzeltilmis [VEKIL]",
                      "DUZELTME 2026-09-11" in _ba12 and "GUNCELLEME 2026-09-11" in _ba12, True))
+        # 12b'' faz yardimcilari `|| true`: iz ARIZA URETMEZ. Yardimci komut dusseydi
+        #      adim daemon'dan sonra, mark'tan once duserdi = senaryo D (cift Telegram).
+        _i12.append(("12b'' bist-alpha.yml: iki phase yardimcisi da `|| true` (iz adimi dusuremez) [VEKIL]",
+                     (_ba12.count("r.phase('state_assert')\" || true"), _ba12.count("r.phase('mark')\" || true")), (1, 1)))
         _i12.append(("12c docs/state/run_trace.json gitignore'da DEGIL (commit'e girer)",
                      _sp12.run(["git", "check-ignore", "-q", "docs/state/run_trace.json"],
                                cwd=str(_root9), capture_output=True).returncode, 1))
         # 13) [VEKIL] panel tuketicisi + JS senaryosu (asil mühür CI'da node ile: [6m] kosucu)
         _hl12 = (_root9 / "docs" / "health-logic.js").read_text(encoding="utf-8")
-        _i12.append(("13 health-logic: run_trace cekirdek metrigi + RUNNING kirmizi [VEKIL]",
-                     '"run_trace", true,' in _hl12 and 'rtStatus === "RUNNING") ? "r"' in _hl12, True))
+        # Kural (ikinci okuma 2026-09-11): dosya var ve OK degil -> r (NO_TRACE ve
+        # taninmayan dahil); gri yalniz artefakt yok. Liveness uyesiyle ayni hukum.
+        _i12.append(("13 health-logic: run_trace cekirdek metrigi + 'var ama OK degil -> r' kurali [VEKIL]",
+                     '"run_trace", true,' in _hl12
+                     and 'const rtLetter = !rt ? "n" : (rtStatus === "OK" ? "g" : "r");' in _hl12, True))
         _th12 = (_root9 / "docs" / "test-health.js").read_text(encoding="utf-8")
         _i12.append(("13b test-health.js [9] run_trace senaryolari (>=20 check) [VEKIL]",
                      "[9] P0.5 kosum izi" in _th12

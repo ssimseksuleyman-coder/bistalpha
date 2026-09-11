@@ -68,6 +68,24 @@ def read(path=None):
     return d if isinstance(d, dict) else None
 
 
+def _head_sha():
+    """Fiilen kosan kodun SHA'si: `git rev-parse HEAD`. GITHUB_SHA tetik SHA'sidir;
+    iki workflow da kosumdan once `git pull --rebase` yapiyor -> kosan kod HEAD'dir,
+    tetik degil (ground-truth: proxy sessizce yanlislanir). git yoksa env, o da
+    yoksa None; kaynak ayrica yazilir ki okuyucu hangisini gordugunu bilsin."""
+    try:
+        import subprocess
+        r = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+                           cwd=str(REPO_ROOT), timeout=10)
+        s = (r.stdout or "").strip()
+        if r.returncode == 0 and len(s) >= 12:
+            return s[:12], "git"
+    except Exception:
+        pass
+    env = (os.environ.get("GITHUB_SHA") or "")[:12]
+    return (env or None), ("env" if env else None)
+
+
 def _guvenli(fn):
     """Iz yazimi asla cagirani dusurmez; hata stderr'e gider (sessiz degil)."""
     def sarma(*a, **k):
@@ -84,11 +102,16 @@ def _guvenli(fn):
 @_guvenli
 def begin(slot, run_id=None, sha=None, workflow=None, path=None):
     """Kosum basinda. Onceki iz UZERINE yazilir: iz 'son kosum'u anlatir."""
+    if sha:
+        sha, sha_source = str(sha)[:12], "arg"
+    else:
+        sha, sha_source = _head_sha()
     payload = {
         "schema_version": SCHEMA_VERSION,
         "slot": slot,
         "run_id": run_id or os.environ.get("GITHUB_RUN_ID"),
-        "sha": (sha or os.environ.get("GITHUB_SHA") or "")[:12] or None,
+        "sha": sha,
+        "sha_source": sha_source,   # git = fiili HEAD | env = GITHUB_SHA (tetik) | arg
         "workflow": workflow or os.environ.get("GITHUB_WORKFLOW"),
         "started_at": _utc(),
         "updated_at": _utc(),

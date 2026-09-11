@@ -355,23 +355,31 @@ console.log("\n[9] P0.5 kosum izi (run_trace.json)");
   const kucuk = base(); kucuk.run_trace = iz("ok");
   check("'ok' kucuk harf -> g", satir(kucuk).status, "g");
 
-  // Bilinmeyen status: ne g ne r -> n; verdict'i bozmaz, yesile de boyamaz.
+  // Dosya VAR ama OK degil -> r (2026-09-11 ikinci okuma: liveness uyesi ile ayni
+  // kural; onceden taninmayan status "n" idi = iki tuketici iki hukum).
   const acayip = base(); acayip.run_trace = iz("WHATEVER");
-  check("bilinmeyen status -> n", satir(acayip).status, "n");
+  check("taninmayan status -> r (dosya var, OK degil)", satir(acayip).status, "r");
+  check("taninmayan status -> verdict kirmizi", evaluate(acayip, MON_PM).verdict, "r");
+  const izsiz = base(); izsiz.run_trace = iz("NO_TRACE");
+  check("NO_TRACE (begin yazilamadan end) -> r", satir(izsiz).status, "r");
+  check("NO_TRACE -> 'yazici bozuk' yazar", satir(izsiz).reason.indexOf("yazici bozuk") >= 0, true);
 
-  // Bozuk/eksik iz cokmemeli; bozuk = n.
+  // Bozuk/eksik iz cokmemeli; nesne degilse = artefakt yok = n; nesne ama status
+  // sayi ise = dosya var OK degil = r.
   let coktu = false;
   let bozukSt = null;
+  let bozuk2St = null;
   try {
     const bozuk = base();
     bozuk.run_trace = "metin";
     bozukSt = satir(bozuk).status;
     const bozuk2 = base();
     bozuk2.run_trace = { status: 7, ended_at: "x", slot: null, phase: undefined };
-    satir(bozuk2);
+    bozuk2St = satir(bozuk2).status;
   } catch (e) { coktu = true; }
   check("bozuk iz cokmez", coktu, false);
-  check("bozuk iz -> n", bozukSt, "n");
+  check("nesne olmayan iz -> n", bozukSt, "n");
+  check("nesne ama status sayi -> r", bozuk2St, "r");
 }
 
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");

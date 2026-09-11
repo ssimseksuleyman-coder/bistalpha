@@ -287,8 +287,12 @@
     // Yas iki eksende: started_at/ended_at 'Z' tasir (D6).
     const rt = d.run_trace && typeof d.run_trace === "object" ? d.run_trace : null;
     const rtStatus = String((rt && rt.status) || "").toUpperCase();
-    const rtLetter = rtStatus === "OK" ? "g"
-      : (rtStatus === "FAILED" || rtStatus === "RUNNING") ? "r" : "n";
+    // KURAL (2026-09-11 ikinci okuma): dosya VARSA ve OK DEGILSE kirmizi —
+    // NO_TRACE (begin yazilamadan end gelmis = bozuk yazici) ve taninmayan
+    // status dahil. Gri ("n") YALNIZ artefakt yok/okunamaz. Liveness uyesi
+    // ayni kurali uyguluyor (status != OK -> kirmizi); iki tuketici ayni
+    // duruma iki ayri hukum vermesin (C7).
+    const rtLetter = !rt ? "n" : (rtStatus === "OK" ? "g" : "r");
     const rtEnd = rt ? timestampMs(rt.ended_at || rt.updated_at) : null;
     const rtAge = (rtEnd == null || !Number.isFinite(nowMs)) ? null : Math.max(0, Math.round((nowMs - rtEnd) / 60000));
     const rtSub = rt
@@ -309,7 +313,8 @@
         ? (rtStatus === "OK" ? "kosum tamamlandi"
            : rtStatus === "RUNNING" ? "kosum SONLANAMADI (end yok) — yarim state olabilir"
            : rtStatus === "FAILED" ? "kosum " + (str(rt.phase) || "?") + " asamasinda dustu"
-           : "iz durumu bilinmiyor")
+           : rtStatus === "NO_TRACE" ? "iz baslamadan bitmis (begin yazilamadi) — yazici bozuk"
+           : "iz durumu taninmiyor (" + (rtStatus || "bos") + ") — guvenli SAYILMAZ")
         : "artefakt yok -> son kosum OLCULEMEDI (guvenli SAYILMAZ)"
     ));
 

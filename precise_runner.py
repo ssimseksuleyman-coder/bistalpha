@@ -77,6 +77,8 @@ def _trace_begin(label):
         from bist_alpha import run_trace as _rt
         _rt.begin(label)
     except Exception as exc:
+        # BILEREK YUTULUR (C10 kaydi 2026-09-11): iz katmani runner'i dusuremez
+        # (fail-safe 1). begin() zaten _guvenli; bu blok yalniz import'u korur.
         print(f"[precise] iz begin hatasi: {exc}")
 
 

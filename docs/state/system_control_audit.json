@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T15:09:39",
+  "generated_at": "2026-09-11T15:30:23",
   "overall": "yellow",
   "summary": {
     "warn": 3,
@@ -252,9 +252,9 @@
       "category": "Risk / execution controls",
       "control": "Operation gate",
       "status": "pass",
-      "summary": "Operation gate reports 'on_time'.",
+      "summary": "Operation gate reports 'late'.",
       "evidence": [
-        "{'label': 'acilis', 'target_time': '09:45', 'delay_minutes': 15, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'acilis', 'gate_reason': '', 'target_time': '09:45', 'delay_minutes': 15}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_symbol_pct': 0.0, 'missing_symbol_list': "
+        "{'label': 'gunici', 'target_time': '14:30', 'delay_minutes': 24, 'sla': {'status': 'late', 'root_cause': 'github_actions_cron_gecikmesi', 'event': 'schedule', 'gate_label': 'gunici', 'gate_reason': 'due:2026-09-11:gunici', 'target_time': '14:30', 'delay_minutes': 24}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_sym"
       ],
       "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
     },
