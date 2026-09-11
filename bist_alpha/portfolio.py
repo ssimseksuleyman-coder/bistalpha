@@ -43,7 +43,10 @@ class StateQuarantined(RuntimeError):
     """
 
     def __init__(self, account, status, detail, path):
-        self.account, self.status, self.detail, self.path = account, status, detail, path
+        # detail HER ZAMAN str: `except Exception as e` ile gelen ham istisna nesnesi
+        # buraya str'siz dusuyordu -> tuketici `e.detail[:60]` TypeError aliyordu
+        # (operator araci yazilirken olculdu, 2026-09-11).
+        self.account, self.status, self.detail, self.path = account, status, str(detail), path
         super().__init__(f"{account} state KARANTINADA ({status}): {detail} [{path}]")
 
 
@@ -99,7 +102,11 @@ def load(account, state_dir="portfolios"):
         raise StateQuarantined(account, q.get("status", "quarantined"),
                                f"marker duruyor: {q.get('detail')}", p)
     if not os.path.exists(p):
-        _write_quarantine(account, p, "missing", "dosya yok", state_dir)
+        # EKSIK dosyada marker YAZILMAZ: korunacak veri yok, yapiskanlik zaten
+        # dosyanin yoklugundan geliyor; dosya geri gelirse (checkout onarildi)
+        # kendiliginden duzelir. Marker yalniz BOZUKLUK icindir (dosya var ama
+        # okunmuyor -> yerinde tutulur, insan bakana kadar kilitlenir). Aksi
+        # halde salt-okur bir `status` sorgusu bile marker uretirdi (olculdu).
         raise StateQuarantined(account, "missing", "dosya yok", p)
     try:
         with open(p, encoding="utf-8") as f:

@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "04798c14f25f",   # P0.3 + P0.4 (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "dda645cb76ec",   # P0.3 + P0.4 (+09-11 fix: detail str, eksikte marker yok) (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2585,7 +2585,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "04798c14f25f"   # P0.3 + P0.4 (eski 09ad265d9fd5)
+        _sha10 = "dda645cb76ec"   # P0.3 + P0.4 (+09-11 fix) (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")
@@ -2636,8 +2636,10 @@ def main():
             _i11.append((f"1 {_ad}: StateQuarantined({_bek})", _st, _bek))
             _i11.append((f"1b {_ad}: bozuk dosya TASINMADI",
                          _os11.path.exists(_p) if _kw else True, True))
-            _i11.append((f"1c {_ad}: marker yazildi",
-                         _os11.path.exists(_PF11._quarantine_path("F", _d)), True))
+            # marker YALNIZ bozuklukta: eksik dosyada korunacak veri yok, marker
+            # yazilsaydi salt-okur `status` bile marker uretirdi (olculdu 09-11).
+            _i11.append((f"1c {_ad}: marker {'YOK' if _bek == 'missing' else 'yazildi'}",
+                         _os11.path.exists(_PF11._quarantine_path("F", _d)), _bek != "missing"))
             _i11.append((f"1d {_ad}: .bozuk yedek URETILMEDI (gitignore tuzagi)",
                          any("bozuk" in x for x in _os11.listdir(_d)), False))
         # 2) [KORUNACAK] saglam dosya yuklenir, gercek nakit korunur
