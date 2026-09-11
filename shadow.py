@@ -889,6 +889,12 @@ def step(data, signals, date=None, slippage=None, run_label=None):
                 tradelog.log_trades(acc, trade_date, new_trades)
             except Exception as e:
                 print(f"[shadow] {acc} tradelog yazilamadi: {e}")
+        except pf.StateQuarantined:
+            # P0.4 "KARAR BLOKE": karantina YETKILIDIR, hesap-ici hata gibi
+            # yutulup devam edilmez. Yeniden firlatilir -> kosum duser ->
+            # P0.7 alarmi Telegram'a gider -> rapor ve state commit OLMAZ.
+            # Aksi halde F karantinadayken A/B/O ayrisir ve alarm calmaz.
+            raise
         except Exception:
             tb = traceback.format_exc()
             print(f"[shadow] Hesap {acc} HATA:\n{tb}")

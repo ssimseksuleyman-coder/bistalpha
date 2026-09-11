@@ -227,7 +227,7 @@ def main():
         "bist_alpha/strategy.py":  "7330c5f19752",
         "bist_alpha/backtest.py":  "7708e7818b66",
         "bist_alpha/config.py":    "8eee78db71e0",
-        "bist_alpha/portfolio.py": "ac55ba2b14d6",   # P0.3 adim 2/2b/3/4/4b (2026-09-10): eski 09ad265d9fd5
+        "bist_alpha/portfolio.py": "04798c14f25f",   # P0.3 + P0.4 (2026-09-10): eski 09ad265d9fd5
         "bist_alpha/signals.py":   "22bb89bf9de5",
     }
     import subprocess
@@ -2585,7 +2585,7 @@ def main():
         # DONUKLUK HATIRLATICISI: bu blok gecerken portfolio.py DEGISMEMIS olmali.
         # [6b] zaten SHA'yi kontrol ediyor; burada NIYETI yaziya dokuyoruz ki
         # yama sirasinda "SHA'yi guncelledim ama davranisi olcmedim" olmasin.
-        _sha10 = "ac55ba2b14d6"   # P0.3 adim 2/2b/3/4/4b (eski 09ad265d9fd5)
+        _sha10 = "04798c14f25f"   # P0.3 + P0.4 (eski 09ad265d9fd5)
         if _sha10 in (_root9 / "selftest.py").read_text(encoding="utf-8"):
             ok("P0.3 karakterizasyon 7  portfolio.py hala 5-SHA baseline'inda "
                "(davranis yamasi bu satiri da guncellemek zorunda)")
@@ -2593,6 +2593,116 @@ def main():
             bad("P0.3 karakterizasyon 7  portfolio.py baseline'i kayip")
     except Exception as e:
         bad(f"P0.3 [6n] karakterizasyon kosmadi: {type(e).__name__}: {e}")
+
+
+    # -- [6o] P0.4 BOZUK STATE — karantina KALICI, reset AYRI, karar BLOKE --
+    # YAMA ONCESI OLCULDU (2026-09-11): `load` bozuk dosyayi `.bozuk_*.bak`a tasiyip
+    # DEFAULT (cash=1.0, positions={}) donuyordu. `*.bozuk*` .gitignore'da -> yedek
+    # CI runner'da YOK OLUR; sifirlanmis default ise `git add -f portfolios/` ile
+    # COMMIT'LENIR. Gecerli JSON ama yanlis sekil (positions=list) bile ayni yoldan:
+    # 5.0 nakit -> 1.0. Hic ateslememis (0 .bak, tarihte 0): gizli felaket.
+    # AYRICA: shadow.py hesap dongusu `except Exception` ile HER hatayi yutup devam
+    # ediyordu -> firlatmak tek basina "karar bloke" saglamaz; StateQuarantined
+    # ozel olarak YENIDEN firlatilir.
+    print("\n[6o] P0.4 bozuk state: karantina kalici / reset ayri / karar bloke")
+    try:
+        import json as _json11
+        import os as _os11
+        import tempfile as _tf11
+        from bist_alpha import portfolio as _PF11
+
+        def _td11(icerik=None, sekil=None):
+            d = _tf11.mkdtemp()
+            p = _os11.path.join(d, "portfolio_F.json")
+            if icerik is not None:
+                open(p, "w", encoding="utf-8").write(icerik)
+            elif sekil is not None:
+                open(p, "w", encoding="utf-8").write(_json11.dumps(sekil))
+            return d, p
+
+        def _yukle11(d):
+            try:
+                return ("LOADED", _PF11.load("F", state_dir=d))
+            except _PF11.StateQuarantined as e:
+                return (e.status, None)
+
+        _i11 = []
+        # 1) uc bozukluk turu -> firlatir, dosya YERINDE, marker VAR
+        for _ad, _kw, _bek in (("bozuk JSON", {"icerik": "{bozuk"}, "unreadable"),
+                               ("eksik dosya", {}, "missing"),
+                               ("sekilsiz (positions=list)", {"sekil": {"cash": 5.0, "positions": [1]}}, "invalid")):
+            _d, _p = _td11(**_kw)
+            _st, _ = _yukle11(_d)
+            _i11.append((f"1 {_ad}: StateQuarantined({_bek})", _st, _bek))
+            _i11.append((f"1b {_ad}: bozuk dosya TASINMADI",
+                         _os11.path.exists(_p) if _kw else True, True))
+            _i11.append((f"1c {_ad}: marker yazildi",
+                         _os11.path.exists(_PF11._quarantine_path("F", _d)), True))
+            _i11.append((f"1d {_ad}: .bozuk yedek URETILMEDI (gitignore tuzagi)",
+                         any("bozuk" in x for x in _os11.listdir(_d)), False))
+        # 2) [KORUNACAK] saglam dosya yuklenir, gercek nakit korunur
+        _d2, _ = _td11(sekil={"account": "F", "cash": 5.0, "positions": {}, "history": []})
+        _st2, _s2 = _yukle11(_d2)
+        _i11.append(("2 saglam dosya yuklenir, cash=5.0 KORUNUR",
+                     (_st2, _s2 and _s2["cash"]), ("LOADED", 5.0)))
+        # 3) KALICILIK: marker varken saglam dosya bile yuklenmez
+        _PF11._write_quarantine("F", "x", "invalid", "test", _d2)
+        _i11.append(("3 marker duruyorsa SAGLAM dosya bile yuklenmez (kalici)",
+                     _yukle11(_d2)[0], "invalid"))
+        # 4) reset AYRI: arsiv committable ad, marker kalkar, history olayi, gerekce zorunlu
+        _s4, _ar4 = _PF11.reset_state("F", "test", state_dir=_d2)
+        _i11.append(("4 reset: arsiv `.archived_` (bozuk desenine UYMAZ -> commit'lenir)",
+                     _ar4 is not None and ".archived_" in _ar4 and "bozuk" not in _ar4, True))
+        _i11.append(("4b reset: marker kalkti", _os11.path.exists(_PF11._quarantine_path("F", _d2)), False))
+        _i11.append(("4c reset: history'de acik `reset` olayi + gerekce",
+                     (_s4["history"][0]["event"], _s4["history"][0]["reason"]), ("reset", "test")))
+        _i11.append(("4d reset sonrasi load calisir", _yukle11(_d2)[0], "LOADED"))
+        try:
+            _PF11.reset_state("F", "", state_dir=_d2); _g = "ISTISNA_YOK"
+        except ValueError:
+            _g = "ValueError"
+        _i11.append(("4e reset gerekcesiz REDDEDILIR", _g, "ValueError"))
+        # 5) release: yalniz marker'i kaldirir, dosyaya dokunmaz
+        _d5, _p5 = _td11(sekil={"account": "F", "cash": 7.0, "positions": {}, "history": []})
+        _PF11._write_quarantine("F", _p5, "invalid", "t", _d5)
+        _PF11.release_quarantine("F", _d5)
+        _st5, _s5 = _yukle11(_d5)
+        _i11.append(("5 release: marker kalkar, dosya DOKUNULMAZ (cash 7.0)",
+                     (_st5, _s5 and _s5["cash"]), ("LOADED", 7.0)))
+        # 6) init_state: hesap yaratma ACIK eylem; var olani ezmez
+        _d6 = _tf11.mkdtemp()
+        _PF11.init_state("F", state_dir=_d6)
+        try:
+            _PF11.init_state("F", state_dir=_d6); _g6 = "ISTISNA_YOK"
+        except FileExistsError:
+            _g6 = "FileExistsError"
+        _i11.append(("6 init_state var olani EZMEZ", _g6, "FileExistsError"))
+        # 7) URETIM DOSYALARI yeni kati yukleyiciden gecer (yarin sabah durmasin)
+        _ok7 = []
+        for _acc in ("F", "A", "B", "O", "G1"):
+            try:
+                _PF11.load(_acc, state_dir=str(_root9 / "portfolios")); _ok7.append(_acc)
+            except _PF11.StateQuarantined as e:
+                _ok7.append(f"{_acc}:KARANTINA")
+        _i11.append(("7 bes uretim dosyasi da yuklenir", _ok7, ["F", "A", "B", "O", "G1"]))
+        # 8) shadow karantinayi YUTMUYOR (VEKIL: metin) — hesap dongusunun except'i
+        _sh11 = (_root9 / "shadow.py").read_text(encoding="utf-8")
+        _i11.append(("8 shadow StateQuarantined'i yeniden firlatiyor [VEKIL]",
+                     "except pf.StateQuarantined:" in _sh11 and
+                     _sh11.index("except pf.StateQuarantined:") < _sh11.index('results[acc] = {"error": tb[:500]}'),
+                     True))
+        # 9) .gitignore: marker ve arsiv COMMIT'LENIR, eski .bak IGNORE (olculdu)
+        _gi = (_root9 / ".gitignore").read_text(encoding="utf-8")
+        _i11.append(("9 .gitignore `*.bozuk*` iceriyor (eski yedek yolu olu, kayitli)",
+                     "*.bozuk*" in _gi, True))
+
+        for _ad11, _al11, _bek11 in _i11:
+            if _al11 == _bek11:
+                ok(f"P0.4 {_ad11}")
+            else:
+                bad(f"P0.4 {_ad11}: beklenen {_bek11!r}, alinan {_al11!r}")
+    except Exception as e:
+        bad(f"P0.4 [6o] kosmadi: {type(e).__name__}: {e}")
 
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")

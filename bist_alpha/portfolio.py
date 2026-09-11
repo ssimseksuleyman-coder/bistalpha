@@ -31,29 +31,137 @@ def _path(account, state_dir):
     return os.path.join(state_dir, f"portfolio_{account}.json")
 
 
+class StateQuarantined(RuntimeError):
+    """State okunamadi / gecersiz / eksik. YUKLENMEZ, SIFIRLANMAZ, TASINMAZ.
+
+    P0.4 — eski `load` bozuk dosyayi `.bozuk_*.bak`a tasiyip DEFAULT donuyordu.
+    Olculdu (2026-09-11): `*.bozuk*` .gitignore'da -> yedek CI runner'da yok olur;
+    sifirlanmis default ise `git add -f portfolios/` ile COMMIT'LENIR. Yani
+    kurtarma yolu gercek state'i KALICI kaybedip bos olani sonsuza kadar saklamakti.
+    Gecerli JSON ama yanlis sekil (positions dict degil) de ayni yoldan geciyordu:
+    5.0 nakit -> 1.0 default. Hic ateslememis (0 .bak, tarihte 0) — gizli felaket.
+    """
+
+    def __init__(self, account, status, detail, path):
+        self.account, self.status, self.detail, self.path = account, status, detail, path
+        super().__init__(f"{account} state KARANTINADA ({status}): {detail} [{path}]")
+
+
+def _quarantine_path(account, state_dir="portfolios"):
+    # `*.bozuk*` desenine UYMAZ -> gitignore'a takilmaz -> `git add -f portfolios/`
+    # ile commit'lenir -> KALICI (runner olse de origin'de durur).
+    return os.path.join(state_dir, f"portfolio_{account}.quarantine.json")
+
+
+def _write_quarantine(account, path, status, detail, state_dir="portfolios"):
+    os.makedirs(state_dir, exist_ok=True)
+    q = _quarantine_path(account, state_dir)
+    payload = {
+        "account": account, "status": status, "detail": str(detail)[:300],
+        "path": path, "at": datetime.now().isoformat(timespec="seconds"),
+        "note": ("P0.4 karantina. Bozuk dosya YERINDE birakildi (tek kopya). "
+                 "Hesap, bir insan `reset_state`/`release_quarantine` cagirana kadar "
+                 "yuklenmez ve karar uretmez."),
+    }
+    tmp = q + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, q)
+    return q
+
+
+def quarantine_status(account, state_dir="portfolios"):
+    """Karantina marker'i varsa icerigini, yoksa None doner."""
+    q = _quarantine_path(account, state_dir)
+    if not os.path.exists(q):
+        return None
+    try:
+        with open(q, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        return {"account": account, "status": "marker_unreadable", "detail": str(e)}
+
+
 def load(account, state_dir="portfolios"):
-    """Hesabın mevcut pozisyonlarını yükler. Bozuksa yedekler ve sıfırlar."""
+    """Hesabin state'ini yukler. Bozuksa/eksikse KARANTINAYA alir ve FIRLATIR.
+
+    FAIL-SAFE YONU (koddan once yazildi, P0.4):
+      - bozuk dosya TASINMAZ (tek kopya, yerinde kalir)
+      - default DONULMEZ (hesap uydurmak, yanlis fiyattan emirden kotudur)
+      - marker yazilir ve KALICIDIR: dosya sonradan saglam gorunse bile
+        marker duruyorsa yine fırlatır — bir insan bakana kadar karar YOK
+      - eksik dosya da karantinadir: bes hesap da mevcut, "yok" = checkout
+        hatasi ya da silinme, yeni-hesap degil. Yeni hesap `init_state` ile acilir.
+    """
     p = _path(account, state_dir)
-    default = {"account": account, "cash": 1.0, "positions": {}, "history": []}
+    q = quarantine_status(account, state_dir)
+    if q is not None:
+        raise StateQuarantined(account, q.get("status", "quarantined"),
+                               f"marker duruyor: {q.get('detail')}", p)
     if not os.path.exists(p):
-        return default
+        _write_quarantine(account, p, "missing", "dosya yok", state_dir)
+        raise StateQuarantined(account, "missing", "dosya yok", p)
     try:
         with open(p, encoding="utf-8") as f:
             state = json.load(f)
-        if not isinstance(state, dict):
-            raise ValueError("state dict değil")
-        if not isinstance(state.get("positions"), dict):
-            raise ValueError("positions eksik veya dict değil")
-        return state
     except Exception as e:
-        import datetime as _dt
-        bak = p + f".bozuk_{_dt.datetime.now():%Y%m%d_%H%M%S}.bak"
-        try:
-            os.rename(p, bak)
-        except OSError:
-            pass
-        print(f"[portfolio] {account} bozuk JSON yedeklendi ({e}) → sıfırlandı: {bak}")
-        return default
+        _write_quarantine(account, p, "unreadable", e, state_dir)
+        raise StateQuarantined(account, "unreadable", e, p)
+    if not isinstance(state, dict):
+        _write_quarantine(account, p, "invalid", "state dict degil", state_dir)
+        raise StateQuarantined(account, "invalid", "state dict degil", p)
+    if not isinstance(state.get("positions"), dict):
+        _write_quarantine(account, p, "invalid", "positions eksik veya dict degil", state_dir)
+        raise StateQuarantined(account, "invalid", "positions eksik veya dict degil", p)
+    return state
+
+
+def init_state(account, state_dir="portfolios"):
+    """YENI hesap acar. `load` artik hesap YARATMAZ; bu acik bir eylemdir."""
+    p = _path(account, state_dir)
+    if os.path.exists(p):
+        raise FileExistsError(f"{account} zaten var: {p} (reset icin reset_state)")
+    state = {"account": account, "cash": 1.0, "positions": {}, "history": []}
+    save(state, state_dir=state_dir)
+    return state
+
+
+def release_quarantine(account, state_dir="portfolios"):
+    """Marker'i kaldirir; dosyaya DOKUNMAZ. Insan dosyayi elle onardiysa kullanilir.
+    Doner: marker vardi mi (bool)."""
+    q = _quarantine_path(account, state_dir)
+    if os.path.exists(q):
+        os.remove(q)
+        return True
+    return False
+
+
+def reset_state(account, reason, state_dir="portfolios"):
+    """SIFIRLAMA — AYRI ve ACIK eylem (P0.4: repair/reset `load`ten AYRI).
+
+    Mevcut dosya `portfolio_X.archived_<ts>.json`a tasinir: `*.bozuk*`e uymaz,
+    gitignore'a takilmaz, commit'lenir -> kanit KAYBOLMAZ. Yeni default'un
+    history'sine gerekcesiyle acik bir olay yazilir; marker kaldirilir.
+    Daemon/shadow bunu ASLA cagirmaz; bir insan cagirir.
+    """
+    if not reason or not str(reason).strip():
+        raise ValueError("reset_state gerekce ister (reason bos olamaz)")
+    p = _path(account, state_dir)
+    arsiv = None
+    if os.path.exists(p):
+        arsiv = p.replace(".json", f".archived_{datetime.now():%Y%m%d_%H%M%S}.json")
+        os.replace(p, arsiv)
+    state = {
+        "account": account, "cash": 1.0, "positions": {},
+        "history": [{
+            "date": datetime.now().strftime("%Y-%m-%d"), "event": "reset",
+            "reason": str(reason), "archived": arsiv, "total": 1.0, "n_pos": 0,
+            "trades": [],
+        }],
+    }
+    save(state, state_dir=state_dir)
+    release_quarantine(account, state_dir)
+    return state, arsiv
 
 
 def save(state, state_dir="portfolios"):
