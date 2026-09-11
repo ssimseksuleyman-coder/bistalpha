@@ -22,6 +22,7 @@ from datetime import datetime, time
 
 from bist_alpha import config
 from bist_alpha import datafeed
+from bist_alpha.portfolio import StateQuarantined as _StateQuarantined  # P0.4
 from bist_alpha import signals as sig_mod
 from bist_alpha import reporter
 from bist_alpha import notifier
@@ -334,6 +335,12 @@ def run_cycle(label="manuel"):
             trade_notice = shadow._format_trade_notice(shadow_result)
             if trade_notice:
                 notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
+        except _StateQuarantined:
+            # P0.4 "KARAR BLOKE" — shadow karantinayi yeniden firlatti; burada
+            # yutulursa rapor bos held_positions ile uretilir (tutulan hisse "AL"
+            # gorunur), dashboard yazilir, adim yesil biter, P0.7 calmaz.
+            # Karantina run_cycle'dan DISARI cikar -> adim exit 1 -> alarm.
+            raise
         except Exception as e:
             import traceback as _tb
             _tb_str = _tb.format_exc()
@@ -347,6 +354,10 @@ def run_cycle(label="manuel"):
         try:
             from bist_alpha import portfolio as pf
             held_positions = pf.load(config.MODE, state_dir=config.STATE_DIR).get("positions", {})
+        except _StateQuarantined:
+            # P0.4: karantinali hesap icin held_positions={} demek "hicbir sey
+            # tutulmuyor" UYDURMASIDIR -> raporun AL/BEKLE hukumleri bozulur.
+            raise
         except Exception:
             held_positions = {}
         report = reporter.generate_report(data, signals, mode=config.MODE,

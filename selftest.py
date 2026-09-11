@@ -2691,6 +2691,19 @@ def main():
                      "except pf.StateQuarantined:" in _sh11 and
                      _sh11.index("except pf.StateQuarantined:") < _sh11.index('results[acc] = {"error": tb[:500]}'),
                      True))
+        # 8b) daemon da karantinayi YUTMUYOR [VEKIL] — bagimsiz okumada bulundu:
+        #     shadow yeniden firlatiyordu ama daemon.run_cycle `except Exception`
+        #     ile bir kat yukarida yutup raporu BOS held_positions ile uretiyor,
+        #     dashboard'i yaziyor, adimi yesil bitiriyordu. Iki yakalama noktasi.
+        _dm11 = (_root9 / "daemon.py").read_text(encoding="utf-8")
+        _i11.append(("8b daemon shadow.step karantinayi yeniden firlatiyor [VEKIL]",
+                     _dm11.count("except _StateQuarantined:") >= 2
+                     and "from bist_alpha.portfolio import StateQuarantined as _StateQuarantined" in _dm11,
+                     True))
+        _i11.append(("8c daemon held_positions karantinada {} UYDURMUYOR [VEKIL]",
+                     _dm11.index("except _StateQuarantined:", _dm11.index("held_positions = {}"))
+                     < _dm11.index("held_positions = {}", _dm11.index("held_positions = {}") + 1),
+                     True))
         # 9) .gitignore: marker ve arsiv COMMIT'LENIR, eski .bak IGNORE (olculdu)
         _gi = (_root9 / ".gitignore").read_text(encoding="utf-8")
         _i11.append(("9 .gitignore `*.bozuk*` iceriyor (eski yedek yolu olu, kayitli)",
