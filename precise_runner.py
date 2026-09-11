@@ -69,6 +69,40 @@ def sync_latest_state() -> None:
         print(f"[precise] git pull atlandi: {exc}")
 
 
+def _trace_begin(label):
+    # Daemon kendi begin()'ini atar (ayni slot, ustune yazar). Buradaki begin
+    # daemon'un begin'e HIC ULASAMADIGI durum icin (import/sozdizimi hatasi):
+    # o zaman onceki kosumun izi bu kosumunmus gibi commit'lenirdi.
+    try:
+        from bist_alpha import run_trace as _rt
+        _rt.begin(label)
+    except Exception as exc:
+        print(f"[precise] iz begin hatasi: {exc}")
+
+
+def _trace_phase(name):
+    try:
+        from bist_alpha import run_trace as _rt
+        _rt.phase(name)
+    except Exception as exc:
+        print(f"[precise] iz phase hatasi: {exc}")
+
+
+def _trace_end(status, err=None):
+    # Daemon dustuyse izi kendisi FAILED@<faz> + gercek hata ile kapatmistir;
+    # buradaki CalledProcessError ("exit status 1") onu EZMEMELI. Iz zaten
+    # FAILED ise dokunma; RUNNING (daemon sinyalle oldu, end kosmadi) veya
+    # OK (daemon bitti, mark dustu) ise kapat.
+    try:
+        from bist_alpha import run_trace as _rt
+        cur = _rt.read() or {}
+        if cur.get("status") == "FAILED":
+            return
+        _rt.end(status, err)
+    except Exception as exc:
+        print(f"[precise] iz end hatasi: {exc}")
+
+
 def claim_slot(label: str) -> bool:
     try:
         sys.path.insert(0, "scripts")
@@ -112,10 +146,17 @@ def main(argv) -> int:
         print(f"[precise] {label} baska workflow tarafindan ayrilmis -> cik"); return 0
 
     print(f"[precise] {label} CALISTIRILIYOR @ {datetime.now(TZ_TR):%H:%M:%S} TR")
+    _trace_begin(label)
     try:
         subprocess.run([sys.executable, "daemon.py", "--once", label], check=True)
+        # P0.5: mark ayri bir asama — Telegram gitti ama isaretlenmedi (senaryo D)
+        # sonraki tick'te CIFT rapor demek; izde ayri gorunmeli.
+        _trace_phase("mark")
         subprocess.run([sys.executable, "scripts/report_gate.py", "mark", label], check=True)
-    except Exception:
+    except Exception as _exc:
+        # daemon kendi izini kapatir; buradaki end() yalniz mark asamasindaki
+        # ariza icin gerekli (daemon OK dedi, mark dustu -> FAILED@mark).
+        _trace_end("FAILED", _exc)
         release_slot(label)
         raise
     return 0

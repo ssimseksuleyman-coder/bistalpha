@@ -23,6 +23,7 @@ from datetime import datetime, time
 from bist_alpha import config
 from bist_alpha import datafeed
 from bist_alpha.portfolio import StateQuarantined as _StateQuarantined  # P0.4
+from bist_alpha import run_trace as _rt  # P0.5 kosum izi
 from bist_alpha import signals as sig_mod
 from bist_alpha import reporter
 from bist_alpha import notifier
@@ -297,6 +298,28 @@ def _telegram_ingest():
 
 
 def run_cycle(label="manuel"):
+    # P0.5: iz daemon'un KENDI kapsaminda baslar ve biter — precise_runner
+    # olmadan cagrilan native yol (bist-alpha.yml) da izsiz kalmasin.
+    # Hata yolunda end("FAILED") yazilip istisna AYNEN yeniden firlatilir;
+    # iz karar degil, kayittir — davranis degismez.
+    _rt.begin(label)
+    try:
+        sonuc = _run_cycle_iz(label)
+    except BaseException as _exc:
+        _rt.end("FAILED", _exc)
+        raise
+    # Donus degeri AYNEN gecer: main() `result is None -> SystemExit(1)` der
+    # (selfheal raporu yutmus). O cikis 1 ise iz de FAILED demeli — exit kodu
+    # ile iz celismesin. (Bagimsiz okumada bulundu: ilk surum degeri dusuruyordu
+    # -> her --once kosumu exit 1 olacakti.)
+    if sonuc is None:
+        _rt.end("FAILED", "rapor uretilemedi (None) — selfheal yuttu")
+    else:
+        _rt.end("OK")
+    return sonuc
+
+
+def _run_cycle_iz(label="manuel"):
     """Tek tam döngü — self-heal korumalı."""
     ts = datetime.now().strftime("%H:%M")
     print(f"\n=== DÖNGÜ '{label}' @ {ts} ===")
@@ -308,6 +331,7 @@ def run_cycle(label="manuel"):
     # They are no longer part of the production report/operation gate.
 
     # 2) Dinamik veri (eksik #1) — self-heal: çökerse gömülü yedeğe düş
+    _rt.phase("feed")
     data = selfheal.safe_feed()
     feed = datafeed.get_feed(data.get("_source_base") or data.get("_source"))
     universe = feed.dynamic_universe(data)
@@ -331,6 +355,7 @@ def run_cycle(label="manuel"):
             import shadow
             # run_label: stop degerlendirmesi yalniz "kapanis" slotunda yapilir (#0l).
             # Etiket precise_runner.target_slot() -> run_cycle(label) zincirinden gelir.
+            _rt.phase("shadow")
             shadow_result = shadow.step(data, signals, run_label=label)
             trade_notice = shadow._format_trade_notice(shadow_result)
             if trade_notice:
@@ -360,6 +385,7 @@ def run_cycle(label="manuel"):
             raise
         except Exception:
             held_positions = {}
+        _rt.phase("report")
         report = reporter.generate_report(data, signals, mode=config.MODE,
                                            held_positions=held_positions)
         report["shadow_cycle"] = shadow_result
@@ -378,8 +404,10 @@ def run_cycle(label="manuel"):
         print(text)
         # 5) Bildirim (eksik #2)
         subject = f"📊 BIST Alpha {report['date']} ({label})"
+        _rt.phase("telegram")
         notify_status = notifier.notify_all(subject, text)
         # 6) Web dashboard JSON (GitHub Pages için docs/state/)
+        _rt.phase("dashboard")
         _write_dashboard_state(
             report, label, data=data, universe=universe,
             health=health, notify_status=notify_status)

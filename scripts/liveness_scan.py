@@ -636,6 +636,28 @@ REGISTRY = {
         "check_mode": "report_coverage",
         "note": "bugun penceresi kapanan rapor slotlarinin `sent` markeri var mi (#1e)",
     },
+    # --- 19. UYE: P0.5 KOSUM IZI (2026-09-11) ----------------------------------
+    # Diger uyeler tek tek artefaktlarin yazicisini sorar; bu uye "son URETICI
+    # KOSUM sonlandi mi, nerede?" sorar. Iki yokluk-imzasi birden:
+    #   (a) damga yasi/kacan slot: iz YAZICISI sustu (run_trace `_guvenli` ile
+    #       daemon'u dusurmez -> yazamiyorsa dosya sessizce BAYAT kalir; panel
+    #       eski OK'i sonsuza dek yesil gosterirdi — bu uye o korlugu kapatir)
+    #   (b) ok_key: status != OK -> RED. FAILED = kosum dustu; RUNNING (commit'-
+    #       lenmis) = end() hic kosmadi = SONLANAMADI (timeout/runner olumu).
+    # Damga UTC 'Z' (D6) -> tz 0.0. Bekci alarmi BILDIRIMDIR, karar degil.
+    # ILK GECIS: push sonrasi ilk precise kosumuna kadar dosya YOK ->
+    # _ever_written "YENI UYE" SARI (4. sari; 3 sari taban bilinen).
+    "run_trace": {
+        "kind": "producer",
+        "expected": "active",
+        "file": "docs/state/run_trace.json",
+        "ts_keys": ["updated_at", "ended_at", "started_at"],
+        "tz": 0.0,
+        "schedule": "daemon_cycle",
+        "ok_key": "status",
+        "ok_value": "OK",
+        "note": "P0.5 kosum izi: son uretici kosum OK mi (FAILED/RUNNING = RED); precise_runner+daemon yazar",
+    },
 }
 
 

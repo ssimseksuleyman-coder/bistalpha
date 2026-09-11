@@ -294,5 +294,85 @@ console.log("\n[8] P0.6/madde-7 bagimsiz stop gozlemi kapisi");
   check("bozuk iz cokmez", coktu, false);
 }
 
+console.log("\n[9] P0.5 kosum izi (run_trace.json)");
+{
+  // Hukum PYTHON'da (bist_alpha/run_trace.end); panel TASIR. Olculen: eslem
+  //   OK -> g · FAILED -> r · RUNNING -> r · yok/bozuk -> n (olculemedi, g DEGIL).
+  // RUNNING neden r: state commit `if: always()` oldugu icin yarim iz origin'e
+  // duser; commit'lenmis RUNNING = end() hic cagrilmadi = kosum SONLANAMADI.
+  const base = () => ({
+    last_data_date: "2026-06-29",
+    price_count: 600,
+    source_pool_count: 605,
+    source: "yahoo",
+    source_pool_fallback: false,
+    timestamp: "2026-06-29T09:45:00",
+    official_sources: { kap: { status: "ok", latest_event_date: "2026-06-29", total_events: 3 } },
+  });
+  const iz = (status, extra) => Object.assign({
+    schema_version: 1,
+    slot: "gunici",
+    status: status,
+    phase: "dashboard",
+    phases: ["begin", "feed", "shadow:A", "report", "telegram", "dashboard"],
+    started_at: "2026-06-29T11:30:00Z",
+    updated_at: "2026-06-29T11:31:00Z",
+    ended_at: "2026-06-29T11:31:00Z",
+    error: null,
+  }, extra || {});
+  const satir = (d) => evaluate(d, MON_PM).metrics.find(m => m.key === "run_trace");
+  const base_with = (trace) => { const d = base(); d.run_trace = trace; return d; };
+
+  const yok = base();
+  check("artefakt yok -> n", satir(yok).status, "n");
+  check("artefakt yok -> verdict bozulmaz", evaluate(yok, MON_PM).verdict, "g");
+  check("artefakt yok -> cekirdek metrik", satir(yok).core, true);
+  check("artefakt yok -> 'OLCULEMEDI' yazar", satir(yok).reason.indexOf("OLCULEMEDI") >= 0, true);
+
+  const ok = base(); ok.run_trace = iz("OK", { sha: "abcdef123456" });
+  check("OK -> g", satir(ok).status, "g");
+  check("OK -> verdict yesil", evaluate(ok, MON_PM).verdict, "g");
+  check("OK -> slot gorunur", satir(ok).sub.indexOf("slot gunici") >= 0, true);
+  check("OK -> sha 7 gorunur (hangi kod kostu)", satir(ok).sub.indexOf("sha abcdef1") >= 0, true);
+  check("sha yoksa satir bozulmaz", satir(base_with(iz("OK", { sha: null }))).sub.indexOf("sha ") < 0, true);
+
+  const dustu = base();
+  dustu.run_trace = iz("FAILED", { phase: "shadow:A", error: "ValueError: fiyat_yok" });
+  check("FAILED -> r", satir(dustu).status, "r");
+  check("FAILED -> verdict kirmizi", evaluate(dustu, MON_PM).verdict, "r");
+  check("FAILED -> asama gorunur", satir(dustu).sub.indexOf("asama shadow:A") >= 0, true);
+  check("FAILED -> hata gorunur", satir(dustu).sub.indexOf("fiyat_yok") >= 0, true);
+  check("FAILED -> sebep asamayi soyler", satir(dustu).reason.indexOf("shadow:A") >= 0, true);
+
+  const yarim = base();
+  yarim.run_trace = iz("RUNNING", { phase: "feed", ended_at: null });
+  check("RUNNING -> r (sonlanamadi)", satir(yarim).status, "r");
+  check("RUNNING -> verdict kirmizi", evaluate(yarim, MON_PM).verdict, "r");
+  check("RUNNING -> 'SONLANAMADI' yazar", satir(yarim).reason.indexOf("SONLANAMADI") >= 0, true);
+  check("RUNNING -> yas updated_at'ten (ended_at yok)", satir(yarim).sub.indexOf("yas ") >= 0, true);
+
+  // Kucuk harf status: Python buyuk yazar ama panel toUpperCase ile tasimali.
+  const kucuk = base(); kucuk.run_trace = iz("ok");
+  check("'ok' kucuk harf -> g", satir(kucuk).status, "g");
+
+  // Bilinmeyen status: ne g ne r -> n; verdict'i bozmaz, yesile de boyamaz.
+  const acayip = base(); acayip.run_trace = iz("WHATEVER");
+  check("bilinmeyen status -> n", satir(acayip).status, "n");
+
+  // Bozuk/eksik iz cokmemeli; bozuk = n.
+  let coktu = false;
+  let bozukSt = null;
+  try {
+    const bozuk = base();
+    bozuk.run_trace = "metin";
+    bozukSt = satir(bozuk).status;
+    const bozuk2 = base();
+    bozuk2.run_trace = { status: 7, ended_at: "x", slot: null, phase: undefined };
+    satir(bozuk2);
+  } catch (e) { coktu = true; }
+  check("bozuk iz cokmez", coktu, false);
+  check("bozuk iz -> n", bozukSt, "n");
+}
+
 console.log("\n" + "=".repeat(42) + "\nSONUC: " + pass + " gecti / " + fail + " kaldi");
 process.exit(fail === 0 ? 0 : 1);

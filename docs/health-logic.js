@@ -279,6 +279,40 @@
         : "artefakt yok -> gozlem OLCULEMEDI (guvenli SAYILMAZ)"
     ));
 
+    // -- P0.5: KOSUM IZI (run_trace.json) -----------------------------------
+    // Hukum PYTHON'da (run_trace.end); panel TASIR. Eslem:
+    //   OK -> g · FAILED -> r · RUNNING -> r (commit'lenmis RUNNING = kosum
+    //   SONLANAMADI: end() hic cagrilmadi; state commit always() oldugu icin
+    //   yarim iz origin'e dusmustur) · NO_TRACE/yok -> n (olculemedi, yesil DEGIL).
+    // Yas iki eksende: started_at/ended_at 'Z' tasir (D6).
+    const rt = d.run_trace && typeof d.run_trace === "object" ? d.run_trace : null;
+    const rtStatus = String((rt && rt.status) || "").toUpperCase();
+    const rtLetter = rtStatus === "OK" ? "g"
+      : (rtStatus === "FAILED" || rtStatus === "RUNNING") ? "r" : "n";
+    const rtEnd = rt ? timestampMs(rt.ended_at || rt.updated_at) : null;
+    const rtAge = (rtEnd == null || !Number.isFinite(nowMs)) ? null : Math.max(0, Math.round((nowMs - rtEnd) / 60000));
+    const rtSub = rt
+      ? [
+          "slot " + (str(rt.slot) || "-"),
+          str(rt.sha) ? "sha " + String(rt.sha).slice(0, 7) : null,   // hangi kod kostu (ground-truth)
+          rtStatus === "OK" ? null : "asama " + (str(rt.phase) || "?"),
+          rt.error ? String(rt.error).slice(0, 60) : null,
+          rtAge == null ? "yas okunamadi" : "yas " + rtAge + " dk",
+        ].filter(Boolean).join(" | ")
+      : "run_trace.json okunamadi";
+    out.push(metric(
+      "run_trace", true, "Son kosum izi", "uretici kosum sonlandi mi, nerede",
+      rt ? (rtStatus || "-") : "-",
+      rtSub,
+      rtLetter,
+      rt
+        ? (rtStatus === "OK" ? "kosum tamamlandi"
+           : rtStatus === "RUNNING" ? "kosum SONLANAMADI (end yok) — yarim state olabilir"
+           : rtStatus === "FAILED" ? "kosum " + (str(rt.phase) || "?") + " asamasinda dustu"
+           : "iz durumu bilinmiyor")
+        : "artefakt yok -> son kosum OLCULEMEDI (guvenli SAYILMAZ)"
+    ));
+
     const kap = (d.official_sources && d.official_sources.kap) || {};
     const kapStatus = kap.status || "missing";
     out.push(metric(

@@ -97,7 +97,13 @@ jobs:
           REPORT_GATE_REASON: ${{ steps.gate.outputs.reason }}
         run: |
           python3 daemon.py --once "${{ steps.gate.outputs.label }}"
-          python3 - <<'PY'
+          # P0.5: daemon izi OK kapatti; assert ve mark AYRI asamalar. Dusen adim
+          # izi FAILED kapatmazsa state commit mesaji [OK] basardi. OLCULDU
+          # 2026-09-11: bu yol gunici'yi HER GUN teslim ediyor (09-09 14:56, 09-10
+          # 14:53; 107 "state HHMM" commit) — asagidaki "gate.run hic true olmuyor"
+          # notu 07-22 olcumudur, artik gecersiz.
+          python3 -c "from bist_alpha import run_trace as r; r.phase('state_assert')"
+          python3 - <<'PY' || { python3 -c "from bist_alpha import run_trace as r; r.end('FAILED', 'dashboard state assert dustu')"; exit 1; }
           import json
           from pathlib import Path
           d = json.loads(Path("docs/state/dashboard.json").read_text(encoding="utf-8"))
@@ -112,11 +118,18 @@ jobs:
           assert d.get("dynamic_universe_count", 0) >= 50, d.get("dynamic_universe_count")
           print(f"OK dinamik kaynak: {d['source']} | BIST havuzu: {d.get('source_pool_count')} | canlı veri: {d.get('price_count')} | evren: {d.get('dynamic_universe_count')}")
           PY
-          python3 scripts/report_gate.py mark "${{ steps.gate.outputs.label }}"
+          # P0.5: precise_runner ile simetrik — mark ayri asama (izde FAILED@mark gorunsun)
+          python3 -c "from bist_alpha import run_trace as r; r.phase('mark')"
+          python3 scripts/report_gate.py mark "${{ steps.gate.outputs.label }}" || { python3 -c "from bist_alpha import run_trace as r; r.end('FAILED', 'report_gate mark dustu')"; exit 1; }
 
       # BEKCI BURADAN KALDIRILDI (2026-07-22). Buradaki `gate.run` hic 'true'
       # olmuyor (raporu precise.yml uretiyor) -> bekci 40 kosuda 0 kez calisti.
       # Dogru yer: precise.yml (daemon'u fiilen kosturan workflow).
+      # GUNCELLEME 2026-09-11 (olculdu): yukaridaki iddia BAYAT. Bu yol artik
+      # gunici'yi her gun teslim ediyor (report_runs: 09-09 14:56 / 09-10 14:53
+      # bist-alpha kosumlarindan; precise o saatte 15:17'de baslayip kapanisa
+      # uyuyor). Bekci burada YOK -> gunici kosumunun bekcisi yalniz liveness.yml.
+      # Yeri degistirmek P0.5 kapsami disi; ACIK_ISLER'e YAN bulgu olarak yazildi.
 
       - name: P0.6 stop gozlemi (bagimsiz, is olan her kosuda)
         # `id` VAR cunku runner GITHUB_OUTPUT'a breached/unpriced/positions/gate
@@ -137,8 +150,10 @@ jobs:
         # Bu dosya haftaici 32 cron tetigi TANIMLIYOR ama GitHub bunlarin cogunu
         # dusuruyor: 2026-09-10 olcumu 4, 09-09 olcumu 6 fiili schedule kosumu
         # (300 kosumluk gecmisten sayildi). Ilk yazdigimda 32'yi FIILI sandim.
-        # Karar degismiyor, gerekcenin buyuklugu duzeldi. Raporu precise uretiyor ->
-        # asagidaki state commit `run == 'true'`e bagli ve pratikte kosmuyor.
+        # Karar degismiyor, gerekcenin buyuklugu duzeldi. [DUZELTME 2026-09-11,
+        # olculdu: "raporu precise uretiyor, state commit pratikte kosmuyor" YANLIS —
+        # bu yol gunici'yi her gun uretiyor ve state commit her gun kosuyor (107
+        # "state HHMM" commit). Acilis+kapanis precise'ten, gunici buradan.]
         # Kosulsuz `always()` ile gozlem her fiili tetikte kosar, izi HIC
         # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar. Kapi 'false'
         # derken bu
@@ -219,7 +234,9 @@ jobs:
           git config user.name "bist-alpha-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -f portfolios/ deniz_snapshots/scanner_state.json docs/state/ 2>/dev/null || true
-          git diff --staged --quiet || git commit -m "state $(date +%F_%H%M)"
+          # P0.5 COMMIT MANIFESTI (precise.yml ile ayni).
+          iz="$(python3 -m bist_alpha.run_trace summary 2>/dev/null || echo '[TRACE_CLI_ERR]')"
+          git diff --staged --quiet || git commit -m "state $(date +%F_%H%M) ${iz}"
           if ! git push; then
             echo "push hatasi — Telegram bildirim"
             python3 - <<'PYNOTIFY'

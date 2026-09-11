@@ -70,6 +70,8 @@ const SOURCES = ["state/dashboard.json", "https://raw.githubusercontent.com/ssim
 // Bu sayfa cekmezse stop kapisi burada kalici "olculemedi" gorunur; sayfanin
 // isi tam da bunu gostermek oldugu icin ayri kaynak listesi eklendi.
 const STOP_SOURCES = ["state/stop_observer.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/stop_observer.json"];
+// P0.5 — kosum izi, ayri artefakt.
+const TRACE_SOURCES = ["state/run_trace.json", "https://raw.githubusercontent.com/ssimseksuleyman-coder/bistalpha/main/docs/state/run_trace.json"];
 const BG = {g:"bg-g", a:"bg-a", r:"bg-r", n:"bg-n"};
 const CLS = {g:"g", a:"a", r:"r", n:"n"};
 const COL = {g:"var(--green)", a:"var(--amber)", r:"var(--red)", n:"var(--na)"};
@@ -238,6 +240,17 @@ async function load() {
       break;
     } catch (e) {
       data.stop_observer = null;
+    }
+  }
+  data.run_trace = null;
+  for (const url of TRACE_SOURCES) {
+    try {
+      const r = await fetch(url + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      data.run_trace = await r.json();
+      break;
+    } catch (e) {
+      data.run_trace = null;
     }
   }
   const result = window.BistHealth.evaluate(data, Date.now());

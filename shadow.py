@@ -29,6 +29,7 @@ from bist_alpha import strategy as strat_mod
 from bist_alpha import omega as omega_mod
 from bist_alpha import g1_account as g1_mod
 from bist_alpha import portfolio as pf
+from bist_alpha import run_trace as _rt  # P0.5
 from bist_alpha import backtest as bt_mod
 from bist_alpha import tradelog
 from bist_alpha.signals import lot_multiplier
@@ -596,6 +597,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
     results = {}
     for acc, mode in ACCOUNTS.items():
         try:
+            _rt.phase(f"shadow:{acc}")   # P0.5: hangi hesapta dusuldugu izde
             state = pf.load(acc, state_dir=config.STATE_DIR)
             # 1) Stop kontrol — YALNIZ KAPANIS KOSUSU (#0l phantom-stop duzeltmesi)
             #

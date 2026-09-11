@@ -71,7 +71,9 @@ jobs:
       # BURADA olmali: daemon'u fiilen kosturan workflow bu (precise_runner.py).
       # 2026-07-22 bulgusu: bekci once bist-alpha.yml'ye baglanmisti, orada
       # `gate.run` hic 'true' olmuyor (raporu bu workflow uretiyor) -> 40 kosuda
-      # 0 KEZ CALISTI. "Adim workflow'da tanimli" != "adim kostu"; adimin
+      # 0 KEZ CALISTI. [GUNCELLEME 2026-09-11, olculdu: bist-alpha.yml artik
+      # gunici'yi HER GUN teslim ediyor; bu workflow acilis+kapanis. Bekci yine
+      # burada; gunici kosumunu yalniz liveness.yml izliyor — ACIK_ISLER YAN.] "Adim workflow'da tanimli" != "adim kostu"; adimin
       # `conclusion` alanina bakilmadigi icin sessizce olu kaldi.
       # KOSUL YOK (gate yok) -> her precise kosusunda calisir.
       # continue-on-error: alarm Telegram'dan gider, daemon'un kendi
@@ -180,7 +182,11 @@ jobs:
           git config user.name "bist-alpha-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -f portfolios/ deniz_snapshots/scanner_state.json docs/state/ 2>/dev/null || true
-          git diff --staged --quiet || git commit -m "precise state $(date +%F_%H%M)"
+          # P0.5 COMMIT MANIFESTI: mesaj kosum izinden status+phase tasir.
+          # [OK] / [FAILED@shadow:A] / [RUNNING@feed] / [NO_TRACE] — dort dusme
+          # senaryosu artik origin'de AYIRT EDILIR. Iz okunamazsa [NO_TRACE].
+          iz="$(python3 -m bist_alpha.run_trace summary 2>/dev/null || echo '[TRACE_CLI_ERR]')"
+          git diff --staged --quiet || git commit -m "precise state $(date +%F_%H%M) ${iz}"
           git pull --rebase --autostash 2>/dev/null || true
           git push || echo "push atlandi (catisma/degisiklik yok)"
 

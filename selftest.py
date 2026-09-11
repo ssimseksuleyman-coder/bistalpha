@@ -2719,6 +2719,280 @@ def main():
     except Exception as e:
         bad(f"P0.4 [6o] kosmadi: {type(e).__name__}: {e}")
 
+    # -- [6p] P0.5 KOSUM IZI — begin/phase/end, commit manifesti, panel --
+    # OLCULDU (2026-09-11): precise.yml daemon adimi kosulsuz, state commit
+    # `if: always()`; daemon yari yolda duserse diskte ne varsa "precise state
+    # HHMM" etiketiyle origin'e gider. Dort dusme senaryosu (feed/shadow/rapor/
+    # mark) origin'de AYIRT EDILEMEZ; report_gate.release arizada claim'i siler
+    # -> ariza iz birakmaz. 09-08'de canlida oldu (rontgen 12.0).
+    # FAIL-SAFE: iz yazimi cagirani DUSURMEZ (kayit, karar degil); yazamazsa
+    # stderr. RUNNING kalmis iz = "kosum SONLANAMADI" (panel kirmizi).
+    print("\n[6p] P0.5 kosum izi: begin/phase/end + commit manifesti + panel")
+    try:
+        import io as _io12
+        import contextlib as _ctx12
+        import os as _os12
+        import subprocess as _sp12
+        import tempfile as _tf12
+        from bist_alpha import run_trace as _RT12
+
+        _i12 = []
+        _d12 = _tf12.mkdtemp()
+        _p12 = _os12.path.join(_d12, "run_trace.json")
+
+        # 1) yasam dongusu: begin -> phase -> end(OK)
+        _RT12.begin("gunici", run_id="777", sha="abcdef123456xx", path=_p12)
+        _t = _RT12.read(_p12)
+        _i12.append(("1 begin: RUNNING@begin, slot, run_id, sha 12",
+                     (_t["status"], _t["phase"], _t["slot"], _t["run_id"], _t["sha"], _t["ended_at"]),
+                     ("RUNNING", "begin", "gunici", "777", "abcdef123456", None)))
+        _i12.append(("1b begin: started_at UTC 'Z' tasir (D6)",
+                     _t["started_at"].endswith("Z") and "+00:00" not in _t["started_at"], True))
+        _i12.append(("1c begin: .tmp artigi yok (atomik)",
+                     [x for x in _os12.listdir(_d12) if x.endswith(".tmp")], []))
+        _i12.append(("1d begin sonrasi ozet [RUNNING@begin] (sonlanamadi hukmu)",
+                     _RT12.summary_line(_p12), "[RUNNING@begin]"))
+        _RT12.phase("feed", path=_p12); _RT12.phase("shadow:A", path=_p12)
+        _t = _RT12.read(_p12)
+        _i12.append(("2 phase: son faz + sirali liste",
+                     (_t["phase"], _t["phases"]), ("shadow:A", ["begin", "feed", "shadow:A"])))
+        _i12.append(("2b ortada ozet [RUNNING@shadow:A]", _RT12.summary_line(_p12), "[RUNNING@shadow:A]"))
+        _RT12.end("OK", path=_p12)
+        _t = _RT12.read(_p12)
+        _i12.append(("3 end(OK): status OK, ended_at 'Z', error None",
+                     (_t["status"], _t["ended_at"].endswith("Z"), _t["error"]), ("OK", True, None)))
+        _i12.append(("3b ozet [OK]", _RT12.summary_line(_p12), "[OK]"))
+        # 4) ariza: end(FAILED, exc) -> tip+mesaj, faz korunur
+        _RT12.begin("kapanis", path=_p12); _RT12.phase("shadow:G1", path=_p12)
+        _RT12.end("FAILED", ValueError("fiyat_yok " + "x" * 400), path=_p12)
+        _t = _RT12.read(_p12)
+        _i12.append(("4 end(FAILED, exc): ozet [FAILED@shadow:G1]", _RT12.summary_line(_p12), "[FAILED@shadow:G1]"))
+        _i12.append(("4b error 'Tip: mesaj', 300'e kirpilmis",
+                     (_t["error"].startswith("ValueError: fiyat_yok"), len(_t["error"]) <= 312), (True, True)))
+        _i12.append(("4c begin onceki izi SIFIRLAR (slot/phases yeni)",
+                     (_t["slot"], _t["phases"]), ("kapanis", ["begin", "shadow:G1"])))
+        # 5) iz yok: read None, ozet [NO_TRACE]; end(OK) izsiz -> NO_TRACE (uydurma OK yok)
+        _p5 = _os12.path.join(_d12, "yok.json")
+        _i12.append(("5 iz yok: read None + [NO_TRACE]", (_RT12.read(_p5), _RT12.summary_line(_p5)), (None, "[NO_TRACE]")))
+        _RT12.end("OK", path=_p5)
+        _i12.append(("5b izsiz end(OK) -> NO_TRACE (basari UYDURULMAZ)",
+                     (_RT12.read(_p5)["status"], _RT12.summary_line(_p5)), ("NO_TRACE", "[NO_TRACE]")))
+        # 6) bozuk JSON -> read None, ozet [NO_TRACE], cokmez
+        _p6 = _os12.path.join(_d12, "bozuk.json"); open(_p6, "w").write("{bozuk")
+        _i12.append(("6 bozuk JSON: None + [NO_TRACE]", (_RT12.read(_p6), _RT12.summary_line(_p6)), (None, "[NO_TRACE]")))
+        # 6b) GECERLI ama SOZLUK OLMAYAN JSON ("x" / 1 / []) — fuzz buldu (2026-09-11,
+        #     300 denemede 37 cokme): read aynen donduruyordu, summary_line `.get`te
+        #     dusuyordu; CLI _guvenli'de degil -> commit mesaji [TRACE_CLI_ERR] olurdu.
+        _r6b = []
+        for _ic6b in ('"x"', "1", "[]", "null"):
+            open(_p6, "w").write(_ic6b)
+            _r6b.append((_RT12.read(_p6), _RT12.summary_line(_p6)))
+            _RT12.phase("fz", path=_p6)      # sozluk-disi iz ustune phase/end de cokmemeli
+            _RT12.end("OK", path=_p6)
+        _i12.append(("6b sozluk-disi JSON x4: read None + [NO_TRACE], phase/end cokmez",
+                     _r6b, [(None, "[NO_TRACE]")] * 4))
+        # 7) FAIL-SAFE: yazilamayan yol -> istisna YOK, None, stderr'de iz
+        _p7 = _os12.path.join(_p6, "alt", "run_trace.json")  # dosya altina dizin acilamaz
+        _err7 = _io12.StringIO()
+        try:
+            with _ctx12.redirect_stderr(_err7):
+                _r7 = _RT12.begin("x", path=_p7)
+                _r7b = _RT12.phase("y", path=_p7)
+                _r7c = _RT12.end("OK", path=_p7)
+            _g7 = (_r7, _r7b, _r7c)
+        except Exception as _e7:   # fail-safe kalktiysa blok cokmesin, 7 kendisi dussun
+            _g7 = f"ISTISNA {type(_e7).__name__}"
+        _i12.append(("7 yazilamayan yol: begin/phase/end istisna FIRLATMAZ, None doner",
+                     _g7, (None, None, None)))
+        _i12.append(("7b ... ama SESSIZ degil: stderr'de [run_trace] x3",
+                     _err7.getvalue().count("[run_trace] iz yazilamadi"), 3))
+        # 8) [NO_RUN]: run_id eslesmiyorsa (erken cikan precise kosumu) onceki iz basilmaz
+        _RT12.begin("gunici", run_id="111", path=_p12); _RT12.end("OK", path=_p12)
+        _i12.append(("8 run_id eslesir -> [OK]", _RT12.summary_line(_p12, run_id="111"), "[OK]"))
+        _i12.append(("8b run_id eslesmez -> [NO_RUN] (onceki kosumun OK'i bu kosuma yazilmaz)",
+                     _RT12.summary_line(_p12, run_id="222"), "[NO_RUN]"))
+        _i12.append(("8c run_id verilmezse filtre yok (yerel)", _RT12.summary_line(_p12), "[OK]"))
+        # 8d) CLI: `-m bist_alpha.run_trace summary` GITHUB_RUN_ID'yi okur (workflow yolu)
+        _env8 = dict(_os12.environ); _env8["GITHUB_RUN_ID"] = "999"; _env8["PYTHONIOENCODING"] = "utf-8"
+        _env8.pop("GITHUB_SHA", None)
+        # CLI TRACE_OUT'u okur (gercek dosya); burada yalnizca 'calisiyor + bir etiket basiyor'
+        _cli8 = _sp12.run([sys.executable, "-m", "bist_alpha.run_trace", "summary"],
+                          capture_output=True, text=True, cwd=str(_root9), env=_env8)
+        _i12.append(("8d CLI summary calisir, koseli etiket basar",
+                     (_cli8.returncode, _cli8.stdout.strip().startswith("[") and _cli8.stdout.strip().endswith("]")),
+                     (0, True)))
+        # 8e CLI'nin GITHUB_RUN_ID'yi summary_line'a gecirdigi [VEKIL]: CLI yol almiyor,
+        #    gercek TRACE_OUT'u okur; run_id filtresinin DAVRANISI 8/8b'de olculdu.
+        _i12.append(("8e CLI GITHUB_RUN_ID -> summary_line(run_id=...) [VEKIL]",
+                     'summary_line(run_id=os.environ.get("GITHUB_RUN_ID"))'
+                     in (_root9 / "bist_alpha" / "run_trace.py").read_text(encoding="utf-8"), True))
+        # 9) precise_runner sarmalayicilari: ezme kurali + begin (TRACE_OUT monkeypatch)
+        import precise_runner as _PR12
+        _orig12 = _RT12.TRACE_OUT
+        try:
+            _RT12.TRACE_OUT = _p12
+            # 9a daemon kendi izini FAILED kapatmis -> runner'in CalledProcessError'i EZMEZ
+            _RT12.begin("gunici", path=_p12); _RT12.phase("shadow:A", path=_p12)
+            _RT12.end("FAILED", ValueError("fiyat_yok"), path=_p12)
+            _PR12._trace_end("FAILED", _sp12.CalledProcessError(1, "daemon.py"))
+            _t = _RT12.read(_p12)
+            _i12.append(("9a runner end: daemon'un FAILED izi EZILMEZ (gercek hata kalir)",
+                         (_t["status"], _t["phase"], _t["error"]), ("FAILED", "shadow:A", "ValueError: fiyat_yok")))
+            # 9b daemon OK bitti, mark dustu -> FAILED@mark
+            _RT12.begin("gunici", path=_p12); _RT12.end("OK", path=_p12)
+            _PR12._trace_phase("mark")
+            _PR12._trace_end("FAILED", _sp12.CalledProcessError(1, "report_gate.py"))
+            _i12.append(("9b daemon OK + mark dustu -> [FAILED@mark]", _RT12.summary_line(_p12), "[FAILED@mark]"))
+            # 9c daemon sinyalle oldu (end kosmadi, RUNNING@feed) -> runner kapatir, faz korunur
+            _RT12.begin("gunici", path=_p12); _RT12.phase("feed", path=_p12)
+            _PR12._trace_end("FAILED", _sp12.CalledProcessError(-9, "daemon.py"))
+            _t = _RT12.read(_p12)
+            _i12.append(("9c daemon sinyalle oldu -> FAILED@feed, hata CalledProcessError",
+                         (_RT12.summary_line(_p12), (_t["error"] or "").startswith("CalledProcessError")),
+                         ("[FAILED@feed]", True)))
+            # 9d runner begin: daemon begin'e ulasamazsa bile iz BU kosuma ait
+            _PR12._trace_begin("acilis")
+            _t = _RT12.read(_p12)
+            _i12.append(("9d runner _trace_begin -> RUNNING@begin slot acilis",
+                         (_t["status"], _t["phase"], _t["slot"]), ("RUNNING", "begin", "acilis")))
+        finally:
+            _RT12.TRACE_OUT = _orig12
+        # 10) daemon.run_cycle sarmalayicisi (ÖLÇÜM: _run_cycle_iz monkeypatch; import yan etkisiz)
+        import daemon as _DM12
+        _orig_iz = _DM12._run_cycle_iz
+        _orig_out = _RT12.TRACE_OUT
+        try:
+            _RT12.TRACE_OUT = _p12
+            def _iyi(label="manuel"):
+                _RT12.phase("feed"); return {"rapor": "var"}
+            _DM12._run_cycle_iz = _iyi
+            _r10 = _DM12.run_cycle("gunici")
+            _i12.append(("10 run_cycle basari -> [OK], slot gunici, phases begin+feed",
+                         (_RT12.summary_line(_p12), _RT12.read(_p12)["slot"], _RT12.read(_p12)["phases"]),
+                         ("[OK]", "gunici", ["begin", "feed"])))
+            # 10d DONUS DEGERI AYNEN GECER: main() `result is None -> SystemExit(1)`.
+            #     Bagimsiz okumada bulundu: ilk sarmal degeri dusuruyordu -> her --once
+            #     kosumu exit 1 olacakti (test 10 donusu sormuyordu = vakum).
+            _i12.append(("10d run_cycle _run_cycle_iz'in donusunu AYNEN dondurur", _r10, {"rapor": "var"}))
+            # 10e rapor None (selfheal yuttu) -> main exit 1 -> iz de FAILED (celismesin)
+            _DM12._run_cycle_iz = lambda label="manuel": None
+            _r10e = _DM12.run_cycle("gunici")
+            _i12.append(("10e rapor None -> None doner + iz FAILED (exit 1 ile tutarli)",
+                         (_r10e, _RT12.read(_p12)["status"], "None" in (_RT12.read(_p12)["error"] or "")),
+                         (None, "FAILED", True)))
+            def _dus(label="manuel"):
+                _RT12.phase("shadow"); raise RuntimeError("shadow patladi")
+            _DM12._run_cycle_iz = _dus
+            try:
+                _DM12.run_cycle("kapanis"); _g10 = "ISTISNA_YOK"
+            except RuntimeError:
+                _g10 = "RuntimeError"
+            _i12.append(("10b run_cycle ariza -> istisna YENIDEN firlar (yutulmaz) + [FAILED@shadow]",
+                         (_g10, _RT12.summary_line(_p12), _RT12.read(_p12)["error"]),
+                         ("RuntimeError", "[FAILED@shadow]", "RuntimeError: shadow patladi")))
+            def _kes(label="manuel"):
+                raise KeyboardInterrupt()
+            _DM12._run_cycle_iz = _kes
+            try:
+                _DM12.run_cycle("x"); _g10c = "ISTISNA_YOK"
+            except KeyboardInterrupt:
+                _g10c = "KeyboardInterrupt"
+            _i12.append(("10c BaseException (SIGINT) de izi kapatir + yeniden firlar",
+                         (_g10c, _RT12.read(_p12)["status"]), ("KeyboardInterrupt", "FAILED")))
+        finally:
+            _DM12._run_cycle_iz = _orig_iz
+            _RT12.TRACE_OUT = _orig_out
+        # 11) [VEKIL] kancalar yerinde: daemon fazlari, shadow hesap fazi, runner sirasi
+        _dm12 = (_root9 / "daemon.py").read_text(encoding="utf-8")
+        for _faz in ("feed", "shadow", "report", "telegram", "dashboard"):
+            _i12.append((f"11 daemon _rt.phase(\"{_faz}\") [VEKIL]", f'_rt.phase("{_faz}")' in _dm12, True))
+        _sh12 = (_root9 / "shadow.py").read_text(encoding="utf-8")
+        _i12.append(("11b shadow hesap dongusunde _rt.phase(f\"shadow:{acc}\") [VEKIL]",
+                     '_rt.phase(f"shadow:{acc}")' in _sh12
+                     and _sh12.index('_rt.phase(f"shadow:{acc}")') < _sh12.index('results[acc] = {"error": tb[:500]}'),
+                     True))
+        _pr12 = (_root9 / "precise_runner.py").read_text(encoding="utf-8")
+        _i12.append(("11c runner sirasi: _trace_begin < daemon < _trace_phase(mark) < mark < _trace_end < release [VEKIL]",
+                     _pr12.index("_trace_begin(label)") < _pr12.index('"daemon.py", "--once"')
+                     < _pr12.index('_trace_phase("mark")') < _pr12.index('"scripts/report_gate.py", "mark"')
+                     < _pr12.index('_trace_end("FAILED", _exc)') < _pr12.index("release_slot(label)\n        raise"),
+                     True))
+        # 12) [VEKIL] iki workflow da commit mesajina izi basiyor; docs/state/ stage'de
+        for _wf in ("precise.yml", "bist-alpha.yml"):
+            _y = (_root9 / ".github" / "workflows" / _wf).read_text(encoding="utf-8")
+            _i12.append((f"12 {_wf}: commit mesaji run_trace summary tasir; CLI cokerse AYRI etiket [VEKIL]",
+                         'iz="$(python3 -m bist_alpha.run_trace summary' in _y
+                         and '${iz}"' in _y and "git add -f portfolios/" in _y and "docs/state/" in _y
+                         and "[TRACE_CLI_ERR]" in _y and "echo '[NO_TRACE]'" not in _y, True))
+        # 12b NATIVE YOL (bist-alpha.yml) GUNICI'YI HER GUN TESLIM EDIYOR (olculdu
+        #     2026-09-11: report_runs 09-09 14:56 / 09-10 14:53 bist-alpha kosumlari;
+        #     workflow'daki "hic kosmuyor" notu 07-22'den kalma ve bayatti). Daemon
+        #     ile mark arasindaki assert ve mark'in kendisi duserse iz FAILED
+        #     kapanmali; yoksa commit mesaji [OK] basar. Sira: state_assert fazi <
+        #     assert heredoc (|| end FAILED) < mark fazi < mark (|| end FAILED).
+        _ba12 = (_root9 / ".github" / "workflows" / "bist-alpha.yml").read_text(encoding="utf-8")
+        _iA = _ba12.find("r.phase('state_assert')")
+        _iB = _ba12.find("python3 - <<'PY' || { python3 -c \"from bist_alpha import run_trace as r; r.end('FAILED'", _iA)
+        _iC = _ba12.find("r.phase('mark')", _iB)
+        _iD = _ba12.find('scripts/report_gate.py mark "${{ steps.gate.outputs.label }}" || { python3 -c "from bist_alpha import run_trace as r; r.end(\'FAILED\'', _iC)
+        _i12.append(("12b bist-alpha.yml native yol: state_assert < assert||end(FAILED) < mark fazi < mark||end(FAILED) [VEKIL]",
+                     (_iA >= 0, _iB > _iA, _iC > _iB, _iD > _iC), (True, True, True, True)))
+        _i12.append(("12b' bist-alpha.yml: bayat 'pratikte kosmuyor' iddiasi duzeltilmis [VEKIL]",
+                     "DUZELTME 2026-09-11" in _ba12 and "GUNCELLEME 2026-09-11" in _ba12, True))
+        _i12.append(("12c docs/state/run_trace.json gitignore'da DEGIL (commit'e girer)",
+                     _sp12.run(["git", "check-ignore", "-q", "docs/state/run_trace.json"],
+                               cwd=str(_root9), capture_output=True).returncode, 1))
+        # 13) [VEKIL] panel tuketicisi + JS senaryosu (asil mühür CI'da node ile: [6m] kosucu)
+        _hl12 = (_root9 / "docs" / "health-logic.js").read_text(encoding="utf-8")
+        _i12.append(("13 health-logic: run_trace cekirdek metrigi + RUNNING kirmizi [VEKIL]",
+                     '"run_trace", true,' in _hl12 and 'rtStatus === "RUNNING") ? "r"' in _hl12, True))
+        _th12 = (_root9 / "docs" / "test-health.js").read_text(encoding="utf-8")
+        _i12.append(("13b test-health.js [9] run_trace senaryolari (>=20 check) [VEKIL]",
+                     "[9] P0.5 kosum izi" in _th12
+                     and _th12.split("[9] P0.5 kosum izi")[1].count("check(") >= 20, True))
+        for _pg in ("index.html", "health.html"):
+            _i12.append((f"13c {_pg} state/run_trace.json ceker + data.run_trace atar [VEKIL]",
+                         "state/run_trace.json" in (_root9 / "docs" / _pg).read_text(encoding="utf-8")
+                         and "data.run_trace" in (_root9 / "docs" / _pg).read_text(encoding="utf-8"), True))
+        # 14) LIVENESS 19. UYE (D13 bekci): yazici sussa dosya bayat kalir, panel
+        #     eski OK'i yesil gosterirdi -> registry uyesi kacan slotu/durumu sayar.
+        sys.path.insert(0, str(_root9 / "scripts"))
+        import liveness_scan as _LS12
+        _cfg14 = dict(_LS12.REGISTRY["run_trace"])
+        _i12.append(("14 registry run_trace uyesi: producer/daemon_cycle/status==OK/tz 0",
+                     tuple(_cfg14.get(k) for k in ("kind", "schedule", "ok_key", "ok_value", "tz")),
+                     ("producer", "daemon_cycle", "status", "OK", 0.0)))
+        _p14 = _os12.path.join(_d12, "lv_run_trace.json")
+        _cfg14["file"] = _p14                      # ROOT / mutlak = mutlak
+        def _lv(status, **ek):
+            _RT12.begin("gunici", path=_p14)
+            if status != "RUNNING":
+                _RT12.end(status, ek.get("err"), path=_p14)
+            return _LS12.check("run_trace", _cfg14, {"run_trace": True})
+        _r14 = _lv("OK")
+        _i12.append(("14a taze OK iz -> GREEN", _r14["status"], "GREEN"))
+        _r14b = _lv("FAILED", err=ValueError("x"))
+        _i12.append(("14b taze FAILED iz -> RED (uretici hata bildiriyor)",
+                     (_r14b["status"], "status='FAILED'" in _r14b["reason"]), ("RED", True)))
+        _r14c = _lv("RUNNING")
+        _i12.append(("14c commit'lenmis RUNNING iz -> RED (sonlanamadi)", _r14c["status"], "RED"))
+        _os12.remove(_p14)
+        _i12.append(("14d dosya yok + hic yazilmamis -> SARI 'YENI UYE' (ilk gecis, kirmizi degil)",
+                     (_LS12.check("run_trace", _cfg14, {})["status"],
+                      "YENI UYE" in _LS12.check("run_trace", _cfg14, {})["reason"]), ("YELLOW", True)))
+        _i12.append(("14e dosya yok + daha once yazmisti -> RED (uretici durdu)",
+                     _LS12.check("run_trace", _cfg14, {"run_trace": True})["status"], "RED"))
+
+    except Exception as e:
+        bad(f"P0.5 [6p] kosmadi: {type(e).__name__}: {e}")
+    # Rapor except'in DISINDA: blok ortada cokerse o ana kadar biriken sonuclar
+    # yine gorunur (D8 mutasyonunda olculdu: cokme onceki 20 sonucu gizliyordu).
+    for _ad12, _al12, _bek12 in (locals().get("_i12") or []):
+        if _al12 == _bek12:
+            ok(f"P0.5 {_ad12}")
+        else:
+            bad(f"P0.5 {_ad12}: beklenen {_bek12!r}, alinan {_al12!r}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:
