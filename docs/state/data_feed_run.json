@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-14T11:37:27Z",
+  "generated_at": "2026-09-14T15:47:29Z",
   "status": "ok",
   "primary_source": "yahoo",
   "selected_source": "borsapy",
@@ -9,15 +9,15 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "started_at": "2026-09-14T11:30:01Z",
-      "finished_at": "2026-09-14T11:30:23Z",
-      "duration_s": 21.592,
+      "started_at": "2026-09-14T15:40:01Z",
+      "finished_at": "2026-09-14T15:40:36Z",
+      "duration_s": 35.283,
       "returned_symbols": 623,
       "expected_pool": 625,
       "last_data_date": "2026-09-14",
       "calendar_status": "OK",
       "calendar_days_remaining": 108,
-      "expected_last_closed_session": "2026-09-11",
+      "expected_last_closed_session": "2026-09-14",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -1058,6 +1058,12 @@
           "coverage_pct": 100.0,
           "present": 623,
           "total": 623
+        },
+        {
+          "date": "2026-09-14",
+          "coverage_pct": 100.0,
+          "present": 623,
+          "total": 623
         }
       ],
       "sparse_market_days": [
@@ -1080,15 +1086,15 @@
     {
       "source": "borsapy",
       "status": "ok",
-      "started_at": "2026-09-14T11:30:23Z",
-      "finished_at": "2026-09-14T11:37:27Z",
-      "duration_s": 424.358,
+      "started_at": "2026-09-14T15:40:36Z",
+      "finished_at": "2026-09-14T15:47:29Z",
+      "duration_s": 412.933,
       "returned_symbols": 625,
       "expected_pool": 625,
       "last_data_date": "2026-09-14",
       "calendar_status": "OK",
       "calendar_days_remaining": 108,
-      "expected_last_closed_session": "2026-09-11",
+      "expected_last_closed_session": "2026-09-14",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -2126,6 +2132,12 @@
         },
         {
           "date": "2026-09-11",
+          "coverage_pct": 100.0,
+          "present": 625,
+          "total": 625
+        },
+        {
+          "date": "2026-09-14",
           "coverage_pct": 100.0,
           "present": 625,
           "total": 625

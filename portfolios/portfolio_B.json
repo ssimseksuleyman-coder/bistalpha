@@ -1,26 +1,21 @@
 {
   "account": "B",
-  "cash": 0.64743548860461,
+  "cash": 0.7841468459222687,
   "positions": {
     "OZATD": {
       "entry": 4827.5,
-      "peak": 4827.5,
+      "peak": 4830.0,
       "shares": 1.7648113597771612e-05
     },
     "IEYHO": {
       "entry": 207.8000030517578,
-      "peak": 227.0,
+      "peak": 229.5,
       "shares": 0.0006833194348896952
     },
     "ALKLC": {
       "entry": 425.75,
-      "peak": 502.5,
+      "peak": 510.0,
       "shares": 0.0003335144583802797
-    },
-    "SELEC": {
-      "entry": 334.5,
-      "peak": 400.0,
-      "shares": 0.0004244956073405204
     }
   },
   "history": [
@@ -648,6 +643,23 @@
           "shares": 0.000293,
           "reason": "stop",
           "pnl_pct": -8.6
+        }
+      ],
+      "fill_convention": "same_day_close"
+    },
+    {
+      "date": "2026-09-14",
+      "event": "stop",
+      "total": 1.1963,
+      "n_pos": 3,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "SELEC",
+          "price": 324.0,
+          "shares": 0.000424,
+          "reason": "stop",
+          "pnl_pct": -3.14
         }
       ],
       "fill_convention": "same_day_close"

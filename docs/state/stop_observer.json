@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-14T11:37:48Z",
+  "generated_at": "2026-09-14T15:47:49Z",
   "tz": 0.0,
   "run_label": "BIST Tam-Zamanli (precise)",
   "writer": "bist_alpha.stop_observer",
@@ -8,30 +8,27 @@
     {
       "source": "borsapy",
       "status": "ok",
-      "returned": 4,
+      "returned": 3,
       "bar_dates": {
         "ALKLC": "2026-09-14",
         "IEYHO": "2026-09-14",
-        "OZATD": "2026-09-14",
-        "SELEC": "2026-09-14"
+        "OZATD": "2026-09-14"
       }
     },
     {
       "source": "yahoo",
       "status": "ok",
-      "returned": 4,
+      "returned": 2,
       "bar_dates": {
         "ALKLC": "2026-09-14",
-        "IEYHO": "2026-09-14",
-        "OZATD": "2026-09-14",
-        "SELEC": "2026-09-14"
+        "IEYHO": "2026-09-14"
       }
     }
   ],
   "cross_source_check": {
     "ALKLC": {
-      "borsapy": 491.25,
-      "yahoo": 491.25,
+      "borsapy": 510.0,
+      "yahoo": 510.0,
       "diff_pct": 0.0,
       "bar_dates": {
         "borsapy": "2026-09-14",
@@ -39,26 +36,8 @@
       }
     },
     "IEYHO": {
-      "borsapy": 228.8,
-      "yahoo": 228.6999969482422,
-      "diff_pct": -0.0437,
-      "bar_dates": {
-        "borsapy": "2026-09-14",
-        "yahoo": "2026-09-14"
-      }
-    },
-    "OZATD": {
-      "borsapy": 4620.0,
-      "yahoo": 4620.0,
-      "diff_pct": 0.0,
-      "bar_dates": {
-        "borsapy": "2026-09-14",
-        "yahoo": "2026-09-14"
-      }
-    },
-    "SELEC": {
-      "borsapy": 324.0,
-      "yahoo": 324.0,
+      "borsapy": 229.5,
+      "yahoo": 229.5,
       "diff_pct": 0.0,
       "bar_dates": {
         "borsapy": "2026-09-14",
@@ -66,7 +45,7 @@
       }
     }
   },
-  "position_count": 17,
+  "position_count": 13,
   "unpriced_count": 0,
   "price_asof": {
     "oldest": "2026-09-14",
@@ -76,7 +55,7 @@
   "price_freshness": {
     "status": "FRESH",
     "oldest_bar": "2026-09-14",
-    "expected_last_closed_session": "2026-09-11",
+    "expected_last_closed_session": "2026-09-14",
     "reject_code": null
   },
   "account_status": {
@@ -84,25 +63,25 @@
       "account": "F",
       "path": "portfolios/portfolio_F.json",
       "status": "loaded",
-      "position_count": 4
+      "position_count": 3
     },
     "A": {
       "account": "A",
       "path": "portfolios/portfolio_A.json",
       "status": "loaded",
-      "position_count": 4
+      "position_count": 3
     },
     "B": {
       "account": "B",
       "path": "portfolios/portfolio_B.json",
       "status": "loaded",
-      "position_count": 4
+      "position_count": 3
     },
     "O": {
       "account": "O",
       "path": "portfolios/portfolio_O.json",
       "status": "loaded",
-      "position_count": 4
+      "position_count": 3
     },
     "G1": {
       "account": "G1",
@@ -115,53 +94,42 @@
   "gate": {
     "verdict": "GREEN",
     "reason": "full_coverage",
-    "detail": "positions=17 · fiyat tazeligi FRESH"
+    "detail": "positions=13 · fiyat tazeligi FRESH"
   },
-  "breach": true,
+  "breach": false,
   "accounts": {
     "F": [
       {
         "ticker": "ALKLC",
         "status": "priced",
-        "price": 491.25,
+        "price": 510.0,
         "price_date": "2026-09-14",
-        "stop_level": 452.25,
+        "stop_level": 459.0,
         "breached": false,
         "entry": 425.75,
-        "peak": 502.5,
+        "peak": 510.0,
         "reason": "priced"
       },
       {
         "ticker": "IEYHO",
         "status": "priced",
-        "price": 228.8,
+        "price": 229.5,
         "price_date": "2026-09-14",
-        "stop_level": 192.95,
+        "stop_level": 195.075,
         "breached": false,
         "entry": 207.8000030517578,
-        "peak": 227.0,
+        "peak": 229.5,
         "reason": "priced"
       },
       {
         "ticker": "OZATD",
         "status": "priced",
-        "price": 4620.0,
+        "price": 4830.0,
         "price_date": "2026-09-14",
-        "stop_level": 4103.375,
+        "stop_level": 4105.5,
         "breached": false,
         "entry": 4827.5,
-        "peak": 4827.5,
-        "reason": "priced"
-      },
-      {
-        "ticker": "SELEC",
-        "status": "priced",
-        "price": 324.0,
-        "price_date": "2026-09-14",
-        "stop_level": 360.0,
-        "breached": true,
-        "entry": 334.5,
-        "peak": 400.0,
+        "peak": 4830.0,
         "reason": "priced"
       }
     ],
@@ -169,45 +137,34 @@
       {
         "ticker": "ALKLC",
         "status": "priced",
-        "price": 491.25,
+        "price": 510.0,
         "price_date": "2026-09-14",
-        "stop_level": 452.25,
+        "stop_level": 459.0,
         "breached": false,
         "entry": 425.75,
-        "peak": 502.5,
+        "peak": 510.0,
         "reason": "priced"
       },
       {
         "ticker": "IEYHO",
         "status": "priced",
-        "price": 228.8,
+        "price": 229.5,
         "price_date": "2026-09-14",
-        "stop_level": 192.95,
+        "stop_level": 195.075,
         "breached": false,
         "entry": 207.8000030517578,
-        "peak": 227.0,
+        "peak": 229.5,
         "reason": "priced"
       },
       {
         "ticker": "OZATD",
         "status": "priced",
-        "price": 4620.0,
+        "price": 4830.0,
         "price_date": "2026-09-14",
-        "stop_level": 4103.375,
+        "stop_level": 4105.5,
         "breached": false,
         "entry": 4827.5,
-        "peak": 4827.5,
-        "reason": "priced"
-      },
-      {
-        "ticker": "SELEC",
-        "status": "priced",
-        "price": 324.0,
-        "price_date": "2026-09-14",
-        "stop_level": 360.0,
-        "breached": true,
-        "entry": 334.5,
-        "peak": 400.0,
+        "peak": 4830.0,
         "reason": "priced"
       }
     ],
@@ -215,45 +172,34 @@
       {
         "ticker": "ALKLC",
         "status": "priced",
-        "price": 491.25,
+        "price": 510.0,
         "price_date": "2026-09-14",
-        "stop_level": 452.25,
+        "stop_level": 459.0,
         "breached": false,
         "entry": 425.75,
-        "peak": 502.5,
+        "peak": 510.0,
         "reason": "priced"
       },
       {
         "ticker": "IEYHO",
         "status": "priced",
-        "price": 228.8,
+        "price": 229.5,
         "price_date": "2026-09-14",
-        "stop_level": 192.95,
+        "stop_level": 195.075,
         "breached": false,
         "entry": 207.8000030517578,
-        "peak": 227.0,
+        "peak": 229.5,
         "reason": "priced"
       },
       {
         "ticker": "OZATD",
         "status": "priced",
-        "price": 4620.0,
+        "price": 4830.0,
         "price_date": "2026-09-14",
-        "stop_level": 4103.375,
+        "stop_level": 4105.5,
         "breached": false,
         "entry": 4827.5,
-        "peak": 4827.5,
-        "reason": "priced"
-      },
-      {
-        "ticker": "SELEC",
-        "status": "priced",
-        "price": 324.0,
-        "price_date": "2026-09-14",
-        "stop_level": 360.0,
-        "breached": true,
-        "entry": 334.5,
-        "peak": 400.0,
+        "peak": 4830.0,
         "reason": "priced"
       }
     ],
@@ -261,45 +207,34 @@
       {
         "ticker": "ALKLC",
         "status": "priced",
-        "price": 491.25,
+        "price": 510.0,
         "price_date": "2026-09-14",
-        "stop_level": 452.25,
+        "stop_level": 459.0,
         "breached": false,
         "entry": 425.75,
-        "peak": 502.5,
+        "peak": 510.0,
         "reason": "priced"
       },
       {
         "ticker": "IEYHO",
         "status": "priced",
-        "price": 228.8,
+        "price": 229.5,
         "price_date": "2026-09-14",
-        "stop_level": 192.95,
+        "stop_level": 195.075,
         "breached": false,
         "entry": 207.8000030517578,
-        "peak": 227.0,
+        "peak": 229.5,
         "reason": "priced"
       },
       {
         "ticker": "OZATD",
         "status": "priced",
-        "price": 4620.0,
+        "price": 4830.0,
         "price_date": "2026-09-14",
-        "stop_level": 4103.375,
+        "stop_level": 4105.5,
         "breached": false,
         "entry": 4827.5,
-        "peak": 4827.5,
-        "reason": "priced"
-      },
-      {
-        "ticker": "SELEC",
-        "status": "priced",
-        "price": 324.0,
-        "price_date": "2026-09-14",
-        "stop_level": 360.0,
-        "breached": true,
-        "entry": 334.5,
-        "peak": 400.0,
+        "peak": 4830.0,
         "reason": "priced"
       }
     ],
@@ -307,12 +242,12 @@
       {
         "ticker": "IEYHO",
         "status": "priced",
-        "price": 228.8,
+        "price": 229.5,
         "price_date": "2026-09-14",
-        "stop_level": 215.64999999999998,
+        "stop_level": 218.02499999999998,
         "breached": false,
         "entry": 152.0,
-        "peak": 227.0,
+        "peak": 229.5,
         "reason": "priced"
       }
     ]
