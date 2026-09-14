@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-14T15:47:49Z",
+  "generated_at": "2026-09-14T17:56:07Z",
   "tz": 0.0,
   "run_label": "BIST Tam-Zamanli (precise)",
   "writer": "bist_alpha.stop_observer",
@@ -18,10 +18,11 @@
     {
       "source": "yahoo",
       "status": "ok",
-      "returned": 2,
+      "returned": 3,
       "bar_dates": {
         "ALKLC": "2026-09-14",
-        "IEYHO": "2026-09-14"
+        "IEYHO": "2026-09-14",
+        "OZATD": "2026-09-14"
       }
     }
   ],
@@ -38,6 +39,15 @@
     "IEYHO": {
       "borsapy": 229.5,
       "yahoo": 229.5,
+      "diff_pct": 0.0,
+      "bar_dates": {
+        "borsapy": "2026-09-14",
+        "yahoo": "2026-09-14"
+      }
+    },
+    "OZATD": {
+      "borsapy": 4830.0,
+      "yahoo": 4830.0,
       "diff_pct": 0.0,
       "bar_dates": {
         "borsapy": "2026-09-14",
