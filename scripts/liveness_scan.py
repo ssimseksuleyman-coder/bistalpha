@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -256,12 +256,31 @@ def _missed_slots(last_run, now, sched):
 # #1e ayni cozumun RAPOR MARKER KAPSAMINA genellenmesi. Marker gercek Telegram
 # teslimiyle birebir degildir; bu sozlesme boslugu #1k'de izlenir.
 
+def _previous_report_day(now_tr):
+    """Return the prior expected XIST report day and whether it was measured."""
+    try:
+        root_text = str(ROOT)
+        if root_text not in sys.path:
+            sys.path.insert(0, root_text)
+        from bist_alpha import market_calendar
+
+        cutoff = now_tr.date() - timedelta(days=1)
+        calendar = market_calendar.load_calendar(year=cutoff.year)
+        sessions = market_calendar.sessions_between(
+            calendar["_valid_from"], cutoff, calendar
+        )
+        return (sessions[-1] if sessions else None), True
+    except Exception as exc:
+        print(f"[liveness] report takvimi okunamadi: {exc}", file=sys.stderr)
+        return None, False
+
+
 def _missing_report_slots(sent, now_tr, slots_tr, window_min):
-    """Bugun penceresi KAPANMIS ama `sent` markeri bulunmayan rapor slotlari.
+    """Penceresi kapanmis ve `sent` markeri bulunmayan rapor slotlari.
 
     None  = OLCULEMEDI (sent okunamadi) -> asla TAM sayilmaz
     []    = olculdu, TAM
-    [...] = olculdu, EKSIK (kanonik slot sirasinda)
+    [...] = olculdu, EKSIK (kanonik slot sirasinda; onceki gun tarihli olabilir)
 
     PENCERE KAPANISI = slot + WINDOW_MINUTES, yani `report_gate`in raporu KABUL
     ettigi son an. Daha once eksik saymak SAHTE ALARM olurdu: 09:45'te acilis
@@ -273,17 +292,38 @@ def _missing_report_slots(sent, now_tr, slots_tr, window_min):
     """
     if sent is None:
         return None
-    if now_tr.weekday() >= 5:          # hafta sonu: yapisal olarak slot yok
-        return []
-    gun = now_tr.date().isoformat()
+    known_dates = set()
+    for key in sent:
+        if isinstance(key, str) and ":" in key:
+            try:
+                known_dates.add(date.fromisoformat(key.split(":", 1)[0]))
+            except ValueError:
+                continue
+
+    # Once the ledger has history, the official calendar is the authority for
+    # the prior expected report day. This keeps a completely markerless outage
+    # visible while avoiding a guessed pre-installation alarm on an empty/new
+    # ledger. Calendar failure is OLCULEMEDI, never "no missing slots".
+    dates = [now_tr.date()]
+    if any(day < now_tr.date() for day in known_dates):
+        prior, measured = _previous_report_day(now_tr)
+        if not measured:
+            return None
+        if prior is not None:
+            dates.append(prior)
+
     eksik = []
-    for ad, hm in slots_tr.items():
-        h, mi = hm
-        hedef = now_tr.replace(hour=h, minute=mi, second=0, microsecond=0)
-        if now_tr <= hedef + timedelta(minutes=window_min):
-            continue                   # pencere hala ACIK -> gecikmis DEGIL
-        if f"{gun}:{ad}" not in sent:
-            eksik.append(ad)
+    for day in dates:
+        if day.weekday() >= 5:
+            continue
+        for ad, hm in slots_tr.items():
+            h, mi = hm
+            hedef = datetime.combine(day, time(h, mi), tzinfo=now_tr.tzinfo)
+            if now_tr <= hedef + timedelta(minutes=window_min):
+                continue                   # pencere hala ACIK -> gecikmis DEGIL
+            key = f"{day.isoformat()}:{ad}"
+            if key not in sent:
+                eksik.append(ad if day == now_tr.date() else key)
     return eksik
 
 
@@ -800,7 +840,7 @@ def _check_scanner_verdict(name, cfg, d, row):
 
 
 def _check_report_coverage(name, cfg, d, row):
-    """#1e — bugun penceresi KAPANMIS rapor slotlarinin `sent` markeri var mi.
+    """#1e — kapanmis rapor gunlerinin `sent` marker kapsami var mi.
 
     DIGER UYELERDEN FARKI: bu uye bir damganin YASINA degil, bir olayin
     YOKLUGUNA bakar. Diger 17 uye "yazici duruyor mu" sorar; slot donusurse

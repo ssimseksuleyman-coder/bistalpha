@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""precise_runner.py — GitHub cron GECIKMESINI yener: tam slot saatine kadar uyu,
-sonra daemon'u calistir. Rapor GEC degil, TAM ZAMANINDA cikar.
+"""precise_runner.py — Erken gelen GitHub cron'unu tam slot saatine kadar bekletir;
+gec gelen kosumda ise rapor slotunun kimligini korur.
 
 NEDEN: GitHub scheduled cron saatlerce gecikebilir (gozlem: acilis 06:45 hedef ->
-09:47'de tetiklendi). Cozum: cron'u slot'tan SAATLER ONCE tetikle; job tam slot
-saatine kadar UYUR, sonra calisir. Repo PUBLIC -> Actions dakikasi SINIRSIZ ->
-uyku bedava. Dis hesap/PAT GEREKMEZ (built-in token + native cron).
+09:47'de tetiklendi). Erken kosum hedefe kadar uyur; gec kosum duvar saatinden
+yeni bir slot uydurmak yerine report_gate'in hala acik olan en erken slotunu
+devralir. Repo PUBLIC -> Actions dakikasi SINIRSIZ -> uyku bedava. Dis hesap/PAT
+GEREKMEZ (built-in token + native cron).
 
-Slot bandi (UTC saatine gore hangi slot hedefleniyor — gecikmeye dayanikli):
-  UTC < 07:00        -> acilis (hedef 06:45 UTC = 09:45 TR)
-  07:00 <= UTC < 12  -> gunici (hedef 11:30 UTC = 14:30 TR)
-  UTC >= 12:00       -> kapanis (hedef 15:40 UTC = 18:40 TR)
+Slot sahipligi: report_gate.select_slot, gonderim kaydi ve kanonik pencereye gore
+vadesi gelmis/gonderilmemis en erken slotu; o yoksa siradaki gelecek slotu secer.
+Kapanmis pencere baska bir slot etiketiyle telafi edilmez.
 
 report_gate ile koordine: zaten gonderilmisse uyumaz/atlar (native cron fallback).
 """
@@ -29,20 +29,26 @@ SLOT_TR = {"acilis": (9, 45), "gunici": (14, 30), "kapanis": (18, 40)}
 MAX_WAIT_H = 5.5   # 6h job limitinin altinda kal
 
 
+def select_slot(now_utc: datetime, sent: dict | None = None) -> str | None:
+    """Select the earliest due/future slot through the canonical report gate."""
+    sys.path.insert(0, "scripts")
+    import report_gate as G
+    now_tr = now_utc.astimezone(TZ_TR)
+    return G.select_slot(now_tr, sent)
+
+
 def target_slot(now_utc: datetime) -> str:
-    h = now_utc.hour + now_utc.minute / 60.0
-    if h < 7.0:
-        return "acilis"
-    if h < 12.0:
-        return "gunici"
-    return "kapanis"
+    """Compatibility label; the plan uses ``select_slot`` for real decisions."""
+    return select_slot(now_utc) or "kapanis"
 
 
-def plan(now_utc: datetime | None = None):
+def plan(now_utc: datetime | None = None, sent: dict | None = None):
     """Uyumadan: (label, hedef_TR_datetime, bekleme_saniye). Test edilebilir."""
     now_utc = now_utc or datetime.now(TZ_UTC)
     now_tr = now_utc.astimezone(TZ_TR)
-    label = target_slot(now_utc)
+    label = select_slot(now_utc, sent)
+    if label is None:
+        return None, None, 0
     h, m = SLOT_TR[label]
     target = now_tr.replace(hour=h, minute=m, second=0, microsecond=0)
     wait = (target - now_tr).total_seconds()
@@ -132,10 +138,13 @@ def release_slot(label: str) -> None:
 
 def main(argv) -> int:
     dry = "--dry" in argv
+    sync_latest_state()
     label, target, wait = plan()
+    if label is None:
+        print("[precise] acik report slot yok -> cik")
+        return 0
     print(f"[precise] hedef slot={label} @ {target:%Y-%m-%d %H:%M} TR | bekleme={wait/60:.0f}dk")
 
-    sync_latest_state()
     if already_sent(label):
         print(f"[precise] {label} bugun zaten gonderilmis -> cik"); return 0
     if wait > MAX_WAIT_H * 3600:

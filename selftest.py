@@ -703,6 +703,151 @@ def main():
     except Exception as e:
         bad(f"#1j testi kosmadi: {type(e).__name__}: {e}")
 
+    # -- [6g2] #2a/#2b — GECIKMIS SLOT NIYETI VE GECE YARISI KAPSAMI ---------
+    # TEST-ONCE: 2026-09-14/15 canli vakalarinin iki ayri kapisini sabitler.
+    # #2a: precise 07:25 UTC'de basladiginda sabit `07:00` ayrimi acilisi
+    # guniciye cevirdi; report_gate'deki vadesi gelmis + gonderilmemis + pencere
+    # icindeki EN ERKEN slot otorite olmali.
+    # #2b: 00:01-01:01 TR taramasinda onceki gunun eksik acilisi/kapanisi
+    # `gun_tr=bugun` ile gorunmez oldu. Pencere kapanmis onceki rapor gunu,
+    # teslim veya acik resolution olmadan GREEN'e donmemeli.
+    print("\n[6g2] #2a/#2b gecikmis slot niyeti ve gece yarisi kapsami (test-once)")
+    try:
+        import sys as _sys_g2
+        _sp_g2 = os.path.join(ROOT, "scripts")
+        if _sp_g2 not in _sys_g2.path:
+            _sys_g2.path.insert(0, _sp_g2)
+        from datetime import datetime as _dt_g2, timedelta as _td_g2
+        from zoneinfo import ZoneInfo as _ZI_g2
+        import precise_runner as _PR_g2
+        import liveness_scan as _L_g2
+
+        _utc_g2 = _ZI_g2("UTC")
+        _tr_g2 = _ZI_g2("Europe/Istanbul")
+        _plan_g2 = getattr(_PR_g2, "plan", None)
+        _select_g2 = getattr(_PR_g2, "select_slot", None)
+        if _plan_g2 is None or _select_g2 is None:
+            bad("#2a sozlesmesi eksik: plan + select_slot birlikte olmali")
+        else:
+            _sent_g2 = {}
+            _t725_g2 = _dt_g2(2026, 9, 15, 7, 25, tzinfo=_utc_g2)
+            _label_g2 = _select_g2(_t725_g2, _sent_g2)
+            if _label_g2 == "acilis":
+                ok("#2a 07:25 UTC gecikmesi acilis niyetini koruyor")
+            else:
+                bad(f"#2a 07:25 UTC acilis niyeti kayboldu: {_label_g2!r}")
+
+            _sent_g2 = {"2026-09-15:acilis": {"sent_at": "2026-09-15T09:50:00+03:00"}}
+            _label_g2 = _select_g2(_t725_g2, _sent_g2)
+            if _label_g2 == "gunici":
+                ok("#2a acilis damgaliysa en erken acik slot gunici")
+            else:
+                bad(f"#2a acilis damgali sonrasi gunici secilmedi: {_label_g2!r}")
+
+            _t1320_g2 = _dt_g2(2026, 9, 15, 10, 20, tzinfo=_utc_g2)
+            _label_g2 = _select_g2(_t1320_g2, {})
+            if _label_g2 == "gunici":
+                ok("#2a 13:20 TR'de kapanmis acilis sonrasi gunici korunuyor")
+            else:
+                bad(f"#2a pencere disinda gunici korunmadi: {_label_g2!r}")
+
+        _missing_g2 = getattr(_L_g2, "_missing_report_slots", None)
+        if _missing_g2 is None:
+            bad("#2b _missing_report_slots bulunamadi")
+        else:
+            _slots_g2 = {"acilis": (9, 45), "gunici": (14, 30), "kapanis": (18, 40)}
+            _midnight_g2 = _dt_g2(2026, 9, 15, 0, 46, tzinfo=_tr_g2)
+            _sent_prev_g2 = {
+                "2026-09-14:acilis": {"sent_at": "2026-09-14T10:00:00+03:00"},
+                "2026-09-14:gunici": {"sent_at": "2026-09-14T14:35:00+03:00"},
+            }
+            _missed_g2 = _missing_g2(_sent_prev_g2, _midnight_g2, _slots_g2, 210)
+            if _missed_g2 == ["2026-09-14:kapanis"]:
+                ok("#2b 00:46 TR onceki gun eksik kapanisi tasiyor")
+            else:
+                bad(f"#2b gece yarisi eksik kapanis kayboldu: {_missed_g2!r}")
+
+            _sent_full_g2 = dict(_sent_prev_g2)
+            _sent_full_g2["2026-09-14:kapanis"] = {
+                "sent_at": "2026-09-15T00:30:00+03:00"
+            }
+            _missed_g2 = _missing_g2(_sent_full_g2, _midnight_g2, _slots_g2, 210)
+            if _missed_g2 == []:
+                ok("#2b teslim edilmis onceki gun kapanisi eksik sayilmiyor")
+            else:
+                bad(f"#2b teslim edilmis kapanis hala eksik: {_missed_g2!r}")
+
+            # B1: Onceki beklenen islem gunu hic marker uretmediyse de kayip
+            # gorunmeli. 09-11 kaydi yalnız ledger'in okunur/gecmisli oldugunu
+            # kanitlar; 09-14'te sifir marker olmasi "tatil" sayilamaz.
+            _sent_full_day_loss_g2 = {
+                "2026-09-11:acilis": {"sent_at": "2026-09-11T10:00:00+03:00"},
+                "2026-09-11:gunici": {"sent_at": "2026-09-11T14:35:00+03:00"},
+                "2026-09-11:kapanis": {"sent_at": "2026-09-11T18:45:00+03:00"},
+            }
+            _missed_g2 = _missing_g2(
+                _sent_full_day_loss_g2, _midnight_g2, _slots_g2, 210
+            )
+            _expected_full_day_g2 = [
+                "2026-09-14:acilis",
+                "2026-09-14:gunici",
+                "2026-09-14:kapanis",
+            ]
+            if _missed_g2 == _expected_full_day_g2:
+                ok("#2b markersiz tam islem gunu kaybi gece yarisi tasiniyor")
+            else:
+                bad(f"#2b markersiz tam gun kaybi gorunmedi: {_missed_g2!r}")
+
+            _previous_day_g2 = getattr(_L_g2, "_previous_report_day", None)
+            if _previous_day_g2 is None:
+                bad("#2b takvim otoritesi yardimcisi bulunamadi")
+            else:
+                _orig_previous_day_g2 = _L_g2._previous_report_day
+                try:
+                    _L_g2._previous_report_day = lambda _now: (None, False)
+                    _missed_g2 = _missing_g2(
+                        _sent_full_day_loss_g2, _midnight_g2, _slots_g2, 210
+                    )
+                finally:
+                    _L_g2._previous_report_day = _orig_previous_day_g2
+                if _missed_g2 is None:
+                    ok("#2b takvim okunamazsa kapsam OLCULEMEDI")
+                else:
+                    bad(f"#2b takvim yokken kesin kapsam uretildi: {_missed_g2!r}")
+
+        _weekend_g2 = _dt_g2(2026, 9, 19, 7, 25, tzinfo=_utc_g2)
+        if _select_g2 is not None and _select_g2(_weekend_g2, {}) is None:
+            ok("#2a hafta sonu slot secmiyor")
+        else:
+            bad("#2a hafta sonu slot uretildi")
+
+        _late_g2 = _dt_g2(2026, 9, 15, 20, 0, tzinfo=_utc_g2)  # 23:00 TR
+        if _select_g2 is not None and _select_g2(_late_g2, {}) is None:
+            ok("#2a 23:00 TR kapanmis pencereden slot uretmiyor")
+        else:
+            bad("#2a 23:00 TR slot uretildi")
+
+        # B2: Plan state'i okumadan once origin state'i senkronlanmali. Bu test
+        # dosya satirlarini degil, main() icindeki gercek cagri sirasini olcer.
+        _order_g2 = []
+        _orig_sync_g2 = _PR_g2.sync_latest_state
+        _orig_plan_g2 = _PR_g2.plan
+        try:
+            _PR_g2.sync_latest_state = lambda: _order_g2.append("sync")
+            _PR_g2.plan = lambda *args, **kwargs: (
+                _order_g2.append("plan") or (None, None, 0)
+            )
+            _PR_g2.main(["precise_runner.py", "--dry"])
+        finally:
+            _PR_g2.sync_latest_state = _orig_sync_g2
+            _PR_g2.plan = _orig_plan_g2
+        if _order_g2[:2] == ["sync", "plan"]:
+            ok("#2a origin state planlamadan once senkronlaniyor")
+        else:
+            bad(f"#2a sync/plan sirasi yanlis: {_order_g2!r}")
+    except Exception as e:
+        bad(f"#2a/#2b testi kosmadi: {type(e).__name__}: {e}")
+
     # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
     # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
     # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN

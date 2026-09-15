@@ -118,6 +118,34 @@ def due_slot(now: datetime | None = None) -> tuple[bool, str, str]:
     return False, "", "not_due"
 
 
+def select_slot(now: datetime | None = None, sent: dict | None = None) -> str | None:
+    """Return the earliest report slot this runner should own.
+
+    A delayed runner must preserve the earliest still-open slot instead of
+    inferring intent from the wall-clock hour. If that slot is already sent,
+    the next future slot is selected. This is the shared policy used by the
+    precise runner; it deliberately has no workflow-specific thresholds.
+    """
+    now = now or _now_istanbul()
+    if now.tzinfo is None and ZoneInfo is not None:
+        now = now.replace(tzinfo=ZoneInfo("Europe/Istanbul"))
+    if now.weekday() >= 5:
+        return None
+    if sent is None:
+        sent = _load_state().get("sent", {})
+
+    future = []
+    for label, slot_time in SLOTS:
+        target = datetime.combine(now.date(), slot_time, tzinfo=now.tzinfo)
+        key = _marker_key(now, label)
+        if target <= now <= target + timedelta(minutes=WINDOW_MINUTES):
+            if not _record_blocks(sent.get(key), now):
+                return label
+        elif target > now:
+            future.append((target, label))
+    return min(future)[1] if future else None
+
+
 def claim(label: str, now: datetime | None = None) -> bool:
     """Reserve a slot before running daemon so parallel workflows do not duplicate."""
     if not label:
