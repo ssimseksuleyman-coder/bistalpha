@@ -106,13 +106,19 @@ def _trace_end(status, err=None):
 
 
 def claim_slot(label: str) -> bool:
-    try:
-        sys.path.insert(0, "scripts")
-        import report_gate as G
-        return G.claim(label)
-    except Exception as exc:
-        print(f"[precise] claim hatasi: {exc}")
-        return False
+    proc = subprocess.run(
+        [sys.executable, "scripts/report_claim.py", "claim", label],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.stdout:
+        print(proc.stdout, end="")
+    if proc.stderr:
+        print(proc.stderr, end="", file=sys.stderr)
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.returncode, proc.args)
+    return "claimed=true" in proc.stdout
 
 
 def release_slot(label: str) -> None:

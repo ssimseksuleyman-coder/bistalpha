@@ -74,12 +74,17 @@ jobs:
           TZ: Europe/Istanbul
         run: python3 scripts/report_gate.py check
 
-      - name: State klasorlerini hazirla
+      - name: Durable report claim
+        id: claim
         if: steps.gate.outputs.run == 'true'
+        run: python3 scripts/report_claim.py claim "${{ steps.gate.outputs.label }}"
+
+      - name: State klasorlerini hazirla
+        if: steps.claim.outputs.claimed == 'true'
         run: mkdir -p portfolios deniz_snapshots logs
 
       - name: Shadow + rapor (canli veri)
-        if: steps.gate.outputs.run == 'true'
+        if: steps.claim.outputs.claimed == 'true'
         env:
           TZ: Europe/Istanbul
           DATA_SOURCE: yahoo
@@ -148,22 +153,16 @@ jobs:
         # Alarm YALNIZ breached'de; `missing` ize gider (alarm korlugu onlemi).
         # Hata gizleyici bayrak KULLANILMAZ: gozlemcinin kendi hatasi gorunur olmali.
         #
-        # NEDEN `!= 'false'` (precise.yml'de YOK, burada VAR):
-        # Bu dosya haftaici 32 cron tetigi TANIMLIYOR ama GitHub bunlarin cogunu
-        # dusuruyor: 2026-09-10 olcumu 4, 09-09 olcumu 6 fiili schedule kosumu
-        # (300 kosumluk gecmisten sayildi). Ilk yazdigimda 32'yi FIILI sandim.
-        # Karar degismiyor, gerekcenin buyuklugu duzeldi. [DUZELTME 2026-09-11,
-        # olculdu: "raporu precise uretiyor, state commit pratikte kosmuyor" YANLIS —
-        # bu yol gunici'yi her gun uretiyor ve state commit her gun kosuyor (107
-        # "state HHMM" commit). Acilis+kapanis precise'ten, gunici buradan.]
-        # Kosulsuz `always()` ile gozlem her fiili tetikte kosar, izi HIC
-        # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar. Kapi 'false'
-        # derken bu
-        # workflow zaten IS YAPMIYOR; o tetiklerde gozlem de gereksiz.
-        # `== 'true'` DEGIL cunku kapi bozulup bos donerse gozlem yine kosmali —
-        # ve bu dosyada bekciyi 40 kosuda 0 kez calistiran hata tam olarak `== 'true'`di.
-        # `always()` KORUNUYOR: daemon DUSSE BILE (09-08 vakasi) gozlem kosar.
-        if: always() && steps.gate.outputs.run != 'false'
+        # Yalniz kalici claim sahibi gozlem yapar. Claim, rapor kapisinin
+        # kararini origin'e yazip push etmeden daemon'u baslatmaz; ayni slotun
+        # push-tetikli no-op kosumu da burada elenir. Claim sahibi olduktan
+        # sonra daemon dusse bile `always()` gozlemi calistirir (09-08 vakasi).
+        # Boylece ayni slotta iki uretici ayni stop alarmini uretmez; ana yolun
+        # dusmesi ise stop gozlemini kaybetmez.
+        # DUZELTME 2026-09-11 / GUNCELLEME 2026-09-11: eski fiili kosum
+        # yorumu claim modelinden onceki tarihsel baglamdir; bugunku kosul
+        # claim sahibidir.
+        if: always() && steps.claim.outputs.claimed == 'true'
         env:
           TZ: Europe/Istanbul
           STOP_OBS_LABEL: ${{ github.workflow }}
@@ -199,7 +198,7 @@ jobs:
         # okunmayan yuzey, bu isin duzelttigi kusurun ta kendisi.
         # Ozet kosu sayfasinda gorunur -> "bugun kostu mu, ne dedi" sorusu
         # log acmadan cevaplanir. Panel kalici tuketici, bu kosu-basina olan.
-        if: always() && steps.gate.outputs.run != 'false'
+        if: always() && steps.claim.outputs.claimed == 'true'
         run: |
           {
             echo "### P0.6 bagimsiz stop gozlemi"
@@ -219,7 +218,7 @@ jobs:
       - name: P0.6 stop izini Actions artefakti olarak sakla
         # Gozlem adimiyla AYNI kosul: adim atlandiginda yuklenecek dosya da yok,
         # aksi halde her bos tetikte "dosya bulunamadi" uyarisi birikir.
-        if: always() && steps.gate.outputs.run != 'false'
+        if: always() && steps.claim.outputs.claimed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: stop-observer-${{ github.run_id }}-${{ github.run_attempt }}
@@ -228,7 +227,7 @@ jobs:
           retention-days: 90
 
       - name: Portfoy state commit (kalicilik)
-        if: always() && steps.gate.outputs.run == 'true'
+        if: always() && steps.claim.outputs.claimed == 'true'
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

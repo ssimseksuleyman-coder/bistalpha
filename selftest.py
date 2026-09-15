@@ -1607,34 +1607,29 @@ def main():
                 "ana rapor komutundan ayri": bool(
                     _stop_block8 and "daemon.py --once" not in _run8
                 ),
-                # SOZLESME DARALTILDI (2026-09-10, olcumle).
-                # ESKI HALI: "steps.gate.outputs.run adimda HIC gecmesin".
+                # SOZLESME: gozlemci yalniz durable claim kazanmis producer'da kosar.
                 # OLCUM: bist-alpha.yml haftaici 32 cron tetigi TANIMLIYOR (6:45-50-55,
                 # 7:00..30, 11:30..55, 12:00..20, 15:40..55, 16:00..30) + her push.
                 # ⚠️ TANIMLI 32; FIILEN kosan cok daha az — GitHub schedule
                 # tetiklerini dusuruyor: 2026-09-10'da 4, 09-09'da 6 (olculdu).
                 # Karar ayni kaliyor (izi commit'lenmeyen kosum + alarm yuzeyi),
                 # yalniz buyukluk duzeldi. Kapi: BUGUN_UC_KONTROL -> K4.
-                # Ayni dosyada zaten yazili: `gate.run` burada 'true' OLMUYOR (raporu
-                # precise uretiyor) ve state commit'i `run == 'true'`e bagli. Yani
-                # kosulsuz `always()` ile stop gozlemi her FIILI tetikte kosar, izi HIC
-                # commit'lenmez ve her tetik ayri bir P0.3 alarm yuzeyi acar —
-                # "uretilip tuketilmeyen cikti" kusurunu 10 kat buyuterek.
-                # KORUNAN NIYET: gozlemci ANA YOLUN BASARISINA kosullanmasin.
-                # `gate.run` bir ARIZA kosulu degil, "bu tetikte is var mi" kosulu.
-                # IZIN VERILEN TEK BICIM `!= 'false'`: kapi bozulup bos donerse
-                # gozlemci YINE kosar. `== 'true'` YASAK — bu dosyada bekciyi 40
-                # kosuda 0 kez calistiran hata tam olarak oydu (2026-07-22 kaydi).
+                # Native duplicate runner durable claim alamazsa daemon, stop
+                # gozlemi ve artefakt zinciri birlikte atlanir.
+                # KORUNAN NIYET: gozlemci ana rapor komutundan bagimsizdir, ama
+                # claim alamayan duplicate runner'da yeni gozlem/artifakt uretmez.
                 "arizaya kosullu degil": bool(
                     _stop_block8
                     and "success()" not in _stop_block8
                     and ".outcome" not in _stop_block8
                 ),
-                "slot kapisi yalniz != 'false' bicimiyle": bool(
+                "slot kapisi claim ile": bool(
                     _stop_block8 and (
-                        "steps.gate.outputs.run" not in _stop_block8
-                        or ("steps.gate.outputs.run != 'false'" in _stop_block8
-                            and "steps.gate.outputs.run ==" not in _stop_block8)
+                        ("bist-alpha.yml" in _workflow_path8
+                         and "steps.claim.outputs.claimed == 'true'" in _stop_block8
+                         and "steps.gate.outputs.run" not in _stop_block8)
+                        or ("precise.yml" in _workflow_path8
+                            and "steps.claim.outputs.claimed" not in _stop_block8)
                     )
                 ),
                 "stop izi ve komutu": bool(
@@ -3372,6 +3367,33 @@ def main():
             bad(f"P0.3 {_wf_name}: kalicilik hatasi {'; '.join(_persist_bad)}")
         else:
             ok(f"P0.3 {_wf_name}: kalicilik hatasi alarm yoluna donuyor")
+
+    # 9c. Report gate claim'i producer'dan ONCE origin'e dayanir.
+    # check->daemon->mark sirasi tek basina cross-runner dedup degildir:
+    # native ve precise ayri concurrency gruplarinda kosar.
+    print("\n[9c] report gate durable claim sozlesmesi")
+    from pathlib import Path
+    _root_path = Path(__file__).resolve().parent
+    _claim_helper = _root_path / "scripts" / "report_claim.py"
+    _claim_text = _claim_helper.read_text(encoding="utf-8") if _claim_helper.exists() else ""
+    _precise_runner_text = (_root_path / "precise_runner.py").read_text(encoding="utf-8")
+    _native_text = (_root_path / ".github" / "workflows" / "bist-alpha.yml").read_text(encoding="utf-8")
+    _claim_checks = [
+        ("claim yardimcisi var", _claim_helper.exists()),
+        ("claim origin'e push edilmeden baslamiyor", "_git(\"push\"" in _claim_text and
+         "_git(\"commit\"" in _claim_text),
+        ("claim commit kimligi ve scope'u sabit", "_git(\"config\", \"user.name\"" in _claim_text and
+         "staged_paths != [STATE_REL]" in _claim_text),
+        ("native claim, daemon'dan once", "scripts/report_claim.py claim" in _native_text and
+         _native_text.find("scripts/report_claim.py claim") < _native_text.find("python3 daemon.py")),
+        ("precise claim yardimcisini kullaniyor", "report_claim.py" in _precise_runner_text and
+         "G.claim(label)" not in _precise_runner_text),
+        ("claim basarisizsa daemon kosmuyor", "claimed=false" in _claim_text and "return 0" in _claim_text),
+        ("claim release/TTL sozlesmesi korunuyor", "import report_gate" in _claim_text and
+         "report_gate.claim" in _claim_text),
+    ]
+    for _name, _passed in _claim_checks:
+        (ok if _passed else bad)(f"P0.6 claim: {_name}")
 
     # 10. CLI çalışma testi (TESPİT 5 — eksik kontrol tamamlandı)
     print("\n[10] CLI çalışma (gerçekten çalışıyor mu)")
