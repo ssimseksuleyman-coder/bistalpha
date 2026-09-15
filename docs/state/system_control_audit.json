@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T15:30:23",
+  "generated_at": "2026-09-15T20:59:20",
   "overall": "yellow",
   "summary": {
     "warn": 3,
@@ -68,7 +68,7 @@
       "category": "Data integrity / validation",
       "control": "State JSON parse",
       "status": "pass",
-      "summary": "26 state JSON files parsed.",
+      "summary": "27 state JSON files parsed.",
       "evidence": [],
       "action": "Fix malformed generated state before trusting the panel."
     },
@@ -132,7 +132,7 @@
       "category": "Operational / code quality",
       "control": "Python syntax compile",
       "status": "pass",
-      "summary": "71 Python files compile.",
+      "summary": "77 Python files compile.",
       "evidence": [],
       "action": "Fix syntax errors before deploy."
     },
@@ -252,9 +252,9 @@
       "category": "Risk / execution controls",
       "control": "Operation gate",
       "status": "pass",
-      "summary": "Operation gate reports 'late'.",
+      "summary": "Operation gate reports 'on_time'.",
       "evidence": [
-        "{'label': 'gunici', 'target_time': '14:30', 'delay_minutes': 24, 'sla': {'status': 'late', 'root_cause': 'github_actions_cron_gecikmesi', 'event': 'schedule', 'gate_label': 'gunici', 'gate_reason': 'due:2026-09-11:gunici', 'target_time': '14:30', 'delay_minutes': 24}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_sym"
+        "{'label': 'kapanis', 'target_time': '18:40', 'delay_minutes': 7, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'kapanis', 'gate_reason': '', 'target_time': '18:40', 'delay_minutes': 7}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_symbol_pct': 0.0, 'missing_symbol_list': "
       ],
       "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
     },
