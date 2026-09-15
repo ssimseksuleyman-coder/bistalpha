@@ -1,0 +1,109 @@
+{
+  "kaynak": "reports/ibs_reversal_backtest.json",
+  "yontem": "olay fwd - ayni gun evren ortalamasi (fiyati olan tum hisseler)",
+  "uyari": "evren VEKIL: backtest'in dinamik evreni degil, fiyati olan tum hisseler",
+  "n_olay": 1535,
+  "n_hisse": 113,
+  "horizons": {
+    "fwd_1d_pct": {
+      "n": 1534,
+      "olay_ort": 0.133,
+      "evren_ort": 0.079,
+      "alpha_ort": 0.054,
+      "alpha_medyan": 0.03,
+      "alpha_pozitif_pct": 50.5,
+      "alpha_vs_evren_medyan_ort": 0.268,
+      "t_stat_naif": 0.89,
+      "evren_n": {
+        "min": 214,
+        "medyan": 236,
+        "max": 242
+      },
+      "t_notu": "olaylar bagimsiz DEGIL (113 hissede 1535 olay, ayni gun kumelenme) -> t ABARTILI"
+    },
+    "fwd_3d_pct": {
+      "n": 1531,
+      "olay_ort": 0.678,
+      "evren_ort": 0.707,
+      "alpha_ort": -0.029,
+      "alpha_medyan": -0.156,
+      "alpha_pozitif_pct": 47.4,
+      "alpha_vs_evren_medyan_ort": 0.368,
+      "t_stat_naif": -0.28,
+      "evren_n": {
+        "min": 214,
+        "medyan": 236,
+        "max": 242
+      },
+      "t_notu": "olaylar bagimsiz DEGIL (113 hissede 1535 olay, ayni gun kumelenme) -> t ABARTILI"
+    },
+    "fwd_5d_pct": {
+      "n": 1528,
+      "olay_ort": 1.067,
+      "evren_ort": 1.169,
+      "alpha_ort": -0.102,
+      "alpha_medyan": -0.057,
+      "alpha_pozitif_pct": 49.4,
+      "alpha_vs_evren_medyan_ort": 0.54,
+      "t_stat_naif": -0.79,
+      "evren_n": {
+        "min": 214,
+        "medyan": 236,
+        "max": 241
+      },
+      "t_notu": "olaylar bagimsiz DEGIL (113 hissede 1535 olay, ayni gun kumelenme) -> t ABARTILI"
+    },
+    "fwd_10d_pct": {
+      "n": 1527,
+      "olay_ort": 2.086,
+      "evren_ort": 2.101,
+      "alpha_ort": -0.015,
+      "alpha_medyan": -0.601,
+      "alpha_pozitif_pct": 45.8,
+      "alpha_vs_evren_medyan_ort": 1.193,
+      "t_stat_naif": -0.07,
+      "evren_n": {
+        "min": 230,
+        "medyan": 236,
+        "max": 241
+      },
+      "t_notu": "olaylar bagimsiz DEGIL (113 hissede 1535 olay, ayni gun kumelenme) -> t ABARTILI"
+    }
+  },
+  "yil_bazli": {
+    "fwd_5d_pct": {
+      "2024": {
+        "n": 634,
+        "alpha_ort": 0.331,
+        "alpha_pozitif_pct": 52.2
+      },
+      "2025": {
+        "n": 744,
+        "alpha_ort": -0.151,
+        "alpha_pozitif_pct": 48.7
+      },
+      "2026": {
+        "n": 150,
+        "alpha_ort": -1.683,
+        "alpha_pozitif_pct": 41.3
+      }
+    },
+    "fwd_10d_pct": {
+      "2024": {
+        "n": 634,
+        "alpha_ort": 0.895,
+        "alpha_pozitif_pct": 48.1
+      },
+      "2025": {
+        "n": 744,
+        "alpha_ort": -0.292,
+        "alpha_pozitif_pct": 45.6
+      },
+      "2026": {
+        "n": 149,
+        "alpha_ort": -2.498,
+        "alpha_pozitif_pct": 37.6
+      }
+    }
+  }
+}

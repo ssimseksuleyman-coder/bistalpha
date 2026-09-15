@@ -848,6 +848,382 @@ def main():
     except Exception as e:
         bad(f"#2a/#2b testi kosmadi: {type(e).__name__}: {e}")
 
+    # -- [6r] C1 OLCUM ARACLARI — DENETIM KILITLERI (test-once, 2026-09-15; inceleme #2 2026-09-16) ---
+    # C1 incelemesi (bagimsiz) 6 bulgu, ikinci inceleme 6 bulgu daha verdi; her kilit SOZLESME:
+    #   F1 gizlilik TEK OTORITE: system_control_audit.json_privacy_scan / personal_path_hits;
+    #      selftest AYNI fonksiyonu sinar (kendi regex'i YOK); parse edilemeyen JSON PASS SAYILMAZ.
+    #   F2 Q1 'Ortak' = iki katmandaki EN ERKEN tarih.
+    #   F3 muhur araci: git HATASI != YOKLUK, HEAD != origin/main ise DURUR, sayfalama hedefe
+    #      ulasamazsa RAISE (bos liste != yok), gecmis tarih NOKTA-ZAMANLI ref (hedef_ref).
+    #   F4 Q1: sifir gozlemli ufuk sayaclariyla yazilir; IC BOSLUK veri_eksik (yatay tasima yok);
+    #      CA isareti yalniz (d0, d1] icinde.
+    #   F6 feed onbellegi: ayni dizinde gecici + os.replace; dump hatasinda nihai dosya OLUSMAZ.
+    #   PROV Q1 damgasi: input_origin_sha, tool_head_sha, tool_sha256, tool_dirty, cache; git
+    #      hatasi -> RAISE (fail-open None YOK).
+    #   IBS benchmark: evren_n yazilir, bos ufuk n=0 ile yazilir, t notu veriden.
+    print("\n[6r] C1 olcum araclari — denetim kilitleri (test-once)")
+    try:
+        import hashlib as _hl6r
+        import json as _json6r
+        import re as _re6r
+        import subprocess as _sp6r
+        import sys as _sys6r
+        import tempfile as _tf6r
+        from datetime import datetime as _dt6r
+        _sp_6r = os.path.join(ROOT, "scripts")
+        if _sp_6r not in _sys6r.path:
+            _sys6r.path.insert(0, _sp_6r)
+
+        # F1 — gizlilik: DENETCININ KENDI fonksiyonu (tek otorite), gercek public yuzey + karsi testler
+        import system_control_audit as _SCA6r
+        _scan, _pub, _phits = (getattr(_SCA6r, n, None) for n in ("json_privacy_scan", "public_json_files", "personal_path_hits"))
+        if _scan is None or _pub is None or _phits is None:
+            bad("F1 sozlesmesi eksik: system_control_audit.json_privacy_scan / public_json_files / personal_path_hits yok")
+        else:
+            _yuzey = _pub()
+            _hit, _bozuk = _scan(_yuzey)
+            _kapsam_ok = any(str(p).replace("\\", "/").endswith("docs/state/liveness.json") for p in _yuzey) and \
+                         any("/reports/" in str(p).replace("\\", "/") for p in _yuzey)
+            if _bozuk:
+                bad(f"F1 gizlilik: parse edilemeyen public JSON PASS sayilamaz: {_bozuk}")
+            elif _hit:
+                bad(f"F1 GIZLILIK: public JSON degerinde kisisel yol: {_hit}")
+            elif not _kapsam_ok:
+                bad(f"F1 gizlilik kapsami dar: docs/state ve reports yuzeyde degil ({len(_yuzey)} dosya)")
+            else:
+                ok(f"F1 gizlilik: {len(_yuzey)} public JSON (takipli + docs/state + reports) denetci fonksiyonuyla temiz")
+            # karsi testler: yol CALISMA ZAMANINDA kurulur (kaynakta literal yol yok -> ham tarayici temiz kalir)
+            _d1 = _tf6r.mkdtemp()
+            _sep = chr(92)
+            _win = "C:" + _sep + "Users" + _sep + "abc" + _sep + "x.json"
+            _nix = "/".join(["", "home", "abc", "x.json"])                # kaynakta bitisik yazilmaz (ham tarayici)
+            _fwd = "C:/" + "Users" + "/abc/x.json"                         # ileri-egik-cizgili Windows yolu (3. desen)
+            _f_win = os.path.join(_d1, "sizinti_win.json"); open(_f_win, "w", encoding="utf-8").write(_json6r.dumps({"kaynak": _win}))
+            _f_nix = os.path.join(_d1, "sizinti_nix.json"); open(_f_nix, "w", encoding="utf-8").write(_json6r.dumps({"a": [{"b": _nix}]}))
+            _f_tmz = os.path.join(_d1, "temiz.json"); open(_f_tmz, "w", encoding="utf-8").write(_json6r.dumps({"kaynak": "reports/x.json", "n": 3}))
+            _f_bzk = os.path.join(_d1, "bozuk.json"); open(_f_bzk, "w", encoding="utf-8").write("{bu json degil")
+            _h2, _b2 = _scan([_f_win, _f_nix, _f_tmz, _f_bzk])
+            _yak = sorted(os.path.basename(h.split(": personal path")[0]) for h in _h2)
+            _ham_metin_kacar = _SCA6r.WINDOWS_USER_PATH_RE.search(open(_f_win, encoding="utf-8").read()) is None
+            # 3. desen (surucu:/ + ev klasoru, ileri egik cizgi) UNIX deseniyle de eslesir; tek basina da sinanir
+            _fwd_ok = bool(_SCA6r.PARSED_PATH_RES[2].search(_fwd)) and not _SCA6r.PARSED_PATH_RES[2].search("C:/Program Files/x")
+            if _yak == ["sizinti_nix.json", "sizinti_win.json"] and [os.path.basename(x) for x in _b2] == ["bozuk.json"] \
+                    and _phits({"k": _win}) and _phits({"k": _fwd}) and _fwd_ok and not _phits({"k": "reports/x.json"}):
+                ok(f"F1 karsi test: cozulmus JSON degerinde yol YAKALANIYOR (win ters+ileri egik, nix), temiz geciyor, bozuk JSON 'bozuk' listesinde"
+                   + (" (ham metin tarayicisi bu dosyayi KACIRIYOR -> parse otoritesi gerekli)" if _ham_metin_kacar else ""))
+            else:
+                bad(f"F1 karsi test: yakalanan={_yak} bozuk={_b2} fwd_desen={_fwd_ok}")
+            # F1b — denetci BULDUGUNU YENIDEN YAYIMLAMAZ (inceleme #3): kanit satirlarinda deger yok
+            _tph = getattr(_SCA6r, "text_privacy_hits", None)
+            if _tph is None:
+                bad("F1b sozlesmesi eksik: system_control_audit.text_privacy_hits(text, relname) yok")
+            else:
+                _mail = "gizli.kisi" + "@" + "ornek-alan.net"
+                _metin = "a=1\n" + _win + "\nmail: " + _mail + "\nb=2\n"
+                _th = _tph(_metin, "x/y.py")
+                _turler = sorted(h.split(": ", 1)[1].split(" (")[0] for h in _th)
+                _deger_sizdi = [h for h in _th + _h2 if ("abc" in h) or (_mail in h) or ("ornek-alan" in h)]
+                if _turler == ["email literal", "personal absolute path"] and not _deger_sizdi \
+                        and all(h.startswith("x/y.py: ") for h in _th):
+                    ok("F1b denetci kanit satiri yalniz dosya + tur (+adet); e-posta/yol degeri GERI YAZILMIYOR (metin + JSON dali)")
+                else:
+                    bad(f"F1b deger yeniden yayimlaniyor / tur eksik: turler={_turler} sizan={_deger_sizdi}")
+
+        # F2 — Q1 ortak en-erken tarih
+        import sinyal_kalitesi_q1 as _Q6r
+        _ortak_fn = getattr(_Q6r, "ortak_ilk", None)
+        if _ortak_fn is None:
+            bad("F2 sozlesmesi eksik: sinyal_kalitesi_q1.ortak_ilk(T, Q) yok")
+        else:
+            _T = [("AAA", "2026-06-08", 3), ("BBB", "2026-08-20", 1), ("CCC", "2026-07-01", 2)]
+            _Qq = [("AAA", "2026-09-01", 2), ("BBB", "2026-08-17", 4), ("DDD", "2026-07-05", 1)]
+            _o = {t: d for t, d, _ in _ortak_fn(_T, _Qq)}
+            if _o == {"AAA": "2026-06-08", "BBB": "2026-08-17"}:
+                ok("F2 Q1 'Ortak' iki katmandaki EN ERKEN tarihi aliyor (T'yi ezmiyor)")
+            else:
+                bad(f"F2 'Ortak' tarih ezme: {_o!r}")
+
+        # F4 — sifir gozlemli ufuk sayaclariyla yazilir; ic bosluk veri_eksik; CA yalniz pencerede
+        _uf, _cad = getattr(_Q6r, "ufuk_ozeti", None), getattr(_Q6r, "ca_duzelt", None)
+        if _uf is None or _cad is None:
+            bad("F4 sozlesmesi eksik: sinyal_kalitesi_q1.ufuk_ozeti / ca_duzelt yok")
+        else:
+            import numpy as _np6r
+            import pandas as _pd6r
+            _idx = _pd6r.bdate_range("2026-08-01", periods=10)
+            _pr = _pd6r.DataFrame({"AAA": range(10, 20)}, index=_idx, dtype=float)
+            _bi = _pd6r.Series(range(100, 110), index=_idx, dtype=float)
+            _res, _satir = _uf([("AAA", str(_idx[-2].date()), 1)], 21, _pr, _pr, _bi)   # (ozet, satirlar)
+            if isinstance(_res, dict) and _res.get("n") == 0 and _res.get("sansurlu") == 1 and "excess" in _res and _satir == []:
+                ok("F4 sifir gozlemli ufuk sayaclariyla yaziliyor (n=0, sansurlu=1)")
+            else:
+                bad(f"F4 bos ufuk kayboluyor / sayac yok: {_res!r}")
+            # ic bosluk (i=3 NaN) + 2:1 bolunme (i=6): bosluk NaN kalir, seviye korunur, CA gunu getirisi 0
+            _idx2 = _pd6r.bdate_range("2026-01-05", periods=12)
+            _p2 = _pd6r.DataFrame({"AAA": [10, 10.5, 11, _np6r.nan, 11.5, 12, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5]}, index=_idx2, dtype=float)
+            _b2 = _pd6r.Series(_np6r.linspace(100, 101, 12), index=_idx2)
+            _adj, _ca = _cad(_p2)
+            _gap_nan = bool(_pd6r.isna(_adj["AAA"].iloc[3]))
+            _seviye_ok = abs(_adj["AAA"].iloc[4] / _adj["AAA"].iloc[2] - 11.5 / 11) < 1e-9
+            _ca_sifir = abs(_adj["AAA"].iloc[6] - _adj["AAA"].iloc[5]) < 1e-9
+            _o_gap, _ = _uf([("AAA", str(_idx2[0].date()), 1)], 3, _adj, _p2, _b2, _ca, entry_lag=1)     # pencere 1..4 NaN icerir
+            _o_dis, _k_dis = _uf([("AAA", str(_idx2[3].date()), 1)], 1, _adj, _p2, _b2, _ca, entry_lag=1)   # pencere 4..5, CA(6) disinda
+            _o_ic, _k_ic = _uf([("AAA", str(_idx2[4].date()), 1)], 2, _adj, _p2, _b2, _ca, entry_lag=1)     # pencere 5..7, CA(6) icinde
+            if _gap_nan and _seviye_ok and _ca_sifir and _ca == {"AAA": [str(_idx2[6].date())]} \
+                    and _o_gap["veri_eksik"] == 1 and _o_gap["n"] == 0 \
+                    and _o_dis["n"] == 1 and _k_dis[0]["ca"] is False and _o_dis["ca_isaretli"] == 0 \
+                    and _o_ic["n"] == 1 and _k_ic[0]["ca"] is True and _o_ic["ca_isaretli"] == 1:
+                ok("F4 ic bosluk NaN kaliyor -> veri_eksik (yatay tasima yok); seviye korunuyor; CA isareti yalniz (d0,d1] icinde")
+            else:
+                bad(f"F4 bosluk/CA: gap_nan={_gap_nan} seviye={_seviye_ok} ca0={_ca_sifir} ca={_ca} gap={_o_gap} dis={_k_dis} ic={_k_ic}")
+            # F4c — SAG SANSUR ONCE (inceleme #3): seriden GENC sinyal 'sansurlu', 'eslesmeyen' degil;
+            #       seri icinde bar'i olmayan gun (tatil) hala eslesmeyen; bilinmeyen hisse eslesmeyen
+            _genc = str((_idx[-1] + _pd6r.Timedelta(days=3)).date())         # son fiyat gununden sonra
+            _tatil = str((_idx[4] + _pd6r.Timedelta(days=1)).date())         # idx[4]=Cuma -> Cumartesi: seride bar yok
+            assert _pd6r.Timestamp(_tatil).weekday() == 5 and _pd6r.Timestamp(_tatil) < _idx[-1], "test iskelesi: tatil gunu yanlis"
+            _o_c, _ = _uf([("AAA", _genc, 1), ("AAA", _tatil, 1), ("ZZZ", str(_idx[0].date()), 1)], 5, _pr, _pr, _bi)
+            # BIRLESIK durum (inceleme #4): genc tarih + cache'te OLMAYAN hisse -> yine SANSUR (eslesmeyen degil);
+            # tek basina da olculur ki toplamin icinde saklanmasin
+            _o_b, _ = _uf([("ZZZ", _genc, 1)], 5, _pr, _pr, _bi)
+            _birlesik_ok = _o_b["sansurlu"] == 1 and _o_b["eslesmeyen"] == 0 and _o_b["n"] == 0
+            if _o_c["sansurlu"] == 1 and _o_c["eslesmeyen"] == 2 and _o_c["n"] == 0 and _o_c["toplam_sinyal"] == 3 and _birlesik_ok:
+                ok("F4c seriden genc sinyal SANSURLU (eslesmeyen degil) — bilinmeyen hisseyle BIRLESIK durumda da; tatil/bilinmeyen hisse eslesmeyen; sayim uzlasiyor")
+            else:
+                bad(f"F4c sansur/eslesmeyen sirasi: ayri={_o_c!r} birlesik(genc+bilinmeyen)={_o_b!r}")
+
+        # PROV — Q1 kaynak damgasi (tam) + fail-closed
+        _prov = getattr(_Q6r, "provenance", None)
+        if _prov is None:
+            bad("PROV sozlesmesi eksik: sinyal_kalitesi_q1.provenance(cache_path, params) yok")
+        else:
+            _tmpd = _tf6r.mkdtemp(); _cp = os.path.join(_tmpd, "feed_onbellek_test.pkl")
+            open(_cp, "wb").write(b"deneme")
+            _p = _prov(_cp, {"ENTRY_LAG": 1})
+            _hex40 = lambda v: _re6r.fullmatch(r"[0-9a-f]{40}", str(v)) is not None
+            _arac = os.path.join(ROOT, "scripts", "sinyal_kalitesi_q1.py")
+            _ok_prov = (_hex40(_p.get("input_origin_sha")) and _hex40(_p.get("tool_head_sha"))
+                        and _p.get("tool_sha256") == _hl6r.sha256(open(_arac, "rb").read()).hexdigest()
+                        and isinstance(_p.get("tool_dirty"), bool) and _p.get("tool_path") == "scripts/sinyal_kalitesi_q1.py"
+                        and _p.get("cache_name") == "feed_onbellek_test.pkl"
+                        and _p.get("cache_sha256") == _hl6r.sha256(b"deneme").hexdigest()
+                        and str(_p.get("generated_at", "")).endswith("Z")
+                        and _p.get("params") == {"ENTRY_LAG": 1})
+            if _ok_prov:
+                ok("PROV Q1 damgasi: input_origin_sha + tool_head_sha + tool_sha256 + tool_dirty + cache sha256 + generated_at(Z) + params")
+            else:
+                bad(f"PROV kaynak damgasi eksik/yanlis: {_p!r}")
+            _orig_run = _Q6r.subprocess.run
+            _Q6r.subprocess.run = lambda *a, **k: _sp6r.CompletedProcess(a, 128, "", "fatal: sahte git hatasi")
+            try:
+                _p2 = _prov(_cp, {}); _fail_open = True
+            except Exception:
+                _fail_open = False
+            finally:
+                _Q6r.subprocess.run = _orig_run
+            if not _fail_open:
+                ok("PROV git hatasinda provenance RAISE ediyor (fail-open None yok)")
+            else:
+                bad(f"PROV fail-open: git hatasinda None ile devam etti: {_p2!r}")
+
+        # F3 — muhur araci: hata != yokluk, HEAD/origin uyumu, sayfalama, nokta-zamanli ref
+        import kapanis_muhur_olc as _K6r
+        _sr, _so = getattr(_K6r, "show_required", None), getattr(_K6r, "show_optional", None)
+        if _sr is None or _so is None:
+            bad("F3 sozlesmesi eksik: show_required / show_optional yok")
+        else:
+            _r = []
+            try:
+                _r.append(("opt_yok", _so("docs/state/BU_DOSYA_YOK.json") is None))
+            except Exception:
+                _r.append(("opt_yok", False))
+            try:
+                _sr("docs/state/BU_DOSYA_YOK.json"); _r.append(("req_yok_raise", False))
+            except Exception:
+                _r.append(("req_yok_raise", True))
+            try:
+                _so("docs/state/report_runs.json", ref="origin/OLMAYAN_DAL"); _r.append(("opt_git_hata_raise", False))
+            except Exception:
+                _r.append(("opt_git_hata_raise", True))
+            if all(v for _, v in _r):
+                ok("F3 show_optional yoklukta None, show_required yoklukta raise, git hatasi ikisinde de raise")
+            else:
+                bad(f"F3 hata/yokluk ayrimi: {_r!r}")
+        _uy = getattr(_K6r, "_uyum_kontrol", None)
+        if _uy is None:
+            bad("F3 sozlesmesi eksik: _uyum_kontrol(head, origin) yok")
+        else:
+            try:
+                _uy("abc123", "abc123"); _ayni = True
+            except Exception:
+                _ayni = False
+            try:
+                _uy("abc123", "def456"); _farkli_raise = False
+            except Exception:
+                _farkli_raise = True
+            if _ayni and _farkli_raise:
+                ok("F3 HEAD != origin/main ise olcum durur (ayni ise gecer)")
+            else:
+                bad(f"F3 uyum kontrolu: ayni={_ayni} farkli_raise={_farkli_raise}")
+        _kos = getattr(_K6r, "kosumlar_sayfali", None)
+        if _kos is None:
+            bad("F3 sozlesmesi eksik: kosumlar_sayfali(wf, tarih, api=...) yok")
+        else:
+            _cagri = []
+            def _fake_api(url):
+                page = int(_re6r.search(r"[?&]page=(\d+)", url).group(1))   # per_page=... ile karismasin
+                _cagri.append(page)
+                base = _dt6r(2026, 9, 15, 12, 0)
+                gun = {1: 15, 2: 14}.get(page, 12)                                 # sayfa1=09-15, sayfa2=09-14 (hedef), sayfa3+=09-12 (eski)
+                runs = [{"id": page * 100 + i, "created_at": base.replace(day=gun).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                         "status": "completed", "conclusion": "success", "head_sha": "0" * 40, "event": "schedule", "updated_at": base.strftime("%Y-%m-%dT%H:%M:%SZ")} for i in range(3)]
+                return {"workflow_runs": runs}
+            _got = _kos("precise.yml", "2026-09-14", api=_fake_api, per_page=3)
+            _sayfa = sorted({r["id"] // 100 for r in _got})
+            # hedef gunden ESKI kosum ancak 3. sayfada gorunur -> 3 sayfa okunur, 4. istenmez; yalniz hedef gun doner
+            if _sayfa == [2] and len(_got) == 3 and _cagri == [1, 2, 3]:
+                ok("F3 kosum listesi hedef tarihe ulasana kadar sayfalaniyor (3 sayfa okundu, 4. istenmedi, yalniz hedef gun dondu)")
+            else:
+                bad(f"F3 sayfalama: donen sayfalar={_sayfa} n={len(_got)} cagrilar={_cagri}")
+            # hedefe ULASILAMAZSA raise: (a) sayfa siniri doldu, hep bugun; (b) bos liste
+            def _api_hep_bugun(url):
+                return {"workflow_runs": [{"created_at": "2026-09-16T05:00:00Z", "id": 1}]}
+            def _api_bos(url):
+                return {"workflow_runs": []}
+            _rs = []
+            for _api_x in (_api_hep_bugun, _api_bos):
+                try:
+                    _kos("precise.yml", "2026-09-15", api=_api_x, max_page=3); _rs.append(False)
+                except Exception:
+                    _rs.append(True)
+            if _rs == [True, True]:
+                ok("F3 sayfalama hedefe ulasamazsa RAISE (sayfa siniri + bos liste; sessiz bos liste yok)")
+            else:
+                bad(f"F3 sayfalama sessiz bos liste: sinir_raise={_rs[0]} bos_raise={_rs[1]}")
+        _hr = getattr(_K6r, "hedef_ref", None)
+        if _hr is None:
+            bad("F3 sozlesmesi eksik: hedef_ref(tarih, bugun) yok — gecmis muhur en son artefakti okur (gun karisimi)")
+        else:
+            _sh_cagri = []
+            def _fake_sh(*a):
+                _sh_cagri.append(a)
+                return "f" * 40 + "\n" if "--before=2026-09-14T23:59:59+03:00" in a else ""
+            _rr = {}
+            _rr["bugun"] = _hr("2026-09-16", bugun="2026-09-16", sh=_fake_sh)
+            _rr["gecmis"] = _hr("2026-09-14", bugun="2026-09-16", sh=_fake_sh)
+            try:
+                _hr("2026-09-17", bugun="2026-09-16", sh=_fake_sh); _rr["gelecek_raise"] = False
+            except Exception:
+                _rr["gelecek_raise"] = True
+            try:
+                _hr("2020-01-01", bugun="2026-09-16", sh=_fake_sh); _rr["yok_raise"] = False
+            except Exception:
+                _rr["yok_raise"] = True
+            if _rr["bugun"] == _K6r.REF and _rr["gecmis"] == "f" * 40 and _rr["gelecek_raise"] and _rr["yok_raise"] \
+                    and any("rev-list" in a for a in _sh_cagri):
+                ok("F3 hedef_ref: bugun=origin/main, gecmis gun=o gunun son commit'i (rev-list --before), gelecek/bulunamayan RAISE")
+            else:
+                bad(f"F3 hedef_ref: {_rr!r} cagrilar={_sh_cagri!r}")
+            # main() icinde artefakt okumalari REF'e degil ref'e gitmeli (kaynak-metin sozlesmesi)
+            _src = open(os.path.join(ROOT, "scripts", "kapanis_muhur_olc.py"), encoding="utf-8").read()
+            _main_src = _src[_src.index("def main():"):]
+            _sabit = [ln.strip() for ln in _main_src.splitlines() if ("show_required(" in ln or "show_optional(" in ln or "ls-tree" in ln or "git\", \"show\"" in ln) and "ref=" not in ln and "{ref}" not in ln and " ref," not in ln]
+            if not _sabit:
+                ok("F3 main() artefakt okumalari (show_*/ls-tree/git show) nokta-zamanli ref ile")
+            else:
+                bad(f"F3 main() sabit REF okuyan satirlar: {_sabit}")
+            # F3b — ZAMAN EKSENI (inceleme #3): commit saati %cI -> TR; since/until +03:00; [1] gun etiketi
+            _gc = getattr(_K6r, "gun_commitleri", None)
+            _etiket = getattr(_K6r, "KOSUM_GUN_ETIKETI", None)
+            if _gc is None or _etiket is None:
+                bad("F3b sozlesmesi eksik: gun_commitleri(ref, gun, sh=...) / KOSUM_GUN_ETIKETI yok")
+            else:
+                _gc_args = []
+                def _fake_sh_log(*a):
+                    _gc_args.append(a)
+                    return "379da56|2026-09-15T15:47:36+00:00|precise state 2026-09-15_1547 [OK]\n" \
+                           "11bbe60|2026-09-15T18:31:02+03:00|report claim kapanis run 34970759619\n"
+                _rows = _gc("origin/main", "2026-09-15", sh=_fake_sh_log)
+                _fmt = [a for a in _gc_args[0] if str(a).startswith("--format=")]
+                _sinir = [a for a in _gc_args[0] if str(a).startswith(("--since=", "--until="))]
+                _sinir_ok = _sinir == ["--since=2026-09-15T00:00:00+03:00", "--until=2026-09-15T23:59:59+03:00"]
+                _bir_src = open(os.path.join(ROOT, "scripts", "kapanis_muhur_olc.py"), encoding="utf-8").read()
+                _bir_hdr = [ln for ln in _bir_src.splitlines() if "[1]" in ln and "print(" in ln]
+                _hdr_ok = bool(_bir_hdr) and all("KOSUM_GUN_ETIKETI" in ln for ln in _bir_hdr) and "bilinmiyor" in _etiket
+                if _rows == [("18:47", "379da56", "precise state 2026-09-15_1547 [OK]"),
+                             ("18:31", "11bbe60", "report claim kapanis run 34970759619")] \
+                        and _fmt and "%cI" in _fmt[0] and "%ad" not in _fmt[0] and _sinir_ok and _hdr_ok:
+                    ok("F3b commit saati %cI -> TR (UTC 15:47 -> 18:47; +03:00 ofset korunur), since/until +03:00, [1] basligi 'created_at_TR / niyet bilinmiyor'")
+                else:
+                    bad(f"F3b zaman ekseni: rows={_rows} fmt={_fmt} sinir={_sinir} hdr_ok={_hdr_ok}")
+
+        # F6 — feed onbellegi atomik
+        import feed_onbellek_cek as _F6r
+        _kaydet = getattr(_F6r, "kaydet", None)
+        if _kaydet is None:
+            bad("F6 sozlesmesi eksik: feed_onbellek_cek.kaydet(payload, out) yok")
+        else:
+            _d6 = _tf6r.mkdtemp(); _out6 = os.path.join(_d6, "feed_onbellek_x.pkl")
+            try:
+                _kaydet({"a": (lambda: 0)}, _out6); _hata = False   # lambda pickle'lanamaz
+            except Exception:
+                _hata = True
+            _kalan = sorted(os.listdir(_d6))
+            _kaydet({"a": 1}, _out6)
+            _son = sorted(os.listdir(_d6))
+            if _hata and _kalan == [] and _son == ["feed_onbellek_x.pkl"]:
+                ok("F6 dump hatasinda nihai dosya OLUSMUYOR ve gecici artik yok; basarida tek dosya")
+            else:
+                bad(f"F6 atomik yazim: hata={_hata} hata_sonrasi={_kalan} basari_sonrasi={_son}")
+            # F6b — cekim damgasi EKSENLI (inceleme #3): UTC 'Z'; naive reddedilir; isle() dosyaya bunu yazar
+            _cd = getattr(_F6r, "cekim_damgasi", None)
+            if _cd is None:
+                bad("F6b sozlesmesi eksik: feed_onbellek_cek.cekim_damgasi() yok (naive cekim_saati)")
+            else:
+                import pickle as _pk6r
+                from datetime import timezone as _tz6r, timedelta as _td6r
+                _tr3 = _tz6r(_td6r(hours=3))
+                _z = _cd(_dt6r(2026, 9, 13, 22, 45, 59, tzinfo=_tr3))            # 22:45 TR -> 19:45Z
+                try:
+                    _cd(_dt6r(2026, 9, 13, 22, 45, 59)); _naive_raise = False
+                except ValueError:
+                    _naive_raise = True
+                import pandas as _pd6b
+                _d6b = _tf6r.mkdtemp(); _out6b = os.path.join(_d6b, "feed_onbellek_y.pkl")
+                _ix6b = _pd6b.bdate_range("2026-09-01", periods=3)
+                _fake = {"prices": _pd6b.DataFrame({"AAA": [1.0, 1.1, 1.2]}, index=_ix6b), "source": "test"}
+                import io as _io6r, contextlib as _ctx6r
+                with _ctx6r.redirect_stdout(_io6r.StringIO()):
+                    _F6r.isle(_fake, 1.0, out=_out6b)
+                _yaz = _pk6r.load(open(_out6b, "rb"))
+                _cs = _yaz.get("cekim_saati", "")
+                _cs_ok = _cs.endswith("Z") and _dt6r.fromisoformat(_cs.replace("Z", "+00:00")).tzinfo is not None
+                if _z == "2026-09-13T19:45:59Z" and _naive_raise and _cs_ok and sorted(_yaz) == ["cekim_saati", "data", "sure_s"]:
+                    ok("F6b cekim_saati UTC 'Z' (22:45+03:00 -> 19:45:59Z), naive reddediliyor, isle() dosyaya eksenli damga yaziyor")
+                else:
+                    bad(f"F6b cekim damgasi: z={_z} naive_raise={_naive_raise} dosya={_cs!r} anahtarlar={sorted(_yaz)}")
+
+        # IBS — benchmark: evren_n yazilir, bos ufuk n=0 ile yazilir, t notu veriden
+        import ibs_benchmark_olc as _I6r
+        _ua = getattr(_I6r, "ufuk_alpha", None)
+        if _ua is None:
+            bad("IBS sozlesmesi eksik: ibs_benchmark_olc.ufuk_alpha(...) yok")
+        else:
+            import pandas as _pd6r2
+            _ix = {"2026-01-05": 0, "2026-01-06": 1}
+            _eo = _pd6r2.Series([1.0, 2.0]); _em = _pd6r2.Series([0.5, 1.5]); _en = _pd6r2.Series([300, 310])
+            _ol = [{"ticker": "A", "signal_date": "2026-01-05", "fwd_5d_pct": 3.0},
+                   {"ticker": "B", "signal_date": "2026-01-06", "fwd_5d_pct": 1.0},
+                   {"ticker": "A", "signal_date": "2026-01-07", "fwd_5d_pct": 9.0}]
+            _h5 = _ua(_ol, "fwd_5d_pct", _ix, _eo, _em, _en, n_hisse=2, n_olay=3)
+            _h99 = _ua(_ol, "fwd_99d_pct", _ix, _eo, _em, _en, n_hisse=2, n_olay=3)
+            if _h5.get("n") == 2 and _h5.get("evren_n") == {"min": 300, "medyan": 305, "max": 310} and abs(_h5.get("alpha_ort", 9) - 0.5) < 1e-9 \
+                    and "2 hissede 3 olay" in _h5.get("t_notu", "") and _h99.get("n") == 0 and _h99.get("evren_n") is None and "2 hissede 3 olay" in _h99.get("t_notu", ""):
+                ok("IBS evren_n (min/medyan/max) yaziliyor, bos ufuk n=0 ile yaziliyor, t notu veriden turetiliyor")
+            else:
+                bad(f"IBS ozet: h5={_h5!r} h99={_h99!r}")
+    except Exception as e:
+        bad(f"[6r] C1 kilit testleri kosmadi: {type(e).__name__}: {e}")
+
     # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
     # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
     # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN

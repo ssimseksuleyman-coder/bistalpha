@@ -382,28 +382,97 @@ def _state_value_is_sensitive(key: str, value: Any) -> bool:
     }
 
 
+def json_string_values(obj):
+    """Parse edilmis JSON icindeki TUM string degerler (anahtarlar dahil), ozyinelemeli."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            yield from json_string_values(k)
+            yield from json_string_values(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from json_string_values(v)
+    elif isinstance(obj, str):
+        yield obj
+
+
+# ucuncu desen: ileri-egik-cizgili Windows ev yolu (surucu:/ + ev klasoru + kullanici). Kaynakta BITISIK
+# yazilmaz ki ham metin tarayicisi (bu dosyayi da tarar) kendi desenini sizinti sanmasin. Kelime siniri
+# chr(92)+"b" ile kurulur (2026-09-16: dosyaya kacan gercek 0x08 karakteri deseni sessizce oldurmustu).
+PARSED_PATH_RES = (WINDOWS_USER_PATH_RE, UNIX_HOME_PATH_RE,
+                   re.compile("(?i)" + chr(92) + "b[A-Z]:/" + "Users" + "/[^/" + chr(92) + "s" + chr(34) + chr(39) + "]+"))
+
+
+def personal_path_hits(obj) -> list[str]:
+    """TEK OTORITE (2026-09-16, C1 incelemesi): JSON degerlerinde kisisel yol.
+    Ham metin taramasi kacirir: JSON kaynak metninde ters egik cizgi CIFT yazilir ve
+    WINDOWS_USER_PATH_RE eslesmez; deger COZULUNCE tek olur ve eslesir."""
+    return [v for v in json_string_values(obj) if any(r.search(v) for r in PARSED_PATH_RES)]
+
+
+def public_json_files() -> list[Path]:
+    """Public JSON yuzeyi: git'te takipli tum *.json + docs/state ve reports calisma agaci
+    (push'a girecek untracked dahil). local/ ve self-report disarida."""
+    out = set()
+    r = subprocess.run(["git", "ls-files", "*.json"], capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0:                              # git hatasi YUTULMAZ: kapsam sessizce daralmasin
+        raise RuntimeError(f"git ls-files rc={r.returncode}: {r.stderr.strip()[:120]} -> public JSON kapsami olculemedi")
+    out.update(ROOT / t for t in r.stdout.split())
+    for d in (STATE_DIR, ROOT / "reports"):
+        if d.is_dir():
+            out.update(p for p in d.glob("*.json"))
+    out.discard(STATE_DIR / "system_control_audit.json")
+    return sorted(p for p in out if p.is_file() and "local" not in p.parts)
+
+
+def json_privacy_scan(paths) -> tuple[list[str], list[str]]:
+    """(hits, unparseable). Parse edilemeyen JSON PASS SAYILMAZ: cagiran onu FAIL'e cevirir."""
+    hits, bozuk = [], []
+    for path in paths:
+        try:
+            obj = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception:
+            bozuk.append(rel(Path(path)))
+            continue
+        bulgu = personal_path_hits(obj)
+        if bulgu:
+            # DEGER YAZILMAZ (inceleme #3): kanit public audit JSON'una gider; yalniz dosya + tur + adet
+            hits.append(f"{rel(Path(path))}: personal path in JSON value (x{len(bulgu)})")
+    return hits, bozuk
+
+
+def text_privacy_hits(text: str, relname: str) -> list[str]:
+    """Ham metin gizlilik bulgulari. Bulgu satiri YALNIZ dosya adi + ihlal turu (+ adet) tasir;
+    eslesen deger (e-posta, yol, token) HICBIR ZAMAN geri yazilmaz — denetci bulduğunu yeniden
+    yayimlamaz (inceleme #3, 2026-09-16)."""
+    out = []
+    if TOKEN_RE.search(text):
+        out.append(f"{relname}: token-like literal")
+    emails = {
+        email
+        for email in EMAIL_RE.findall(text)
+        if not email.endswith("users.noreply.github.com")
+        and not email.endswith("example.com")
+    }
+    if emails:
+        out.append(f"{relname}: email literal (x{len(emails)})")
+    if WINDOWS_USER_PATH_RE.search(text) or UNIX_HOME_PATH_RE.search(text):
+        out.append(f"{relname}: personal absolute path")
+    return out
+
+
 def check_privacy_controls(checks: list[Check]) -> None:
     hits = []
     for path in scanned_text_files():
-        text = read_text(path)
-        if TOKEN_RE.search(text):
-            hits.append(f"{rel(path)}: token-like literal")
-        emails = [
-            email
-            for email in EMAIL_RE.findall(text)
-            if not email.endswith("users.noreply.github.com")
-            and not email.endswith("example.com")
-        ]
-        if emails:
-            hits.append(f"{rel(path)}: email literal {', '.join(sorted(set(emails))[:3])}")
-        if WINDOWS_USER_PATH_RE.search(text) or UNIX_HOME_PATH_RE.search(text):
-            hits.append(f"{rel(path)}: personal absolute path")
+        hits.extend(text_privacy_hits(read_text(path), rel(path)))
+    json_hits, json_bozuk = json_privacy_scan(public_json_files())
+    hits.extend(json_hits)
+    hits.extend(f"{b}: unparseable JSON (cannot be scanned; NOT a pass)" for b in json_bozuk)
     add(
         checks,
         "Privacy / data minimization",
         "PII, token and personal-path scan",
         "fail" if hits else "pass",
-        "PII/token/local-user path found." if hits else "No PII, token-like secret or personal absolute path found in scanned files.",
+        "PII/token/local-user path found." if hits else "No PII, token-like secret or personal absolute path found in scanned files (text raw + JSON values parsed).",
         hits[:30],
         "Remove personal data from repo, rotate exposed secrets, and keep machine-specific paths local-only.",
     )
