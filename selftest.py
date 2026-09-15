@@ -3345,6 +3345,34 @@ def main():
     else:
         bad("P0.3 producer alarm bloklari ayrismis")
 
+    # 9b. P0.3 — KALICILIK HATASI ALARM KANALINI BYPASS EDEMEZ
+    # State commit/push adimindeki hata yutulursa job yesil gorunur ve hemen
+    # sonraki failure()/cancelled() alarmi hic kosmaz. Bu kontrol davranisi
+    # degil, workflow sozlesmesinin kritik yuzeyini sabitler.
+    print("\n[9b] P0.3 state kaliciligi hata yolu")
+    for _wf_name, _wf_path in (
+        ("precise.yml", ".github/workflows/precise.yml"),
+        ("bist-alpha.yml", ".github/workflows/bist-alpha.yml"),
+    ):
+        _wf_text = open(_wf_path, encoding="utf-8").read()
+        _persist_bad = []
+        if "git pull --rebase --autostash || true" in _wf_text:
+            _persist_bad.append("git pull hatasi yutuluyor")
+        if _re.search(r"git add[^\n]*\|\|\s*true", _wf_text):
+            _persist_bad.append("git add hatasi yutuluyor")
+        if _wf_name == "precise.yml" and "git push || echo" in _wf_text:
+            _persist_bad.append("git push hatasi yutuluyor")
+        if _wf_name == "bist-alpha.yml":
+            _push_fail = _wf_text.find("if ! git push; then")
+            _push_end = _wf_text.find("fi", _push_fail) if _push_fail >= 0 else -1
+            _push_block = _wf_text[_push_fail:_push_end] if _push_fail >= 0 and _push_end > _push_fail else ""
+            if _push_fail < 0 or "exit 1" not in _push_block:
+                _persist_bad.append("git push sonrasi job fail etmiyor")
+        if _persist_bad:
+            bad(f"P0.3 {_wf_name}: kalicilik hatasi {'; '.join(_persist_bad)}")
+        else:
+            ok(f"P0.3 {_wf_name}: kalicilik hatasi alarm yoluna donuyor")
+
     # 10. CLI çalışma testi (TESPİT 5 — eksik kontrol tamamlandı)
     print("\n[10] CLI çalışma (gerçekten çalışıyor mu)")
     import subprocess
