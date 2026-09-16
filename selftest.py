@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 SİSTEM ÖZ-DENETİM (self-test) — her an çalıştır, eksik kalmasın.
 
@@ -1885,6 +1885,7 @@ def main():
         _old_allow7 = getattr(_CFG7, "ALLOW_FILE_FALLBACK", _sentinel7)
         _tmp7 = _tempfile7.TemporaryDirectory()
         _state7 = _Path7(_tmp7.name) / "data_feed_run.json"
+        _seen_gate_codes7 = set()
 
         def _run_case7(packets, now=_now7, chain="borsapy", calendar_path=_calendar_path7):
             _state7.unlink(missing_ok=True)
@@ -1920,6 +1921,7 @@ def main():
                 "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
             })
             _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             if (_result7 and _result7.get("_source_base") == "borsapy"
                     and _calls7 == ["yahoo", "borsapy"]
                     and _first7.get("reject_code") == "INSUFFICIENT_POOL_COVERAGE"):
@@ -1934,6 +1936,7 @@ def main():
                 "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
             })
             _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             if (_result7 and _result7.get("_source_base") == "borsapy"
                     and _first7.get("reject_code") == "STALE_LAST_DATA"):
                 ok("bayat son veri STALE_LAST_DATA ile sonraki kaynaga gecer")
@@ -1947,6 +1950,7 @@ def main():
                 "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
             })
             _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             _expected_day7 = next((
                 row for row in _first7.get("checked_market_days", [])
                 if row.get("date") == "2026-09-08"
@@ -1967,6 +1971,7 @@ def main():
                 "borsapy": _packet7(["2026-09-08", "2026-09-09"]),
             })
             _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             if (_result7 and _result7.get("_source_base") == "borsapy"
                     and _first7.get("reject_code") == "MISSING_BIST_REFERENCE"):
                 ok("olculemeyen BIST referansi temiz sayilmaz")
@@ -1982,6 +1987,7 @@ def main():
             }, now=_gap_now7)
             _attempts7 = _manifest7.get("source_attempts", [])
             _first7 = _attempts7[0] if _attempts7 else {}
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             _last7 = _attempts7[-1] if _attempts7 else {}
             _day7 = next((row for row in _last7.get("checked_market_days", [])
                           if row.get("date") == "2026-09-07"), {})
@@ -2015,6 +2021,7 @@ def main():
             }, chain="file")
             _file7 = next((row for row in _manifest7.get("source_attempts", [])
                            if row.get("source") == "file"), {})
+            _seen_gate_codes7.add(_file7.get("reject_code"))
             if (_error7 and _file7.get("status") == "skipped"
                     and _file7.get("reject_code") == "FILE_FALLBACK_DISABLED"):
                 ok("file fallback pilot kararinda atlanir ve kodlu iz birakir")
@@ -2029,6 +2036,7 @@ def main():
                 "borsapy": _packet7(["2026-12-31"]),
             }, now=_future_now7)
             _first7 = _manifest7.get("source_attempts", [{}])[0]
+            _seen_gate_codes7.add(_first7.get("reject_code"))
             if (_error7 and _first7.get("reject_code") == "CALENDAR_UNAVAILABLE"
                     and _calls7 == []):
                 ok("takvim kapsam-disinda fail-closed; veri kaynagi bosuna cagrilmaz")
@@ -2049,6 +2057,48 @@ def main():
                 ok("iki ureticide file fallback kapali; audit ters sozlesme aramiyor")
             else:
                 bad("P0.6 file fallback uretici/audit sozlesmesi hizali degil")
+
+            # 8) Bos fiyat tablosu ayri ve kararli bir ret kodudur. FETCH_ERROR
+            # tasima katmani hatasidir ve [6i]'de sinanir; buradaki yedi kod veri
+            # kapisinin donuk karar kumesidir.
+            _empty7 = _SH7._candidate_gate_assessment(
+                {"prices": _pd7.DataFrame()},
+                _SH7._calendar_gate_context(_now7, _calendar_path7))
+            _seen_gate_codes7.add(_empty7.get("reject_code"))
+            if (_empty7.get("reject_code") == "EMPTY_PRICES"):
+                ok("bos fiyat tablosu EMPTY_PRICES ile reddedilir")
+            else:
+                bad(f"P0.6 bos fiyat ret kodu yok/yanlis: {_empty7}")
+
+            _old_empty_code7 = _SH7.EMPTY_PRICES
+            try:
+                _SH7.EMPTY_PRICES = "MUTATED_EMPTY_PRICES"
+                _mutated_empty7 = _SH7._candidate_gate_assessment(
+                    {"prices": _pd7.DataFrame()},
+                    _SH7._calendar_gate_context(_now7, _calendar_path7))
+                if _mutated_empty7.get("reject_code") != "EMPTY_PRICES":
+                    ok("EMPTY_PRICES sadik mutasyonu karar-kodu testini kirar")
+                else:
+                    bad("P0.6 EMPTY_PRICES mutasyonu testten kaciyor")
+            finally:
+                _SH7.EMPTY_PRICES = _old_empty_code7
+
+            _expected_codes7 = {
+                "EMPTY_PRICES",
+                "INSUFFICIENT_POOL_COVERAGE",
+                "MISSING_BIST_REFERENCE",
+                "CALENDAR_UNAVAILABLE",
+                "STALE_LAST_DATA",
+                "SPARSE_MARKET_DAY",
+                "FILE_FALLBACK_DISABLED",
+            }
+            _seen_gate_codes7.discard(None)
+            if _seen_gate_codes7 == _expected_codes7:
+                ok("yedi veri-kapisi ret kodunun her biri davranista gozlemlendi")
+            else:
+                bad(f"P0.6 ret kodu davranis kumesi eksik/fazla: "
+                    f"gorulen={sorted(_seen_gate_codes7)} "
+                    f"beklenen={sorted(_expected_codes7)}")
         finally:
             _SH7.with_retry = _old_retry7
             _DF7.get_feed = _old_get_feed7
@@ -2074,6 +2124,148 @@ def main():
             _tmp7.cleanup()
     except Exception as e:
         bad(f"P0.6 [6k] testi kosmadi: {type(e).__name__}: {e}")
+
+    # -- [6q] P0.6-ek -- D13: URETILEN IKI IZIN DE AKTIF TUKETICISI VAR --
+    # data_feed_run ve stop_observer panelde gorunse de yazicilari durdugunda
+    # Telegram liveness kanali bunu soylemiyordu. Registry uyesi hem dosya
+    # yoklugunu/bayatligini hem de izdeki kendi hata hukumlerini tasir.
+    print("\n[6q] P0.6-ek D13 data-feed ve stop-observer liveness uyeleri (test-once)")
+    try:
+        import json as _jsonq
+        import tempfile as _tempfileq
+        from datetime import datetime as _datetimeq, timedelta as _timedeltaq
+        from pathlib import Path as _Pathq
+
+        _spq = str(_Pathq(__file__).resolve().parent / "scripts")
+        if _spq not in sys.path:
+            sys.path.insert(0, _spq)
+        import liveness_scan as _LQ
+
+        _expected_cfgq = {
+            "data_feed_run": (
+                "producer", "daemon_cycle", "status", ("ok",), 0.0),
+            "stop_observer": (
+                "producer", "daemon_cycle", "gate.verdict",
+                ("GREEN", "YELLOW", "UNKNOWN"), 0.0),
+        }
+        for _nameq, _expectedq in _expected_cfgq.items():
+            _cfgq = (_LQ.REGISTRY or {}).get(_nameq) or {}
+            _actualq = (
+                _cfgq.get("kind"),
+                _cfgq.get("schedule"),
+                _cfgq.get("ok_key"),
+                tuple(_cfgq.get("ok_values") or ()),
+                _cfgq.get("tz"),
+            )
+            if _actualq == _expectedq:
+                ok(f"registry {_nameq}: uretici/daemon/status sozlesmesi kayitli")
+            else:
+                bad(f"P0.6-ek registry {_nameq} yok/yanlis: "
+                    f"alinan={_actualq}, beklenen={_expectedq}")
+
+        with _tempfileq.TemporaryDirectory() as _tdq:
+            _nowq = _datetimeq.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+            def _writeq(path, payload):
+                _Pathq(path).write_text(
+                    _jsonq.dumps(payload), encoding="utf-8")
+
+            _df_cfgq = dict((_LQ.REGISTRY or {}).get("data_feed_run") or {})
+            _df_pathq = _Pathq(_tdq) / "data_feed_run.json"
+            if _df_cfgq:
+                _df_cfgq["file"] = str(_df_pathq)
+                _writeq(_df_pathq, {"generated_at": _nowq, "status": "ok"})
+                _df_okq = _LQ.check("data_feed_run", _df_cfgq, {})
+                _writeq(_df_pathq, {"generated_at": _nowq, "status": "failed"})
+                _df_badq = _LQ.check("data_feed_run", _df_cfgq, {})
+                if (_df_okq.get("status"), _df_badq.get("status")) == ("GREEN", "RED"):
+                    ok("data_feed_run taze ok=GREEN, failed=RED")
+                else:
+                    bad(f"P0.6-ek data_feed_run hukumleri yanlis: "
+                        f"ok={_df_okq}, failed={_df_badq}")
+
+                # Acik hata hukmu, tek-slot bayatlik erken cikisiyla SARI'ya
+                # yumusatilmamali. Dinamik aday, testi takvim tarihine baglamaz.
+                _scan_nowq = _datetimeq.utcnow()
+                _one_slotq = next((
+                    _scan_nowq - _timedeltaq(hours=_hq)
+                    for _hq in range(1, 24 * 14)
+                    if _LQ._missed_slots(
+                        _scan_nowq - _timedeltaq(hours=_hq),
+                        _scan_nowq,
+                        _LQ.SCHEDULES["daemon_cycle"],
+                    ) == 1
+                ), None)
+                if _one_slotq is None:
+                    bad("P0.6-ek tek-slot bayatlik test adayi bulunamadi")
+                else:
+                    _one_slot_textq = _one_slotq.replace(
+                        microsecond=0).isoformat() + "Z"
+                    _writeq(_df_pathq, {
+                        "generated_at": _one_slot_textq,
+                        "status": "failed",
+                    })
+                    _df_stale_badq = _LQ.check(
+                        "data_feed_run", _df_cfgq, {})
+                    _writeq(_df_pathq, {
+                        "generated_at": _one_slot_textq,
+                        "status": "ok",
+                    })
+                    _df_stale_okq = _LQ.check(
+                        "data_feed_run", _df_cfgq, {})
+                    if (_df_stale_badq.get("status") == "RED"
+                            and _df_stale_badq.get("missed_slots") == 1
+                            and _df_stale_okq.get("status") == "YELLOW"):
+                        ok("acik uretici hatasi tek-slot bayatlikta RED kalir")
+                    else:
+                        bad("P0.6-ek bayatlik acik hatayi yumusatiyor: "
+                            f"failed={_df_stale_badq}, ok={_df_stale_okq}")
+
+            _so_cfgq = dict((_LQ.REGISTRY or {}).get("stop_observer") or {})
+            _so_pathq = _Pathq(_tdq) / "stop_observer.json"
+            if _so_cfgq:
+                _so_cfgq["file"] = str(_so_pathq)
+                _so_rowsq = {}
+                for _verdictq in ("GREEN", "YELLOW", "UNKNOWN", "RED", None):
+                    _payloadq = {"generated_at": _nowq, "gate": {}}
+                    if _verdictq is not None:
+                        _payloadq["gate"]["verdict"] = _verdictq
+                    _writeq(_so_pathq, _payloadq)
+                    _so_rowsq[_verdictq] = _LQ.check(
+                        "stop_observer", _so_cfgq, {}).get("status")
+                _expected_rowsq = {
+                    "GREEN": "GREEN", "YELLOW": "GREEN", "UNKNOWN": "GREEN",
+                    "RED": "RED", None: "RED",
+                }
+                if _so_rowsq == _expected_rowsq:
+                    ok("stop_observer gate RED/missing=RED; diger tanimli hukumler saglikli")
+                else:
+                    bad(f"P0.6-ek stop_observer hukumleri yanlis: {_so_rowsq}")
+
+                if _one_slotq is not None:
+                    _writeq(_so_pathq, {
+                        "generated_at": _one_slot_textq,
+                        "gate": {"verdict": "RED"},
+                    })
+                    _so_stale_redq = _LQ.check(
+                        "stop_observer", _so_cfgq, {})
+                    if (_so_stale_redq.get("status") == "RED"
+                            and _so_stale_redq.get("missed_slots") == 1):
+                        ok("stop-observer RED tek-slot bayatlikta RED kalir")
+                    else:
+                        bad("P0.6-ek stop-observer RED bayatlikta yumusuyor: "
+                            f"{_so_stale_redq}")
+
+                _so_pathq.unlink()
+                _newq = _LQ.check("stop_observer", _so_cfgq, {})
+                _oldq = _LQ.check("stop_observer", _so_cfgq, {"stop_observer": True})
+                if (_newq.get("status"), _oldq.get("status")) == ("YELLOW", "RED"):
+                    ok("stop_observer yoklugu yeni uyede SARI, daha once yazmissa KIRMIZI")
+                else:
+                    bad(f"P0.6-ek stop_observer yokluk ayrimi yanlis: "
+                        f"new={_newq}, old={_oldq}")
+    except Exception as e:
+        bad(f"P0.6-ek [6q] testi kosmadi: {type(e).__name__}: {e}")
 
     # -- [6l] P0.6/madde-7 -- BAGIMSIZ STOP GOZLEMI HER KOSUDA CALISIR --
     # Bu kapı rapor/heartbeat akışından ayrıdır: yalnız tespit + alarm yapar,

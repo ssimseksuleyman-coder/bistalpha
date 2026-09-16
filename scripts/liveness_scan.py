@@ -462,6 +462,35 @@ REGISTRY = {
         "ok_value": True,
         "note": "yfinance/datafeed; daemon her dongude",
     },
+    # P0.6-ek/D13: dashboard yalniz SECILEN kaynagi gosterir. Kaynak-deneme
+    # manifestinin yazicisi durursa dashboard yine bir onceki basarili karari
+    # tasiyabilir; bu nedenle izin kendisi ayri uye olarak izlenir.
+    "data_feed_run": {
+        "kind": "producer",
+        "expected": "active",
+        "file": "docs/state/data_feed_run.json",
+        "ts_keys": ["generated_at"],
+        "tz": 0.0,
+        "schedule": "daemon_cycle",
+        "ok_key": "status",
+        "ok_values": ["ok"],
+        "note": "P0.6 kaynak-deneme izi; her daemon dongusunde kararli durum yazar",
+    },
+    # P0.6-ek/D13: panel bayatligi pasif bir gostergedir. Gozlemci adimi
+    # atlanir veya kendi kapisi RED olursa liveness kanali da bunu tasir.
+    # YELLOW/UNKNOWN gozlemin eksikligini zaten acikca etiketler; bu uyede
+    # ikinci kez ariza diye KIRMIZI'ya cevrilmez. Eksik/bozuk verdict ise RED.
+    "stop_observer": {
+        "kind": "producer",
+        "expected": "active",
+        "file": "docs/state/stop_observer.json",
+        "ts_keys": ["generated_at"],
+        "tz": 0.0,
+        "schedule": "daemon_cycle",
+        "ok_key": "gate.verdict",
+        "ok_values": ["GREEN", "YELLOW", "UNKNOWN"],
+        "note": "P0.6 bagimsiz stop gozlem izi; gate RED veya yazici sessizligi alarmdir",
+    },
     # ---- TUKETICILER (local defter; daemon her dongude yazar) ----
     "forward_test": {
         "kind": "consumer", "expected": "active",
@@ -1084,6 +1113,26 @@ def check(name, cfg, ever_prev=None):
     row["schedule"] = cfg["schedule"]
     row["missed_slots"] = missed
     who = "kaynak" if cfg["kind"] == "producer" else "daemon/defter"
+
+    # Acik uretici hatasi, bayatlik derecesinden daha guclu bir kanittir.
+    # Bu kontrol missed==1 dalindan sonra kalirsa `failed`/RED bir artefakt
+    # YELLOW'a yumusar ve tam da izlemek istedigimiz ariza gizlenir.
+    if cfg["kind"] == "producer":
+        okk = cfg.get("ok_key")
+        if okk:
+            val = _get(d, okk)
+            accepted = cfg.get("ok_values")
+            healthy = (
+                val in accepted if accepted is not None
+                else val == cfg.get("ok_value")
+            )
+            if not healthy:
+                row.update(
+                    status="RED",
+                    reason=f"uretici hata bildiriyor: {okk}={val!r}",
+                )
+                return row
+
     if missed >= 2:
         row.update(status="RED",
                    reason=f"{missed} zamanlanmis slot KACTI ({who} durdu) "
@@ -1096,12 +1145,6 @@ def check(name, cfg, ever_prev=None):
 
     # Uretici: ok-alani da olculmus olmali
     if cfg["kind"] == "producer":
-        okk = cfg.get("ok_key")
-        if okk:
-            val = _get(d, okk)
-            if val != cfg.get("ok_value"):
-                row.update(status="RED", reason=f"uretici hata bildiriyor: {okk}={val!r}")
-                return row
         row.update(status="GREEN", reason="taze + saglikli")
         return row
 
