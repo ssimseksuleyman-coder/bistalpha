@@ -9,7 +9,8 @@ Dokuz alan, hepsi HAM kaynak (ozet degil):
   2 state commit MESAJI etiketi                  (git log; committer saati %cI -> TR, sinirlar +03:00)
   3 docs/state/run_trace.json                    (git show; P0.5 oncesi yoksa YOK = olculdu)
   4 portfolios/*.json bugunku stop olayi + load  (git show + pf.load gecici dizinde)
-  5 CAPRAZ: SATIS-ONCESI gozlemci breach == daemon satislari
+  5 CAPRAZ: SLOT-ONCESI gozlemci breach == daemon stop satislari (slot claim'inden onceki son
+                                                  snapshot; hesap semasi: F-sinifi history, G1 trades[])
   6 dashboard shadow_cycle.accounts current_source / stop_unchecked / value_unpriced
   7 report_runs :slot sent_at
   8 liveness run_trace uyesi
@@ -118,6 +119,94 @@ def gun_commitleri(ref, gun, sh=sh):
     return rows
 
 
+def hesap_satislari(st, gun):
+    """Hedef gunun olaylari ve STOP satislari, HESAP SEMASINA gore (C1-ek, 2026-09-16 canli kaniti):
+      F/A/B/O : history[date==gun] -> event=='stop' ya da trades[reason=='stop']
+      G1      : `trades[]` duz liste (history'de yalniz cold_start) -> date==gun, SELL, reason=='stop'
+    Eski surum yalniz history okuyordu -> G1 IEYHO satisi 'olay=0 stop=0' gorunmustu.
+    Donus: {'olay': n, 'stop': [ticker...], 'detay': [str...]}"""
+    olay, stop, detay = 0, [], []
+    for h in st.get("history") or []:
+        if str(h.get("date", ""))[:10] != gun:
+            continue
+        olay += 1
+        for t in h.get("trades") or []:
+            # reason=='stop' ya da event=='stop' girisinde reason YAZILMAMIS SELL; acik baska reason (rebalance) stop degil
+            if t.get("reason") == "stop" or (h.get("event") == "stop" and t.get("type") == "SELL" and not t.get("reason")):
+                stop.append(t.get("ticker")); detay.append(f"{h.get('event')} {json.dumps(t, ensure_ascii=False)[:120]}")
+    for t in st.get("trades") or []:                       # G1 semasi
+        if str(t.get("date", ""))[:10] != gun:
+            continue
+        olay += 1
+        if t.get("type") == "SELL" and t.get("reason") == "stop":
+            stop.append(t.get("ticker")); detay.append(f"trades[] {json.dumps(t, ensure_ascii=False)[:120]}")
+    return {"olay": olay, "stop": sorted(set(stop)), "detay": detay}
+
+
+def slot_baslangici(ref, gun, slot, sh=sh):
+    """Hedef gun+slot'un DAEMON BASLANGIC ANI = o slotun `report claim <slot> run <id>` commit'inin
+    committer zamani (claim daemon'dan hemen once, kalici). Yoksa None (uydurulmaz)."""
+    out = sh("git", "log", ref, "--format=%H|%cI|%s", f"--grep=^report claim {slot} run",
+             f"--since={gun}T00:00:00+03:00", f"--until={gun}T23:59:59+03:00")
+    for ln in out.splitlines():
+        if ln.strip():
+            return ln.split("|", 2)[1]                        # en yeni claim (git log sirasi)
+    return None
+
+
+def _state_yukle(sha, acc):
+    """origin'deki portfoy dosyasini gecici dizine alip pf.load ile yukler; dizin silinir.
+    Karantina = olculemedi (OlcumHatasi), sessiz traceback degil."""
+    sys.path.insert(0, ROOT)
+    from bist_alpha import portfolio as pf
+    with tempfile.TemporaryDirectory() as tmp:
+        open(os.path.join(tmp, f"portfolio_{acc}.json"), "w", encoding="utf-8").write(
+            sh("git", "show", f"{sha}:portfolios/portfolio_{acc}.json"))
+        try:
+            return pf.load(acc, state_dir=tmp)
+        except pf.StateQuarantined as e:
+            raise OlcumHatasi(f"{acc}@{sha[:12]} KARANTINA status={e.status} -> slot satisi olculemedi")
+
+
+def sonraki_claim(ref, gun, t0, sh=sh):
+    """t0'dan sonraki ILK claim commit'inin (herhangi bir slot) committer zamani; yoksa None."""
+    out = sh("git", "log", ref, "--reverse", "--format=%cI", "--grep=^report claim ",
+             f"--since={t0}", f"--until={gun}T23:59:59+03:00")
+    for ln in out.splitlines():
+        if ln.strip() and ln.strip() != t0:
+            return ln.strip()
+    return None
+
+
+def slot_satislari(ref, gun, t0, sh=sh, yukle=_state_yukle, hesaplar=("F", "A", "B", "O", "G1")):
+    """BU SLOTUN daemon'unun kitapladigi stop satislari = (slot state commit'indeki gunun satislari)
+    − (claim'den onceki son portfoy commit'indekiler). Gun-bazli sayim slotlar arasi sizdirir:
+    2026-09-16 acilis muhru kapanistaki IEYHO satisini 'acilis satisi' saymisti (FARKLI).
+    'sonra' penceresi SONRAKI CLAIM ile sinirlidir (oz-okuma bulgusu): bu slotun daemon'u portfoy
+    commit'i yazmadiysa ayni gunun sonraki slotunun commit'i bu slota atfedilmez -> None.
+    Donus: {acc: [ticker...]} ya da None (bu slot penceresinde portfoy commit'i yok = OLCULEMEDI)."""
+    once = sh("git", "log", ref, "-1", "--format=%H", f"--before={t0}", "--", "portfolios/").strip()
+    ust = sonraki_claim(ref, gun, t0, sh=sh) or f"{gun}T23:59:59+03:00"
+    sonra = sh("git", "log", ref, "--reverse", "--format=%H", f"--since={t0}",
+               f"--until={ust}", "--", "portfolios/").split()
+    if not sonra:
+        return None
+    out = {}
+    for acc in hesaplar:
+        s_sonra = set(hesap_satislari(yukle(sonra[0], acc), gun)["stop"])
+        s_once = set(hesap_satislari(yukle(once, acc), gun)["stop"]) if once else set()
+        out[acc] = sorted(s_sonra - s_once)
+    return out
+
+
+def satis_oncesi_gozlemci(ref, before_iso, sh=sh):
+    """Slot baslangicindan ONCE commit edilmis SON gozlemci snapshot'inin SHA'si. 'Sondan ikinci'
+    DEGIL: sonraki ek kosumlar ([NO_RUN], gunici) snapshot'i ilerletir — 2026-09-16'da 12:08Z
+    G1 breach'i boyle ucuncuye dusup sahte ESIT uretmisti."""
+    out = sh("git", "log", ref, f"--before={before_iso}", "-1", "--format=%H", "--", "docs/state/stop_observer.json")
+    return out.strip() or None
+
+
 # [1] icin gun secimi: Actions `created_at` (icra ani) TR'ye cevrilip hedef gunle karsilastirilir.
 # Kosumun NIYET ettigi slot/gun API'den okunmaz (cron ifadesi vs gecikme) -> etiket acik.
 KOSUM_GUN_ETIKETI = "created_at_TR / niyet(slot) bilinmiyor"
@@ -201,28 +290,38 @@ def main():
         open(os.path.join(tmp, f"portfolio_{acc}.json"), "w", encoding="utf-8").write(raw)
         try:
             st = pf.load(acc, state_dir=tmp)
-            hist = [h for h in (st.get("history") or []) if str(h.get("date", ""))[:10] == gun]
-            stops = [h for h in hist if h.get("event") == "stop" or any(t.get("reason") == "stop" for t in (h.get("trades") or []))]
-            satislar[acc] = stops
-            print(f"  {acc:2s} load OK poz={len(st.get('positions') or {})} olay={len(hist)} stop={len(stops)}"
-                  + (" -> " + "; ".join(f"{h.get('event')} " + json.dumps(h.get("trades"), ensure_ascii=False)[:200] for h in stops) if stops else ""))
+            hs = hesap_satislari(st, gun)                    # sema-farkindalikli (G1 trades[] dahil)
+            satislar[acc] = hs["stop"]
+            print(f"  {acc:2s} load OK poz={len(st.get('positions') or {})} olay={hs['olay']} stop={len(hs['stop'])}"
+                  + (" -> " + "; ".join(hs["detay"]) if hs["stop"] else ""))
         except pf.StateQuarantined as e:
             print(f"  {acc:2s} KARANTINA status={e.status} detail={e.detail}")
     agac = sh("git", "ls-tree", "--name-only", ref, "portfolios/")
     print("  .quarantine.json origin'de:", [l for l in agac.splitlines() if "quarantine" in l] or "YOK")
 
-    print("\n[5] CAPRAZ: SATIS-ONCESI gozlemci breach == daemon satislari")
+    print("\n[5] CAPRAZ: SLOT-ONCESI gozlemci breach == daemon stop satislari")
     so = show_required("docs/state/stop_observer.json", ref=ref)
     print(f"  son gozlemci {so.get('generated_at')} gate={(so.get('gate') or {}).get('verdict')} breach={so.get('breach')}")
-    shas = sh("git", "log", ref, "-2", "--format=%H", "--", "docs/state/stop_observer.json").split()
-    if len(shas) >= 2:
-        prev = show_required("docs/state/stop_observer.json", ref=shas[1])
-        br = sorted((acc, r.get("ticker")) for acc, rows in (prev.get("accounts") or {}).items() for r in (rows if isinstance(rows, list) else []) if r.get("breached"))
-        sat = sorted((acc, t.get("ticker")) for acc, hs in satislar.items() for h in hs for t in (h.get("trades") or []) if t.get("reason") == "stop")
-        print(f"  ONCEKI gozlemci ({prev.get('generated_at')}) breach: {br or 'bos'}")
-        print(f"  daemon satis: {sat or 'bos'} -> {'ESIT' if br == sat else 'FARKLI'} (P1.6 canli on-kaniti, n kucuk)")
+    t0 = slot_baslangici(ref, gun, a.slot)
+    prev_sha = satis_oncesi_gozlemci(ref, t0) if t0 else None
+    if t0 is None:
+        print(f"  {gun}:{a.slot} claim commit'i yok -> slot baslangici OLCULEMEDI, capraz kurulmadi (P0.5 oncesi ya da slot kosmadi)")
+    elif prev_sha is None:
+        print(f"  claim {t0} oncesinde gozlemci snapshot'i yok — capraz OLCULEMEDI")
     else:
-        print("  onceki gozlemci snapshot'i yok (tarihte tek surum) — capraz OLCULEMEDI")
+        prev = show_required("docs/state/stop_observer.json", ref=prev_sha)
+        br = sorted((acc, r.get("ticker")) for acc, rows in (prev.get("accounts") or {}).items() for r in (rows if isinstance(rows, list) else []) if r.get("breached"))
+        ss = slot_satislari(ref, gun, t0)                  # yalniz BU slotun kitapladigi satislar
+        print(f"  slot claim {t0} | ONCEKI gozlemci {prev.get('generated_at')} @{prev_sha[:12]} breach: {br or 'bos'}")
+        if ss is None:
+            print("  claim sonrasi portfoy commit'i yok -> bu slotun satisi OLCULEMEDI (daemon state yazmadi?)")
+        else:
+            sat = sorted((acc, tk) for acc, tks in ss.items() for tk in tks)
+            if a.slot == "kapanis":
+                print(f"  bu slotun stop satisi: {sat or 'bos'} -> {'ESIT' if br == sat else 'FARKLI'} (P1.6 canli on-kaniti, n kucuk)")
+            else:
+                print(f"  bu slotun stop satisi: {sat or 'bos'} | beklenen: bos (stop degerlendirmesi yalniz kapanis, #0l)"
+                      f" -> {'BEKLENEN' if not sat else 'BEKLENMEYEN SATIS'}; breach listesi bilgi amacli, kiyas kapanista")
 
     print("\n[6] dashboard.json shadow_cycle.accounts + positions.current_source")
     d = show_required("docs/state/dashboard.json", ref=ref)

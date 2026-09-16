@@ -1155,6 +1155,83 @@ def main():
                     ok("F3b commit saati %cI -> TR (UTC 15:47 -> 18:47; +03:00 ofset korunur), since/until +03:00, [1] basligi 'created_at_TR / niyet bilinmiyor'")
                 else:
                     bad(f"F3b zaman ekseni: rows={_rows} fmt={_fmt} sinir={_sinir} hdr_ok={_hdr_ok}")
+            # F3c — CAPRAZ KONTROL GERCEK BREACH'I GORMELI (C1-ek, 2026-09-16 canli kaniti):
+            #   (a) hesap semasi: F-sinifi history[event=stop].trades; G1 `trades[]` duz liste (history'de
+            #       yalniz cold_start) -> G1 IEYHO satisi "olay=0 stop=0" okunmustu.
+            #   (b) "satis-oncesi gozlemci" = SLOT CLAIM'INDEN ONCEKI son snapshot; "sondan ikinci" degil
+            #       (19:28 [NO_RUN] kosumu snapshot'i ilerletince 12:08Z breach ucuncuye dustu -> sahte ESIT).
+            _hs = getattr(_K6r, "hesap_satislari", None)
+            _sb = getattr(_K6r, "slot_baslangici", None)
+            _sog = getattr(_K6r, "satis_oncesi_gozlemci", None)
+            if _hs is None or _sb is None or _sog is None:
+                bad("F3c sozlesmesi eksik: hesap_satislari / slot_baslangici / satis_oncesi_gozlemci yok (G1 satisi kor, sondan-ikinci esleme)")
+            else:
+                _gun = "2026-09-16"
+                _stF = {"account": "F", "cash": 0.1, "positions": {}, "history": [
+                    {"date": "2026-09-14", "event": "stop", "trades": [{"type": "SELL", "ticker": "SELEC", "reason": "stop"}]},
+                    {"date": _gun, "event": "stop", "trades": [{"type": "SELL", "ticker": "AAA", "reason": "stop"}, {"type": "SELL", "ticker": "BBB", "reason": "rebalance"}]},
+                    {"date": _gun, "event": "rebalance", "trades": [{"type": "BUY", "ticker": "CCC"}]},
+                    {"date": _gun, "event": "stop", "trades": [{"type": "SELL", "ticker": "EEE"}]}]}   # reason yazilmamis stop-SELL
+                _stG1 = {"account": "G1", "cash": 0.8, "positions": {}, "history": [{"type": "cold_start_reconcile", "date": "2026-07-03"}],
+                         "trades": [{"date": "2026-09-01", "type": "SELL", "ticker": "PEKGY", "reason": "stop"},
+                                    {"date": _gun, "type": "SELL", "ticker": "IEYHO", "price": 207.0, "reason": "stop"},
+                                    {"date": _gun, "type": "BUY", "ticker": "DDD"}]}
+                _rF, _rG = _hs(_stF, _gun), _hs(_stG1, _gun)
+                _sema_ok = _rF["stop"] == ["AAA", "EEE"] and _rF["olay"] == 3 and _rG["stop"] == ["IEYHO"] and _rG["olay"] == 2
+                _log_args = []
+                def _fake_sh_slot(*a):
+                    _log_args.append(a)
+                    if "--grep=^report claim kapanis run" in a:
+                        return "b54d58e|2026-09-16T15:40:00+00:00|report claim kapanis run 35097211674\n"
+                    if any(str(x).startswith("--before=") for x in a):
+                        return "65ba4ccd294c95e4bf55cc23a6d055ce3c4ecd19\n"
+                    return ""
+                _t0 = _sb("origin/main", _gun, "kapanis", sh=_fake_sh_slot)
+                _sha_prev = _sog("origin/main", _t0, sh=_fake_sh_slot) if _t0 else None
+                _before = [x for a in _log_args for x in a if str(x).startswith("--before=")]
+                _slot_ok = _t0 == "2026-09-16T15:40:00+00:00" and _sha_prev == "65ba4ccd294c95e4bf55cc23a6d055ce3c4ecd19" \
+                    and _before == [f"--before={_t0}"] and any("-1" in a for a in _log_args if any(str(x).startswith("--before=") for x in a))
+                _yok = _sb("origin/main", _gun, "gunici", sh=lambda *a: "")      # claim commit'i yok -> None (uydurma yok)
+                # slot-kapsamli satis: (claim sonrasi ilk portfoy commit'i) - (claim oncesi son commit); gun-bazli sayim
+                # slotlar arasi SIZDIRIR (acilis muhru kapanisin IEYHO satisini gormustu)
+                _ssl = getattr(_K6r, "slot_satislari", None)
+                _slot_sat_ok = False
+                if _ssl is not None:
+                    def _fake_sh_pf(*a):
+                        if any(str(x).startswith("--grep=^report claim ") for x in a):
+                            return ""                                   # sonraki claim yok -> gun sonu siniri
+                        if "--reverse" in a:
+                            return "SONRA\n"
+                        if "-1" in a:
+                            return "ONCE\n"
+                        return ""
+                    def _fake_yukle(sha, acc):
+                        if acc != "G1":
+                            return {"history": [], "positions": {}}
+                        return _stG1 if sha == "SONRA" else {"history": [], "trades": [{"date": "2026-09-01", "type": "SELL", "ticker": "PEKGY", "reason": "stop"}]}
+                    _r_kap = _ssl("origin/main", _gun, "T0", sh=_fake_sh_pf, yukle=_fake_yukle, hesaplar=("F", "G1"))
+                    _r_ac = _ssl("origin/main", _gun, "T0", sh=_fake_sh_pf, yukle=lambda sha, acc: _stG1 if acc == "G1" else {"history": []}, hesaplar=("F", "G1"))
+                    _r_yok = _ssl("origin/main", _gun, "T0", sh=lambda *a: "ONCE\n" if "-1" in a else "", yukle=_fake_yukle, hesaplar=("G1",))
+                    # OZ-OKUMA BULGUSU: bu slotun daemon'u portfoy commit'i yazmadiysa SONRAKI slotun commit'i bu
+                    # slota atfedilmemeli -> 'sonra' penceresi sonraki claim'le (T1) sinirlanir -> None
+                    def _fake_sh_mis(*a):
+                        if any(str(x).startswith("--grep=^report claim ") for x in a):
+                            return "T1" + chr(10)
+                        if "--reverse" in a:
+                            return "" if "--until=T1" in a else "SONRA" + chr(10)   # T1 siniri konmazsa sonraki slotun commit'i doner
+                        if "-1" in a:
+                            return "ONCE" + chr(10)
+                        return ""
+                    _r_mis = _ssl("origin/main", _gun, "T0", sh=_fake_sh_mis, yukle=_fake_yukle, hesaplar=("G1",))
+                    _slot_sat_ok = _r_kap == {"F": [], "G1": ["IEYHO"]} and _r_ac == {"F": [], "G1": []} and _r_yok is None and _r_mis is None
+                _src5 = _src[_src.index("[5] CAPRAZ"):_src.index("[6] dashboard")]
+                _src_ok = "satis_oncesi_gozlemci(" in _src5 and "slot_satislari(" in _src5 \
+                    and "hesap_satislari(" in _src[_src.index("[4] PORTFOYLER"):_src.index("[5] CAPRAZ")] \
+                    and '"-2", "--format=%H", "--", "docs/state/stop_observer.json"' not in _src5
+                if _sema_ok and _slot_ok and _yok is None and _slot_sat_ok and _src_ok:
+                    ok("F3c capraz kontrol: G1 trades[] semasi (IEYHO) + F-sinifi history (event=stop SELL reason'suz dahil); gozlemci = slot claim'inden ONCEKI son snapshot (--before,-1); satis = SLOT kapsamli (sonra-once), pencere SONRAKI CLAIM ile sinirli (sonraki slotun commit'i atfedilmez -> None); portfoy commit'i/claim yoksa None; [4]/[5] kaynak sozlesmesi")
+                else:
+                    bad(f"F3c: sema_ok={_sema_ok} F={_rF} G1={_rG} slot_ok={_slot_ok} t0={_t0} prev={_sha_prev} before={_before} yok={_yok} slot_sat_ok={_slot_sat_ok} (kap={locals().get('_r_kap')} ac={locals().get('_r_ac')} yok={locals().get('_r_yok')} mis={locals().get('_r_mis')}) src_ok={_src_ok}")
 
         # F6 — feed onbellegi atomik
         import feed_onbellek_cek as _F6r
