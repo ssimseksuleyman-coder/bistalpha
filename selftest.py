@@ -3719,6 +3719,370 @@ def main():
         else:
             bad(f"P0.5 {_ad12}: beklenen {_bek12!r}, alinan {_al12!r}")
 
+    # -- [6s] P0.2 -- SHADOW/HESAP HATASI AUTHORITATIVE RED -------------------
+    # Bir hesap hatasi diger hesaplarin kaydini kesmez; dongu kaniti korur ve
+    # sonunda TEK, tipli istisna firlatir. Normal rapor bu halde uretilemez.
+    # Test once (2026-09-16): yamasiz kod A hatasini results["A"]["error"]
+    # icine yutup basarili donuyor; G1 hatasi ise son faz shadow:O iken ham
+    # RuntimeError olarak cikiyordu. `selfheal.guarded` da tipli hatayi yutuyordu.
+    print("\n[6s] P0.2 shadow hesap hatasi authoritative RED (test-once)")
+    try:
+        import tempfile as _tf13
+        import json as _json13
+        import pandas as _pd13
+        import shadow as _SH13
+        import daemon as _DM13
+        from bist_alpha import selfheal as _SE13
+        from bist_alpha import run_trace as _RT13
+
+        _i13 = []
+        _idx13 = _pd13.DatetimeIndex([_pd13.Timestamp("2026-09-16")])
+        _data13 = {"prices": _pd13.DataFrame({"X": [10.0]}, index=_idx13)}
+
+        def _state13(acc):
+            return {
+                "account": acc, "cash": 1.0, "positions": {},
+                "history": [{"date": "2026-09-16", "event": "initial_entry",
+                             "trades": []}],
+            }
+
+        _orig13 = {
+            "load": _SH13.pf.load,
+            "save": _SH13.pf.save,
+            "current_value": _SH13.pf.current_value,
+            "value_coverage": _SH13.pf.value_coverage,
+            "g1_step": _SH13.g1_mod.step,
+            "g1_summary": _SH13.g1_mod.summary,
+            "g1_cold": _SH13.g1_mod.cold_start_from_reference,
+            "trade_log": _SH13.tradelog.log_trades,
+            "stop_eval": _SH13._write_stop_eval,
+            "phase": _SH13._rt.phase,
+        }
+
+        def _run_shadow13(fail_acc, g1_initial=False):
+            saved, phases, stop_eval = [], [], []
+
+            def _load(acc, state_dir=None):
+                if acc == fail_acc:
+                    raise RuntimeError(f"{acc} test arizasi")
+                if acc == "G1" and g1_initial:
+                    return {"account": "G1", "cash": 1.0, "positions": {}, "history": []}
+                return _state13(acc)
+
+            def _g1_step(data, signals, state, date, prices_today, is_rebal, **kwargs):
+                if fail_acc == "G1":
+                    raise RuntimeError("G1 test arizasi")
+                return state, {"buys": [], "sells": [], "reentries": [],
+                               "stop_unchecked": []}
+
+            _SH13.pf.load = _load
+            _SH13.pf.save = lambda state, state_dir=None: saved.append(state["account"])
+            _SH13.pf.current_value = lambda state, prices: 1.0
+            _SH13.pf.value_coverage = lambda state, prices: []
+            _SH13.g1_mod.step = _g1_step
+            _SH13.g1_mod.summary = lambda state, prices, **kwargs: {
+                "value": 1.0, "n_positions": 0,
+            }
+            _SH13.g1_mod.cold_start_from_reference = (
+                lambda state, f_state, prices, date, **kwargs:
+                (state, {"buys": [], "sells": [], "reentries": [],
+                         "stop_unchecked": []}))
+            _SH13.tradelog.log_trades = lambda *args, **kwargs: None
+            _SH13._write_stop_eval = lambda *args, **kwargs: stop_eval.append(True)
+            _SH13._rt.phase = lambda name, **kwargs: phases.append(name)
+            try:
+                _SH13.step(_data13, {}, run_label="gunici")
+                exc = None
+            except Exception as err:
+                exc = err
+            return exc, saved, phases, stop_eval
+
+        try:
+            # A duser; B/F/O ve G1 yine tamamlanir. Sondaki faz A'ya geri
+            # baglanir; aksi halde dongunun son saglam hesabi hatali etiketlenir.
+            _eA, _savedA, _phA, _seA = _run_shadow13("A")
+            _i13.append(("1 A hatasi tipli ShadowAccountError + accounts=('A',)",
+                         (type(_eA).__name__ if _eA else None,
+                          tuple(getattr(_eA, "accounts", ()))),
+                         ("ShadowAccountError", ("A",))))
+            _i13.append(("1b A duserken B/F/O/G1 kaydedilir (blast radius tek hesap)",
+                         _savedA, ["B", "F", "O", "G1"]))
+            _i13.append(("1c toplama sonrasi son faz ilk hatali hesap shadow:A",
+                         _phA[-1] if _phA else None, "shadow:A"))
+            _i13.append(("1d stop izi/sonlandirma adimi istisnadan once tamamlanir",
+                         len(_seA), 1))
+
+            # G1 dongu disinda olsa da ayni hesap-sozlesmesindedir; ham hata ve
+            # onceki hesap etiketiyle cikamaz.
+            _eG, _savedG, _phG, _seG = _run_shadow13("G1")
+            _i13.append(("2 G1 hatasi tipli ve G1 diye etiketli",
+                         (type(_eG).__name__ if _eG else None,
+                          tuple(getattr(_eG, "accounts", ())),
+                          _phG[-1] if _phG else None),
+                         ("ShadowAccountError", ("G1",), "shadow:G1")))
+            _i13.append(("2b G1 duserken A/B/F/O kaydedilir; G1 kaydedilmez",
+                         _savedG, ["A", "B", "F", "O"]))
+            _i13.append(("2c G1 hatasinda da stop izi/sonlandirma adimi tamamlanir",
+                         len(_seG), 1))
+            _eCold, _savedCold, _phCold, _seCold = _run_shadow13(None, g1_initial=True)
+            _i13.append(("2d G1 cold-start CA alanlari tanimli; kosum tamamlanir",
+                         (_eCold, _savedCold), (None, ["A", "B", "F", "O", "G1"])))
+            _shadow_src13 = open(_os12.path.join(ROOT, "shadow.py"), encoding="utf-8").read()
+            _i13.append(("2e G1 select hatasi bos-pick diye yutulmaz",
+                         'except Exception:\n                _g1_picks = []' in _shadow_src13,
+                         False))
+        finally:
+            _SH13.pf.load = _orig13["load"]
+            _SH13.pf.save = _orig13["save"]
+            _SH13.pf.current_value = _orig13["current_value"]
+            _SH13.pf.value_coverage = _orig13["value_coverage"]
+            _SH13.g1_mod.step = _orig13["g1_step"]
+            _SH13.g1_mod.summary = _orig13["g1_summary"]
+            _SH13.g1_mod.cold_start_from_reference = _orig13["g1_cold"]
+            _SH13.tradelog.log_trades = _orig13["trade_log"]
+            _SH13._write_stop_eval = _orig13["stop_eval"]
+            _SH13._rt.phase = _orig13["phase"]
+
+        # Hata alan hesap stop_eval'de "degerlendirildi" diye yazilamaz. Iz,
+        # olculen hesaplarla olculemeyen hesaplari ayri alanlarda tasir.
+        _stop_dir13 = _tf13.mkdtemp()
+        _orig_stop_dir13 = _SH13.DOCS_STATE_DIR
+        try:
+            _SH13.DOCS_STATE_DIR = _stop_dir13
+            _SH13._write_stop_eval(
+                "kapanis", "2026-09-16",
+                {"A": {"error": "A test arizasi"},
+                 "B": {"stop_trades": [], "stop_unchecked": None}})
+            with open(_os12.path.join(_stop_dir13, "stop_eval.json"), encoding="utf-8") as fh:
+                _stop_payload13 = _json13.load(fh)
+            _i13.append(("2f stop_eval olculen hesap ile hesap-hatasini ayirir",
+                         (_stop_payload13.get("accounts"),
+                          _stop_payload13.get("account_errors")),
+                         (["B"], ["A"])))
+        finally:
+            _SH13.DOCS_STATE_DIR = _orig_stop_dir13
+
+        # P0.2 tekrar yolu: basarisiz kosumda saglam hesap state'leri `always()`
+        # commit'iyle kalici olur. Ayni slot CLAIM_TTL sonrasi yeniden kosarsa,
+        # bugun yazilan pending D+1 diye bugunun OPEN'inda doldurulamaz.
+        _orig_retry13 = {
+            "load": _SH13.pf.load,
+            "save": _SH13.pf.save,
+            "rebalance": _SH13.pf.rebalance,
+            "check_stops": _SH13.pf.check_stops,
+            "current_value": _SH13.pf.current_value,
+            "value_coverage": _SH13.pf.value_coverage,
+            "g1_step": _SH13.g1_mod.step,
+            "g1_summary": _SH13.g1_mod.summary,
+            "trade_log": _SH13.tradelog.log_trades,
+            "stop_eval": _SH13._write_stop_eval,
+            "phase": _SH13._rt.phase,
+            "ca": _SH13._ca_detect_and_fix,
+            "gate": _SH13._data_gate,
+        }
+        try:
+            _states_retry13 = {}
+            for _acc_retry13 in ("A", "B", "F", "O"):
+                _st_retry13 = _state13(_acc_retry13)
+                _st_retry13["_pending_rebalance"] = {
+                    "decided_at": "2026-09-16", "status": "pending",
+                    "weights": {"X": 1.0}, "scale": 1.0,
+                    "reason": "retry-test",
+                }
+                _states_retry13[_acc_retry13] = _st_retry13
+            _states_retry13["G1"] = _state13("G1")
+            _fills_retry13 = []
+            _SH13.pf.load = lambda acc, state_dir=None: _states_retry13[acc]
+            _SH13.pf.save = lambda state, state_dir=None: None
+            _SH13.pf.rebalance = (
+                lambda state, *args, **kwargs:
+                _fills_retry13.append(state.get("account")))
+            _SH13.pf.check_stops = lambda state, prices: ([], [])
+            _SH13.pf.current_value = lambda state, prices: 1.0
+            _SH13.pf.value_coverage = lambda state, prices: []
+            _SH13.g1_mod.step = (
+                lambda data, signals, state, date, prices_today, is_rebal, **kwargs:
+                (state, {"buys": [], "sells": [], "reentries": [],
+                         "stop_unchecked": []}))
+            _SH13.g1_mod.summary = lambda state, prices, **kwargs: {
+                "value": 1.0, "n_positions": 0,
+            }
+            _SH13.tradelog.log_trades = lambda *args, **kwargs: None
+            _SH13._write_stop_eval = lambda *args, **kwargs: None
+            _SH13._rt.phase = lambda *args, **kwargs: None
+            _SH13._ca_detect_and_fix = lambda *args, **kwargs: ([], [], [])
+            _SH13._data_gate = lambda *args, **kwargs: (False, None)
+            _data_retry13 = {
+                "prices": _pd13.DataFrame({"X": [10.0]}, index=_idx13),
+                "opens": _pd13.DataFrame({"X": [9.0]}, index=_idx13),
+            }
+            _SH13.step(
+                _data_retry13, {}, date=_idx13[-1], run_label="kapanis")
+            _i13.append(("2g ayni-gun retry A/B/F/O pending'i D+1 diye doldurmaz",
+                         (_fills_retry13,
+                          ["_pending_rebalance" in _states_retry13[a]
+                           for a in ("A", "B", "F", "O")]),
+                         ([], [True, True, True, True])))
+        finally:
+            _SH13.pf.load = _orig_retry13["load"]
+            _SH13.pf.save = _orig_retry13["save"]
+            _SH13.pf.rebalance = _orig_retry13["rebalance"]
+            _SH13.pf.check_stops = _orig_retry13["check_stops"]
+            _SH13.pf.current_value = _orig_retry13["current_value"]
+            _SH13.pf.value_coverage = _orig_retry13["value_coverage"]
+            _SH13.g1_mod.step = _orig_retry13["g1_step"]
+            _SH13.g1_mod.summary = _orig_retry13["g1_summary"]
+            _SH13.tradelog.log_trades = _orig_retry13["trade_log"]
+            _SH13._write_stop_eval = _orig_retry13["stop_eval"]
+            _SH13._rt.phase = _orig_retry13["phase"]
+            _SH13._ca_detect_and_fix = _orig_retry13["ca"]
+            _SH13._data_gate = _orig_retry13["gate"]
+
+        # G1'in hem rebalans hem re-entry pending'i ayni D+1 sozlesmesini tasir.
+        def _g1_pending_retry13(kind, decided_at):
+            state = _SH13.g1_mod._new_state("G1")
+            state["history"] = [{"date": "2026-09-01", "total": 1.0,
+                                  "n_pos": 0}]
+            if kind == "rebalance":
+                state["_pending_rebalance"] = {
+                    "decided_at": decided_at, "status": "pending",
+                    "targets": {"X": 1.0},
+                }
+            else:
+                state["watch"]["X"] = {"exit": 8.0, "cash": 1.0, "w": 1.0}
+                state["_pending_reentry"] = {
+                    "decided_at": decided_at, "status": "pending",
+                    "re_factor": 1.0,
+                    "targets": {"X": {"exit": 8.0, "cash": 1.0, "w": 1.0}},
+                }
+            state, events = _SH13.g1_mod.step(
+                _data13, {}, state, _idx13[-1], {"X": 10.0}, False,
+                opens_today={"X": 9.0},
+                pending_age_days=(0 if decided_at == "2026-09-16" else 1))
+            return state, events
+
+        _g1_same_rebal13, _g1_same_rebal_ev13 = _g1_pending_retry13(
+            "rebalance", "2026-09-16")
+        _i13.append(("2h G1 ayni-gun rebalans pending'ini doldurmaz",
+                     (bool(_g1_same_rebal13.get("_pending_rebalance")),
+                      bool(_g1_same_rebal13.get("positions")),
+                      _g1_same_rebal_ev13.get("buys")),
+                     (True, False, [])))
+        _g1_same_reentry13, _g1_same_reentry_ev13 = _g1_pending_retry13(
+            "reentry", "2026-09-16")
+        _i13.append(("2i G1 ayni-gun re-entry pending'ini doldurmaz",
+                     (bool(_g1_same_reentry13.get("_pending_reentry")),
+                      bool(_g1_same_reentry13.get("positions")),
+                      _g1_same_reentry_ev13.get("reentries")),
+                     (True, False, [])))
+        _g1_prior13, _g1_prior_ev13 = _g1_pending_retry13(
+            "rebalance", "2026-09-15")
+        _i13.append(("2j G1 onceki-gun pending'i doldurur (sozlesme ulasilabilir)",
+                     (bool(_g1_prior13.get("_pending_rebalance")),
+                      sorted(_g1_prior13.get("positions") or {}),
+                      len(_g1_prior_ev13.get("buys") or [])),
+                     (False, ["X"], 1)))
+
+        # selfheal varsayilan davranisi korur; yalniz acikca izin verilen kritik
+        # tip yutulmadan run_cycle'a ulasir.
+        def _raise13(exc):
+            raise exc
+
+        _swallowed13 = _SE13.guarded(lambda: _raise13(ValueError("normal")), label="test")
+        try:
+            _SE13.guarded(
+                lambda: _raise13(_SH13.ShadowAccountError(["A"], {"A": "tb"})),
+                label="test", reraise=(_SH13.ShadowAccountError,))
+            _reraised13 = None
+        except Exception as err:
+            _reraised13 = type(err).__name__
+        _i13.append(("3 guarded normal hatayi yutar, yetkili shadow hatasini yeniden firlatir",
+                     (_swallowed13, _reraised13), (None, "ShadowAccountError")))
+
+        # Daemon siniri davranissal: step hatasi disari, trade-notice hatasi ise
+        # izole. Yardimci yoksa her iki iddia da kirmizi olur (vakum degil).
+        _helper13 = getattr(_DM13, "_run_shadow_cycle", None)
+        if _helper13 is None:
+            _i13.append(("4 daemon shadow yardimcisi var", False, True))
+            _i13.append(("4b daemon ShadowAccountError'i yutmaz", None,
+                         "ShadowAccountError"))
+            _i13.append(("4c trade-notice bicim/bildirim hatasi shadow sonucunu bozmaz",
+                         None, {"accounts": {}}))
+        else:
+            _orig_step13 = _SH13.step
+            _orig_fmt13 = _SH13._format_trade_notice
+            _orig_helper_out13 = _RT13.TRACE_OUT
+            _helper_trace13 = _tf13.mktemp(suffix=".json")
+            try:
+                _RT13.TRACE_OUT = _helper_trace13
+                _SH13.step = lambda *args, **kwargs: _raise13(
+                    _SH13.ShadowAccountError(["F"], {"F": "tb"}))
+                try:
+                    _helper13(_data13, {}, "gunici")
+                    _daemon_err13 = None
+                except Exception as err:
+                    _daemon_err13 = type(err).__name__
+                _i13.append(("4 daemon shadow yardimcisi var", True, True))
+                _i13.append(("4b daemon ShadowAccountError'i yutmaz",
+                             _daemon_err13, "ShadowAccountError"))
+
+                _fake13 = {"accounts": {}}
+                _SH13.step = lambda *args, **kwargs: _fake13
+                _SH13._format_trade_notice = lambda result: _raise13(RuntimeError("format"))
+                try:
+                    _notice_result13 = _helper13(_data13, {}, "gunici")
+                except Exception as err:
+                    _notice_result13 = type(err).__name__
+                _i13.append(("4c trade-notice bicim/bildirim hatasi shadow sonucunu bozmaz",
+                             _notice_result13, _fake13))
+            finally:
+                _SH13.step = _orig_step13
+                _SH13._format_trade_notice = _orig_fmt13
+                _RT13.TRACE_OUT = _orig_helper_out13
+                try:
+                    _os12.remove(_helper_trace13)
+                except OSError:
+                    pass
+
+        # Uc katmanin birlesimi: guarded tipli hatayi gecirir; run_cycle gercek
+        # tipi ve shadow:A fazini FAILED izine yazar, sonra aynen firlatir.
+        _trace13 = _tf13.mktemp(suffix=".json")
+        _orig_iz13 = _DM13._run_cycle_iz
+        _orig_out13 = _RT13.TRACE_OUT
+        try:
+            _RT13.TRACE_OUT = _trace13
+            def _chain13(label="manuel"):
+                _RT13.phase("shadow:A")
+                return _SE13.guarded(
+                    lambda: _raise13(_SH13.ShadowAccountError(["A"], {"A": "tb"})),
+                    label="rapor", reraise=(_SH13.ShadowAccountError,))
+            _DM13._run_cycle_iz = _chain13
+            try:
+                _DM13.run_cycle("kapanis")
+                _chain_err13 = None
+            except Exception as err:
+                _chain_err13 = type(err).__name__
+            _tr13 = _RT13.read(_trace13) or {}
+            _i13.append(("5 zincir: tip korunur + FAILED@shadow:A + error tipi",
+                         (_chain_err13, _RT13.summary_line(_trace13),
+                          (_tr13.get("error") or "").split(":", 1)[0]),
+                         ("ShadowAccountError", "[FAILED@shadow:A]", "ShadowAccountError")))
+        finally:
+            _DM13._run_cycle_iz = _orig_iz13
+            _RT13.TRACE_OUT = _orig_out13
+            try:
+                _os12.remove(_trace13)
+            except OSError:
+                pass
+
+    except Exception as e:
+        bad(f"P0.2 [6s] kosmadi: {type(e).__name__}: {e}")
+    for _ad13, _al13, _bek13 in (locals().get("_i13") or []):
+        if _al13 == _bek13:
+            ok(f"P0.2 {_ad13}")
+        else:
+            bad(f"P0.2 {_ad13}: beklenen {_bek13!r}, alinan {_al13!r}")
+
     # 7. sidesource
     print("\n[7] Yan kaynak (sidesource)")
     try:

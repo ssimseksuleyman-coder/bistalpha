@@ -223,7 +223,7 @@ def cold_start_from_reference(state, ref_state, prices_today, date, slippage=0.0
 
 
 def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
-         eval_stops=False, opens_today=None):
+         eval_stops=False, opens_today=None, pending_age_days=None):
     """G1 gunluk adim. state yerinde guncellenir. (state, events) doner.
 
     eval_stops: stop degerlendirilsin mi. YALNIZ kapanis kosusunda True olmali
@@ -231,6 +231,8 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
       Varsayilan False = F tarafiyla SIMETRIK muhafazakar secim
       (shadow.step'te de run_label=None -> stop yok). Tek cagri yeri var
       (shadow.py) ve o acikca geciriyor.
+    pending_age_days: shadow.py'nin tek islem-gunu otoritesinden gelir. 0 ayni
+      gun retry, >=1 D+1 fill; None olculemedi ve fail-closed bekler.
     """
     friction = config.COMMISSION / 2 + slippage
     _ensure(state)
@@ -250,7 +252,13 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
     # SIRA: rebalans ONCELIKLI — tam devir zaten hedefe gecirir, bekleyen
     # re-entry ya hedefin disindadir (anlamsiz) ya icindedir (rebalans alir).
     _pr = state.get("_pending_rebalance")
-    if _pr and _pr.get("status") == "pending":
+    if (_pr and _pr.get("status") == "pending"
+            and pending_age_days is None):
+        _pr["fill_blocked"] = {
+            "at": _dstr, "reason": "pending_age_unavailable",
+        }
+    if (_pr and _pr.get("status") == "pending"
+            and pending_age_days is not None and pending_age_days >= 1):
         _hedef = list((_pr.get("targets") or {}).keys())
         # P0.3: F ile SIMETRI — kapi TUTULAN pozisyonlari da denetler.
         # Yorum zaten "F ile ayni kati kural" diyordu ama yalniz ALIS
@@ -315,9 +323,15 @@ def step(data, signals, state, date, prices_today, is_rebal, slippage=0.0,
                 state["history"] = state["history"][-_HISTORY_CAP:]
             state.pop("_pending_rebalance", None)
             _filled_rebal_now = True
-    else:
+    elif not (_pr and _pr.get("status") == "pending"):
         _pe = state.get("_pending_reentry")
-        if _pe and _pe.get("status") == "pending":
+        if (_pe and _pe.get("status") == "pending"
+                and pending_age_days is None):
+            _pe["fill_blocked"] = {
+                "at": _dstr, "reason": "pending_age_unavailable",
+            }
+        if (_pe and _pe.get("status") == "pending"
+                and pending_age_days is not None and pending_age_days >= 1):
             _tg = _pe.get("targets") or {}
             _eksik = [t for t in _tg if t not in opens_today]
             if _eksik:

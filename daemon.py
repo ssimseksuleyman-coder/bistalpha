@@ -20,6 +20,8 @@ import os
 import sys
 from datetime import datetime, time
 
+import shadow
+
 from bist_alpha import config
 from bist_alpha import datafeed
 from bist_alpha.portfolio import StateQuarantined as _StateQuarantined  # P0.4
@@ -297,6 +299,34 @@ def _telegram_ingest():
     return saved
 
 
+def _run_shadow_cycle(data, signals, label):
+    """Shadow karar yolunu calistir; bildirim yan etkisini ayri sinirda tut."""
+    _rt.phase("shadow")
+    try:
+        shadow_result = shadow.step(data, signals, run_label=label)
+    except _StateQuarantined:
+        raise
+    except shadow.ShadowAccountError as exc:
+        # Hesap traceback'leri shadow tarafinda basildi. Kalici hata logunda da
+        # hesap-hesap sakla; normal rapor/bildirim bu kosumda uretilmeyecek.
+        detail = "\n\n".join(f"[{acc}]\n{exc.tbs.get(acc, '')}" for acc in exc.accounts)
+        selfheal._write_error_log("daemon_shadow_accounts", detail)
+        raise
+
+    # Islem-bildirimi karar yolundan AYRI: metin/Telegram arizasi hesaplari ve
+    # normal raporu authoritative failure'a cevirmesin.
+    try:
+        trade_notice = shadow._format_trade_notice(shadow_result)
+        if trade_notice:
+            notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
+    except Exception as exc:
+        import traceback as _tb
+        tb = _tb.format_exc()
+        print(f"[daemon] Shadow islem bildirimi yazilamadi:\n{tb}")
+        selfheal._write_error_log("daemon_shadow_notice", tb)
+    return shadow_result
+
+
 def run_cycle(label="manuel"):
     # P0.5: iz daemon'un KENDI kapsaminda baslar ve biter — precise_runner
     # olmadan cagrilan native yol (bist-alpha.yml) da izsiz kalmasin.
@@ -350,31 +380,9 @@ def _run_cycle_iz(label="manuel"):
     # 4) Sinyaller + rapor (eksik #2, #4) — korumalı
     def _report():
         signals = sig_mod.compute_signals(data)
-        shadow_result = None
-        try:
-            import shadow
-            # run_label: stop degerlendirmesi yalniz "kapanis" slotunda yapilir (#0l).
-            # Etiket precise_runner.target_slot() -> run_cycle(label) zincirinden gelir.
-            _rt.phase("shadow")
-            shadow_result = shadow.step(data, signals, run_label=label)
-            trade_notice = shadow._format_trade_notice(shadow_result)
-            if trade_notice:
-                notifier.notify_all("BIST Alpha Shadow Islem", trade_notice)
-        except _StateQuarantined:
-            # P0.4 "KARAR BLOKE" — shadow karantinayi yeniden firlatti; burada
-            # yutulursa rapor bos held_positions ile uretilir (tutulan hisse "AL"
-            # gorunur), dashboard yazilir, adim yesil biter, P0.7 calmaz.
-            # Karantina run_cycle'dan DISARI cikar -> adim exit 1 -> alarm.
-            raise
-        except Exception as e:
-            import traceback as _tb
-            _tb_str = _tb.format_exc()
-            print(f"[daemon] Shadow hatasi:\n{_tb_str}")
-            selfheal._write_error_log("daemon_shadow", _tb_str)
-            try:
-                notifier.notify_all("BIST Alpha Shadow HATA", f"{e}\n\n{_tb_str[:1000]}")
-            except Exception:
-                pass
+        # run_label: stop degerlendirmesi yalniz "kapanis" slotunda yapilir (#0l).
+        # Etiket precise_runner.target_slot() -> run_cycle(label) zincirinden gelir.
+        shadow_result = _run_shadow_cycle(data, signals, label)
         held_positions = {}
         try:
             from bist_alpha import portfolio as pf
@@ -413,7 +421,9 @@ def _run_cycle_iz(label="manuel"):
             health=health, notify_status=notify_status)
         return report
 
-    return selfheal.guarded(_report, notify_fn=notifier.notify_all, label="rapor")
+    return selfheal.guarded(
+        _report, notify_fn=notifier.notify_all, label="rapor",
+        reraise=(shadow.ShadowAccountError, _StateQuarantined))
 
 
 def _write_dashboard_state(report, label, data=None, universe=None,

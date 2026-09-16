@@ -37,6 +37,21 @@ from bist_alpha.signals import lot_multiplier
 ACCOUNTS = {"A": "A", "B": "B", "F": "F", "O": "O"}  # mode'lar
 
 
+class ShadowAccountError(RuntimeError):
+    """Bir veya daha fazla shadow hesabi tamamlanamadi.
+
+    Hesap dongusu diger hesaplari kaydedip kaniti korur; bu tip sonda
+    authoritative failure olarak yukariya cikar. Traceback'ler Actions logu ve
+    hata kaydi icin tutulur, fakat mesaj tek satir ve hesap-odaklidir.
+    """
+
+    def __init__(self, accounts, tbs):
+        self.accounts = tuple(str(acc) for acc in accounts)
+        self.tbs = {str(acc): str((tbs or {}).get(acc, "")) for acc in self.accounts}
+        joined = ",".join(self.accounts) or "unknown"
+        super().__init__(f"shadow hesap hatasi: {joined}")
+
+
 def _attach_dynamic_universe(feed, data):
     """Stratejinin canlı feed'in seçtiği dinamik evreni kullanmasını sağlar."""
     universe = feed.dynamic_universe(data)
@@ -595,6 +610,7 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             print(f"[shadow] VERI-KAPISI: {gate_reason}")
 
     results = {}
+    account_errors = {}
     for acc, mode in ACCOUNTS.items():
         try:
             _rt.phase(f"shadow:{acc}")   # P0.5: hangi hesapta dusuldugu izde
@@ -674,7 +690,18 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             pending = state.get("_pending_rebalance")
             if run_label == "kapanis" and pending and pending.get("status") == "pending":
                 age = _pending_trading_age_days(prices.index, pending.get("decided_at"), trade_date)
-                if age is not None and age > PENDING_MAX_AGE_DAYS:
+                if age is None:
+                    # Karar gunu olculemiyorsa D+1 oldugu UYDURULAMAZ. Pending
+                    # korunur; rapordaki fill_blocked nedeni operasyonel izi tasir.
+                    pending["fill_blocked"] = {
+                        "at": trade_date, "reason": "pending_age_unavailable",
+                    }
+                elif age < 1:
+                    # Ayni slot, claim TTL sonrasinda yeniden kosabilir. Bugun
+                    # yazilan karar bugunun OPEN'inda doldurulursa D+1 sozlesmesi
+                    # kirilir; normal bekleme, hata degil.
+                    pass
+                elif age > PENDING_MAX_AGE_DAYS:
                     # OMUR ASIMI (#0i-②): 2 gunden bayat picks ile doldurma.
                     state.pop("_pending_rebalance", None)
                     print(f"[shadow] {acc} pending IPTAL (yas={age}g > {PENDING_MAX_AGE_DAYS}g) "
@@ -901,100 +928,129 @@ def step(data, signals, date=None, slippage=None, run_label=None):
             tb = traceback.format_exc()
             print(f"[shadow] Hesap {acc} HATA:\n{tb}")
             results[acc] = {"error": tb[:500]}
-    g1_state = pf.load("G1", state_dir=config.STATE_DIR)
-    g1_initial_entry = not g1_state.get("positions") and not g1_state.get("history")
-    if g1_initial_entry:
-        # DOGRU BOOTSTRAP DESENI: gec-katilan shadow, kendi (belki ince-gun) select()'i
-        # yerine F'in O ANKI portfoyunu bugunku fiyattan aynalar (fractional mirror).
-        # Boylece cold-start gunu tek-sinyal gunune denk gelse bile shadow dejenere
-        # baslamaz. F entry gecmisi KOPYALANMAZ (look-ahead onleme). Yarin bir G2
-        # eklenirse ayni tuzaga dusmez. Bkz. cold_start_from_reference / G1_DEVIR_NOTU.
-        f_state = pf.load("F", state_dir=config.STATE_DIR)
-        g1_state, g1_events = g1_mod.cold_start_from_reference(
-            g1_state, f_state, prices_today, date, slippage=slippage,
-            reason="gec-katilim cold-start, F'e senkron (bugunku fiyat)")
-        g1_should_rebalance = True
-    else:
-        # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
-        g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(g1_state, prices, date)
-        # #0e-GUARD G1 SIMETRISI: G1 de strat_mod.select(mode="F") kullaniyor
-        # (g1_account.py:387) ama `is_rebal`i BURADAN aliyor -> guard'i burada
-        # uygulamak yeterli, g1_account.py DOKUNULMAZ kalir.
-        g1_gate = g1_should_rebalance          # kapi (guard uygulanir), VADE ayri
-        if run_label == "kapanis" and g1_should_rebalance and not g1_state.get("_pending_rebalance"):
-            try:
+            account_errors[acc] = tb
+    def _run_g1_account():
+        g1_state = pf.load("G1", state_dir=config.STATE_DIR)
+        g1_initial_entry = not g1_state.get("positions") and not g1_state.get("history")
+        if g1_initial_entry:
+            # DOGRU BOOTSTRAP DESENI: gec-katilan shadow, kendi (belki ince-gun) select()'i
+            # yerine F'in O ANKI portfoyunu bugunku fiyattan aynalar (fractional mirror).
+            # Boylece cold-start gunu tek-sinyal gunune denk gelse bile shadow dejenere
+            # baslamaz. F entry gecmisi KOPYALANMAZ (look-ahead onleme). Yarin bir G2
+            # eklenirse ayni tuzaga dusmez. Bkz. cold_start_from_reference / G1_DEVIR_NOTU.
+            f_state = pf.load("F", state_dir=config.STATE_DIR)
+            g1_state, g1_events = g1_mod.cold_start_from_reference(
+                g1_state, f_state, prices_today, date, slippage=slippage,
+                reason="gec-katilim cold-start, F'e senkron (bugunku fiyat)")
+            g1_should_rebalance = True
+            g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
+        else:
+            # G1 de PORTFOY-DEMIRLI (eski bar-index tetikleyicisi ayni bug'i tasiyordu)
+            g1_should_rebalance, _g1_ie, _g1_elapsed, _g1_lastsel = rebal_status(
+                g1_state, prices, date)
+            # #0e-GUARD G1 SIMETRISI: G1 de strat_mod.select(mode="F") kullaniyor
+            # (g1_account.py:387) ama `is_rebal`i BURADAN aliyor -> guard'i burada
+            # uygulamak yeterli, g1_account.py DOKUNULMAZ kalir.
+            g1_gate = g1_should_rebalance          # kapi (guard uygulanir), VADE ayri
+            if (run_label == "kapanis" and g1_should_rebalance
+                    and not g1_state.get("_pending_rebalance")):
+                # Secim fonksiyonunun COKMESI bos secim degildir. Hata bu hesap
+                # katmaninin dis yakalayicisina gider ve authoritative RED olur.
                 _g1_picks, _, _ = strat_mod.select(data, signals, date, mode="F")
-            except Exception:
-                _g1_picks = []
-            if _thin_defer(g1_state, "G1", _g1_picks, trade_date):
-                # KAPIYI kapat ama VADEYI bozma: `rebalance_due` raporu VADE
-                # demek, "guard'dan gecti" demek DEGIL. g1_should_rebalance'i
-                # ezersek rapor "vade gelmedi" der -> TERS BILGI (#0i'nin
-                # duzelttigi bayrak-sinifi). Ayri degisken kullanilir.
-                g1_gate = False
-        # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
-        # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
-        g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
-        if run_label == "kapanis":
-            g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = _ca_detect_and_fix(
-                g1_state, "G1", prices, trade_date, opens=opens)
-        # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
-        # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
-        g1_state, g1_events = g1_mod.step(
-            data, signals, g1_state, date, prices_today, g1_gate,
-            slippage=slippage, eval_stops=(run_label == "kapanis"),
-            opens_today=(opens_today if run_label == "kapanis" else {}))
-    f_return_pct = None
-    if results.get("F", {}).get("value") is not None:
-        f_return_pct = (results["F"]["value"] - 1) * 100
-    g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
-    g1_trades = _g1_events_to_trades(g1_events)
-    g1_info.update({
-        "n_pos": g1_info.get("n_positions"),
-        # #0i FAZ-5 (F ile SIMETRIK): "rebalance" = ICRA EDILDI (bu kosuda fill
-        # kitaplandi), vade DEGIL. G1'de icra izi = events["buys"] (fill BUY uretir;
-        # karar gunu 0 uretir). Eskiden `g1_should_rebalance` (vade) yazilıyordu ->
-        # karar gunu True/0-islem, fill gunu vade-dustugu icin yanlis okuma.
-        "rebal_thin_deferred": (g1_state.get("_rebal_defer") or None),
-        "ca_checked": g1_ca_checked,
-        "ca_fixed": g1_ca_fixed or None,
-        "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
-                         if g1_ca_unchecked else None),
-        # P0.3 adim 2b: G1 de stop'u olculemeyen pozisyonu bildirir (F ile ayni bicim).
-        "stop_unchecked": ([{"ticker": t, "reason": r}
-                            for t, r in ((g1_events or {}).get("stop_unchecked") or [])]
-                           or None),
-        "rebalance": bool((g1_events or {}).get("buys")),
-        "rebalance_decided": bool(g1_state.get("_pending_rebalance")),
-        "rebalance_due": g1_should_rebalance,
-        "pending_rebalance": ({
-            "decided_at": (g1_state.get("_pending_rebalance") or {}).get("decided_at"),
-            "targets_n": len((g1_state.get("_pending_rebalance") or {}).get("targets") or {}),
-            "fill_blocked": (g1_state.get("_pending_rebalance") or {}).get("fill_blocked"),
-        } if g1_state.get("_pending_rebalance") else None),
-        "pending_reentry": ({
-            "decided_at": (g1_state.get("_pending_reentry") or {}).get("decided_at"),
-            "targets_n": len((g1_state.get("_pending_reentry") or {}).get("targets") or {}),
-            "re_factor": (g1_state.get("_pending_reentry") or {}).get("re_factor"),
-            "fill_blocked": (g1_state.get("_pending_reentry") or {}).get("fill_blocked"),
-        } if g1_state.get("_pending_reentry") else None),
-        "initial_entry": g1_initial_entry,
-        "events": g1_events,
-        "new_trades": g1_trades,
-        "last_event": {
-            "date": trade_date,
-            "event": "g1_shadow",
-            "trades": g1_trades,
-        } if g1_trades else None,
-    })
-    pf.save(g1_state, state_dir=config.STATE_DIR)
+                if _thin_defer(g1_state, "G1", _g1_picks, trade_date):
+                    # KAPIYI kapat ama VADEYI bozma: `rebalance_due` raporu VADE
+                    # demek, "guard'dan gecti" demek DEGIL. g1_should_rebalance'i
+                    # ezersek rapor "vade gelmedi" der -> TERS BILGI (#0i'nin
+                    # duzelttigi bayrak-sinifi). Ayri degisken kullanilir.
+                    g1_gate = False
+            # #0k — G1 icin de CA duzeltmesi, step'ten ONCE (F ile simetrik).
+            # G1 giris tarihleri trades[]'ten cozulur (history'sinde ticker YOK).
+            g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = ([], [], None)
+            if run_label == "kapanis":
+                g1_ca_fixed, g1_ca_unchecked, g1_ca_checked = _ca_detect_and_fix(
+                    g1_state, "G1", prices, trade_date, opens=opens)
+            # eval_stops: G1 de F ile AYNI stop semantigi (yalniz kapanis) — #0l.
+            # Yarim birakilirsa G1 kiyasi hipotezi degil semantik farki olcer.
+            g1_pending = next((p for p in (
+                g1_state.get("_pending_rebalance"),
+                g1_state.get("_pending_reentry"),
+            ) if isinstance(p, dict) and p.get("status") == "pending"), None)
+            g1_pending_age = (_pending_trading_age_days(
+                prices.index, g1_pending.get("decided_at"), trade_date)
+                if g1_pending else None)
+            g1_state, g1_events = g1_mod.step(
+                data, signals, g1_state, date, prices_today, g1_gate,
+                slippage=slippage, eval_stops=(run_label == "kapanis"),
+                opens_today=(opens_today if run_label == "kapanis" else {}),
+                pending_age_days=g1_pending_age)
+        f_return_pct = None
+        if results.get("F", {}).get("value") is not None:
+            f_return_pct = (results["F"]["value"] - 1) * 100
+        g1_info = g1_mod.summary(g1_state, prices_today, f_return_pct=f_return_pct)
+        g1_trades = _g1_events_to_trades(g1_events)
+        g1_info.update({
+            "n_pos": g1_info.get("n_positions"),
+            # #0i FAZ-5 (F ile SIMETRIK): "rebalance" = ICRA EDILDI (bu kosuda fill
+            # kitaplandi), vade DEGIL. G1'de icra izi = events["buys"] (fill BUY uretir;
+            # karar gunu 0 uretir). Eskiden `g1_should_rebalance` (vade) yazilıyordu ->
+            # karar gunu True/0-islem, fill gunu vade-dustugu icin yanlis okuma.
+            "rebal_thin_deferred": (g1_state.get("_rebal_defer") or None),
+            "ca_checked": g1_ca_checked,
+            "ca_fixed": g1_ca_fixed or None,
+            "ca_unchecked": ([{"ticker": t, "reason": r} for t, r in g1_ca_unchecked]
+                             if g1_ca_unchecked else None),
+            # P0.3 adim 2b: G1 de stop'u olculemeyen pozisyonu bildirir (F ile ayni bicim).
+            "stop_unchecked": ([{"ticker": t, "reason": r}
+                                for t, r in ((g1_events or {}).get("stop_unchecked") or [])]
+                               or None),
+            "rebalance": bool((g1_events or {}).get("buys")),
+            "rebalance_decided": bool(g1_state.get("_pending_rebalance")),
+            "rebalance_due": g1_should_rebalance,
+            "pending_rebalance": ({
+                "decided_at": (g1_state.get("_pending_rebalance") or {}).get("decided_at"),
+                "targets_n": len((g1_state.get("_pending_rebalance") or {}).get("targets") or {}),
+                "fill_blocked": (g1_state.get("_pending_rebalance") or {}).get("fill_blocked"),
+            } if g1_state.get("_pending_rebalance") else None),
+            "pending_reentry": ({
+                "decided_at": (g1_state.get("_pending_reentry") or {}).get("decided_at"),
+                "targets_n": len((g1_state.get("_pending_reentry") or {}).get("targets") or {}),
+                "re_factor": (g1_state.get("_pending_reentry") or {}).get("re_factor"),
+                "fill_blocked": (g1_state.get("_pending_reentry") or {}).get("fill_blocked"),
+            } if g1_state.get("_pending_reentry") else None),
+            "initial_entry": g1_initial_entry,
+            "events": g1_events,
+            "new_trades": g1_trades,
+            "last_event": {
+                "date": trade_date,
+                "event": "g1_shadow",
+                "trades": g1_trades,
+            } if g1_trades else None,
+        })
+        pf.save(g1_state, state_dir=config.STATE_DIR)
+        try:
+            tradelog.log_trades("G1", trade_date, g1_trades)
+        except Exception as e:
+            print(f"[shadow] G1 tradelog yazilamadi: {e}")
+        return g1_info
+
+    _rt.phase("shadow:G1")
     try:
-        tradelog.log_trades("G1", trade_date, g1_trades)
-    except Exception as e:
-        print(f"[shadow] G1 tradelog yazilamadi: {e}")
-    results["G1"] = g1_info
+        results["G1"] = _run_g1_account()
+    except pf.StateQuarantined:
+        raise
+    except Exception:
+        tb = traceback.format_exc()
+        print(f"[shadow] Hesap G1 HATA:\n{tb}")
+        results["G1"] = {"error": tb[:500]}
+        account_errors["G1"] = tb
     # STOP-DEGERLENDIRME IZI (#0l): yalniz gercekten degerlendirildiginde yaz.
     _write_stop_eval(run_label, trade_date, results)
+    if account_errors:
+        # Donguyu tamamlamak son fazi saglam bir hesaba tasir. Hukum fazi ilk
+        # hatali hesaba geri baglanmazsa A arizasi shadow:G1 diye etiketlenir.
+        first_failed = next(iter(account_errors))
+        _rt.phase(f"shadow:{first_failed}")
+        raise ShadowAccountError(account_errors.keys(), account_errors)
     # Cycle-duzeyi bayrak: artik global bar-index yok -> hesaplardan turet.
     any_rebal = any(r.get("rebalance") for r in results.values() if isinstance(r, dict))
     return {"date": str(date.date()) if hasattr(date, "date") else str(date),
@@ -1037,7 +1093,10 @@ def _write_stop_eval(run_label, trade_date, results):
             "writer": "shadow._write_stop_eval",
             "run_label": run_label,
             "eval_bar": trade_date,
-            "accounts": sorted(k for k in results if isinstance(results.get(k), dict)),
+            "accounts": sorted(k for k, r in results.items()
+                               if isinstance(r, dict) and not r.get("error")),
+            "account_errors": sorted(k for k, r in results.items()
+                                     if isinstance(r, dict) and r.get("error")),
             "stops_triggered": int(n_stops),
             "opens_trade": False,
             "note": ("Stop-degerlendirme izi (#0l). YALNIZ kapanis kosusunda yazilir; "

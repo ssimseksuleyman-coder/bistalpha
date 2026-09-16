@@ -351,14 +351,20 @@ def _write_error_log(label, tb):
         pass
 
 
-def guarded(fn, notify_fn=None, label="döngü"):
+def guarded(fn, notify_fn=None, label="döngü", reraise=()):
     """
     Bir görevi koru: hata olursa yakala, logla, bildir, ÇÖKME.
     daemon görevlerini buna sarar — tek hata tüm servisi düşürmez.
+
+    `reraise`: fail-closed olması gereken yetkili istisna tipleri. Varsayilan
+    bos tuple eski davranisi birebir korur; yalniz cagiran acikca tip verirse
+    hata log/bildirim katmaninda yutulmadan yukariya cikar.
     """
     try:
         return fn()
     except Exception as e:
+        if reraise and isinstance(e, reraise):
+            raise
         tb = traceback.format_exc()
         print(f"[selfheal] {label} HATA (yakalandı, servis ayakta):\n{tb}")
         _write_error_log(label, tb)
