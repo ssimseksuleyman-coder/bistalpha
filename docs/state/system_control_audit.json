@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T20:59:20",
+  "generated_at": "2026-09-16T07:58:09",
   "overall": "yellow",
   "summary": {
     "warn": 3,
@@ -108,7 +108,7 @@
       "category": "Privacy / data minimization",
       "control": "PII, token and personal-path scan",
       "status": "pass",
-      "summary": "No PII, token-like secret or personal absolute path found in scanned files.",
+      "summary": "No PII, token-like secret or personal absolute path found in scanned files (text raw + JSON values parsed).",
       "evidence": [],
       "action": "Remove personal data from repo, rotate exposed secrets, and keep machine-specific paths local-only."
     },
