@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T07:09:46Z",
+  "generated_at": "2026-09-16T12:08:11Z",
   "status": "ok",
   "primary_source": "yahoo",
   "selected_source": "borsapy",
@@ -9,16 +9,16 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "started_at": "2026-09-16T07:03:39Z",
-      "finished_at": "2026-09-16T07:04:08Z",
-      "duration_s": 28.885,
+      "started_at": "2026-09-16T12:01:14Z",
+      "finished_at": "2026-09-16T12:01:48Z",
+      "duration_s": 33.952,
       "returned_symbols": 623,
       "expected_pool": 625,
-      "last_data_date": "2026-09-14",
+      "last_data_date": "2026-09-16",
       "calendar_status": "OK",
       "calendar_days_remaining": 106,
       "expected_last_closed_session": "2026-09-15",
-      "freshness_status": "STALE",
+      "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
         {
@@ -1067,8 +1067,8 @@
         },
         {
           "date": "2026-09-15",
-          "coverage_pct": 0.0,
-          "present": 0,
+          "coverage_pct": 100.0,
+          "present": 623,
           "total": 623
         }
       ],
@@ -1078,33 +1078,26 @@
           "coverage_pct": 17.98,
           "present": 112,
           "total": 623
-        },
-        {
-          "date": "2026-09-15",
-          "coverage_pct": 0.0,
-          "present": 0,
-          "total": 623
         }
       ],
-      "reject_code": "STALE_LAST_DATA",
+      "reject_code": "SPARSE_MARKET_DAY",
       "reject_codes": [
-        "STALE_LAST_DATA",
         "SPARSE_MARKET_DAY"
       ],
       "minimum_required_symbols": 313,
       "pool_coverage_pct": 99.68,
-      "error": "Son veri bayat: 2026-09-14 < 2026-09-15",
+      "error": "BIST islem gununde hisse kapsami yetersiz: 2026-09-07 %17.98 (112/623)",
       "error_type": "DataGateRejected"
     },
     {
       "source": "borsapy",
       "status": "ok",
-      "started_at": "2026-09-16T07:04:08Z",
-      "finished_at": "2026-09-16T07:09:46Z",
-      "duration_s": 337.701,
+      "started_at": "2026-09-16T12:01:48Z",
+      "finished_at": "2026-09-16T12:08:11Z",
+      "duration_s": 383.668,
       "returned_symbols": 625,
       "expected_pool": 625,
-      "last_data_date": "2026-09-15",
+      "last_data_date": "2026-09-16",
       "calendar_status": "OK",
       "calendar_days_remaining": 106,
       "expected_last_closed_session": "2026-09-15",
