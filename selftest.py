@@ -4472,6 +4472,166 @@ def main():
     for _name, _passed in _claim_checks:
         (ok if _passed else bad)(f"P0.6 claim: {_name}")
 
+    # 9c-2. Iki producer ayni anda claim commit'i uretebilir. Push'u kaybeden
+    # kosum, origin'de AYNI slotu rakip aldiysa producer arizasi degildir;
+    # yerel claim commit'ini birakmadan claimed=false donmelidir. Origin yalniz
+    # ilgisiz nedenle ilerlediyse claim taze tabanda bir kez daha denenir.
+    try:
+        import json as _json14
+        import subprocess as _sp14
+        import tempfile as _tf14
+        from datetime import datetime as _dt14
+        from pathlib import Path as _Path14
+        from zoneinfo import ZoneInfo as _ZI14
+
+        _scripts14 = str(_root_path / "scripts")
+        if _scripts14 not in sys.path:
+            sys.path.insert(0, _scripts14)
+        import report_claim as _RC14
+
+        _race_helper14 = getattr(_RC14, "_durable_claim", None)
+        _commit_helper14 = getattr(_RC14, "_commit_claim", None)
+        _align_helper14 = getattr(_RC14, "_align_after_failed_push", None)
+        if (not callable(_race_helper14) or not callable(_commit_helper14)
+                or not callable(_align_helper14)):
+            bad("P0.6 claim race: davranis yardimcilari yok (test-once KIRMIZI)")
+        else:
+            _now14 = _dt14(2026, 9, 16, 18, 40, tzinfo=_ZI14("Europe/Istanbul"))
+            _key14 = "2026-09-16:kapanis"
+
+            def _race14(push_rcs, fetch_rcs, origin_states):
+                _pushes = list(push_rcs)
+                _fetches = list(fetch_rcs)
+                _states = list(origin_states)
+                _model = {"head": "base0", "origin": "origin0", "claims": 0}
+                _calls = []
+                _orig_git = _RC14._git
+                _orig_commit = _RC14._commit_claim
+                _orig_claim = _RC14.report_gate.claim
+
+                def _cp(args, rc=0, out="", err=""):
+                    return _sp14.CompletedProcess(["git", *args], rc, out, err)
+
+                def _fake_git(*args, check=True):
+                    _calls.append(args)
+                    if args[:2] == ("rev-parse", "HEAD"):
+                        return _cp(args, out=_model["head"] + "\n")
+                    if args[:2] == ("rev-parse", "origin/main"):
+                        return _cp(args, out=_model["origin"] + "\n")
+                    if args and args[0] == "push":
+                        rc = _pushes.pop(0)
+                        if rc == 0:
+                            _model["origin"] = _model["head"]
+                        return _cp(args, rc=rc, err="non-fast-forward" if rc else "")
+                    if args and args[0] == "fetch":
+                        rc = _fetches.pop(0)
+                        if rc == 0:
+                            _model["origin"] = f"origin{len(origin_states) - len(_states) + 1}"
+                        return _cp(args, rc=rc, err="network" if rc else "")
+                    if args and args[0] == "show":
+                        payload = _states.pop(0)
+                        return _cp(args, out=_json14.dumps(payload))
+                    if args[:2] == ("rebase", "--onto"):
+                        target = args[2]
+                        _model["head"] = (
+                            _model["origin"] if target == "origin/main" else target
+                        )
+                        return _cp(args)
+                    if args[:2] == ("rebase", "--abort"):
+                        return _cp(args)
+                    raise AssertionError(f"beklenmeyen git cagrisi: {args}")
+
+                def _fake_commit(label):
+                    _model["claims"] += 1
+                    _model["head"] = f"claim{_model['claims']}"
+                    return _model["head"]
+
+                _RC14._git = _fake_git
+                _RC14._commit_claim = _fake_commit
+                _RC14.report_gate.claim = lambda label, now=None: True
+                try:
+                    try:
+                        result = _RC14._durable_claim("kapanis", _now14, "main")
+                        error = None
+                    except RuntimeError as exc:
+                        result, error = None, exc
+                finally:
+                    _RC14._git = _orig_git
+                    _RC14._commit_claim = _orig_commit
+                    _RC14.report_gate.claim = _orig_claim
+                return result, error, _model, _calls
+
+            _same14 = {"sent": {_key14: {"claim_at": _now14.isoformat(timespec="seconds")}}}
+            _other14 = {"sent": {"2026-09-16:gunici": {"sent_at": _now14.isoformat(timespec="seconds")}}}
+
+            _r14a, _e14a, _m14a, _c14a = _race14([1], [0], [_same14])
+            (ok if (_r14a is False and _e14a is None and _m14a["head"] == _m14a["origin"]
+                    and _m14a["claims"] == 1
+                    and ("fetch", "origin", "+refs/heads/main:refs/remotes/origin/main") in _c14a)
+             else bad)(
+                "P0.6 claim race: ayni-slot rakibi temiz claimed=false + origin'e hizalanma")
+
+            _r14b, _e14b, _m14b, _c14b = _race14([1, 0], [0], [_other14])
+            (ok if (_r14b is True and _e14b is None and _m14b["claims"] == 2
+                    and sum(1 for c in _c14b if c and c[0] == "push") == 2) else bad)(
+                "P0.6 claim race: ilgisiz origin ilerlemesi taze tabanda bir kez yeniden denenir")
+
+            _r14c, _e14c, _m14c, _c14c = _race14([1, 1], [0, 0], [_other14, _same14])
+            (ok if (_r14c is False and _e14c is None and _m14c["head"] == _m14c["origin"]
+                    and _m14c["claims"] == 2) else bad)(
+                "P0.6 claim race: ikinci push'u rakip alirsa yine temiz duplicate")
+
+            _r14d, _e14d, _m14d, _c14d = _race14([1], [1], [])
+            (ok if (_r14d is None and isinstance(_e14d, RuntimeError)
+                    and _m14d["head"] == "base0") else bad)(
+                "P0.6 claim race: fetch/ag hatasi duplicate sayilmaz, yerel claim temizlenir")
+
+            # Git semantigini de gercek gecici repoda sabitle. Mock'un rebase
+            # davranisini bizim lehimize uydurmus olmasi bu testi geciremez.
+            _old_root14 = _RC14.REPO_ROOT
+            try:
+                with _tf14.TemporaryDirectory() as _td14:
+                    _tdp14 = _Path14(_td14)
+
+                    def _rg14(*args):
+                        return _sp14.run(
+                            ["git", *args], cwd=_tdp14, text=True,
+                            capture_output=True, check=True,
+                        )
+
+                    _rg14("init", "-q")
+                    _rg14("config", "user.name", "claim-test")
+                    _rg14("config", "user.email", "claim-test" + chr(64) + "example.invalid")
+                    (_tdp14 / "state.txt").write_text("base", encoding="utf-8")
+                    _rg14("add", "state.txt")
+                    _rg14("commit", "-qm", "base")
+                    _rg14("branch", "-M", "main")
+                    _base14 = _rg14("rev-parse", "HEAD").stdout.strip()
+                    (_tdp14 / "state.txt").write_text("mine", encoding="utf-8")
+                    _rg14("add", "state.txt")
+                    _rg14("commit", "-qm", "mine")
+                    _mine14 = _rg14("rev-parse", "HEAD").stdout.strip()
+                    _rg14("switch", "-qc", "peer", _base14)
+                    (_tdp14 / "state.txt").write_text("peer", encoding="utf-8")
+                    _rg14("add", "state.txt")
+                    _rg14("commit", "-qm", "peer")
+                    _peer14 = _rg14("rev-parse", "HEAD").stdout.strip()
+                    _rg14("switch", "-q", "main")
+                    _rg14("update-ref", "refs/remotes/origin/main", _peer14)
+                    _RC14.REPO_ROOT = _tdp14
+                    _RC14._align_after_failed_push("origin/main", _mine14)
+                    _aligned14 = (
+                        _rg14("rev-parse", "HEAD").stdout.strip(),
+                        (_tdp14 / "state.txt").read_text(encoding="utf-8"),
+                        _rg14("status", "--porcelain").stdout,
+                    )
+                (ok if _aligned14 == (_peer14, "peer", "") else bad)(
+                    "P0.6 claim race: gercek git kaybeden commit'i dusurur ve agaci temizler")
+            finally:
+                _RC14.REPO_ROOT = _old_root14
+    except Exception as e:
+        bad(f"P0.6 claim race testleri kosmadi: {type(e).__name__}: {e}")
+
     # 10. CLI çalışma testi (TESPİT 5 — eksik kontrol tamamlandı)
     print("\n[10] CLI çalışma (gerçekten çalışıyor mu)")
     import subprocess
