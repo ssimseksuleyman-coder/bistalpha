@@ -1,14 +1,7 @@
 {
   "account": "G1",
-  "cash": 0.6962803818343126,
-  "positions": {
-    "IEYHO": {
-      "entry": 152.0,
-      "peak": 230.0,
-      "shares": 0.0006836590654213479,
-      "w": 0.22879907350030884
-    }
-  },
+  "cash": 0.8369487038172783,
+  "positions": {},
   "history": [
     {
       "date": "2026-06-30",
@@ -179,6 +172,16 @@
       "pnl_pct": -0.77,
       "giveback": 18.97,
       "was_reentry": false
+    },
+    {
+      "date": "2026-09-16",
+      "type": "SELL",
+      "ticker": "IEYHO",
+      "price": 207.0,
+      "reason": "stop",
+      "pnl_pct": 36.18,
+      "giveback": 10.0,
+      "was_reentry": false
     }
   ],
   "watch": {
@@ -196,10 +199,14 @@
       "exit": 14.180000305175781,
       "cash": 0.056514758684605426,
       "w": 0.12615445075617993
+    },
+    "IEYHO": {
+      "exit": 207.0,
+      "cash": 0.1406683219829657,
+      "w": 0.22879907350030884
     }
   },
   "equity_daily": [
-    0.8803,
     0.8815,
     0.8758,
     0.8767,
@@ -318,11 +325,12 @@
     0.8549,
     0.8535,
     0.8535,
-    0.8378
+    0.8378,
+    0.8369
   ],
   "stats": {
     "buys": 5,
-    "stops": 7,
+    "stops": 8,
     "reentries": 4,
     "reentry_restops": 4,
     "reentry_restop_loss": 3,

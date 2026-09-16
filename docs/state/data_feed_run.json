@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T12:08:11Z",
+  "generated_at": "2026-09-16T15:46:52Z",
   "status": "ok",
   "primary_source": "yahoo",
   "selected_source": "borsapy",
@@ -9,15 +9,15 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "started_at": "2026-09-16T12:01:14Z",
-      "finished_at": "2026-09-16T12:01:48Z",
-      "duration_s": 33.952,
+      "started_at": "2026-09-16T15:40:03Z",
+      "finished_at": "2026-09-16T15:40:53Z",
+      "duration_s": 50.531,
       "returned_symbols": 623,
       "expected_pool": 625,
       "last_data_date": "2026-09-16",
       "calendar_status": "OK",
       "calendar_days_remaining": 106,
-      "expected_last_closed_session": "2026-09-15",
+      "expected_last_closed_session": "2026-09-16",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -1070,6 +1070,12 @@
           "coverage_pct": 100.0,
           "present": 623,
           "total": 623
+        },
+        {
+          "date": "2026-09-16",
+          "coverage_pct": 100.0,
+          "present": 623,
+          "total": 623
         }
       ],
       "sparse_market_days": [
@@ -1092,15 +1098,15 @@
     {
       "source": "borsapy",
       "status": "ok",
-      "started_at": "2026-09-16T12:01:48Z",
-      "finished_at": "2026-09-16T12:08:11Z",
-      "duration_s": 383.668,
+      "started_at": "2026-09-16T15:40:53Z",
+      "finished_at": "2026-09-16T15:46:52Z",
+      "duration_s": 359.056,
       "returned_symbols": 625,
       "expected_pool": 625,
       "last_data_date": "2026-09-16",
       "calendar_status": "OK",
       "calendar_days_remaining": 106,
-      "expected_last_closed_session": "2026-09-15",
+      "expected_last_closed_session": "2026-09-16",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -2152,6 +2158,12 @@
           "date": "2026-09-15",
           "coverage_pct": 99.84,
           "present": 624,
+          "total": 625
+        },
+        {
+          "date": "2026-09-16",
+          "coverage_pct": 100.0,
+          "present": 625,
           "total": 625
         }
       ],
