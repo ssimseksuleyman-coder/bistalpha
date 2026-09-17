@@ -1,97 +1,46 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-17T12:10:06Z",
+  "generated_at": "2026-09-17T15:47:46Z",
   "tz": 0.0,
-  "run_label": "BIST Alpha 7-24 Canli",
+  "run_label": "BIST Tam-Zamanli (precise)",
   "writer": "bist_alpha.stop_observer",
-  "price_sources": [
-    {
-      "source": "borsapy",
-      "status": "ok",
-      "returned": 3,
-      "bar_dates": {
-        "ALKLC": "2026-09-17",
-        "IEYHO": "2026-09-17",
-        "OZATD": "2026-09-17"
-      }
-    },
-    {
-      "source": "yahoo",
-      "status": "ok",
-      "returned": 3,
-      "bar_dates": {
-        "ALKLC": "2026-09-17",
-        "IEYHO": "2026-09-17",
-        "OZATD": "2026-09-17"
-      }
-    }
-  ],
-  "cross_source_check": {
-    "ALKLC": {
-      "borsapy": 421.25,
-      "yahoo": 421.25,
-      "diff_pct": 0.0,
-      "bar_dates": {
-        "borsapy": "2026-09-17",
-        "yahoo": "2026-09-17"
-      }
-    },
-    "IEYHO": {
-      "borsapy": 186.3,
-      "yahoo": 186.3000030517578,
-      "diff_pct": 0.0,
-      "bar_dates": {
-        "borsapy": "2026-09-17",
-        "yahoo": "2026-09-17"
-      }
-    },
-    "OZATD": {
-      "borsapy": 4035.0,
-      "yahoo": 4035.0,
-      "diff_pct": 0.0,
-      "bar_dates": {
-        "borsapy": "2026-09-17",
-        "yahoo": "2026-09-17"
-      }
-    }
-  },
-  "position_count": 12,
+  "price_sources": [],
+  "cross_source_check": {},
+  "position_count": 0,
   "unpriced_count": 0,
   "price_asof": {
-    "oldest": "2026-09-17",
-    "newest": "2026-09-17",
-    "distinct": 1
+    "oldest": null,
+    "newest": null,
+    "distinct": 0
   },
   "price_freshness": {
-    "status": "FRESH",
-    "oldest_bar": "2026-09-17",
-    "expected_last_closed_session": "2026-09-16",
-    "reject_code": null
+    "status": "UNKNOWN",
+    "reason": "fiyatlanan pozisyon yok"
   },
   "account_status": {
     "F": {
       "account": "F",
       "path": "portfolios/portfolio_F.json",
       "status": "loaded",
-      "position_count": 3
+      "position_count": 0
     },
     "A": {
       "account": "A",
       "path": "portfolios/portfolio_A.json",
       "status": "loaded",
-      "position_count": 3
+      "position_count": 0
     },
     "B": {
       "account": "B",
       "path": "portfolios/portfolio_B.json",
       "status": "loaded",
-      "position_count": 3
+      "position_count": 0
     },
     "O": {
       "account": "O",
       "path": "portfolios/portfolio_O.json",
       "status": "loaded",
-      "position_count": 3
+      "position_count": 0
     },
     "G1": {
       "account": "G1",
@@ -104,150 +53,14 @@
   "gate": {
     "verdict": "GREEN",
     "reason": "full_coverage",
-    "detail": "positions=12 · fiyat tazeligi FRESH"
+    "detail": "positions=0 · fiyat tazeligi UNKNOWN"
   },
-  "breach": true,
+  "breach": false,
   "accounts": {
-    "F": [
-      {
-        "ticker": "ALKLC",
-        "status": "priced",
-        "price": 421.25,
-        "price_date": "2026-09-17",
-        "stop_level": 468.0,
-        "breached": true,
-        "entry": 425.75,
-        "peak": 520.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "IEYHO",
-        "status": "priced",
-        "price": 186.3,
-        "price_date": "2026-09-17",
-        "stop_level": 195.5,
-        "breached": true,
-        "entry": 207.8000030517578,
-        "peak": 230.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "OZATD",
-        "status": "priced",
-        "price": 4035.0,
-        "price_date": "2026-09-17",
-        "stop_level": 4233.0,
-        "breached": true,
-        "entry": 4827.5,
-        "peak": 4980.0,
-        "reason": "priced"
-      }
-    ],
-    "A": [
-      {
-        "ticker": "ALKLC",
-        "status": "priced",
-        "price": 421.25,
-        "price_date": "2026-09-17",
-        "stop_level": 468.0,
-        "breached": true,
-        "entry": 425.75,
-        "peak": 520.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "IEYHO",
-        "status": "priced",
-        "price": 186.3,
-        "price_date": "2026-09-17",
-        "stop_level": 195.5,
-        "breached": true,
-        "entry": 207.8000030517578,
-        "peak": 230.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "OZATD",
-        "status": "priced",
-        "price": 4035.0,
-        "price_date": "2026-09-17",
-        "stop_level": 4233.0,
-        "breached": true,
-        "entry": 4827.5,
-        "peak": 4980.0,
-        "reason": "priced"
-      }
-    ],
-    "B": [
-      {
-        "ticker": "ALKLC",
-        "status": "priced",
-        "price": 421.25,
-        "price_date": "2026-09-17",
-        "stop_level": 468.0,
-        "breached": true,
-        "entry": 425.75,
-        "peak": 520.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "IEYHO",
-        "status": "priced",
-        "price": 186.3,
-        "price_date": "2026-09-17",
-        "stop_level": 195.5,
-        "breached": true,
-        "entry": 207.8000030517578,
-        "peak": 230.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "OZATD",
-        "status": "priced",
-        "price": 4035.0,
-        "price_date": "2026-09-17",
-        "stop_level": 4233.0,
-        "breached": true,
-        "entry": 4827.5,
-        "peak": 4980.0,
-        "reason": "priced"
-      }
-    ],
-    "O": [
-      {
-        "ticker": "ALKLC",
-        "status": "priced",
-        "price": 421.25,
-        "price_date": "2026-09-17",
-        "stop_level": 468.0,
-        "breached": true,
-        "entry": 425.75,
-        "peak": 520.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "IEYHO",
-        "status": "priced",
-        "price": 186.3,
-        "price_date": "2026-09-17",
-        "stop_level": 195.5,
-        "breached": true,
-        "entry": 207.8000030517578,
-        "peak": 230.0,
-        "reason": "priced"
-      },
-      {
-        "ticker": "OZATD",
-        "status": "priced",
-        "price": 4035.0,
-        "price_date": "2026-09-17",
-        "stop_level": 4233.0,
-        "breached": true,
-        "entry": 4827.5,
-        "peak": 4980.0,
-        "reason": "priced"
-      }
-    ],
+    "F": [],
+    "A": [],
+    "B": [],
+    "O": [],
     "G1": []
   },
   "note": "P0.6/madde-7 bagimsiz stop gozlemi. YALNIZ TESPIT — emir/state mutasyonu YOK. stop_eval.json'dan AYRIDIR: o artefaktin bayatligi #0l'in kor-nokta sinyalidir, bu dosya her kosuda yazilir."

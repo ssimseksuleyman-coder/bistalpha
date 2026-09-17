@@ -1,23 +1,7 @@
 {
   "account": "A",
-  "cash": 0.7256342791335036,
-  "positions": {
-    "OZATD": {
-      "entry": 4827.5,
-      "peak": 4980.0,
-      "shares": 2.6010075198269737e-05
-    },
-    "IEYHO": {
-      "entry": 207.8000030517578,
-      "peak": 230.0,
-      "shares": 0.0006042523396324127
-    },
-    "ALKLC": {
-      "entry": 425.75,
-      "peak": 520.0,
-      "shares": 0.0002949234011031055
-    }
-  },
+  "cash": 1.0653430700646442,
+  "positions": {},
   "history": [
     {
       "date": "2026-06-05",
@@ -660,6 +644,39 @@
           "shares": 0.000375,
           "reason": "stop",
           "pnl_pct": -3.14
+        }
+      ],
+      "fill_convention": "same_day_close"
+    },
+    {
+      "date": "2026-09-17",
+      "event": "stop",
+      "total": 1.0653,
+      "n_pos": 0,
+      "trades": [
+        {
+          "type": "SELL",
+          "ticker": "OZATD",
+          "price": 4035.0,
+          "shares": 2.6e-05,
+          "reason": "stop",
+          "pnl_pct": -16.42
+        },
+        {
+          "type": "SELL",
+          "ticker": "IEYHO",
+          "price": 186.3,
+          "shares": 0.000604,
+          "reason": "stop",
+          "pnl_pct": -10.35
+        },
+        {
+          "type": "SELL",
+          "ticker": "ALKLC",
+          "price": 421.25,
+          "shares": 0.000295,
+          "reason": "stop",
+          "pnl_pct": -1.06
         }
       ],
       "fill_convention": "same_day_close"
