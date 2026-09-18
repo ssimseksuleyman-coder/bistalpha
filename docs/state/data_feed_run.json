@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-17T15:47:27Z",
+  "generated_at": "2026-09-18T07:10:21Z",
   "status": "ok",
   "primary_source": "yahoo",
   "selected_source": "borsapy",
@@ -9,16 +9,16 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "started_at": "2026-09-17T15:40:02Z",
-      "finished_at": "2026-09-17T15:40:45Z",
-      "duration_s": 43.323,
+      "started_at": "2026-09-18T06:56:12Z",
+      "finished_at": "2026-09-18T06:56:38Z",
+      "duration_s": 26.458,
       "returned_symbols": 624,
       "expected_pool": 626,
-      "last_data_date": "2026-09-17",
+      "last_data_date": "2026-09-16",
       "calendar_status": "OK",
-      "calendar_days_remaining": 105,
+      "calendar_days_remaining": 104,
       "expected_last_closed_session": "2026-09-17",
-      "freshness_status": "FRESH",
+      "freshness_status": "STALE",
       "bar_completeness": "unknown",
       "checked_market_days": [
         {
@@ -1079,8 +1079,8 @@
         },
         {
           "date": "2026-09-17",
-          "coverage_pct": 100.0,
-          "present": 624,
+          "coverage_pct": 0.0,
+          "present": 0,
           "total": 624
         }
       ],
@@ -1090,1100 +1090,1107 @@
           "coverage_pct": 17.95,
           "present": 112,
           "total": 624
+        },
+        {
+          "date": "2026-09-17",
+          "coverage_pct": 0.0,
+          "present": 0,
+          "total": 624
         }
       ],
-      "reject_code": "SPARSE_MARKET_DAY",
+      "reject_code": "STALE_LAST_DATA",
       "reject_codes": [
+        "STALE_LAST_DATA",
         "SPARSE_MARKET_DAY"
       ],
       "minimum_required_symbols": 313,
       "pool_coverage_pct": 99.68,
-      "error": "BIST islem gununde hisse kapsami yetersiz: 2026-09-07 %17.95 (112/624)",
+      "error": "Son veri bayat: 2026-09-16 < 2026-09-17",
       "error_type": "DataGateRejected"
     },
     {
       "source": "borsapy",
       "status": "ok",
-      "started_at": "2026-09-17T15:40:45Z",
-      "finished_at": "2026-09-17T15:47:27Z",
-      "duration_s": 401.863,
-      "returned_symbols": 626,
+      "started_at": "2026-09-18T06:56:38Z",
+      "finished_at": "2026-09-18T07:10:21Z",
+      "duration_s": 822.154,
+      "returned_symbols": 610,
       "expected_pool": 626,
       "last_data_date": "2026-09-17",
       "calendar_status": "OK",
-      "calendar_days_remaining": 105,
+      "calendar_days_remaining": 104,
       "expected_last_closed_session": "2026-09-17",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
         {
           "date": "2026-01-02",
-          "coverage_pct": 94.09,
-          "present": 589,
-          "total": 626
+          "coverage_pct": 93.93,
+          "present": 573,
+          "total": 610
         },
         {
           "date": "2026-01-05",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-06",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-07",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-08",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-09",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-12",
-          "coverage_pct": 94.25,
-          "present": 590,
-          "total": 626
+          "coverage_pct": 94.1,
+          "present": 574,
+          "total": 610
         },
         {
           "date": "2026-01-13",
-          "coverage_pct": 94.41,
-          "present": 591,
-          "total": 626
+          "coverage_pct": 94.26,
+          "present": 575,
+          "total": 610
         },
         {
           "date": "2026-01-14",
-          "coverage_pct": 94.41,
-          "present": 591,
-          "total": 626
+          "coverage_pct": 94.26,
+          "present": 575,
+          "total": 610
         },
         {
           "date": "2026-01-15",
-          "coverage_pct": 94.57,
-          "present": 592,
-          "total": 626
+          "coverage_pct": 94.43,
+          "present": 576,
+          "total": 610
         },
         {
           "date": "2026-01-16",
-          "coverage_pct": 94.73,
-          "present": 593,
-          "total": 626
+          "coverage_pct": 94.59,
+          "present": 577,
+          "total": 610
         },
         {
           "date": "2026-01-19",
-          "coverage_pct": 94.73,
-          "present": 593,
-          "total": 626
+          "coverage_pct": 94.59,
+          "present": 577,
+          "total": 610
         },
         {
           "date": "2026-01-20",
-          "coverage_pct": 94.73,
-          "present": 593,
-          "total": 626
+          "coverage_pct": 94.59,
+          "present": 577,
+          "total": 610
         },
         {
           "date": "2026-01-21",
-          "coverage_pct": 94.73,
-          "present": 593,
-          "total": 626
+          "coverage_pct": 94.59,
+          "present": 577,
+          "total": 610
         },
         {
           "date": "2026-01-22",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-23",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-26",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-27",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-28",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-29",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-01-30",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-02-02",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-02-03",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-02-04",
-          "coverage_pct": 94.89,
-          "present": 594,
-          "total": 626
+          "coverage_pct": 94.75,
+          "present": 578,
+          "total": 610
         },
         {
           "date": "2026-02-05",
-          "coverage_pct": 95.05,
-          "present": 595,
-          "total": 626
+          "coverage_pct": 94.92,
+          "present": 579,
+          "total": 610
         },
         {
           "date": "2026-02-06",
-          "coverage_pct": 95.21,
-          "present": 596,
-          "total": 626
+          "coverage_pct": 95.08,
+          "present": 580,
+          "total": 610
         },
         {
           "date": "2026-02-09",
-          "coverage_pct": 95.05,
-          "present": 595,
-          "total": 626
+          "coverage_pct": 94.92,
+          "present": 579,
+          "total": 610
         },
         {
           "date": "2026-02-10",
-          "coverage_pct": 95.21,
-          "present": 596,
-          "total": 626
+          "coverage_pct": 95.08,
+          "present": 580,
+          "total": 610
         },
         {
           "date": "2026-02-11",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-12",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-13",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-16",
-          "coverage_pct": 95.21,
-          "present": 596,
-          "total": 626
+          "coverage_pct": 95.08,
+          "present": 580,
+          "total": 610
         },
         {
           "date": "2026-02-17",
-          "coverage_pct": 95.21,
-          "present": 596,
-          "total": 626
+          "coverage_pct": 95.08,
+          "present": 580,
+          "total": 610
         },
         {
           "date": "2026-02-18",
-          "coverage_pct": 95.21,
-          "present": 596,
-          "total": 626
+          "coverage_pct": 95.08,
+          "present": 580,
+          "total": 610
         },
         {
           "date": "2026-02-19",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-20",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-23",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-24",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-25",
-          "coverage_pct": 95.37,
-          "present": 597,
-          "total": 626
+          "coverage_pct": 95.25,
+          "present": 581,
+          "total": 610
         },
         {
           "date": "2026-02-26",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-02-27",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-02",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-03",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-04",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-05",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-06",
-          "coverage_pct": 95.53,
-          "present": 598,
-          "total": 626
+          "coverage_pct": 95.41,
+          "present": 582,
+          "total": 610
         },
         {
           "date": "2026-03-09",
-          "coverage_pct": 95.69,
-          "present": 599,
-          "total": 626
+          "coverage_pct": 95.57,
+          "present": 583,
+          "total": 610
         },
         {
           "date": "2026-03-10",
-          "coverage_pct": 95.85,
-          "present": 600,
-          "total": 626
+          "coverage_pct": 95.74,
+          "present": 584,
+          "total": 610
         },
         {
           "date": "2026-03-11",
-          "coverage_pct": 96.01,
-          "present": 601,
-          "total": 626
+          "coverage_pct": 95.9,
+          "present": 585,
+          "total": 610
         },
         {
           "date": "2026-03-12",
-          "coverage_pct": 95.69,
-          "present": 599,
-          "total": 626
+          "coverage_pct": 95.57,
+          "present": 583,
+          "total": 610
         },
         {
           "date": "2026-03-13",
-          "coverage_pct": 95.69,
-          "present": 599,
-          "total": 626
+          "coverage_pct": 95.57,
+          "present": 583,
+          "total": 610
         },
         {
           "date": "2026-03-16",
-          "coverage_pct": 96.01,
-          "present": 601,
-          "total": 626
+          "coverage_pct": 95.9,
+          "present": 585,
+          "total": 610
         },
         {
           "date": "2026-03-17",
-          "coverage_pct": 96.01,
-          "present": 601,
-          "total": 626
+          "coverage_pct": 95.9,
+          "present": 585,
+          "total": 610
         },
         {
           "date": "2026-03-18",
-          "coverage_pct": 96.17,
-          "present": 602,
-          "total": 626
+          "coverage_pct": 96.07,
+          "present": 586,
+          "total": 610
         },
         {
           "date": "2026-03-19",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-23",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-24",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-25",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-26",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-27",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-30",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-03-31",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-04-01",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-04-02",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-04-03",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-04-06",
-          "coverage_pct": 96.33,
-          "present": 603,
-          "total": 626
+          "coverage_pct": 96.23,
+          "present": 587,
+          "total": 610
         },
         {
           "date": "2026-04-07",
-          "coverage_pct": 96.49,
-          "present": 604,
-          "total": 626
+          "coverage_pct": 96.39,
+          "present": 588,
+          "total": 610
         },
         {
           "date": "2026-04-08",
-          "coverage_pct": 96.49,
-          "present": 604,
-          "total": 626
+          "coverage_pct": 96.39,
+          "present": 588,
+          "total": 610
         },
         {
           "date": "2026-04-09",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-10",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-13",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-14",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-15",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-16",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-17",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-20",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-21",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-22",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-24",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-27",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-28",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-29",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-04-30",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-04",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-05",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-06",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-07",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-08",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-11",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-12",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-13",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-14",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-15",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-18",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-20",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-21",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-05-22",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-05-25",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-05-26",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-01",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-02",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-03",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-06-04",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-05",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-08",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-09",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-10",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-11",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-12",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-15",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-16",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-17",
-          "coverage_pct": 96.65,
-          "present": 605,
-          "total": 626
+          "coverage_pct": 96.56,
+          "present": 589,
+          "total": 610
         },
         {
           "date": "2026-06-18",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-19",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-22",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-23",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-24",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-25",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-26",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-29",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-06-30",
-          "coverage_pct": 96.81,
-          "present": 606,
-          "total": 626
+          "coverage_pct": 96.72,
+          "present": 590,
+          "total": 610
         },
         {
           "date": "2026-07-01",
-          "coverage_pct": 96.96,
-          "present": 607,
-          "total": 626
+          "coverage_pct": 96.89,
+          "present": 591,
+          "total": 610
         },
         {
           "date": "2026-07-02",
-          "coverage_pct": 96.96,
-          "present": 607,
-          "total": 626
+          "coverage_pct": 96.89,
+          "present": 591,
+          "total": 610
         },
         {
           "date": "2026-07-03",
-          "coverage_pct": 96.96,
-          "present": 607,
-          "total": 626
+          "coverage_pct": 96.89,
+          "present": 591,
+          "total": 610
         },
         {
           "date": "2026-07-06",
-          "coverage_pct": 97.12,
-          "present": 608,
-          "total": 626
+          "coverage_pct": 97.05,
+          "present": 592,
+          "total": 610
         },
         {
           "date": "2026-07-07",
-          "coverage_pct": 97.28,
-          "present": 609,
-          "total": 626
+          "coverage_pct": 97.21,
+          "present": 593,
+          "total": 610
         },
         {
           "date": "2026-07-08",
-          "coverage_pct": 97.44,
-          "present": 610,
-          "total": 626
+          "coverage_pct": 97.38,
+          "present": 594,
+          "total": 610
         },
         {
           "date": "2026-07-09",
-          "coverage_pct": 97.6,
-          "present": 611,
-          "total": 626
+          "coverage_pct": 97.54,
+          "present": 595,
+          "total": 610
         },
         {
           "date": "2026-07-10",
-          "coverage_pct": 97.76,
-          "present": 612,
-          "total": 626
+          "coverage_pct": 97.7,
+          "present": 596,
+          "total": 610
         },
         {
           "date": "2026-07-13",
-          "coverage_pct": 97.76,
-          "present": 612,
-          "total": 626
+          "coverage_pct": 97.7,
+          "present": 596,
+          "total": 610
         },
         {
           "date": "2026-07-14",
-          "coverage_pct": 97.76,
-          "present": 612,
-          "total": 626
+          "coverage_pct": 97.7,
+          "present": 596,
+          "total": 610
         },
         {
           "date": "2026-07-16",
-          "coverage_pct": 97.92,
-          "present": 613,
-          "total": 626
+          "coverage_pct": 97.87,
+          "present": 597,
+          "total": 610
         },
         {
           "date": "2026-07-17",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-20",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-21",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-22",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-23",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-24",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-27",
-          "coverage_pct": 98.08,
-          "present": 614,
-          "total": 626
+          "coverage_pct": 98.03,
+          "present": 598,
+          "total": 610
         },
         {
           "date": "2026-07-28",
-          "coverage_pct": 98.24,
-          "present": 615,
-          "total": 626
+          "coverage_pct": 98.2,
+          "present": 599,
+          "total": 610
         },
         {
           "date": "2026-07-29",
-          "coverage_pct": 98.4,
-          "present": 616,
-          "total": 626
+          "coverage_pct": 98.36,
+          "present": 600,
+          "total": 610
         },
         {
           "date": "2026-07-30",
-          "coverage_pct": 98.56,
-          "present": 617,
-          "total": 626
+          "coverage_pct": 98.52,
+          "present": 601,
+          "total": 610
         },
         {
           "date": "2026-07-31",
-          "coverage_pct": 98.56,
-          "present": 617,
-          "total": 626
+          "coverage_pct": 98.52,
+          "present": 601,
+          "total": 610
         },
         {
           "date": "2026-08-03",
-          "coverage_pct": 98.56,
-          "present": 617,
-          "total": 626
+          "coverage_pct": 98.52,
+          "present": 601,
+          "total": 610
         },
         {
           "date": "2026-08-04",
-          "coverage_pct": 98.72,
-          "present": 618,
-          "total": 626
+          "coverage_pct": 98.69,
+          "present": 602,
+          "total": 610
         },
         {
           "date": "2026-08-05",
-          "coverage_pct": 98.72,
-          "present": 618,
-          "total": 626
+          "coverage_pct": 98.69,
+          "present": 602,
+          "total": 610
         },
         {
           "date": "2026-08-06",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-07",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-10",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-11",
-          "coverage_pct": 98.72,
-          "present": 618,
-          "total": 626
+          "coverage_pct": 98.69,
+          "present": 602,
+          "total": 610
         },
         {
           "date": "2026-08-12",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-13",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-14",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-17",
-          "coverage_pct": 98.88,
-          "present": 619,
-          "total": 626
+          "coverage_pct": 98.85,
+          "present": 603,
+          "total": 610
         },
         {
           "date": "2026-08-18",
-          "coverage_pct": 99.04,
-          "present": 620,
-          "total": 626
+          "coverage_pct": 99.02,
+          "present": 604,
+          "total": 610
         },
         {
           "date": "2026-08-19",
-          "coverage_pct": 99.04,
-          "present": 620,
-          "total": 626
+          "coverage_pct": 99.02,
+          "present": 604,
+          "total": 610
         },
         {
           "date": "2026-08-20",
-          "coverage_pct": 99.36,
-          "present": 622,
-          "total": 626
+          "coverage_pct": 99.34,
+          "present": 606,
+          "total": 610
         },
         {
           "date": "2026-08-21",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-24",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-25",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-26",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-27",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-28",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-08-31",
-          "coverage_pct": 99.52,
-          "present": 623,
-          "total": 626
+          "coverage_pct": 99.51,
+          "present": 607,
+          "total": 610
         },
         {
           "date": "2026-09-01",
-          "coverage_pct": 99.68,
-          "present": 624,
-          "total": 626
+          "coverage_pct": 99.67,
+          "present": 608,
+          "total": 610
         },
         {
           "date": "2026-09-02",
-          "coverage_pct": 99.68,
-          "present": 624,
-          "total": 626
+          "coverage_pct": 99.67,
+          "present": 608,
+          "total": 610
         },
         {
           "date": "2026-09-03",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-04",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-07",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-08",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-09",
-          "coverage_pct": 99.68,
-          "present": 624,
-          "total": 626
+          "coverage_pct": 99.67,
+          "present": 608,
+          "total": 610
         },
         {
           "date": "2026-09-10",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-11",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-14",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-15",
-          "coverage_pct": 99.68,
-          "present": 624,
-          "total": 626
+          "coverage_pct": 99.67,
+          "present": 608,
+          "total": 610
         },
         {
           "date": "2026-09-16",
           "coverage_pct": 99.84,
-          "present": 625,
-          "total": 626
+          "present": 609,
+          "total": 610
         },
         {
           "date": "2026-09-17",
           "coverage_pct": 100.0,
-          "present": 626,
-          "total": 626
+          "present": 610,
+          "total": 610
         }
       ],
       "sparse_market_days": [],
       "reject_code": null,
       "reject_codes": [],
       "minimum_required_symbols": 313,
-      "pool_coverage_pct": 100.0
+      "pool_coverage_pct": 97.44
     }
   ]
 }
