@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T21:58:52",
+  "generated_at": "2026-09-18T22:32:50",
   "overall": "yellow",
   "summary": {
     "warn": 3,
@@ -84,7 +84,7 @@
       "category": "Data integrity / validation",
       "control": "Live price coverage",
       "status": "pass",
-      "summary": "Coverage 100.00% (625/625); missing 0.",
+      "summary": "Coverage 100.00% (626/626); missing 0.",
       "evidence": [],
       "action": "Investigate if coverage falls below 99% or missing list grows."
     },
@@ -132,7 +132,7 @@
       "category": "Operational / code quality",
       "control": "Python syntax compile",
       "status": "pass",
-      "summary": "77 Python files compile.",
+      "summary": "78 Python files compile.",
       "evidence": [],
       "action": "Fix syntax errors before deploy."
     },
@@ -254,7 +254,7 @@
       "status": "pass",
       "summary": "Operation gate reports 'on_time'.",
       "evidence": [
-        "{'label': 'kapanis', 'target_time': '18:40', 'delay_minutes': 6, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'kapanis', 'gate_reason': '', 'target_time': '18:40', 'delay_minutes': 6}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 625, 'source_pool_count': 625, 'missing_symbols': 0, 'missing_symbol_pct': 0.0, 'missing_symbol_list': "
+        "{'label': 'kapanis', 'target_time': '18:40', 'delay_minutes': 8, 'sla': {'status': 'on_time', 'root_cause': 'zamaninda', 'event': 'schedule', 'gate_label': 'kapanis', 'gate_reason': '', 'target_time': '18:40', 'delay_minutes': 8}, 'telegram': {'sent': True, 'status': 'sent'}, 'email': {'sent': None, 'status': 'unknown'}, 'source': 'borsapy_fallback_from_yahoo', 'fallback': True, 'price_count': 626, 'source_pool_count': 626, 'missing_symbols': 0, 'missing_symbol_pct': 0.0, 'missing_symbol_list': "
       ],
       "action": "Signals are low-trust while operation gate is red; fix ops before promotion."
     },
