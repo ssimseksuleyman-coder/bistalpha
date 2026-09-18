@@ -1434,6 +1434,157 @@ def main():
     except Exception as e:
         bad(f"[6t] bar arsivi testleri kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6u] TABAN-DURUST DEFTER — rebalans-pencereli, delik-farkindalikli (2026-09-18) ──
+    # Olcum: 09-01 penceresinde 10 stop'un 9'u taban gunu; kagit -15.5 / taban-durust -35.9. Arac 07-08'den
+    # beri kosmamisti (yetim); pencere tanimi "iki kosum arasi" idi (rebalans degil); yfinance'ta olmayan
+    # bar searchsorted ile SONRAKI bara kayiyordu (IEYHO 09-17 -> 09-18, -19%/kilit 0 = uydurma).
+    # Sozlesme (test-once):
+    #   U1 pencere = rebalans dongusu (initial_entry/rebalance sinirlari); stoplar tarihe gore atanir (sira degil)
+    #   U2 stop gunu seride YOKSA veri_eksik: kaydirma yok, oran/drag disi, sayilir ve etiketlenir
+    #   U3 taban + kilit: stop gunu -10 (taban), ertesi gun -3.4 (taban degil) -> was_locked, lock 1, cikis ertesi kapanis; drag agirlikli
+    #   U4 pencere ust siniri: sonraki rebalans sonrasi stop bu pencereye girmez
+    #   U5 stop sonrasi seride referans gunu eksikse seri_delik=True (kilit sayisi 'en az')
+    #   U6 rebuild_ledger deterministik; pencereler baslangica gore sirali; eski kayitlar YERINE gecer
+    #   U7 onbellek yukleyici: pkl sozlugunden close/low, kapsam disi tarih -> None (yfinance'a dusme karari cagirana)
+    #   U8 assess() yeniden kurulmus defterle calisir (anahtarlar tam)
+    #   U7b onbellek kapsami hafta sonu guvenli · U9 acik kilit / kilit tavani 'en az' · U10 olculemeyen getiri None
+    #   U11 drag alt-siniri C2b'yi gecemez (bagimsiz okuma, 2 tur)
+    print("\n[6u] Taban-durust defter — rebalans penceresi + delik farkindaligi (test-once)")
+    try:
+        import json as _json6u
+        import os as _os6u
+        import tempfile as _tf6u
+        import numpy as _np6u
+        import pandas as _pd6u
+        _TR6u = None
+        try:
+            import taban_readiness as _TR6u
+        except Exception as _e6u:
+            bad(f"[6u] taban_readiness import edilemedi: {type(_e6u).__name__}: {_e6u}")
+        _need = ("windows_from_history", "analyze_window", "rebuild_ledger", "cache_prices", "assess")
+        if _TR6u is not None and not all(hasattr(_TR6u, n) for n in _need):
+            bad(f"[6u] sozlesme eksik: {[n for n in _need if not hasattr(_TR6u, n)]} yok")
+        elif _TR6u is not None:
+            _h = [{"date": "2026-06-05", "event": "initial_entry", "total": 1.0, "trades": []},
+                  {"date": "2026-06-15", "event": "stop", "total": 0.98, "trades": [{"type": "SELL", "ticker": "AAA", "price": 90.0, "shares": 0.001, "reason": "stop"}]},
+                  {"date": "2026-07-17", "event": "rebalance", "total": 1.10, "trades": [{"type": "BUY", "ticker": "BBB"}]},
+                  {"date": "2026-07-28", "event": "stop", "total": 1.05, "trades": [{"type": "SELL", "ticker": "BBB", "price": 45.0, "shares": 0.002, "reason": "stop"}]},
+                  {"date": "2026-07-27", "event": "stop", "total": 1.07, "trades": [{"type": "SELL", "ticker": "CCC", "price": 30.0, "shares": 0.003, "reason": "stop"}]},   # sira bozuk (gercek 07-27/28)
+                  {"date": "2026-09-01", "event": "rebalance", "total": 1.20, "trades": [{"type": "BUY", "ticker": "DDD"}]},
+                  {"date": "2026-09-17", "event": "stop", "total": 1.02, "trades": [{"type": "SELL", "ticker": "DDD", "price": 186.3, "shares": 0.001, "reason": "stop"}, {"type": "SELL", "ticker": "EEE", "price": 10.0, "reason": "rebalance"}]}]
+            # U1
+            _w = _TR6u.windows_from_history(_h)
+            _u1 = [(w["start"], w["end"], sorted(s["tic"] for s in w["stops"]), w["start_total"], w["end_total"]) for w in _w]
+            if _u1 == [("2026-06-05", "2026-07-17", ["AAA"], 1.0, 1.10), ("2026-07-17", "2026-09-01", ["BBB", "CCC"], 1.10, 1.20), ("2026-09-01", None, ["DDD"], 1.20, 1.02)]:
+                ok("U1 pencere = rebalans dongusu: 3 pencere, stoplar TARIHE gore atanir (07-27 sira-bozuk kaydi W2'de), reason=rebalance SELL stop degil")
+            else:
+                bad(f"U1 pencereler: {_u1}")
+            # fiyat cercevesi: is gunleri 09-14..09-24; DDD 09-16 -10, 09-17 -10 (stop), 09-18 180 (-3.4, kilit acilir)
+            _idx = _pd6u.bdate_range("2026-09-14", "2026-09-24")
+            _ddd = [230.0, 230.0, 207.0, 186.3, 180.0, 181.0, 182.0, 183.0, 184.0]
+            _close = _pd6u.DataFrame({"DDD": _ddd, "XU100": _np6u.linspace(100, 96, len(_idx))}, index=_idx)
+            _low = _close * 0.99
+            # U3 taban + kilit (stop 09-17, o gun -10 -> taban; 09-18 -3.4 -> cikis 09-18 kapanisi 180 < kayit 186.3 -> drag > 0)
+            _r3 = _TR6u.analyze_window(_w[2], _close, _low)
+            _d3 = _r3["stops"][0]
+            _u3 = _d3.get("taban") is True and _d3.get("lock_days") == 1 and abs(_d3.get("real_exit_close", 0) - 180.0) < 1e-9 \
+                and _d3.get("veri_eksik") is False and _r3["n_stops"] == 1 and _r3["n_taban_stops"] == 1 and _r3["veri_eksik_stops"] == 0 \
+                and abs(_r3["booked_ret"] - (-15.0)) < 1e-6 and _r3["drag_close"] > 0
+            if _u3:
+                ok(f"U3 taban+kilit: 09-17 -10% taban, kilit {_d3['lock_days']} gun, gercek cikis 180 (kayit 186.3 -> drag {_r3['drag_close']}pp); booked {_r3['booked_ret']}%")
+            else:
+                bad(f"U3: {_d3} | {dict((k, _r3.get(k)) for k in ('n_stops','n_taban_stops','veri_eksik_stops','booked_ret','drag_close'))}")
+            # U2 delik: stop gunu (09-17) seride yok -> veri_eksik, kaydirma yok
+            _close2 = _close.drop(_pd6u.Timestamp("2026-09-17")); _low2 = _low.drop(_pd6u.Timestamp("2026-09-17"))
+            _r2 = _TR6u.analyze_window(_w[2], _close2, _low2)
+            _d2 = _r2["stops"][0]
+            if _d2.get("veri_eksik") is True and _d2.get("taban") is None and _d2.get("daily_ret") is None and _r2["veri_eksik_stops"] == 1 \
+                    and _r2["n_taban_stops"] == 0 and _r2["taban_ratio"] == 0 and _r2["drag_close"] == 0:
+                ok("U2 delik: stop gunu seride yok -> veri_eksik=True, taban/daily_ret None (SONRAKI bara KAYDIRMA yok), oran/drag disi")
+            else:
+                bad(f"U2 delik: {_d2} | {dict((k, _r2.get(k)) for k in ('veri_eksik_stops','n_taban_stops','taban_ratio','drag_close'))}")
+            # U4 ust sinir: W2 (07-17..09-01) 09-17 stop'unu icermez (U1 zaten), analyze da pencere disini almaz
+            _r4 = _TR6u.analyze_window(_w[1], _close, _low)
+            if _r4["n_stops"] == 0 and _r4["veri_eksik_stops"] == 2 and all(s.get("veri_eksik") for s in _r4["stops"]):
+                ok("U4 ust sinir + kapsam: W2'nin BBB/CCC stoplari fiyat cercevesinde yok -> veri_eksik (2), 09-17 DDD W2'ye girmez")
+            else:
+                bad(f"U4: {dict((k, _r4.get(k)) for k in ('n_stops','veri_eksik_stops'))} {_r4['stops']}")
+            # U5 seri delik: referans (XU100) 09-18'de var, DDD'de 09-18 yok -> kilit 'en az', seri_delik
+            _close5 = _close.copy(); _close5.loc[_pd6u.Timestamp("2026-09-18"), "DDD"] = _np6u.nan
+            _r5 = _TR6u.analyze_window(_w[2], _close5, _close5 * 0.99)
+            _d5 = _r5["stops"][0]
+            if _d5.get("seri_delik") is True and _d5.get("taban") is True and _r5["seri_delik_stops"] == 1:
+                ok("U5 stop sonrasi seride referans gunu eksik -> seri_delik=True (kilit/cikis 'en az'), stop yine taban sayilir")
+            else:
+                bad(f"U5: {_d5} {_r5.get('seri_delik_stops')}")
+            # U6 rebuild deterministik + eski kayitlar yerine
+            _l1 = _TR6u.rebuild_ledger(_h, _close, _low); _l2 = _TR6u.rebuild_ledger(_h, _close, _low)
+            _u6 = _json6u.dumps(_l1, sort_keys=True) == _json6u.dumps(_l2, sort_keys=True) and [w["window_start_date"] for w in _l1] == ["2026-06-05", "2026-07-17", "2026-09-01"] \
+                and all(k in _l1[0] for k in ("window_start_date", "window_end_date", "n_stops", "n_taban_stops", "veri_eksik_stops", "taban_ratio", "booked_ret", "drag_close", "drag_low", "taban_honest_close", "taban_honest_low", "max_consecutive_lock", "multi_day_locks", "price_source", "stops"))
+            if _u6:
+                ok("U6 rebuild_ledger deterministik, pencereler baslangica gore sirali, kayit anahtarlari tam (eski 'kosum arasi' kayitlar yerine)")
+            else:
+                bad(f"U6 rebuild: {[w.get('window_start_date') for w in _l1]} esit={_json6u.dumps(_l1, sort_keys=True) == _json6u.dumps(_l2, sort_keys=True)}")
+            # U7 onbellek yukleyici
+            _cache = {"data": {"prices": _close[["DDD"]], "mins": _low[["DDD"]], "bist": _close["XU100"]}}
+            _c7 = _TR6u.cache_prices(_cache, ["DDD", "ZZZ"], "2026-09-14", "2026-09-24")
+            _c7b = _TR6u.cache_prices(_cache, ["DDD"], "2026-09-01", "2026-09-24")
+            if _c7 is not None and list(_c7[0].columns) == ["DDD", "XU100"] and "ZZZ" not in _c7[0].columns and _c7b is None:
+                ok("U7 onbellek yukleyici: close/low + XU100 referans; evrende olmayan hisse dusurulur; kapsam disi tarih araligi -> None (uydurma yok)")
+            else:
+                bad(f"U7 onbellek: c7={None if _c7 is None else list(_c7[0].columns)} c7b={_c7b}")
+            # U8 assess
+            _ready, _lines, _verdict = _TR6u.assess(_l1)
+            if isinstance(_ready, bool) and len(_lines) == 4 and "pencere" in _verdict:
+                ok("U8 assess() yeniden kurulmus defterle calisiyor (4 kriter satiri)")
+            else:
+                bad(f"U8 assess: {_ready} {_lines} {_verdict}")
+            # --- bagimsiz okuma (2026-09-18 22:55) karsi testleri ---
+            # U7b hafta sonu: Cuma 09-18'de biten onbellek Pazartesi 09-21'de KAPSAR ('bugun-1' kurali None verirdi)
+            _idx_cf = _pd6u.bdate_range("2026-09-01", "2026-09-18")
+            _cache_cf = {"data": {"prices": _pd6u.DataFrame({"DDD": range(len(_idx_cf))}, index=_idx_cf, dtype=float)}}
+            _c7c = _TR6u.cache_prices(_cache_cf, ["DDD"], "2026-09-01", "2026-09-22", today="2026-09-21")
+            _c7d = _TR6u.cache_prices(_cache_cf, ["DDD"], "2026-09-01", "2026-09-30", today="2026-09-29")   # 11 gun eski -> None
+            if _c7c is not None and _c7d is None:
+                ok("U7b onbellek kapsami hafta sonu guvenli: Cuma onbellegi Pazartesi kapsar; 11 gun eski onbellek None")
+            else:
+                bad(f"U7b hafta sonu: cuma->pzt={_c7c is not None} eski={_c7d}")
+            # U9 kilit ACIK + tavan: seri taban gununde bitiyor -> kilit_acik, drag_en_az; 10+ gun taban -> kilit_tavan
+            _idx9 = _pd6u.bdate_range("2026-09-14", "2026-09-18")
+            _c9 = _pd6u.DataFrame({"DDD": [230.0, 230.0, 207.0, 186.3, 167.7], "XU100": [100, 99, 98, 97, 96]}, index=_idx9, dtype=float)
+            _r9 = _TR6u.analyze_window(_w[2], _c9, _c9 * 0.99)
+            _d9 = _r9["stops"][0]
+            _idx9b = _pd6u.bdate_range("2026-09-14", "2026-10-09")
+            _seq = [230.0, 230.0, 207.0] + [207.0 * (0.9 ** k) for k in range(1, len(_idx9b) - 2)]
+            _c9b = _pd6u.DataFrame({"DDD": _seq, "XU100": _np6u.linspace(100, 90, len(_idx9b))}, index=_idx9b, dtype=float)
+            _r9b = _TR6u.analyze_window(_w[2], _c9b, _c9b * 0.99)
+            _d9b = _r9b["stops"][0]
+            if _d9["kilit_acik"] is True and _r9["kilit_acik_stops"] == 1 and _r9["drag_en_az"] is True                     and _d9b["kilit_tavan"] is True and _d9b["lock_days"] >= 10 and _r9b["drag_en_az"] is True:
+                ok(f"U9 kilit ACIK (seri taban gununde bitiyor) -> kilit_acik, drag EN AZ; {_d9b['lock_days']} gun taban -> kilit_tavan (zorla cikis) etiketli")
+            else:
+                bad(f"U9 kilit: acik={_d9} tavan={_d9b} r9={_r9.get('drag_en_az')} r9b={_r9b.get('drag_en_az')}")
+            # U10 olculemeyen getiri: start_total yok -> booked None (0.0 UYDURULMAZ); assess c2a fail-closed
+            _w10 = dict(_w[2]); _w10["start_total"] = None
+            _r10 = _TR6u.analyze_window(_w10, _close, _low)
+            _ok10, _ln10, _ = _TR6u.assess([_r10])
+            if _r10["booked_ret"] is None and _r10["taban_honest_low"] is None and _ok10 is False and "olculemeyen pencere 1" in _ln10[1]:
+                ok("U10 olculemeyen getiri None (0.0 uydurulmaz); assess olculemeyen pencereyi kanit saymaz (c2a False)")
+            else:
+                bad(f"U10: booked={_r10['booked_ret']} th={_r10['taban_honest_low']} ready={_ok10} satir={_ln10[1]}")
+            # U11 drag ALT SINIR (acik kilit) tavanin altinda kalsa da C2b'yi GECEMEZ (fail-closed)
+            _w11 = dict(_l1[0]); _w11.update(drag_low=3.0, drag_en_az=True, taban_honest_low=5.0, max_consecutive_lock=1, taban_ratio=30)
+            _w11b = dict(_w11); _w11b["drag_en_az"] = False
+            _l11 = [_w11] * 5; _l11b = [_w11b] * 5
+            _r11, _ln11, _ = _TR6u.assess(_l11); _r11b, _, _ = _TR6u.assess(_l11b)
+            if _r11 is False and "alt-sinir" in _ln11[1] and _r11b is True:
+                ok("U11 drag alt-sinir pencere (acik kilit/delik/tavan) C2b'yi gecemez; ayni sayilar kesinse gecer (5 pencere)")
+            else:
+                bad(f"U11: en_az={_r11} satir={_ln11[1]} kesin={_r11b}")
+    except Exception as e:
+        # C10 KARARI (bilerek, yazili): blok-sarmali genis except -> bad() = KAYITLI basarisizlik (selftest
+        # exit 1), yutma degil; daraltilsaydi tek beklenmeyen hata butun suiti dusururdu. Repo bloklarinin geleneği.
+        bad(f"[6u] taban defteri testleri kosmadi: {type(e).__name__}: {e}")
+
     # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
     # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
     # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN
