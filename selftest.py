@@ -1224,6 +1224,139 @@ def main():
     except Exception as e:
         bad(f"[6r] C1 kilit testleri kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6t] BAR ARSIVI — sistem cektigi veriyi SAKLASIN (2026-09-18 olcumu: hicbir bar saklanmiyordu) ──
+    # Kanit: gunde 3x 625 hisse cekilip atiliyordu; yfinance 09-17 deligi (IEYHO/SELEC) kendi verimizden
+    # doldurulamadi. Sozlesme (test-once):
+    #   T1 yeni arsiv: aylik CSV data/bars/YYYY-MM.csv, sabit kolonlar, hisseler + XU100, LF, UTF-8
+    #   T2 idempotent: ayni veri ikinci kez -> 0 satir eklenir, dosya bayt-bayt ayni
+    #   T3 revizyon: ayni (tarih,hisse) farkli deger -> EKLENIR (ustune yazilmaz); son satir = son gorus
+    #   T4 gunici kismi bar + kapanis nihai bar -> iki satir; son_barlar() nihai olani verir
+    #   T5 ay siniri: tarihler iki aya yayilirsa iki dosya
+    #   T6 NaN kapanis -> satir yazilmaz (bos bar = bar degil); XU100 close-only
+    #   T7 file-fallback kaynagi -> ARSIVLENMEZ (donmus Excel arsivi kirletmesin), durum dosyasi nedeni yazar
+    #   T8 durum dosyasi docs/state/bar_archive.json: sayaclar + fetched_at 'Z'
+    #   T9 daemon cagri sozlesmesi: feed fazindan sonra guarded icinde; workflow commit adimi data/bars/ ekler
+    print("\n[6t] Bar arsivi — cekilen veri saklaniyor (test-once)")
+    try:
+        import csv as _csv6t
+        import hashlib as _hl6t
+        import json as _json6t
+        import tempfile as _tf6t
+        from datetime import datetime as _dt6t, timezone as _tz6t
+        import numpy as _np6t
+        import pandas as _pd6t
+        try:
+            from bist_alpha import bar_archive as _BA
+        except Exception as _e6t:
+            _BA = None
+            bad(f"T sozlesmesi eksik: bist_alpha.bar_archive import edilemedi ({type(_e6t).__name__}: {_e6t})")
+        if _BA is not None:
+            _root6t = _tf6t.mkdtemp()
+            def _veri(dates, closes, source="borsapy", opens=None, vols=None, bist=None):
+                idx = _pd6t.DatetimeIndex([_pd6t.Timestamp(d) for d in dates])
+                pr = _pd6t.DataFrame(closes, index=idx)
+                out = {"prices": pr, "opens": _pd6t.DataFrame(opens if opens is not None else closes, index=idx),
+                       "mins": pr * 0.99, "maxs": pr * 1.01,
+                       "volumes": _pd6t.DataFrame(vols if vols is not None else {c: [1000] * len(dates) for c in pr.columns}, index=idx),
+                       "bist": _pd6t.Series(bist if bist is not None else [100.0 + i for i in range(len(dates))], index=idx),
+                       "_source_base": source, "_source": source}
+                return out
+            _d1 = _veri(["2026-09-14", "2026-09-15", "2026-09-16"], {"AAA": [10.0, 10.5, 11.0], "BBB": [20.0, 20.5, 21.0]})
+            _now = _dt6t(2026, 9, 16, 15, 45, 0, tzinfo=_tz6t.utc)
+            _r1 = _BA.append_bars(_d1, "kapanis", root=_root6t, now=_now)
+            _f = os.path.join(_root6t, "data", "bars", "2026-09.csv")
+            _rows = list(_csv6t.DictReader(open(_f, encoding="utf-8", newline=""))) if os.path.exists(_f) else []
+            _cols = list(_rows[0].keys()) if _rows else []
+            _lf_ok = b"\r\n" not in open(_f, "rb").read() if os.path.exists(_f) else False
+            # T1
+            if _cols == _BA.COLUMNS and len(_rows) == 9 and {r["ticker"] for r in _rows} == {"AAA", "BBB", "XU100"} \
+                    and _r1.get("rows_added") == 9 and _lf_ok and _rows[0]["fetched_at"].endswith("Z"):
+                ok(f"T1 yeni arsiv: {len(_rows)} satir (2 hisse + XU100 x 3 gun), kolonlar {_BA.COLUMNS}, LF, fetched_at Z")
+            else:
+                bad(f"T1 arsiv bicimi: cols={_cols} n={len(_rows)} r={_r1} lf={_lf_ok}")
+            # T2 idempotent
+            _h_once = _hl6t.sha256(open(_f, "rb").read()).hexdigest() if os.path.exists(_f) else None
+            _r2 = _BA.append_bars(_d1, "kapanis", root=_root6t, now=_now.replace(minute=50))
+            _h_sonra = _hl6t.sha256(open(_f, "rb").read()).hexdigest() if os.path.exists(_f) else None
+            if _r2.get("rows_added") == 0 and _h_once == _h_sonra:
+                ok("T2 idempotent: ayni veri tekrar -> 0 satir, dosya bayt-bayt ayni (fetched_at farkli olsa da)")
+            else:
+                bad(f"T2 idempotent degil: r={_r2} ayni_hash={_h_once == _h_sonra}")
+            # T3 revizyon: 09-16 AAA kapanisi 11.0 -> 11.2 (gec revizyon), ertesi gun acilis kosumu
+            _d3 = _veri(["2026-09-14", "2026-09-15", "2026-09-16"], {"AAA": [10.0, 10.5, 11.2], "BBB": [20.0, 20.5, 21.0]})
+            _r3 = _BA.append_bars(_d3, "acilis", root=_root6t, now=_dt6t(2026, 9, 17, 7, 5, 0, tzinfo=_tz6t.utc))
+            _son = _BA.son_barlar(_f)
+            if _r3.get("rows_added") == 1 and abs(float(_son[("2026-09-16", "AAA")]["close"]) - 11.2) < 1e-9 \
+                    and len([r for r in _csv6t.DictReader(open(_f, encoding="utf-8", newline="")) if r["ticker"] == "AAA" and r["date"] == "2026-09-16"]) == 2:
+                ok("T3 revizyon EKLENIR (ustune yazilmaz): (09-16,AAA) iki satir, son_barlar() son gorusu (11.2) verir")
+            else:
+                bad(f"T3 revizyon: r={_r3} son={_son.get(('2026-09-16', 'AAA'))}")
+            # T4 gunici kismi + kapanis nihai
+            _d4a = _veri(["2026-09-16", "2026-09-17"], {"AAA": [11.2, 11.5], "BBB": [21.0, 21.3]}, bist=[102.0, 103.0])
+            _d4b = _veri(["2026-09-16", "2026-09-17"], {"AAA": [11.2, 11.9], "BBB": [21.0, 21.3]}, bist=[102.0, 103.0])
+            _r4a = _BA.append_bars(_d4a, "gunici", root=_root6t, now=_dt6t(2026, 9, 17, 11, 35, 0, tzinfo=_tz6t.utc))
+            _r4b = _BA.append_bars(_d4b, "kapanis", root=_root6t, now=_dt6t(2026, 9, 17, 15, 45, 0, tzinfo=_tz6t.utc))
+            _son4 = _BA.son_barlar(_f)
+            _aaa17 = [r for r in _csv6t.DictReader(open(_f, encoding="utf-8", newline="")) if r["ticker"] == "AAA" and r["date"] == "2026-09-17"]
+            if _r4a.get("rows_added") == 3 and _r4b.get("rows_added") == 1 and [r["run_label"] for r in _aaa17] == ["gunici", "kapanis"] \
+                    and abs(float(_son4[("2026-09-17", "AAA")]["close"]) - 11.9) < 1e-9 and _son4[("2026-09-17", "AAA")]["run_label"] == "kapanis":
+                ok("T4 gunici kismi bar + kapanis nihai bar iki satir; son_barlar() nihai (kapanis) olani verir; degismeyen BBB tekrar yazilmaz")
+            else:
+                bad(f"T4 gunici/kapanis: a={_r4a} b={_r4b} aaa17={[(r['run_label'], r['close']) for r in _aaa17]} son={_son4.get(('2026-09-17', 'AAA'))}")
+            # T5 ay siniri
+            _d5 = _veri(["2026-09-30", "2026-10-01"], {"AAA": [12.0, 12.1]})
+            _r5 = _BA.append_bars(_d5, "kapanis", root=_root6t, now=_dt6t(2026, 10, 1, 15, 45, 0, tzinfo=_tz6t.utc))
+            _f10 = os.path.join(_root6t, "data", "bars", "2026-10.csv")
+            if os.path.exists(_f10) and sorted(_r5.get("files", [])) == ["data/bars/2026-09.csv", "data/bars/2026-10.csv"] and _r5.get("rows_added") == 4:
+                ok("T5 ay siniri: iki aya yayilan tarihler iki dosyaya (2026-09.csv, 2026-10.csv), yollar repo-goreli")
+            else:
+                bad(f"T5 ay siniri: r={_r5} 10_var={os.path.exists(_f10)}")
+            # T6 NaN kapanis satir yazilmaz; XU100 close-only
+            _root6 = _tf6t.mkdtemp()
+            _d6 = _veri(["2026-09-16", "2026-09-17"], {"AAA": [11.0, _np6t.nan], "BBB": [21.0, 21.3]})
+            _r6 = _BA.append_bars(_d6, "kapanis", root=_root6, now=_now)
+            _rows6 = list(_csv6t.DictReader(open(os.path.join(_root6, "data", "bars", "2026-09.csv"), encoding="utf-8", newline="")))
+            _xu = [r for r in _rows6 if r["ticker"] == "XU100"]
+            if _r6.get("rows_added") == 5 and not any(r["ticker"] == "AAA" and r["date"] == "2026-09-17" for r in _rows6) \
+                    and len(_xu) == 2 and _xu[0]["open"] == "" and _xu[0]["close"] != "":
+                ok("T6 NaN kapanis satir yazilmaz (2 gun x 3 - 1 = 5); XU100 close-only (open/high/low/volume bos)")
+            else:
+                bad(f"T6 NaN/XU100: r={_r6} rows={[(r['date'], r['ticker'], r['close']) for r in _rows6]}")
+            # T7 file-fallback arsivlenmez
+            _root7 = _tf6t.mkdtemp()
+            _d7 = _veri(["2026-09-16"], {"AAA": [11.0]}, source="file")
+            _d7["_source"] = "file_fallback_from_yahoo"
+            _r7 = _BA.append_bars(_d7, "kapanis", root=_root7, now=_now)
+            _st7 = _json6t.load(open(os.path.join(_root7, "docs", "state", "bar_archive.json"), encoding="utf-8"))
+            if _r7.get("rows_added") == 0 and _r7.get("skipped_reason") and not os.path.exists(os.path.join(_root7, "data", "bars", "2026-09.csv")) \
+                    and _st7.get("skipped_reason") == _r7.get("skipped_reason") and "file" in _st7.get("skipped_reason", ""):
+                ok(f"T7 file-fallback kaynagi ARSIVLENMEZ; durum dosyasi nedeni yazar ({_st7.get('skipped_reason')})")
+            else:
+                bad(f"T7 file-fallback: r={_r7} st={_st7}")
+            # T8 durum dosyasi
+            _st = _json6t.load(open(os.path.join(_root6t, "docs", "state", "bar_archive.json"), encoding="utf-8"))
+            _st_keys = {"generated_at", "run_label", "source", "rows_seen", "rows_added", "dates", "files", "skipped_reason", "writer"}
+            if _st_keys <= set(_st) and _st["generated_at"].endswith("Z") and _st["run_label"] == "kapanis" and _st["rows_added"] == 4 \
+                    and _st["dates"] == ["2026-09-30", "2026-10-01"]:
+                ok("T8 durum dosyasi docs/state/bar_archive.json: sayaclar, tarihler, dosyalar, generated_at Z, writer")
+            else:
+                bad(f"T8 durum dosyasi: {_st}")
+            # T9 daemon + workflow sozlesmesi (kaynak metin)
+            _dsrc = open(os.path.join(ROOT, "daemon.py"), encoding="utf-8").read()
+            _i_feed = _dsrc.find('_rt.phase("feed")'); _i_ba = _dsrc.find("bar_archive.append_bars(")
+            _guarded = _i_ba > 0 and "guarded(" in _dsrc[max(0, _i_ba - 200):_i_ba]
+            _wf_ok = all("data/bars/" in open(os.path.join(ROOT, ".github", "workflows", w), encoding="utf-8").read()
+                         for w in ("bist-alpha.yml", "precise.yml"))
+            # `git add -f data/bars/` dizin yoksa "pathspec did not match" ile ADIMI DUSURUR (daemon kosmayan
+            # always() state adimi) -> takipli .gitkeep dizini her zaman var eder
+            _keep_ok = os.path.isfile(os.path.join(ROOT, "data", "bars", ".gitkeep"))
+            if _i_feed > 0 and _i_ba > _i_feed and _guarded and _wf_ok and _keep_ok:
+                ok("T9 daemon: feed fazindan SONRA guarded icinde bar_archive.append_bars; iki workflow commit adimi data/bars/ ekliyor; data/bars/.gitkeep var")
+            else:
+                bad(f"T9 cagri sozlesmesi: feed_idx={_i_feed} ba_idx={_i_ba} guarded={_guarded} workflow={_wf_ok} gitkeep={_keep_ok}")
+    except Exception as e:
+        bad(f"[6t] bar arsivi testleri kosmadi: {type(e).__name__}: {e}")
+
     # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
     # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
     # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN

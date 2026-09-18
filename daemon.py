@@ -22,6 +22,7 @@ from datetime import datetime, time
 
 import shadow
 
+from bist_alpha import bar_archive  # 2026-09-18: cekilen barlar saklanir (data/bars/)
 from bist_alpha import config
 from bist_alpha import datafeed
 from bist_alpha.portfolio import StateQuarantined as _StateQuarantined  # P0.4
@@ -370,6 +371,11 @@ def _run_cycle_iz(label="manuel"):
     data['_dynamic_universe_method'] = 'likidite_fiyat_x_hacim' if source_base in ('yahoo', 'borsapy') else 'piyasa_degeri'
     print(f"[daemon] Kaynak: {data.get('_source', config.DATA_SOURCE)}")
     print(f"[daemon] Veri: {data['prices'].shape[1]} hisse, dinamik evren: {len(universe)}")
+    # BAR ARSIVI (2026-09-18): feed'in son gunleri data/bars/YYYY-MM.csv'ye eklenir (salt-ekleme,
+    # idempotent; file-fallback arsivlenmez). Arsiv hatasi raporu DUSURMEZ ama guarded loglar;
+    # durum docs/state/bar_archive.json'da. Karar yoluna etkisi yok (yalniz yazar).
+    selfheal.guarded(lambda: bar_archive.append_bars(data, label, root=str(_rt.REPO_ROOT)),
+                     label="bar arsivi")
 
     # 3) Bakım (eksik #6) — veri sağlık + temp/log temizliği
     health = maintenance.run_maintenance(data)
