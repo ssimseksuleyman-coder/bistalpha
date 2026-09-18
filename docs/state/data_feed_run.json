@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-18T11:53:56Z",
+  "generated_at": "2026-09-18T15:48:25Z",
   "status": "ok",
   "primary_source": "yahoo",
   "selected_source": "borsapy",
@@ -9,15 +9,15 @@
     {
       "source": "yahoo",
       "status": "failed",
-      "started_at": "2026-09-18T11:47:46Z",
-      "finished_at": "2026-09-18T11:48:16Z",
-      "duration_s": 30.053,
+      "started_at": "2026-09-18T15:40:02Z",
+      "finished_at": "2026-09-18T15:40:42Z",
+      "duration_s": 39.274,
       "returned_symbols": 624,
       "expected_pool": 626,
       "last_data_date": "2026-09-18",
       "calendar_status": "OK",
       "calendar_days_remaining": 104,
-      "expected_last_closed_session": "2026-09-17",
+      "expected_last_closed_session": "2026-09-18",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -1031,8 +1031,8 @@
         },
         {
           "date": "2026-09-07",
-          "coverage_pct": 17.95,
-          "present": 112,
+          "coverage_pct": 99.84,
+          "present": 623,
           "total": 624
         },
         {
@@ -1073,28 +1073,28 @@
         },
         {
           "date": "2026-09-16",
-          "coverage_pct": 99.84,
-          "present": 623,
+          "coverage_pct": 99.68,
+          "present": 622,
           "total": 624
         },
         {
           "date": "2026-09-17",
-          "coverage_pct": 13.62,
-          "present": 85,
+          "coverage_pct": 13.46,
+          "present": 84,
+          "total": 624
+        },
+        {
+          "date": "2026-09-18",
+          "coverage_pct": 100.0,
+          "present": 624,
           "total": 624
         }
       ],
       "sparse_market_days": [
         {
-          "date": "2026-09-07",
-          "coverage_pct": 17.95,
-          "present": 112,
-          "total": 624
-        },
-        {
           "date": "2026-09-17",
-          "coverage_pct": 13.62,
-          "present": 85,
+          "coverage_pct": 13.46,
+          "present": 84,
           "total": 624
         }
       ],
@@ -1104,21 +1104,21 @@
       ],
       "minimum_required_symbols": 313,
       "pool_coverage_pct": 99.68,
-      "error": "BIST islem gununde hisse kapsami yetersiz: 2026-09-07 %17.95 (112/624), 2026-09-17 %13.62 (85/624)",
+      "error": "BIST islem gununde hisse kapsami yetersiz: 2026-09-17 %13.46 (84/624)",
       "error_type": "DataGateRejected"
     },
     {
       "source": "borsapy",
       "status": "ok",
-      "started_at": "2026-09-18T11:48:16Z",
-      "finished_at": "2026-09-18T11:53:56Z",
-      "duration_s": 340.102,
+      "started_at": "2026-09-18T15:40:42Z",
+      "finished_at": "2026-09-18T15:48:25Z",
+      "duration_s": 463.931,
       "returned_symbols": 626,
       "expected_pool": 626,
       "last_data_date": "2026-09-18",
       "calendar_status": "OK",
       "calendar_days_remaining": 104,
-      "expected_last_closed_session": "2026-09-17",
+      "expected_last_closed_session": "2026-09-18",
       "freshness_status": "FRESH",
       "bar_completeness": "unknown",
       "checked_market_days": [
@@ -2180,6 +2180,12 @@
         },
         {
           "date": "2026-09-17",
+          "coverage_pct": 100.0,
+          "present": 626,
+          "total": 626
+        },
+        {
+          "date": "2026-09-18",
           "coverage_pct": 100.0,
           "present": 626,
           "total": 626
