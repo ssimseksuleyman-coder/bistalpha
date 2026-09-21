@@ -18,6 +18,7 @@ import pandas as pd
 from . import config
 from .sectors import get_sector
 from .signals import signal_for
+from . import bar_state   # 2026-09-21: kilitli hisse listelere giremez
 from .strategy import last_n_return
 
 
@@ -226,6 +227,8 @@ def build_watchlists(data, signals, report, date=None, limit=8):
     for ticker, values in df.iterrows():
         if ticker in top10:
             continue
+        if bar_state.gun_durumu(data, ticker, date)["son"]:
+            continue                                            # kilitli hisse (taban/tavan) radar listesine giremez (#3a)
         sig = signal_for(signals, date, ticker)
         sm_bonus = {"GÜÇLÜ_BİRİKİM": 18, "Birikim": 10, "Nötr": 2}.get(sig, 0)
         tags, profile = _risk_tags(data, date, ticker, values, sig, sector_counts, top10)

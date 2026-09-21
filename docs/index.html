@@ -583,7 +583,7 @@ function renderDecisionCards(data) {
     cards.push({
       ticker: item.ticker,
       badge: item.action || 'F',
-      title: 'F neden aldi?',
+      title: inF ? 'F neden tutuyor?' : 'F neden secti? (pozisyon yok)',
       f: fReason(item),
       o: inO ? 'O shadow portfoyunde de var.' : (inF ? 'F shadowda var; O tarafinda yok.' : latestSwapReason(data, item.ticker)),
       radar: 'Top10 icinde; radar degil, islem motoru adayi.',

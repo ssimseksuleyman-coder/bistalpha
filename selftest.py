@@ -1585,6 +1585,94 @@ def main():
         # exit 1), yutma degil; daraltilsaydi tek beklenmeyen hata butun suiti dusururdu. Repo bloklarinin geleneği.
         bad(f"[6u] taban defteri testleri kosmadi: {type(e).__name__}: {e}")
 
+    # ── [6v] #3a-B — KILITLI HISSEYE "AL" YAZILMAZ: bar durumu TEK OTORITE + rapor/liste/panel korumasi ──
+    # Canli kanit 2026-09-16..21: OZATD/TRHOL/ALKLC/DSTKF/SELEC taban kilidindeyken panel+Telegram "AL"
+    # (signals: kilitli barda CPR 0.5 dolgusu + acc patlamasi -> "Birikim"). F motoruna dokunmaz (R1).
+    # Sozlesme (test-once):
+    #   V1 bar_state.gun_durumu: son bar taban/tavan (ret <= -9.5 / >= 9.5), ardisik gun, kilitli bar (range 0);
+    #      tarih indekste yoksa olculemedi=True (kaydirma yok); etiket "TABAN KILIDI (k g)" / "TAVAN KILIDI (k g)"
+    #   V2 reporter._action: kilit varsa AL/FIRSAT olamaz -> BEKLE (Birikim olsa da); stop -> SAT onceligi korunur
+    #   V3 reporter.generate_report kaynak sozlesmesi: her pick icin gun_durumu; action kilit'e bagli;
+    #      display_signal etiketi oncelikli; FIRSAT listesi kilitli hisseyi atlar; satirda kilit alanlari
+    #   V4 radar/omega: kilitli hisse donusum/sessiz-birikim listesine giremez (kaynak sozlesmesi)
+    #   V5 panel: karar karti basligi 'F neden aldi?' YOK (pozisyon yoksa 'secti', varsa 'tutuyor')
+    print("\n[6v] #3a-B kilitli hisseye AL yazilmaz (test-once)")
+    try:
+        import pandas as _pd6v
+        import numpy as _np6v
+        try:
+            from bist_alpha import bar_state as _BS
+        except Exception as _e6v:
+            _BS = None
+            bad(f"V1 sozlesmesi eksik: bist_alpha.bar_state import edilemedi ({type(_e6v).__name__}: {_e6v})")
+        if _BS is not None:
+            _ix = _pd6v.bdate_range("2026-09-08", periods=10)
+            # AAA: son 3 gun taban (-10 kilitli), BBB: son gun tavan (+10, range>0 = yumusak), CCC: normal
+            _pa = [100, 101, 102, 103, 104, 105, 106, 95.4, 85.86, 77.27]
+            _pb = [50, 50.5, 51, 51.5, 52, 52.5, 53, 53.5, 54, 59.4]
+            _pc = [10, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9]
+            _cl = _pd6v.DataFrame({"AAA": _pa, "BBB": _pb, "CCC": _pc}, index=_ix, dtype=float)
+            _mn = _cl.copy(); _mx = _cl.copy()
+            _mx.loc[:, "BBB"] = _cl["BBB"] * 1.01; _mn.loc[:, "BBB"] = _cl["BBB"] * 0.99      # BBB range>0
+            _mx.loc[:, "CCC"] = _cl["CCC"] * 1.01; _mn.loc[:, "CCC"] = _cl["CCC"] * 0.99
+            _mx.loc[_ix[:7], "AAA"] = _cl["AAA"].iloc[:7] * 1.01; _mn.loc[_ix[:7], "AAA"] = _cl["AAA"].iloc[:7] * 0.99  # AAA son 3 gun range 0
+            _d6v = {"prices": _cl, "mins": _mn, "maxs": _mx}
+            _a = _BS.gun_durumu(_d6v, "AAA", _ix[-1]); _b = _BS.gun_durumu(_d6v, "BBB", _ix[-1]); _c = _BS.gun_durumu(_d6v, "CCC", _ix[-1])
+            _y = _BS.gun_durumu(_d6v, "AAA", _pd6v.Timestamp("2026-09-27"))                    # indekste yok
+            _v1 = (_a["son"] == "taban" and _a["ardisik"] == 3 and _a["kilitli_bar"] == 3 and _a["olculemedi"] is False
+                   and _b["son"] == "tavan" and _b["ardisik"] == 1 and _b["kilitli_bar"] == 0
+                   and _c["son"] is None and _c["ardisik"] == 0
+                   and _y["olculemedi"] is True and _y["son"] is None
+                   and _BS.etiket(_a) == "TABAN KILIDI (3 g)" and _BS.etiket(_b) == "TAVAN KILIDI (1 g)" and _BS.etiket(_c) is None)
+            if _v1:
+                ok("V1 bar_state: taban 3 g (kilitli 3), tavan 1 g (yumusak), normal None; indekste olmayan tarih olculemedi (kaydirma yok); etiketler")
+            else:
+                bad(f"V1 bar_state: a={_a} b={_b} c={_c} y={_y}")
+            # V2 _action
+            from bist_alpha import reporter as _RP
+            import inspect as _insp6v
+            _sig_ok = "kilit" in _insp6v.signature(_RP._action).parameters
+            _v2 = _sig_ok and _RP._action(False, True, "Birikim", False, kilit="taban") == "BEKLE" \
+                and _RP._action(False, True, "GÜÇLÜ_BİRİKİM", False, kilit="tavan") == "BEKLE" \
+                and _RP._action(False, False, "GÜÇLÜ_BİRİKİM", False, kilit="taban") == "BEKLE" \
+                and _RP._action(True, True, "Birikim", True, kilit="taban") == "SAT" \
+                and _RP._action(False, True, "Birikim", False, kilit=None) == "AL" \
+                and _RP._action(False, False, "GÜÇLÜ_BİRİKİM", False, kilit=None) == "FIRSAT"
+            if _v2:
+                ok("V2 reporter._action: kilitli -> BEKLE (Birikim/GUCLU olsa da, FIRSAT da olamaz); stop -> SAT; kilit yoksa eski davranis")
+            else:
+                bad(f"V2 _action: sig_ok={_sig_ok}")
+            # V3 generate_report kaynak sozlesmesi
+            _rsrc = open(os.path.join(ROOT, "bist_alpha", "reporter.py"), encoding="utf-8").read()
+            _g = _rsrc[_rsrc.index("def generate_report("):]
+            _g_top = _g[:_g.index("firsatlar = []")]; _g_fir = _g[_g.index("firsatlar = []"):_g.index("firsatlar = []") + 1200]
+            _v3 = ("bar_state.gun_durumu(" in _g_top and "kilit=" in _g_top and "bar_state.etiket(" in _g_top
+                   and '"kilit_durumu"' in _g_top and '"kilit_gun"' in _g_top
+                   and "bar_state.gun_durumu(" in _g_fir and "continue" in _g_fir)
+            if _v3:
+                ok("V3 generate_report: her pick icin gun_durumu -> action(kilit) + etiketli display_signal + kilit alanlari; FIRSAT kilitliyi atlar")
+            else:
+                bad(f"V3 generate_report sozlesmesi: top={'bar_state.gun_durumu(' in _g_top} etiket={'bar_state.etiket(' in _g_top} firsat={'bar_state.gun_durumu(' in _g_fir}")
+            # V4 radar / omega
+            _rad = open(os.path.join(ROOT, "bist_alpha", "radar.py"), encoding="utf-8").read()
+            _omg = open(os.path.join(ROOT, "bist_alpha", "omega.py"), encoding="utf-8").read()
+            _v4 = ("bar_state" in _rad and "gun_durumu(" in _rad and "bar_state" in _omg and "gun_durumu(" in _omg
+                   and "kilit" in _omg[_omg.index("def _omega_score"):_omg.index("def _omega_score") + 1500])
+            if _v4:
+                ok("V4 radar/omega: kilitli hisse donusum/sessiz-birikim listelerine ve omega kapisina giremiyor (kaynak sozlesmesi)")
+            else:
+                bad("V4 radar/omega bar_state kapisi yok")
+            # V5 panel basligi
+            _html = open(os.path.join(ROOT, "docs", "index.html"), encoding="utf-8").read()
+            _v5 = "F neden aldi?" not in _html and "F neden secti" in _html and "F neden tutuyor" in _html
+            if _v5:
+                ok("V5 panel karar karti: 'F neden aldi?' kaldirildi; pozisyon yoksa 'secti', varsa 'tutuyor'")
+            else:
+                bad("V5 panel basligi hala 'F neden aldi?' ya da durum-farkindali degil")
+    except Exception as e:
+        # C10 karari (bilerek, yazili): blok-sarmali except -> bad() = kayitli basarisizlik, yutma degil
+        bad(f"[6v] #3a-B testleri kosmadi: {type(e).__name__}: {e}")
+
     # ── [6h] #0b — DOLU AMA ZAMAN EKSENI DELIK PRIMARY FALLBACK'I ENGELLEMEMELI ──
     # CANLI VAKA (2026-09-08): Yahoo matrisi 624 hisseyle "dolu" gorundu; 09-08
     # bari geldi, fakat XU100'un islem gordugu 09-07 satiri hisselerde %99.52 NaN

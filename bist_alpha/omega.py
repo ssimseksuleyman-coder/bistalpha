@@ -12,6 +12,7 @@ import pandas as pd
 from . import config
 from .sectors import get_sector
 from .signals import signal_for, lot_multiplier
+from . import bar_state   # 2026-09-21: kilitli hisse omega katmanlarina giremez
 from .strategy import last_n_return, score
 
 
@@ -96,12 +97,15 @@ def _candidate_frame(data, date):
 def _omega_score(data, signals, date, ticker, row):
     sig = signal_for(signals, date, ticker)
     vr = _volume_ratio(data, date, ticker)
+    kilit = bar_state.gun_durumu(data, ticker, date)["son"]     # taban/tavan kilidi: katman kapilari kapali (#3a)
 
     transform = (
+        not kilit and
         row["m21"] >= 8 and row["m5"] >= 0 and row["acceleration"] >= 25 and
         (row["rank_1a"] <= 45 or row["rank_1h"] <= 45)
     )
     quiet = (
+        not kilit and
         sig in ("GÜÇLÜ_BİRİKİM", "Birikim") and vr is not None and vr >= 1.15 and
         -10 <= row["m21"] <= 35 and -5 <= row["m5"] <= 18
     )

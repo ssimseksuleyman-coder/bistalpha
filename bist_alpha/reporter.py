@@ -21,11 +21,17 @@ from .sectors import get_sector
 from .signals import signal_for
 from .strategy import last_n_return, select, score
 from . import regime
+from . import bar_state   # 2026-09-21: taban/tavan kilidi TEK OTORITE; kilitli hisseye AL/FIRSAT yazilmaz
 
 
-def _action(in_portfolio, is_pick, sig, stopped):
+def _action(in_portfolio, is_pick, sig, stopped, kilit=None):
+    """kilit: bar_state.gun_durumu()['son'] -> 'taban' | 'tavan' | None.
+    Kilitli hisse ALINAMAZ/onerilemez: tabanda eslesme yok (satilamaz), tavanda alici kuyrugu (alinamaz);
+    ustelik 'Birikim' sinyali kilitli barda formul artefaktidir (#3a). Stop onceligi korunur."""
     if stopped:
         return "SAT"
+    if kilit in ("taban", "tavan"):
+        return "BEKLE"
     if is_pick:
         if sig in ("GÜÇLÜ_BİRİKİM", "Birikim"):
             return "AL"
@@ -150,13 +156,15 @@ def generate_report(data, signals, date=None, mode=None,
     rows = []
     for rank, t in enumerate(picks, 1):
         sig = sig_map.get(t, "veri_yok")
-        act = _action(t in held, True, sig, t in stopped)
+        durum = bar_state.gun_durumu(data, t, date)             # taban/tavan kilidi (tek otorite)
+        act = _action(t in held, True, sig, t in stopped, kilit=durum["son"])
         row = {
             "rank": rank, "ticker": t, "sector": get_sector(t),
             "skor": round(float(s[t]), 1) if t in s.index else None,
             "m252": round(float(m252[t]), 1) if t in m252.index else None,
             "sm_signal": sig, "action": act,
-            "display_signal": _display_signal(sig),
+            "display_signal": bar_state.etiket(durum) or _display_signal(sig),
+            "kilit_durumu": durum["son"], "kilit_gun": durum["ardisik"],
             "visa": t in exceptions,
         }
         row.update(_momentum_snapshot(data, t, date))
@@ -175,6 +183,8 @@ def generate_report(data, signals, date=None, mode=None,
                       .head(30).index)
         for t in top_scored:
             if t in picks:
+                continue
+            if bar_state.gun_durumu(data, t, date)["son"]:      # kilitli hisse FIRSAT olamaz
                 continue
             sig = signal_for(signals, date, t)
             if sig == "GÜÇLÜ_BİRİKİM" and t in m252.index and m252[t] > config.DUAL_THRESHOLD:
