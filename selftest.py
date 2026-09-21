@@ -1431,6 +1431,357 @@ def main():
                 ok("T9 daemon: feed fazindan SONRA guarded icinde bar_archive.append_bars; iki workflow commit adimi data/bars/ ekliyor; data/bars/.gitkeep var")
             else:
                 bad(f"T9 cagri sozlesmesi: feed_idx={_i_feed} ba_idx={_i_ba} guarded={_guarded} workflow={_wf_ok} gitkeep={_keep_ok}")
+            # ── T10-T13: BACKFILL ETIKETI + KANONIK BAR (2026-09-21 disaridan okuma) ──
+            # Olcum (origin 2026-09.csv, 4460 satir): 09-15..18 satirlari 09-21 07:36Z'de cekildi ama run_label=acilis
+            # tasiyor -> "acilis-ani kismi bar" etiketi vendor'in NIHAI barina yapismis (aktif yanlis anlam). Kural:
+            #   T10 yazici: bar tarihi != fetched_at'in UTC tarihi -> run_label='backfill' (slot etiketi tasinmaz)
+            #   T11 okuyucu kanonik_barlar(): (tarih,hisse) icin kapanis > en son slot (fetched_at) > backfill;
+            #       sinif alani 'kapanis'|'slot'|'backfill'; ESKI yanlis etiketli satir (label acilis, fetched ertesi
+            #       gun) fetched_at kuralina gore backfill sayilir (dosya yeniden yazilmadan tutarli)
+            #   T12 kapanis varken sonradan gelen backfill revizyonu kanonigi DEGISTIRMEZ (PIT korunur; dosyada durur)
+            #   T13 backfill_etiketle(path): eski satirlari idempotent yeniden etiketler; satir sayisi/diger kolonlar ayni
+            _root10 = _tf6t.mkdtemp()
+            _f10b = os.path.join(_root10, "data", "bars", "2026-09.csv")
+            # Pazartesi 09-21 07:36Z acilis kosumu: kuyruk 09-15..09-18 (nihai) + 09-21 (kismi)
+            _d10 = _veri(["2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21"],
+                         {"AAA": [10.0, 10.2, 10.4, 10.6, 10.8]})
+            _r10 = _BA.append_bars(_d10, "acilis", root=_root10, now=_dt6t(2026, 9, 21, 7, 36, 0, tzinfo=_tz6t.utc))
+            _rows10 = list(_csv6t.DictReader(open(_f10b, encoding="utf-8", newline=""))) if os.path.exists(_f10b) else []
+            _lab10 = {(r["date"], r["ticker"]): r["run_label"] for r in _rows10}
+            _t10 = (_r10.get("rows_added") == 10 and _lab10.get(("2026-09-21", "AAA")) == "acilis"
+                    and _lab10.get(("2026-09-21", "XU100")) == "acilis"
+                    and all(_lab10.get((d, t)) == "backfill" for d in ("2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18")
+                            for t in ("AAA", "XU100")))
+            if _t10:
+                ok("T10 yazici: bar tarihi != fetched_at UTC tarihi -> run_label='backfill' (09-15..18), ayni gun -> slot etiketi (09-21 acilis); XU100 dahil")
+            else:
+                bad(f"T10 backfill etiketi: r={_r10.get('rows_added')} labels={sorted(_lab10.items())}")
+            # T11 kanonik: 09-21 gunici kismi + kapanis nihai; 09-22'de acilis kosumu 09-21'i revize eder (backfill)
+            _d11a = _veri(["2026-09-18", "2026-09-21"], {"AAA": [10.6, 10.9]})
+            _d11b = _veri(["2026-09-18", "2026-09-21"], {"AAA": [10.6, 11.0]})
+            _BA.append_bars(_d11a, "gunici", root=_root10, now=_dt6t(2026, 9, 21, 13, 20, 0, tzinfo=_tz6t.utc))
+            _BA.append_bars(_d11b, "kapanis", root=_root10, now=_dt6t(2026, 9, 21, 15, 41, 0, tzinfo=_tz6t.utc))
+            _d11c = _veri(["2026-09-21", "2026-09-22"], {"AAA": [11.05, 11.3]})               # 09-21 gec revizyon + 09-22 kismi
+            _BA.append_bars(_d11c, "acilis", root=_root10, now=_dt6t(2026, 9, 22, 7, 36, 0, tzinfo=_tz6t.utc))
+            # ESKI yanlis etiketli satir: elle ekle (label 'gunici', fetched ertesi gun) -> okuyucu backfill saymali
+            with open(_f10b, "a", encoding="utf-8", newline="") as _fh:
+                _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n").writerow(
+                    {"date": "2026-09-14", "ticker": "AAA", "open": "9.8", "high": "9.9", "low": "9.7", "close": "9.85",
+                     "volume": "1000", "source": "borsapy", "run_label": "gunici", "fetched_at": "2026-09-15T07:36:00Z"})
+            _kan = getattr(_BA, "kanonik_barlar", None)
+            if _kan is None:
+                bad("T11 sozlesmesi eksik: bar_archive.kanonik_barlar yok")
+                _k = {}
+            else:
+                _k = _kan(_f10b)
+            _k21 = _k.get(("2026-09-21", "AAA"), {}); _k22 = _k.get(("2026-09-22", "AAA"), {})
+            _k18 = _k.get(("2026-09-18", "AAA"), {}); _k14 = _k.get(("2026-09-14", "AAA"), {})
+            _t11 = (_k21.get("sinif") == "kapanis" and _k21.get("close") == "11"
+                    and _k22.get("sinif") == "slot" and _k22.get("run_label") == "acilis"
+                    and _k18.get("sinif") == "backfill" and _k18.get("close") == "10.6"
+                    and _k14.get("sinif") == "backfill" and _k14.get("run_label") == "gunici")
+            if _t11:
+                ok("T11 kanonik_barlar: kapanis > en son slot > backfill; sinif alani; eski yanlis etiketli satir fetched_at kuraliyla backfill sayilir")
+            else:
+                bad(f"T11 kanonik: 21={_k21} 22={_k22} 18={_k18} 14={_k14}")
+            # T12 PIT: 09-22'de gelen 09-21 revizyonu (11.05) dosyada var ama kanonik 09-21 = kapanis (11.0)
+            _rev = [r for r in _csv6t.DictReader(open(_f10b, encoding="utf-8", newline="")) if r["date"] == "2026-09-21" and r["ticker"] == "AAA"]
+            _t12 = ([r["run_label"] for r in _rev] == ["acilis", "gunici", "kapanis", "backfill"] and _rev[-1]["close"] == "11.05"
+                    and _k21.get("close") == "11" and _BA.son_barlar(_f10b)[("2026-09-21", "AAA")]["close"] == "11.05")
+            if _t12:
+                ok("T12 PIT: gec revizyon dosyada (backfill, son_barlar 'son gorus' verir) ama kanonik bar kapanis-ani degeri (11.0) kalir")
+            else:
+                bad(f"T12 PIT: rev={[(r['run_label'], r['close']) for r in _rev]} kanonik={_k21.get('close')}")
+            # T13 gecmis satirlari yeniden etiketle (idempotent, satir sayisi + diger kolonlar ayni)
+            _bf = getattr(_BA, "backfill_etiketle", None)
+            if _bf is None:
+                bad("T13 sozlesmesi eksik: bar_archive.backfill_etiketle yok")
+            else:
+                _once = list(_csv6t.DictReader(open(_f10b, encoding="utf-8", newline="")))
+                _n1 = _bf(_f10b); _n2 = _bf(_f10b)
+                _sonra = list(_csv6t.DictReader(open(_f10b, encoding="utf-8", newline="")))
+                _ayni_diger = all({k: v for k, v in a.items() if k != "run_label"} == {k: v for k, v in b.items() if k != "run_label"}
+                                  for a, b in zip(_once, _sonra))
+                _lab14 = [r["run_label"] for r in _sonra if r["date"] == "2026-09-14"]
+                _t13 = (_n1 == 1 and _n2 == 0 and len(_once) == len(_sonra) and _ayni_diger and _lab14 == ["backfill"]
+                        and b"\r\n" not in open(_f10b, "rb").read())
+                if _t13:
+                    ok(f"T13 backfill_etiketle: {_n1} eski satir yeniden etiketlendi, ikinci kosum 0, satir sayisi/diger kolonlar ayni, LF")
+                else:
+                    bad(f"T13 backfill_etiketle: n1={_n1} n2={_n2} len={len(_once)}/{len(_sonra)} ayni={_ayni_diger} lab14={_lab14}")
+                # T13b sema farkli (fazla kolon) -> yazmaz, hata (DictWriter fazla kolonu sessizce dusurmesin = deger kaybi)
+                _f13b = os.path.join(_root10, "data", "bars", "sema.csv")
+                with open(_f13b, "w", encoding="utf-8", newline="") as _fh:
+                    _fh.write(",".join(_BA.COLUMNS + ["ekstra"]) + "\n")
+                    _fh.write("2026-09-14,AAA,9.8,9.9,9.7,9.85,1000,borsapy,gunici,2026-09-15T07:36:00Z,X\n")
+                _h13b = _hl6t.sha256(open(_f13b, "rb").read()).hexdigest()
+                try:
+                    _bf(_f13b); _t13b = False; _err13b = "hata firlatmadi"
+                except ValueError as _e13b:
+                    _t13b = _hl6t.sha256(open(_f13b, "rb").read()).hexdigest() == _h13b; _err13b = str(_e13b)
+                if _t13b:
+                    ok("T13b backfill_etiketle: sema COLUMNS'tan farkliysa ValueError, dosya bayt-bayt ayni (sessiz kolon kaybi yok)")
+                else:
+                    bad(f"T13b sema korumasi: {_err13b}")
+                # T14 (disaridan okuma 09-21 gece): ayni (tarih,hisse) icin HEM eski yanlis etiketli (acilis, ertesi gun
+                # cekilmis) HEM dogru 'backfill' satiri varken relabel. Tasarim salt-ekleme: ikinci satir yalniz icerik
+                # DEGISTIYSE yazilmis olabilir (content-dedupe) -> iki satir iki ayri gorus, SILINMEZ; relabel yalniz
+                # etiketi degistirir; kanonik cikti relabel oncesi == sonrasi (bayt-esit) ve gec fetched_at kazanir;
+                # birebir ayni satir (tum kolonlar) OLUSMAZ.
+                _root14 = _tf6t.mkdtemp(); _f14 = os.path.join(_root14, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f14))
+                with open(_f14, "w", encoding="utf-8", newline="") as _fh:
+                    _w14 = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w14.writeheader()
+                    _w14.writerow({"date": "2026-09-17", "ticker": "KTL", "open": "24", "high": "24.7", "low": "23.9", "close": "24.72",
+                                   "volume": "500", "source": "yahoo", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"})   # yanlis etiket
+                    _w14.writerow({"date": "2026-09-17", "ticker": "KTL", "open": "24", "high": "24.7", "low": "23.9", "close": "24.7",
+                                   "volume": "510", "source": "yahoo", "run_label": "backfill", "fetched_at": "2026-09-22T07:36:30Z"})  # dogru, revizyon
+                _kan_once = _BA.kanonik_barlar(_f14)
+                _n14 = _bf(_f14)
+                _rows14 = list(_csv6t.DictReader(open(_f14, encoding="utf-8", newline="")))
+                _kan_sonra = _BA.kanonik_barlar(_f14)
+                _tekrar = len(_rows14) != len({tuple(sorted(r.items())) for r in _rows14})
+                _t14 = (_n14 == 1 and len(_rows14) == 2 and [r["run_label"] for r in _rows14] == ["backfill", "backfill"] and not _tekrar
+                        and {k: {kk: vv for kk, vv in v.items()} for k, v in _kan_once.items()} == {k: {kk: vv for kk, vv in v.items()} for k, v in _kan_sonra.items()}
+                        and _kan_sonra[("2026-09-17", "KTL")]["fetched_at"] == "2026-09-22T07:36:30Z" and _kan_sonra[("2026-09-17", "KTL")]["close"] == "24.7")
+                if _t14:
+                    ok("T14 relabel catisma: eski yanlis etiketli + dogru backfill ayni (tarih,hisse) -> ikisi de kalir (iki gorus), etiketler backfill, kanonik oncesi==sonrasi, gec fetched_at kazanir, birebir tekrar yok")
+                else:
+                    bad(f"T14 relabel catisma: n={_n14} rows={[(r['run_label'], r['close'], r['fetched_at']) for r in _rows14]} tekrar={_tekrar} once==sonra={_kan_once == _kan_sonra}")
+                # T14b (09-22 oz-okuma, origin kopyasinda olculdu: 3133 kanonik anahtarin 2506'si relabel'da run_label
+                # degistirdigi icin TAM esitlik BOZULUR; run_label haric 0 fark): kabul kriteri "kanonik oncesi == sonrasi"
+                # run_label HARIC okunur. Fikstur: yalniz yanlis-etiketli satir -> kanonik satir run_label'da degisir,
+                # baska hicbir alanda (sinif dahil) degismez.
+                _root14b = _tf6t.mkdtemp(); _f14b = os.path.join(_root14b, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f14b))
+                with open(_f14b, "w", encoding="utf-8", newline="") as _fh:
+                    _w14b = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w14b.writeheader()
+                    _w14b.writerow({"date": "2026-09-16", "ticker": "SEL", "open": "236", "high": "237", "low": "235", "close": "236.5",
+                                    "volume": "900", "source": "yahoo", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"})
+                _k_once = _BA.kanonik_barlar(_f14b)[("2026-09-16", "SEL")]
+                _n14b = _bf(_f14b)
+                _k_sonra = _BA.kanonik_barlar(_f14b)[("2026-09-16", "SEL")]
+                _fark = {k for k in _k_once if _k_once[k] != _k_sonra.get(k)}
+                if _n14b == 1 and _fark == {"run_label"} and _k_once["sinif"] == "backfill" == _k_sonra["sinif"] and _k_sonra["run_label"] == "backfill":
+                    ok("T14b relabel tek yanlis satir: kanonik yalniz run_label'da degisir (acilis->backfill), sinif/OHLCV/fetched_at ayni -> kabul kriteri run_label HARIC esitlik")
+                else:
+                    bad(f"T14b: n={_n14b} fark={_fark} once={_k_once.get('sinif')}/{_k_once.get('run_label')} sonra={_k_sonra.get('sinif')}/{_k_sonra.get('run_label')}")
+                # T14c IKI YONLU kabul (09-22 kullanici, genisletilmis form): (1) sinif/OHLCV/fetched_at birebir + satir sayisi
+                # AYNI (relabel silmez); (2) run_label degisen kanonik = relabel − Σ(r_k−1) − |karisik| ; yan sart: her karisik
+                # anahtarda kanonik = kapsam-disi satir. Fikstur: A tek yanlis + B tam-kapsamli cift + C karisik (yanlis 09-21
+                # + dogru backfill 09-22) -> relabel 4, Σ(r_k−1)=1, karisik 1 -> beklenen 2 = olculen 2, TUTAR; satir 5 -> 5.
+                _root14c = _tf6t.mkdtemp(); _f14c = os.path.join(_root14c, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f14c))
+                _tmpl = {"open": "1", "high": "1.1", "low": "0.9", "source": "yahoo"}
+                def _yaz14(path, satirlar):
+                    with open(path, "w", encoding="utf-8", newline="") as _fh:
+                        _w = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w.writeheader(); _w.writerows(satirlar)
+                _sat14c = [
+                    {**_tmpl, "date": "2026-09-16", "ticker": "A", "close": "1.0", "volume": "10", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "B", "close": "2.0", "volume": "10", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "B", "close": "2.0", "volume": "11", "run_label": "gunici", "fetched_at": "2026-09-21T13:20:00Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "C", "close": "3.0", "volume": "10", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "C", "close": "3.1", "volume": "10", "run_label": "backfill", "fetched_at": "2026-09-22T07:36:30Z"}]
+                _yaz14(_f14c, _sat14c)
+                _h14c = _hl6t.sha256(open(_f14c, "rb").read()).hexdigest()
+                _kk = getattr(_BA, "relabel_kuru_kosum", None)
+                _rap = _kk(_f14c) if _kk else {}
+                _dokunmadi = _hl6t.sha256(open(_f14c, "rb").read()).hexdigest() == _h14c
+                _t14c = (bool(_rap) and _dokunmadi and _rap.get("relabel") == 4 and _rap.get("satir_ayni") is True and _rap.get("kanonik_bozulan") == 0
+                         and _rap.get("karisik_anahtar") == 1 and _rap.get("yan_sart_ihlal") == [] and _rap.get("beklenen") == 2
+                         and _rap.get("kanonik_degisen") == 2 and _rap.get("tutuyor") is True)
+                _yaz14(_f14c, [r for r in _sat14c if r["ticker"] != "C"])
+                _rap2 = _kk(_f14c) if _kk else {}
+                _t14c2 = _rap2.get("relabel") == 3 and _rap2.get("beklenen") == 2 and _rap2.get("kanonik_degisen") == 2 and _rap2.get("karisik_anahtar") == 0 and _rap2.get("tutuyor") is True
+                if _t14c and _t14c2:
+                    ok("T14c relabel_kuru_kosum iki yonlu (genisletilmis): dosyaya dokunmaz; satir sayisi ayni; yon1 bozulan 0; yon2 4−1−1=2 (karisik 1, yan sart ok) TUTAR; karisiksiz 3−1=2 TUTAR")
+                else:
+                    bad(f"T14c: rap={_rap} rap2={_rap2} dokunmadi={_dokunmadi}")
+                # T14d yan sart IHLALI: karisik anahtarda kanonik KAPSAMLI satir (dogru backfill daha ERKEN cekilmis) -> tutmaz,
+                # anahtar adiyla listelenir (sessiz secim yok). Ileriye donuk olusamaz (yanlis etiketler yalniz 09-21 oncesi),
+                # ama arac bunu OLCMELI, varsaymamali.
+                _sat14d = [
+                    {**_tmpl, "date": "2026-09-16", "ticker": "D", "close": "4.0", "volume": "10", "run_label": "backfill", "fetched_at": "2026-09-20T07:36:30Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "D", "close": "4.1", "volume": "10", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"},
+                    {**_tmpl, "date": "2026-09-16", "ticker": "A", "close": "1.0", "volume": "10", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:30Z"}]
+                _yaz14(_f14c, _sat14d)
+                _rap3 = _kk(_f14c) if _kk else {}
+                if (_rap3.get("karisik_anahtar") == 1 and _rap3.get("yan_sart_ihlal") == [("2026-09-16", "D")] and _rap3.get("tutuyor") is False
+                        and _rap3.get("kanonik_degisen") == 2 and _rap3.get("beklenen") == 2):
+                    ok("T14d yan sart ihlali: karisik anahtarda kanonik kapsamli satir -> tutuyor=False, anahtar listelenir [('2026-09-16','D')]")
+                else:
+                    bad(f"T14d: {_rap3}")
+                # ── T17 ATOMIK YAZIM + SEMA KARANTINASI (dis denetim #6, kullanici 09-22 11:2x; AKTIF kalem) ──
+                # Sozlesme (test-once): normal yazim yolu da atomik olmali — kesinti yarim satiri KALICI kanit yapar.
+                #   T17a kesinti mutasyonu (CSV yazimi patlar)    -> eski CSV bayt-bayt saglam, temp artigi YOK
+                #   T17b kesinti mutasyonu (status JSON patlar)   -> eski bar_archive.json saglam, temp artigi YOK
+                #   T17c os.replace PermissionError (OneDrive; CIKARIM'di, enjeksiyonla OLCULUR) -> eski dosya korunur,
+                #        hata GORUNUR (cagirana ulasir), temp temizlenir
+                #   T17d sema karantinasi: mevcut dosyanin son satiri eksik kolonluysa -> gorunur hata, append YOK,
+                #        dosya DEGISMEZ, sessiz kirpma YOK (csv.DictReader eksik alani None yapiyordu)
+                #   T17e regresyon: saglam dosyaya normal append calisir
+                # ISKELE NOTU: her alt-test KENDI kokunde kosar — ortak kokte onceki mutasyonun yazdigi satir
+                # sonraki testi "degisiklik yok" yoluna sokup SAHTE KIRMIZI uretti (2026-09-22, oz-yakalama).
+                _d17 = _veri(["2026-09-21", "2026-09-22"], {"AAA": [10.0, 10.5]})
+                _d17b = _veri(["2026-09-21", "2026-09-22"], {"AAA": [10.0, 11.9]})    # son bar DEGISTI -> yazim gerekir
+                _now17 = _dt6t(2026, 9, 22, 15, 45, 0, tzinfo=_tz6t.utc)
+
+                def _artik17(dizin):
+                    return [f for f in os.listdir(dizin) if f.startswith(".bars_") or f.endswith(".tmp")]
+
+                def _kur17():
+                    """Taze kok + ilk yazim. Donus: (kok, csv_yolu, status_yolu, csv_sha, status_sha)."""
+                    kok = _tf6t.mkdtemp()
+                    _BA.append_bars(_d17, "kapanis", root=kok, now=_now17)
+                    fc = os.path.join(kok, "data", "bars", "2026-09.csv")
+                    fs = os.path.join(kok, "docs", "state", "bar_archive.json")
+                    return (kok, fc, fs, _hl6t.sha256(open(fc, "rb").read()).hexdigest(),
+                            _hl6t.sha256(open(fs, "rb").read()).hexdigest())
+
+                def _patla(*a, **k):
+                    raise RuntimeError("kesinti (mutasyon)")
+
+                def _sha17(yol):
+                    return _hl6t.sha256(open(yol, "rb").read()).hexdigest()
+
+                # T17a CSV yazimi ortasinda kesinti
+                _k17a, _fc17a, _fs17a, _hc17a, _hs17a = _kur17()
+                _orig_wr = _csv6t.DictWriter.writerows
+                try:
+                    _csv6t.DictWriter.writerows = _patla
+                    try:
+                        _BA.append_bars(_d17b, "kapanis", root=_k17a, now=_now17); _e17a = "istisna yok"
+                    except RuntimeError:
+                        _e17a = None
+                finally:
+                    _csv6t.DictWriter.writerows = _orig_wr
+                if _e17a is None and _sha17(_fc17a) == _hc17a and not _artik17(os.path.dirname(_fc17a)):
+                    ok("T17a CSV kesinti mutasyonu: yazim ortasinda hata -> eski 2026-09.csv bayt-bayt saglam, temp artigi yok (yarim satir kalici kanit olmuyor)")
+                else:
+                    bad(f"T17a CSV atomik degil: hata={_e17a} ayni={_sha17(_fc17a) == _hc17a} artik={_artik17(os.path.dirname(_fc17a))}")
+                # T17b status JSON yazimi ortasinda kesinti
+                _k17b, _fc17b, _fs17b, _hc17b, _hs17b = _kur17()
+                _orig_dump = _BA.json.dump
+                try:
+                    _BA.json.dump = _patla
+                    try:
+                        _BA.append_bars(_d17b, "kapanis", root=_k17b, now=_now17); _e17b = "istisna yok"
+                    except RuntimeError:
+                        _e17b = None
+                finally:
+                    _BA.json.dump = _orig_dump
+                if _e17b is None and _sha17(_fs17b) == _hs17b and not _artik17(os.path.dirname(_fs17b)):
+                    ok("T17b status JSON kesinti mutasyonu: yazim ortasinda hata -> eski bar_archive.json bayt-bayt saglam, temp artigi yok")
+                else:
+                    bad(f"T17b status atomik degil: hata={_e17b} ayni={_sha17(_fs17b) == _hs17b} artik={_artik17(os.path.dirname(_fs17b))}")
+                # T17c os.replace PermissionError (OneDrive riski)
+                _k17c, _fc17c, _fs17c, _hc17c, _hs17c = _kur17()
+                _orig_replace = os.replace
+
+                def _perm(*a, **k):
+                    raise PermissionError("OneDrive kilidi (mutasyon)")
+                try:
+                    os.replace = _perm
+                    try:
+                        _BA.append_bars(_d17b, "kapanis", root=_k17c, now=_now17); _e17c = "istisna yok"
+                    except PermissionError:
+                        _e17c = None
+                finally:
+                    os.replace = _orig_replace
+                if _e17c is None and _sha17(_fc17c) == _hc17c and not _artik17(os.path.dirname(_fc17c)):
+                    ok("T17c os.replace PermissionError (OneDrive): eski dosya korunur, hata GORUNUR (cagirana ulasir), temp temizlenir")
+                else:
+                    bad(f"T17c replace: hata={_e17c} ayni={_sha17(_fc17c) == _hc17c} artik={_artik17(os.path.dirname(_fc17c))}")
+                # T17d sema karantinasi: son satir eksik kolonlu (yarim satir)
+                _k17d = _tf6t.mkdtemp(); _fc17d = os.path.join(_k17d, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_fc17d))
+                with open(_fc17d, "w", encoding="utf-8", newline="") as _fh:
+                    _fh.write(",".join(_BA.COLUMNS) + "\n")
+                    _fh.write("2026-09-21,AAA,10,10.1,9.9,10,1000,yahoo,kapanis,2026-09-21T15:45:00Z\n")
+                    _fh.write("2026-09-22,AAA,10.5,10.6\n")                  # YARIM SATIR (kesinti artigi)
+                _hc17d = _sha17(_fc17d)
+                try:
+                    _BA.append_bars(_d17b, "kapanis", root=_k17d, now=_now17); _e17d = "istisna yok (sessiz kabul)"
+                except ValueError as _ex17d:
+                    _e17d = None; _msg17d = str(_ex17d)
+                except Exception as _ex17d2:
+                    _e17d = f"beklenmeyen tip {type(_ex17d2).__name__}"
+                if _e17d is None and _sha17(_fc17d) == _hc17d and "YARIM SATIR" in _msg17d:
+                    ok("T17d sema karantinasi: yarim satirli dosyada append YAPILMAZ, gorunur ArsivBozuk(ValueError), dosya bayt-bayt degismez (sessiz kirpma yok)")
+                else:
+                    bad(f"T17d yarim satir: {_e17d}")
+                # T17e regresyon: saglam dosyaya normal append
+                _k17e, _fc17e, _fs17e, _hc17e, _hs17e = _kur17()
+                _rap17 = _BA.append_bars(_d17b, "kapanis", root=_k17e, now=_now17)
+                _rows17 = list(_csv6t.DictReader(open(_fc17e, encoding="utf-8", newline="")))
+                if _rap17.get("rows_added") == 1 and len(_rows17) == 5 and _rows17[-1]["close"] == "11.9" and not _artik17(os.path.dirname(_fc17e)):
+                    ok("T17e regresyon: saglam dosyaya append calisir (1 satir eklenir, son kapanis 11.9), temp artigi yok")
+                else:
+                    bad(f"T17e append bozuldu: rap={_rap17} n={len(_rows17)}")
+                # T17f satirsiz ama YANLIS baslik: satir sayisindan bagimsiz sema dogrulamasi (kullanici 15:3x)
+                _k17f = _tf6t.mkdtemp(); _fc17f = os.path.join(_k17f, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_fc17f))
+                with open(_fc17f, "w", encoding="utf-8", newline="") as _fh:
+                    _fh.write("date,ticker,close\n")                        # yalniz baslik, satir YOK, sema YANLIS
+                _h17f = _sha17(_fc17f)
+                try:
+                    _BA.append_bars(_d17b, "kapanis", root=_k17f, now=_now17); _e17f = "istisna yok"
+                except ValueError:
+                    _e17f = None
+                if _e17f is None and _sha17(_fc17f) == _h17f:
+                    ok("T17f satirsiz-yanlis-baslik: bos satir listesi hatayi gizlemiyor -> ArsivBozuk, dosya degismez")
+                else:
+                    bad(f"T17f yanlis baslik satirsizken gecti: {_e17f}")
+                # T17g sonu newline'siz GECERLI dosya: yeni satir eskisine YAPISMAZ (kullanici 15:3x)
+                _k17g = _tf6t.mkdtemp(); _fc17g = os.path.join(_k17g, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_fc17g))
+                with open(_fc17g, "w", encoding="utf-8", newline="") as _fh:
+                    _fh.write(",".join(_BA.COLUMNS) + "\n")
+                    _fh.write("2026-09-21,AAA,10,10.1,9.9,10,1000,yahoo,kapanis,2026-09-21T15:45:00Z")   # newline YOK
+                _rap17g = _BA.append_bars(_d17b, "kapanis", root=_k17g, now=_now17)
+                _rows17g = list(_csv6t.DictReader(open(_fc17g, encoding="utf-8", newline="")))
+                _aaa22 = [r for r in _rows17g if r["date"] == "2026-09-22" and r["ticker"] == "AAA"]
+                if (len(_rows17g) == 4 and _rows17g[0]["fetched_at"] == "2026-09-21T15:45:00Z"
+                        and len(_aaa22) == 1 and _aaa22[0]["close"] == "11.9"):
+                    ok("T17g sonu newline'siz gecerli dosya: yeni satirlar eskisine yapismiyor (4 satir, eski satir bozulmadi)")
+                else:
+                    bad(f"T17g newline yapismasi: n={len(_rows17g)} satirlar={[(r['date'], r['ticker'], r['close']) for r in _rows17g]}")
+                # T15 (#1a eksen): bar 09-22, cekim 21:30Z = 00:30 TR 09-23 -> backfill; 20:30Z = 23:30 TR 09-22 -> slot
+                _root15 = _tf6t.mkdtemp(); _f15 = os.path.join(_root15, "data", "bars", "2026-09.csv")
+                _d15 = _veri(["2026-09-22"], {"AAA": [12.0]})
+                _BA.append_bars(_d15, "kapanis", root=_root15, now=_dt6t(2026, 9, 22, 20, 30, 0, tzinfo=_tz6t.utc))
+                _d15b = _veri(["2026-09-22"], {"AAA": [12.1]})
+                _BA.append_bars(_d15b, "kapanis", root=_root15, now=_dt6t(2026, 9, 22, 21, 30, 0, tzinfo=_tz6t.utc))
+                _rows15 = [r for r in _csv6t.DictReader(open(_f15, encoding="utf-8", newline="")) if r["ticker"] == "AAA"]
+                _sin15 = [_BA.bar_sinifi(r) for r in _rows15]
+                _t15 = ([r["run_label"] for r in _rows15] == ["kapanis", "backfill"] and _sin15 == ["kapanis", "backfill"]
+                        and _BA.kanonik_barlar(_f15)[("2026-09-22", "AAA")]["close"] == "12")
+                if _t15:
+                    ok("T15 TR ekseni: 20:30Z (23:30 TR ayni gun) -> kapanis; 21:30Z (00:30 TR ertesi gun) -> backfill; kanonik = kapanis (12.0)")
+                else:
+                    bad(f"T15 TR ekseni: labels={[r['run_label'] for r in _rows15]} sinif={_sin15}")
+                # T16 kural zorlanir: arsivi bar_archive disinda dogrudan okuyan kod YOK (kanonik_barlar/son_barlar uzerinden).
+                # GEREKCE (09-22, kullanici): fiili tekillik (date,ticker,fetched_at); (date,ticker,run_label) tekil DEGIL
+                # (revizyonlar ayni etiketle birden cok satir; relabel sonrasi iki `backfill`). Bunu anahtar sanan dogrudan
+                # okuyucu HATA VERMEDEN yanlis sonuc uretir (pivot patlar; drop_duplicates varsayilan keep='first' ile siraya
+                # bagli olarak eski gorusu tutar, revizyonu sessizce atar) -> tek kapsulleme noktasi iki okuyucu fonksiyon;
+                # kural "kagit ustunde" kalmasin diye kaynak taramasi.
+                import re as _re6t
+                _dogrudan = []
+                _izinli = {"selftest.py", os.path.join("bist_alpha", "bar_archive.py")}
+                for _dp, _dn, _fn in os.walk(ROOT):
+                    _dn[:] = [d for d in _dn if d not in (".venv", ".git", "local", "node_modules", "__pycache__")]
+                    for _f in _fn:
+                        _rel = os.path.relpath(os.path.join(_dp, _f), ROOT)
+                        if not _f.endswith(".py") or _rel in _izinli:
+                            continue
+                        _src = open(os.path.join(_dp, _f), encoding="utf-8", errors="replace").read()
+                        if _re6t.search(r"read_csv\([^)]*bars|open\([^)]*data[/\\\\]bars|[\"']data/bars/\d{4}-\d{2}\.csv", _src):
+                            _dogrudan.append(_rel)
+                if not _dogrudan:
+                    ok("T16 arsiv okuma kurali zorlanir: bar_archive disinda data/bars/*.csv'yi dogrudan okuyan .py yok")
+                else:
+                    bad(f"T16 dogrudan arsiv okuyan dosya(lar): {_dogrudan} -> kanonik_barlar()/son_barlar() kullanmali")
     except Exception as e:
         bad(f"[6t] bar arsivi testleri kosmadi: {type(e).__name__}: {e}")
 
