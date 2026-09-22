@@ -1391,7 +1391,9 @@ def main():
             # T6 NaN kapanis satir yazilmaz; XU100 close-only
             _root6 = _tf6t.mkdtemp()
             _d6 = _veri(["2026-09-16", "2026-09-17"], {"AAA": [11.0, _np6t.nan], "BBB": [21.0, 21.3]})
-            _r6 = _BA.append_bars(_d6, "kapanis", root=_root6, now=_now)
+            # NOT (T18 sozlesmesi): cekim gunu >= en yeni bar olmali; eski fikstur 09-17 barini 09-16 cekimiyle
+            # yaziyordu = GELECEK bar (artik ArsivArizi). Fikstur gerceklige cekildi: cekim 09-17 kapanisi.
+            _r6 = _BA.append_bars(_d6, "kapanis", root=_root6, now=_dt6t(2026, 9, 17, 15, 45, 0, tzinfo=_tz6t.utc))
             _rows6 = list(_csv6t.DictReader(open(os.path.join(_root6, "data", "bars", "2026-09.csv"), encoding="utf-8", newline="")))
             _xu = [r for r in _rows6 if r["ticker"] == "XU100"]
             if _r6.get("rows_added") == 5 and not any(r["ticker"] == "AAA" and r["date"] == "2026-09-17" for r in _rows6) \
@@ -1434,9 +1436,11 @@ def main():
             # ── T10-T13: BACKFILL ETIKETI + KANONIK BAR (2026-09-21 disaridan okuma) ──
             # Olcum (origin 2026-09.csv, 4460 satir): 09-15..18 satirlari 09-21 07:36Z'de cekildi ama run_label=acilis
             # tasiyor -> "acilis-ani kismi bar" etiketi vendor'in NIHAI barina yapismis (aktif yanlis anlam). Kural:
-            #   T10 yazici: bar tarihi != fetched_at'in UTC tarihi -> run_label='backfill' (slot etiketi tasinmaz)
-            #   T11 okuyucu kanonik_barlar(): (tarih,hisse) icin kapanis > en son slot (fetched_at) > backfill;
-            #       sinif alani 'kapanis'|'slot'|'backfill'; ESKI yanlis etiketli satir (label acilis, fetched ertesi
+            #   T10 yazici (T18 sozlesmesi): karsilastirma TR EKSENINDE (cekim_tr_tarihi) —
+            #       bar < cekim_TR -> run_label='backfill' (slot etiketi tasinmaz) · bar == cekim_TR -> slot/kapanis ·
+            #       bar > cekim_TR ya da damga GECERSIZ -> ARIZI (sessiz backfill YOK; bkz T18)
+            #   T11 okuyucu kanonik_barlar(): (tarih,hisse) icin kapanis > en son slot (fetched_at) > backfill > arizi;
+            #       sinif alani 'kapanis'|'slot'|'backfill'|'arizi'; ESKI yanlis etiketli satir (label acilis, fetched ertesi
             #       gun) fetched_at kuralina gore backfill sayilir (dosya yeniden yazilmadan tutarli)
             #   T12 kapanis varken sonradan gelen backfill revizyonu kanonigi DEGISTIRMEZ (PIT korunur; dosyada durur)
             #   T13 backfill_etiketle(path): eski satirlari idempotent yeniden etiketler; satir sayisi/diger kolonlar ayni
@@ -1453,7 +1457,7 @@ def main():
                     and all(_lab10.get((d, t)) == "backfill" for d in ("2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18")
                             for t in ("AAA", "XU100")))
             if _t10:
-                ok("T10 yazici: bar tarihi != fetched_at UTC tarihi -> run_label='backfill' (09-15..18), ayni gun -> slot etiketi (09-21 acilis); XU100 dahil")
+                ok("T10 yazici (TR ekseni): bar < cekim gunu -> run_label='backfill' (09-15..18), bar == cekim -> slot (09-21 acilis); XU100 dahil")
             else:
                 bad(f"T10 backfill etiketi: r={_r10.get('rows_added')} labels={sorted(_lab10.items())}")
             # T11 kanonik: 09-21 gunici kismi + kapanis nihai; 09-22'de acilis kosumu 09-21'i revize eder (backfill)
@@ -1481,7 +1485,7 @@ def main():
                     and _k18.get("sinif") == "backfill" and _k18.get("close") == "10.6"
                     and _k14.get("sinif") == "backfill" and _k14.get("run_label") == "gunici")
             if _t11:
-                ok("T11 kanonik_barlar: kapanis > en son slot > backfill; sinif alani; eski yanlis etiketli satir fetched_at kuraliyla backfill sayilir")
+                ok("T11 kanonik_barlar: kapanis > en son slot > backfill > arizi; sinif alani; eski yanlis etiketli satir SINIF SOZLESMESIYLE (bar_sinifi) dogru okunur")
             else:
                 bad(f"T11 kanonik: 21={_k21} 22={_k22} 18={_k18} 14={_k14}")
             # T12 PIT: 09-22'de gelen 09-21 revizyonu (11.05) dosyada var ama kanonik 09-21 = kapanis (11.0)
@@ -1746,6 +1750,180 @@ def main():
                     ok("T17g sonu newline'siz gecerli dosya: yeni satirlar eskisine yapismiyor (4 satir, eski satir bozulmadi)")
                 else:
                     bad(f"T17g newline yapismasi: n={len(_rows17g)} satirlar={[(r['date'], r['ticker'], r['close']) for r in _rows17g]}")
+                # ── T18 SINIF SOZLESMESI: GELECEK BAR ve GECERSIZ fetched_at ARIZIDIR (kullanici 09-22 21:4x) ──
+                # Bulgu: kod `ds == cekim_tarihi` degilse DOGRUDAN backfill seciyordu -> (a) gelecek tarihli bar
+                # sessizce "gecmis gorus" gibi etiketleniyordu, (b) fetched_at ayristirilamazsa cekim tarihi ''
+                # donup TUM barlar backfill sayiliyordu. Ikisi de SESSIZ YANLIS SINIFLANDIRMA.
+                # SOZLESME:  fetched_at gecersiz -> ARIZI · bar > cekim_TR -> ARIZI · bar < cekim -> backfill ·
+                #            bar == cekim -> slot.  Sayaclar durum dosyasinda IKI KUME (birim karistirilmaz):
+                #            kosum olayi rejected_future_row_count / rejected_batch_row_count (SATIR) +
+                #            invalid_fetched_at_event_count (OLAY) · arsiv ici archive_future_row_count /
+                #            archive_invalid_fetched_at_row_count (SATIR). Relabel kapsami: _relabel_kapsamda (T18h).
+                _k18 = _tf6t.mkdtemp(); _f18 = os.path.join(_k18, "data", "bars", "2026-09.csv")
+                _d18 = _veri(["2026-09-22", "2026-09-23"], {"AAA": [10.0, 10.5]})        # 09-23 = GELECEK bar
+                _hata18 = None
+                try:
+                    _BA.append_bars(_d18, "kapanis", root=_k18, now=_dt6t(2026, 9, 22, 15, 45, 0, tzinfo=_tz6t.utc))
+                    _hata18 = "istisna yok (sessiz backfill)"
+                except Exception as _e18:
+                    _hata18 = None if type(_e18).__name__ == "ArsivArizi" else f"yanlis tip {type(_e18).__name__}"
+                _st18 = os.path.join(_k18, "docs", "state", "bar_archive.json")
+                _durum18 = _json6t.load(open(_st18, encoding="utf-8")) if os.path.exists(_st18) else {}
+                if (_hata18 is None and not os.path.exists(_f18)
+                        and _durum18.get("rejected_future_row_count", 0) >= 1
+                        and _durum18.get("rejected_batch_row_count", 0) >= _durum18.get("rejected_future_row_count", 0)
+                        and _durum18.get("invalid_fetched_at_event_count") == 0
+                        and _durum18.get("skipped_reason")):
+                    ok(f"T18a yazici: GELECEK bar -> ArsivArizi, TUM batch reddedilir, satir yazilmaz; kosum-olayi sayaclari "
+                       f"rejected_future_row_count={_durum18.get('rejected_future_row_count')} / "
+                       f"rejected_batch_row_count={_durum18.get('rejected_batch_row_count')} (birim SATIR) + sebep")
+                else:
+                    bad(f"T18a gelecek bar: hata={_hata18} dosya_var={os.path.exists(_f18)} durum={_durum18}")
+                # T18b/c okuyucu: gecersiz fetched_at ve gelecek bar ARIZI sinifi; sayaclar
+                _k18b = _tf6t.mkdtemp(); _f18b = os.path.join(_k18b, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f18b))
+                with open(_f18b, "w", encoding="utf-8", newline="") as _fh:
+                    _w18 = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w18.writeheader()
+                    _w18.writerow({"date": "2026-09-21", "ticker": "AAA", "open": "10", "high": "10.1", "low": "9.9", "close": "10",
+                                   "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "2026-09-21T15:45:00Z"})
+                    _w18.writerow({"date": "2026-09-21", "ticker": "BBB", "open": "20", "high": "20.1", "low": "19.9", "close": "20",
+                                   "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "COP-DAMGA"})
+                    _w18.writerow({"date": "2026-09-30", "ticker": "CCC", "open": "30", "high": "30.1", "low": "29.9", "close": "30",
+                                   "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "2026-09-21T15:45:00Z"})
+                    _w18.writerow({"date": "2026-09-18", "ticker": "DDD", "open": "40", "high": "40.1", "low": "39.9", "close": "40",
+                                   "volume": "1000", "source": "yahoo", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:00Z"})
+                _sin18 = {(r["date"], r["ticker"]): _BA.bar_sinifi(r)
+                          for r in _csv6t.DictReader(open(_f18b, encoding="utf-8", newline=""))}
+                _t18b = (_sin18.get(("2026-09-21", "AAA")) == "kapanis" and _sin18.get(("2026-09-21", "BBB")) == "arizi"
+                         and _sin18.get(("2026-09-30", "CCC")) == "arizi" and _sin18.get(("2026-09-18", "DDD")) == "backfill")
+                if _t18b:
+                    ok("T18b okuyucu sinifi: gecersiz fetched_at -> arizi · gelecek bar -> arizi · gecmis -> backfill · ayni gun -> slot/kapanis")
+                else:
+                    bad(f"T18b sinif: {_sin18}")
+                _say = getattr(_BA, "sinif_sayimi", None)
+                _rap18 = _say(_f18b) if _say else {}
+                if (_rap18.get("archive_invalid_fetched_at_row_count") == 1 and _rap18.get("archive_future_row_count") == 1
+                        and sorted(_rap18.get("arizi_anahtar", [])) == [("2026-09-21", "BBB"), ("2026-09-30", "CCC")]):
+                    ok("T18c sinif_sayimi (ARSIV-ICI, birim SATIR): archive_invalid_fetched_at_row_count=1, archive_future_row_count=1, arizi anahtarlar adiyla")
+                else:
+                    bad(f"T18c sinif_sayimi: {_rap18}")
+                # T18d: YALNIZ arizi satiri olan anahtar -> kanonikte GORUNUR (gizlenmez) ve sinif_sayimi SAYAR.
+                # (Gecerli+arizi ONCELIK karsilastirmasi AYRI test: T18f — tek testte birlesince mutasyon korlugu olusuyordu.)
+                _kan18 = _BA.kanonik_barlar(_f18b)
+                _t18d = (_kan18[("2026-09-21", "BBB")]["sinif"] == "arizi"
+                         and _kan18[("2026-09-30", "CCC")]["sinif"] == "arizi"
+                         and ("2026-09-21", "BBB") in _rap18.get("arizi_anahtar", [])
+                         and ("2026-09-30", "CCC") in _rap18.get("arizi_anahtar", []))
+                if _t18d:
+                    ok("T18d yalniz-arizi anahtar: kanonikte sinif='arizi' GORUNUR (gizlenmez) ve sinif_sayimi anahtari SAYAR")
+                else:
+                    bad(f"T18d yalniz-arizi: {[(k, v['sinif']) for k, v in sorted(_kan18.items())]} | sayim={_rap18.get('arizi_anahtar')}")
+                # T18e regresyon: normal kosumda iki sayac da 0 ve durum dosyasina YAZILIYOR (muhur bunu okuyacak)
+                _k18e = _tf6t.mkdtemp()
+                _rap18e = _BA.append_bars(_veri(["2026-09-21", "2026-09-22"], {"AAA": [10.0, 10.5]}), "kapanis",
+                                          root=_k18e, now=_dt6t(2026, 9, 22, 15, 45, 0, tzinfo=_tz6t.utc))
+                _st18e = _json6t.load(open(os.path.join(_k18e, "docs", "state", "bar_archive.json"), encoding="utf-8"))
+                _bes = ("rejected_future_row_count", "rejected_batch_row_count", "invalid_fetched_at_event_count",
+                        "archive_future_row_count", "archive_invalid_fetched_at_row_count")
+                if (all(_rap18e.get(k) == 0 for k in _bes) and all(_st18e.get(k) == 0 for k in _bes)
+                        and _rap18e.get("rows_added") == 4):
+                    ok("T18e regresyon: normal kosumda BES sayacin hepsi 0 (donuste ve durum dosyasinda) ve 4 satir yazilir")
+                else:
+                    bad(f"T18e sayaclar: rap={_rap18e} durum={_st18e}")
+                # T18f/T18g — MUTASYON KORLUGU KAPATMA (oz-yakalama 09-22 21:5x): T18d'de hicbir anahtar HEM gecerli
+                # HEM arizi satir tasimiyordu -> oncelik sirasi (ARIZI en dusuk) HIC EGZERSIZ EDILMEDI; T18e temiz
+                # dosyayla kostugu icin sayac toplama kodu da egzersiz edilmedi (ikisi de mutasyonda YESIL kaldi).
+                _k18f = _tf6t.mkdtemp(); _f18f = os.path.join(_k18f, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f18f))
+                with open(_f18f, "w", encoding="utf-8", newline="") as _fh:
+                    _w18f = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w18f.writeheader()
+                    _w18f.writerow({"date": "2026-09-21", "ticker": "AAA", "open": "10", "high": "10.1", "low": "9.9", "close": "10",
+                                    "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "2026-09-21T15:45:00Z"})
+                    _w18f.writerow({"date": "2026-09-21", "ticker": "AAA", "open": "10", "high": "10.1", "low": "9.9", "close": "99",
+                                    "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "COP-DAMGA"})
+                _kan18f = _BA.kanonik_barlar(_f18f)[("2026-09-21", "AAA")]
+                # TERS SIRA: arizi satir ONCE gelsin (dosya sirasi hukmu degistirmemeli)
+                _f18f2 = os.path.join(_k18f, "data", "bars", "2026-10.csv")
+                with open(_f18f2, "w", encoding="utf-8", newline="") as _fh:
+                    _w18f2 = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w18f2.writeheader()
+                    _w18f2.writerow({"date": "2026-10-01", "ticker": "AAA", "open": "10", "high": "10.1", "low": "9.9", "close": "99",
+                                     "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "COP-DAMGA"})
+                    _w18f2.writerow({"date": "2026-10-01", "ticker": "AAA", "open": "10", "high": "10.1", "low": "9.9", "close": "10",
+                                     "volume": "1000", "source": "yahoo", "run_label": "kapanis", "fetched_at": "2026-10-01T15:45:00Z"})
+                _kan18f2 = _BA.kanonik_barlar(_f18f2)[("2026-10-01", "AAA")]
+                if (_kan18f["sinif"] == "kapanis" and _kan18f["close"] == "10"
+                        and _kan18f2["sinif"] == "kapanis" and _kan18f2["close"] == "10"):
+                    ok("T18f oncelik (IKI SIRADA da): ayni anahtarda gecerli + arizi -> kanonik GECERLI olani secer; dosya sirasi hukmu degistirmez")
+                else:
+                    bad(f"T18f oncelik: dogru-sira={_kan18f.get('sinif')}/{_kan18f.get('close')} ters-sira={_kan18f2.get('sinif')}/{_kan18f2.get('close')}")
+                # T18g: MEVCUT dosyada arizi satir varken normal append -> durum dosyasi sayaci GORUR (0 degil)
+                _k18g = _tf6t.mkdtemp(); _f18g = os.path.join(_k18g, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f18g))
+                with open(_f18g, "w", encoding="utf-8", newline="") as _fh:
+                    _w18g = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w18g.writeheader()
+                    _w18g.writerow({"date": "2026-09-18", "ticker": "ZZZ", "open": "5", "high": "5.1", "low": "4.9", "close": "5",
+                                    "volume": "10", "source": "yahoo", "run_label": "kapanis", "fetched_at": "COP-DAMGA"})
+                _rap18g = _BA.append_bars(_veri(["2026-09-21", "2026-09-22"], {"AAA": [10.0, 10.5]}), "kapanis",
+                                          root=_k18g, now=_dt6t(2026, 9, 22, 15, 45, 0, tzinfo=_tz6t.utc))
+                _st18g = _json6t.load(open(os.path.join(_k18g, "docs", "state", "bar_archive.json"), encoding="utf-8"))
+                if (_rap18g.get("archive_invalid_fetched_at_row_count") == 1
+                        and _st18g.get("archive_invalid_fetched_at_row_count") == 1
+                        and _rap18g.get("invalid_fetched_at_event_count") == 0        # KOSUM olayi degil, ARSIV-ICI satir
+                        and _rap18g.get("rows_added") == 4):
+                    ok("T18g sayac toplama: MEVCUT dosyadaki arizi satir ARSIV-ICI sayacta gorunur (1), KOSUM-OLAYI sayaci 0 kalir; yazim etkilenmez")
+                else:
+                    bad(f"T18g sayac toplama: rap={_rap18g} durum={_st18g}")
+                # T18h RELABEL KAPSAMI — TEK OTORITE (kullanici 22:1x): relabel yolu bar_sinifi kullanmali.
+                # IKI YONLU: (i) ARIZI satir relabel'dan GECMEZ (run_label korunur, kuru kosum kapsamina girmez)
+                #            (ii) gecerli GECMIS satir GECER (etiketi backfill olur, sayima girer)
+                _k18h = _tf6t.mkdtemp(); _f18h = os.path.join(_k18h, "data", "bars", "2026-09.csv")
+                os.makedirs(os.path.dirname(_f18h))
+                with open(_f18h, "w", encoding="utf-8", newline="") as _fh:
+                    _w18h = _csv6t.DictWriter(_fh, fieldnames=_BA.COLUMNS, lineterminator="\n"); _w18h.writeheader()
+                    # (i) arizi: gelecek bar  (ii) arizi: gecersiz damga  (iii) gecerli gecmis satir
+                    _w18h.writerow({"date": "2026-09-30", "ticker": "FUT", "open": "1", "high": "1", "low": "1", "close": "1",
+                                    "volume": "1", "source": "yahoo", "run_label": "kapanis", "fetched_at": "2026-09-21T15:45:00Z"})
+                    _w18h.writerow({"date": "2026-09-21", "ticker": "COP", "open": "2", "high": "2", "low": "2", "close": "2",
+                                    "volume": "1", "source": "yahoo", "run_label": "kapanis", "fetched_at": "COP-DAMGA"})
+                    _w18h.writerow({"date": "2026-09-18", "ticker": "GEC", "open": "3", "high": "3", "low": "3", "close": "3",
+                                    "volume": "1", "source": "yahoo", "run_label": "acilis", "fetched_at": "2026-09-21T07:36:00Z"})
+                _rap18h = _BA.relabel_kuru_kosum(_f18h)
+                _n18h = _BA.backfill_etiketle(_f18h)
+                _son18h = {(r["date"], r["ticker"]): r["run_label"]
+                           for r in _csv6t.DictReader(open(_f18h, encoding="utf-8", newline=""))}
+                _t18h = (_rap18h.get("relabel") == 1 and _n18h == 1
+                         and _son18h[("2026-09-30", "FUT")] == "kapanis"      # arizi: DOKUNULMADI
+                         and _son18h[("2026-09-21", "COP")] == "kapanis"      # arizi: DOKUNULMADI
+                         and _son18h[("2026-09-18", "GEC")] == "backfill"     # gecerli gecmis: GECTI
+                         and _BA.sinif_sayimi(_f18h)["archive_future_row_count"] == 1
+                         and _BA.sinif_sayimi(_f18h)["archive_invalid_fetched_at_row_count"] == 1)
+                if _t18h:
+                    ok("T18h relabel kapsami TEK OTORITE: arizi satirlar (gelecek bar + cop damga) relabel'dan GECMEZ ve sayima girmez; gecerli gecmis satir GECER (1/1)")
+                else:
+                    bad(f"T18h relabel kapsami: kuru={_rap18h.get('relabel')} n={_n18h} etiketler={_son18h}")
+                # T18i GECERSIZ DAMGA KOLU — ERISILEBILIR + ham batch sayisi (kullanici 22:1x)
+                # append_bars damgayi kendi uretir; kol `_fetched_at` seam'i uzerinden erisilebilir kilindi.
+                _k18i = _tf6t.mkdtemp()
+                _orig_fa = _BA._fetched_at
+                try:
+                    _BA._fetched_at = lambda now: "COP-DAMGA"
+                    try:
+                        _BA.append_bars(_veri(["2026-09-21", "2026-09-22"], {"AAA": [10.0, 10.5]}), "kapanis",
+                                        root=_k18i, now=_dt6t(2026, 9, 22, 15, 45, 0, tzinfo=_tz6t.utc))
+                        _e18i = "istisna yok"
+                    except Exception as _ex18i:
+                        _e18i = None if type(_ex18i).__name__ == "ArsivArizi" else f"yanlis tip {type(_ex18i).__name__}"
+                finally:
+                    _BA._fetched_at = _orig_fa
+                _st18i = os.path.join(_k18i, "docs", "state", "bar_archive.json")
+                _d18i = _json6t.load(open(_st18i, encoding="utf-8")) if os.path.exists(_st18i) else {}
+                if (_e18i is None and not os.path.exists(os.path.join(_k18i, "data", "bars", "2026-09.csv"))
+                        and _d18i.get("invalid_fetched_at_event_count") == 1
+                        and _d18i.get("rejected_batch_row_count") == 4          # HAM aday satir (2 gun x (AAA + XU100))
+                        and _d18i.get("rejected_future_row_count") == 0):
+                    ok("T18i gecersiz damga kolu ERISILEBILIR ve tutarli: ArsivArizi, satir yazilmaz, event=1, rejected_batch_row_count=4 (HAM aday satir; eskiden 0 yaziliyordu)")
+                else:
+                    bad(f"T18i gecersiz damga: hata={_e18i} durum={_d18i}")
                 # T15 (#1a eksen): bar 09-22, cekim 21:30Z = 00:30 TR 09-23 -> backfill; 20:30Z = 23:30 TR 09-22 -> slot
                 _root15 = _tf6t.mkdtemp(); _f15 = os.path.join(_root15, "data", "bars", "2026-09.csv")
                 _d15 = _veri(["2026-09-22"], {"AAA": [12.0]})

@@ -19,16 +19,29 @@ TASARIM (kucuk, salt-ekleme, F'e dokunmaz):
     verisi olmayan hisse eksik kalir (OLCULDU 09-21: acilis 627 / gunici 625 / kapanis 625 -> 2 hisse yalniz
     acilis). Revizyonlar ekler (09-21: 1877 satir/gun; tasarim bilincli, "boyut sapmasi" degil). Hicbir
     satir SILINMEZ (relabel dahil): iki satir iki ayri gorus.
-  * BACKFILL ETIKETI (2026-09-21 disaridan okuma): bar tarihi != fetched_at'in TR tarihi ise satir
-    `run_label=backfill` alir, slot etiketi TASINMAZ. Aksi halde 09-21 07:36Z'de cekilen 09-15..18
-    nihai barlari "acilis-ani kismi bar" gibi etiketlenirdi (aktif yanlis anlam; olculdu 09-21 itibariyla: 2583 satir; sonraki yazimlar sayiyi degistirir).
-    Karsilastirma TR tarihiyle (cekim_tr_tarihi): bar tarihi TR ekseninde; 21:00Z sonrasi elle dispatch
-    (00:xx TR, 08-28'de yasandi) UTC tarihiyle ayni gun gorunur ama TR'de ertesi gundur -> backfill (T15).
+  * SINIF SOZLESMESI — DORT DURUM, karsilastirma TR EKSENINDE (`cekim_tr_tarihi`; bar tarihi zaten TR):
+      fetched_at gecersiz         -> ARIZI  (yazici: ArsivArizi, TUM batch reddedilir; okuyucu: sinif 'arizi')
+      bar tarihi >  cekim TR gunu -> ARIZI  (gelecek bar uretilemez = veri hatasi; sessiz backfill YOK)
+      bar tarihi <  cekim TR gunu -> backfill  (slot etiketi TASINMAZ)
+      bar tarihi == cekim TR gunu -> slot / kapanis
+    Gerekce: 09-21 07:36Z'de cekilen 09-15..18 NIHAI barlari "acilis-ani kismi bar" gibi etiketlenmisti (aktif
+    yanlis anlam; 09-21 itibariyla 2583 satir, sonraki yazimlar sayiyi degistirir). TR ekseni: 21:00Z sonrasi elle
+    dispatch (00:xx TR, 08-28'de yasandi) UTC'de ayni gun gorunur ama TR'de ERTESI gundur -> backfill (T15).
+    "Esit degilse backfill" ILK SURUMUN HATASIYDI: gelecek bar ve gecersiz damga sessizce gecmis-gorus
+    sayiliyordu (2026-09-22 disaridan okuma) -> T18.
+  * MUHUR SAYACLARI — IKI AYRI KUME, birimleri KARISTIRILMAZ (durum dosyasi + append_bars donusu):
+      kosum olayi: rejected_future_row_count, rejected_batch_row_count (SATIR) · invalid_fetched_at_event_count (OLAY)
+      arsiv ici  : archive_future_row_count, archive_invalid_fetched_at_row_count (SATIR; `sinif_sayimi`)
+    Canli muhur ONCE bu sayaclarin HEPSININ 0 oldugunu arar; degilse muhur GECERSIZ.
   * KANONIK BAR KURALI (tek okuyucu, kanonik_barlar()): (tarih, hisse) icin `kapanis` satiri varsa o;
-    yoksa en son slot satiri (acilis/gunici, fetched_at'e gore); yoksa `backfill` (ayri sinif, `sinif`
-    alaninda gorunur). Eski yanlis etiketli satirlar fetched_at kuraliyla backfill sayilir -> dosya
-    yeniden yazilmadan tutarli. Sonradan gelen revizyon (backfill) kanonik kapanis barini DEGISTIRMEZ
-    (point-in-time korunur; revizyon dosyada durur, son_barlar() 'son gorus' olarak verir).
+    yoksa en son slot satiri (acilis/gunici, fetched_at'e gore); yoksa `backfill`; en son `arizi` (ARIZI satir
+    gecerli satiri EZEMEZ ama GIZLENMEZ de, `sinif` alaninda gorunur). Eski yanlis etiketli satirlar SINIF
+    SOZLESMESIYLE (bar_sinifi) dogru okunur -> dosya yeniden yazilmadan tutarli.
+  * RELABEL KAPSAMI (`_relabel_kapsamda`, TEK OTORITE bar_sinifi): yalniz sinifi `backfill` olup etiketi henuz
+    backfill OLMAYAN satir yeniden etiketlenir. ARIZI satir KAPSAM DISI — etiketini cevirmek arizayi normal
+    gecmis-gorus gibi gosterir ve relabel olcumune katardi (2026-09-22 disaridan okuma, T18h).
+  * PIT: sonradan gelen revizyon (backfill) kanonik kapanis barini DEGISTIRMEZ (revizyon dosyada durur,
+    son_barlar() 'son gorus' olarak verir).
     Okuyucular kendi kuralini UYDURMAZ: tek bar isteyen kanonik_barlar(), son gorus isteyen son_barlar().
     Dogrudan okuma YASAK (selftest T16 tarar): gerekce yukaridaki tekillik — (date,ticker,run_label)'i anahtar
     sanan pandas okuyucusu hata vermeden yanlis sonuc uretir; iki okuyucu fonksiyon bu tuzagi kapsulleyen tek yer.
@@ -63,14 +76,17 @@ KUYRUK_GUN = 5          # feed'in son kac gunu islenir (gec gelen bar / revizyon
 XU100 = "XU100"
 ARSIVLENMEZ_KAYNAK = ("file",)
 WRITER = "bist_alpha.bar_archive.append_bars"
-BACKFILL = "backfill"                    # bar tarihi != cekim TR tarihi: slot etiketi tasinmaz
+BACKFILL = "backfill"                    # bar tarihi < cekim TR tarihi: slot etiketi tasinmaz
+ARIZI = "arizi"                          # gecersiz fetched_at ya da GELECEK tarihli bar (sessiz backfill DEGIL)
 TZ_TR = ZoneInfo("Europe/Istanbul")      # bar tarihi TR ekseninde; cekim tarihi de TR'ye cevrilip karsilastirilir
 
 
 def cekim_tr_tarihi(fetched_at):
     """fetched_at (UTC 'Z' ISO) -> TR takvim tarihi 'YYYY-MM-DD'. Bar tarihi TR ekseninde oldugundan UTC tarihiyle
     karsilastirmak 21:00Z sonrasi cekimlerde (elle dispatch, 00:xx TR) bir gun kayardi (#1a eksen sinifi).
-    Ayristirilamazsa '' (hicbir bar tarihiyle eslesmez -> backfill = guvenli taraf)."""
+    Ayristirilamazsa '' -> cagiran taraf ARIZI sayar (T18). Bu donus TEK BASINA sinif DEGILDIR: siniflandirma
+    otoritesi `bar_sinifi`, relabel kapsami `_relabel_kapsamda`. (ESKI metin "backfill = guvenli taraf" YANLISTI:
+    gecersiz damgayi gecmis-gorus gibi gosteriyordu.)"""
     try:
         t = datetime.fromisoformat(str(fetched_at).replace("Z", "+00:00"))
     except (TypeError, ValueError):
@@ -80,14 +96,40 @@ def cekim_tr_tarihi(fetched_at):
     return t.astimezone(TZ_TR).strftime("%Y-%m-%d")
 
 
-_SINIF_SIRA = {"kapanis": 2, "slot": 1, BACKFILL: 0}
+_SINIF_SIRA = {"kapanis": 3, "slot": 2, BACKFILL: 1, ARIZI: 0}   # arizi satir gecerli satiri EZEMEZ
 
 
 def bar_sinifi(row):
-    """Satirin sinifi: 'backfill' (etiket YA DA fetched_at tarihi bar tarihinden farkli), 'kapanis', 'slot'."""
-    if row.get("run_label") == BACKFILL or cekim_tr_tarihi(row.get("fetched_at", "")) != row.get("date"):
+    """Satirin sinifi — DORT DURUM (sozlesme, 2026-09-22):
+         fetched_at gecersiz        -> 'arizi'   (sessiz backfill DEGIL)
+         bar tarihi > cekim TR gunu -> 'arizi'   (gelecek bar: uretilemez, veri hatasi)
+         bar tarihi < cekim TR gunu -> 'backfill'
+         bar tarihi == cekim TR gunu-> 'kapanis' (etiket kapanissa) ya da 'slot'
+    Etiketi BACKFILL olan satir gecerli damgayla backfill sayilir; gecersiz damga once gelir."""
+    cek = cekim_tr_tarihi(row.get("fetched_at", ""))
+    if not cek:
+        return ARIZI
+    bar = row.get("date") or ""
+    if bar > cek:
+        return ARIZI
+    if row.get("run_label") == BACKFILL or bar < cek:
         return BACKFILL
     return "kapanis" if row.get("run_label") == "kapanis" else "slot"
+
+
+def sinif_sayimi(path):
+    """Muhur girdisi — ARSIV-ICI sayim, birim = SATIR (kosum-olayi sayaclariyla KARISTIRILMAZ). Donus:
+       {archive_future_row_count, archive_invalid_fetched_at_row_count, arizi_anahtar:[(tarih,hisse)...]}"""
+    gelecek = gecersiz = 0
+    anahtar = set()
+    for r in _satir_oku(path):
+        cek = cekim_tr_tarihi(r.get("fetched_at", ""))
+        if not cek:
+            gecersiz += 1; anahtar.add((r["date"], r["ticker"]))
+        elif (r.get("date") or "") > cek:
+            gelecek += 1; anahtar.add((r["date"], r["ticker"]))
+    return {"archive_future_row_count": gelecek, "archive_invalid_fetched_at_row_count": gecersiz,
+            "arizi_anahtar": sorted(anahtar)}
 
 
 def _num(v, nd=4):
@@ -116,6 +158,11 @@ def _dosya(root, ay):
 
 class ArsivBozuk(ValueError):
     """Arsiv dosyasi semaya uymuyor (eksik/fazla kolon, yarim satir). Sessiz kirpma YERINE gorunur hata."""
+
+
+class ArsivArizi(ValueError):
+    """Sinif SOZLESMESI ihlali: gecersiz fetched_at ya da GELECEK tarihli bar. Sessiz 'backfill' YERINE gorunur hata
+    (2026-09-22 disaridan okuma: 'esit degilse backfill' kurali iki ayri arizayi gecmis-gorus gibi etiketliyordu)."""
 
 
 def _satir_oku(path):
@@ -192,15 +239,22 @@ def kanonik_barlar(path):
     return out
 
 
+def _relabel_kapsamda(row):
+    """Relabel KAPSAMI — TEK OTORITE `bar_sinifi`: yalniz sinifi BACKFILL olan (gecerli damga + gecmis bar)
+    ama etiketi henuz backfill OLMAYAN satir. ARIZI satir (gelecek bar / gecersiz damga) KAPSAM DISIDIR:
+    etiketini backfill'e cevirmek arizayi NORMAL gecmis-gorus gibi gosterir ve relabel olcumune katardi."""
+    return bar_sinifi(row) == BACKFILL and row.get("run_label") != BACKFILL
+
+
 def backfill_etiketle(path):
-    """Eski satirlari yeniden etiketle: fetched_at TR tarihi != bar tarihi ve etiket backfill degilse
-    -> backfill. Idempotent; satir sayisi ve diger kolonlar aynen; atomik yazim, LF. Donus: degisen satir."""
+    """Eski satirlari yeniden etiketle — kapsam `_relabel_kapsamda` (tek otorite bar_sinifi; ARIZI satir HARIC).
+    Idempotent; satir sayisi ve diger kolonlar aynen; atomik yazim, LF. Donus: degisen satir sayisi."""
     if not os.path.exists(path):
         return 0
     rows = _satir_oku(path)              # sema disi/yarim satir -> ArsivBozuk (fazla kolon sessizce dusurulurdu)
     n = 0
     for r in rows:
-        if r.get("run_label") != BACKFILL and cekim_tr_tarihi(r.get("fetched_at", "")) != r.get("date"):
+        if _relabel_kapsamda(r):
             r["run_label"] = BACKFILL; n += 1
     if n == 0:
         return 0
@@ -235,14 +289,12 @@ def relabel_kuru_kosum(path):
     kapsam = {}; toplam = {}
     for r in rows:
         k = (r["date"], r["ticker"]); toplam[k] = toplam.get(k, 0) + 1
-        if r.get("run_label") != BACKFILL and cekim_tr_tarihi(r.get("fetched_at", "")) != r.get("date"):
+        if _relabel_kapsamda(r):         # TEK OTORITE: arizi satir kapsamda DEGIL
             kapsam[k] = kapsam.get(k, 0) + 1
     n_bagimsiz = sum(kapsam.values())
     once = kanonik_barlar(path)
-    def _kapsamli(r):
-        return r.get("run_label") != BACKFILL and cekim_tr_tarihi(r.get("fetched_at", "")) != r.get("date")
     karisik = [k for k, r in kapsam.items() if toplam[k] > r]
-    ihlal = [k for k in karisik if _kapsamli(once[k])]
+    ihlal = [k for k in karisik if _relabel_kapsamda(once[k])]
     beklenen = len(kapsam) - (len(karisik) - len(ihlal))
     with tempfile.TemporaryDirectory() as td:
         kopya = os.path.join(td, os.path.basename(path))
@@ -261,6 +313,23 @@ def relabel_kuru_kosum(path):
             "tutuyor": satir_ayni and bozulan == 0 and degisen == beklenen and n == n_bagimsiz and not ihlal}
 
 
+def _satirlar_ham(data, run_label, fetched_at):
+    """Sozlesme KONTROLU YAPMADAN aday satirlar — yalniz REDDEDILEN batch'i saymak icin (yazima girmez)."""
+    prices = data["prices"]
+    bist = data.get("bist")
+    for d in list(prices.index[-KUYRUK_GUN:]):
+        ds = d.strftime("%Y-%m-%d")
+        for t in prices.columns:
+            if _num(_cell(prices, d, t)) != "":
+                yield {"date": ds, "ticker": str(t)}
+        if bist is not None:
+            try:
+                if _num(bist.loc[d]) != "":
+                    yield {"date": ds, "ticker": XU100}
+            except Exception:
+                pass
+
+
 def _satirlar(data, run_label, fetched_at):
     """Feed sozlugunden aday satirlar (son KUYRUK_GUN gun)."""
     prices = data["prices"]
@@ -269,10 +338,16 @@ def _satirlar(data, run_label, fetched_at):
     # provenance: TAM kaynak dizgesi (orn. 'borsapy_fallback_from_yahoo' = birincil dustu), taban degil
     source = str(data.get("_source") or data.get("_source_base") or "")
     cekim_tarihi = cekim_tr_tarihi(fetched_at)            # TR tarih (bar tarihiyle ayni eksen)
+    if not cekim_tarihi:
+        raise ArsivArizi(f"fetched_at ayristirilamadi: {fetched_at!r} -> ARIZI (tum barlar sessizce backfill olurdu)")
     tarihler = list(prices.index[-KUYRUK_GUN:])
+    gelecek = [d.strftime("%Y-%m-%d") for d in tarihler if d.strftime("%Y-%m-%d") > cekim_tarihi]
+    if gelecek:
+        raise ArsivArizi(f"GELECEK tarihli bar: {gelecek} > cekim {cekim_tarihi} -> ARIZI "
+                         f"(sessiz backfill YOK; satir yazilmadi)")
     for d in tarihler:
         ds = d.strftime("%Y-%m-%d")
-        etiket = run_label if ds == cekim_tarihi else BACKFILL   # onceki gunun bari = backfill, slot etiketi tasinmaz
+        etiket = run_label if ds == cekim_tarihi else BACKFILL   # gecmis gun = backfill, slot etiketi tasinmaz
         for t in prices.columns:
             c = _num(_cell(prices, d, t))
             if c == "":
@@ -303,22 +378,52 @@ def _durum_yaz(root, durum):
     _atomik(p, _yaz)                     # kesinti: eski durum dosyasi saglam kalir (T17b)
 
 
+def _fetched_at(now):
+    """Cekim damgasi (UTC 'Z'). AYRI FONKSIYON: gecersiz-damga hata kolu boylece ERISILEBILIR ve test edilebilir
+    (aksi halde append_bars damgayi kendi uretip her zaman gecerli yapardi -> kol olu kod olurdu)."""
+    return now.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
 def append_bars(data, run_label, root, now=None):
     """Feed'in son gunlerini arsive ekle. Donus: durum sozlugu (docs/state/bar_archive.json ile ayni)."""
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
         raise ValueError("append_bars: naive datetime kabul etmez (eksen belirsiz)")
-    fetched_at = now.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    fetched_at = _fetched_at(now)
     source = str(data.get("_source_base") or data.get("_source") or "")
     durum = {"writer": WRITER, "generated_at": fetched_at, "run_label": run_label,
              "source": str(data.get("_source") or source),
-             "rows_seen": 0, "rows_added": 0, "dates": [], "files": [], "skipped_reason": None}
+             "rows_seen": 0, "rows_added": 0, "dates": [], "files": [], "skipped_reason": None,
+             # MUHUR GIRDISI — iki AYRI kume, hepsi 0 OLMALI (birimleri karistirma):
+             #   kosum olayi (bu kosumda ne REDDEDILDI)      : rejected_* (satir) + invalid_fetched_at_event_count (olay)
+             #   arsiv ici   (dosyada ne DURUYOR)            : archive_* (satir)
+             "rejected_future_row_count": 0, "rejected_batch_row_count": 0,
+             "invalid_fetched_at_event_count": 0,
+             "archive_future_row_count": 0, "archive_invalid_fetched_at_row_count": 0}
     if source in ARSIVLENMEZ_KAYNAK or str(data.get("_source", "")).startswith("file"):
         durum["skipped_reason"] = f"kaynak '{data.get('_source') or source}' donmus dosya: arsivlenmez"
         _durum_yaz(root, durum)
         return durum
 
-    aday = list(_satirlar(data, run_label, fetched_at))
+    try:
+        aday = list(_satirlar(data, run_label, fetched_at))
+    except ArsivArizi as exc:                       # gelecek bar / gecersiz damga: TUM BATCH reddedilir, durum yazilir
+        cek = cekim_tr_tarihi(fetched_at)
+        if cek:
+            # birim = SATIR (sinif_sayimi ile ayni birim); gelecek tarihli gunlerin satirlari + batch toplami
+            gelecek_gun = {d.strftime("%Y-%m-%d") for d in list(data["prices"].index[-KUYRUK_GUN:])
+                           if d.strftime("%Y-%m-%d") > cek}
+            hepsi = list(_satirlar_ham(data, run_label, fetched_at))
+            durum["rejected_future_row_count"] = sum(1 for r in hepsi if r["date"] in gelecek_gun)
+            durum["rejected_batch_row_count"] = len(hepsi)
+        else:
+            # gecersiz damga: OLAY sayilir (satir UYDURULMAZ) ama reddedilen batch'in HAM satir sayisi yazilir
+            # (eskiden 0 yaziliyordu: "tum batch reddedildi" ile celisiyordu). Kol ERISILEBILIR: _fetched_at seam'i.
+            durum["invalid_fetched_at_event_count"] = 1
+            durum["rejected_batch_row_count"] = len(list(_satirlar_ham(data, run_label, fetched_at)))
+        durum["skipped_reason"] = f"ARIZI: {exc}"
+        _durum_yaz(root, durum)
+        raise
     durum["rows_seen"] = len(aday)
     durum["dates"] = sorted({r["date"] for r in aday})
     buffers = {}                                            # ay -> (path, son_degerler, yeni satirlar)
@@ -359,5 +464,9 @@ def append_bars(data, run_label, root, now=None):
         _atomik(p, _yaz)
         durum["rows_added"] += len(yeni)
         durum["files"].append(os.path.relpath(p, root).replace(os.sep, "/"))
+    for _p in {b[0] for b in buffers.values()}:      # yazilan dosyalarda ARIZI satir kaldi mi (arsiv-ici, SATIR)
+        _say = sinif_sayimi(_p)
+        durum["archive_future_row_count"] += _say["archive_future_row_count"]
+        durum["archive_invalid_fetched_at_row_count"] += _say["archive_invalid_fetched_at_row_count"]
     _durum_yaz(root, durum)
     return durum
