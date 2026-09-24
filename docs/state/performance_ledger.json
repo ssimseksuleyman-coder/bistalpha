@@ -1,19 +1,19 @@
 {
   "summary": {
-    "updated_at": "2026-09-23T18:40:57",
+    "updated_at": "2026-09-24T10:08:40",
     "tracked_days": 78,
     "latest_date": "2026-09-23",
     "latest_regime": "bear",
-    "latest_events": 26,
+    "latest_events": 27,
     "by_layer_regime": [
       {
         "layer": "quiet_accumulation",
         "label": "Sessiz Birikim",
         "role": "discovery",
         "regime": "bear",
-        "n": 68,
-        "avg_return_pct": -23.12,
-        "hit_rate_pct": 38.2,
+        "n": 69,
+        "avg_return_pct": -22.78,
+        "hit_rate_pct": 37.7,
         "captured_alpha_pct": 179.97,
         "false_positive_loss_pct": 1752.13,
         "net_discovery_pct": -1572.16,
@@ -113,8 +113,8 @@
         "avg_return_pct": -27.12,
         "hit_rate_pct": 18.5,
         "captured_alpha_pct": 1064.49,
-        "false_positive_loss_pct": 8548.35,
-        "net_discovery_pct": -7483.86,
+        "false_positive_loss_pct": 8548.34,
+        "net_discovery_pct": -7483.85,
         "hit_events": 43,
         "false_positive_events": 218
       },
@@ -197,7 +197,7 @@
         "role": "return",
         "regime": "bear",
         "n": 190,
-        "avg_return_pct": -34.37,
+        "avg_return_pct": -34.35,
         "hit_rate_pct": 14.2
       },
       {
@@ -17737,7 +17737,7 @@
           "ticker": "INFO",
           "entry_price": 8.0,
           "current_price": 1.31,
-          "return_pct": -83.63,
+          "return_pct": -83.62,
           "entry_date": "2026-07-07",
           "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
           "signal": "Birikim",
@@ -17745,7 +17745,7 @@
             "zirveye_yakin"
           ],
           "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 83.63,
+          "false_positive_loss_pct": 83.62,
           "verdict": "false_positive"
         },
         {
@@ -54276,26 +54276,11 @@
       "generated_at": "2026-09-23T10:13:42",
       "regime": {
         "name": "bear",
-        "xu5": -4.6,
-        "xu21": -8.6
+        "xu5": 1.0,
+        "xu21": -8.4
       },
-      "source": "yahoo",
+      "source": "borsapy_fallback_from_yahoo",
       "events": [
-        {
-          "layer": "F_top10",
-          "label": "F Top10",
-          "role": "return",
-          "metric": "forward_return_hit_rate",
-          "ticker": "TRHOL",
-          "entry_price": 2394.0,
-          "current_price": 2394.0,
-          "return_pct": 0.0,
-          "entry_date": "2026-09-23",
-          "reason": null,
-          "signal": "TABAN KILIDI (6 g)",
-          "tags": [],
-          "verdict": "flat"
-        },
         {
           "layer": "F_top10",
           "label": "F Top10",
@@ -54316,6 +54301,21 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
+          "ticker": "TRHOL",
+          "entry_price": 2394.0,
+          "current_price": 2394.0,
+          "return_pct": 0.0,
+          "entry_date": "2026-09-23",
+          "reason": null,
+          "signal": "TABAN KILIDI (6 g)",
+          "tags": [],
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_top10",
+          "label": "F Top10",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
           "ticker": "KTLEV",
           "entry_price": 16.24,
           "current_price": 16.24,
@@ -54323,6 +54323,21 @@
           "entry_date": "2026-09-23",
           "reason": null,
           "signal": "TABAN KILIDI (9 g)",
+          "tags": [],
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_top10",
+          "label": "F Top10",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "CRFSA",
+          "entry_price": 268.75,
+          "current_price": 264.25,
+          "return_pct": -1.67,
+          "entry_date": "2026-09-23",
+          "reason": null,
+          "signal": "Nötr",
           "tags": [],
           "verdict": "loss"
         },
@@ -54340,21 +54355,6 @@
           "signal": "Birikim",
           "tags": [],
           "verdict": "hit"
-        },
-        {
-          "layer": "F_top10",
-          "label": "F Top10",
-          "role": "return",
-          "metric": "forward_return_hit_rate",
-          "ticker": "CRFSA",
-          "entry_price": 268.75,
-          "current_price": 264.25,
-          "return_pct": -1.67,
-          "entry_date": "2026-09-23",
-          "reason": null,
-          "signal": "Nötr",
-          "tags": [],
-          "verdict": "loss"
         },
         {
           "layer": "F_top10",
@@ -54391,6 +54391,21 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
+          "ticker": "CVKMD",
+          "entry_price": 13.8,
+          "current_price": 13.8,
+          "return_pct": 0.0,
+          "entry_date": "2026-09-23",
+          "reason": null,
+          "signal": "DAĞITIM",
+          "tags": [],
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_top10",
+          "label": "F Top10",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
           "ticker": "TUPRS",
           "entry_price": 393.75,
           "current_price": 411.0,
@@ -54406,21 +54421,6 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
-          "ticker": "EUPWR",
-          "entry_price": 66.45,
-          "current_price": 64.15,
-          "return_pct": -3.46,
-          "entry_date": "2026-09-23",
-          "reason": null,
-          "signal": "Nötr",
-          "tags": [],
-          "verdict": "loss"
-        },
-        {
-          "layer": "F_top10",
-          "label": "F Top10",
-          "role": "return",
-          "metric": "forward_return_hit_rate",
           "ticker": "TRALT",
           "entry_price": 50.15,
           "current_price": 50.15,
@@ -54429,7 +54429,7 @@
           "reason": null,
           "signal": "DAĞITIM",
           "tags": [],
-          "verdict": "hit"
+          "verdict": "flat"
         },
         {
           "layer": "transformation",
@@ -54448,6 +54448,26 @@
           ],
           "captured_alpha_pct": 0.0,
           "false_positive_loss_pct": 0.63,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "transformation",
+          "label": "Donusum Radari",
+          "role": "discovery",
+          "metric": "captured_alpha_false_positive",
+          "ticker": "ENERY",
+          "entry_price": 13.07,
+          "current_price": 13.03,
+          "return_pct": -0.31,
+          "entry_date": "2026-09-23",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "signal": "GÜÇLÜ_BİRİKİM",
+          "tags": [
+            "zirveye_yakin",
+            "karantina_1_3_gun"
+          ],
+          "captured_alpha_pct": 0.0,
+          "false_positive_loss_pct": 0.31,
           "verdict": "neutral"
         },
         {
@@ -54474,19 +54494,19 @@
           "label": "Donusum Radari",
           "role": "discovery",
           "metric": "captured_alpha_false_positive",
-          "ticker": "ENERY",
-          "entry_price": 13.07,
-          "current_price": 13.03,
-          "return_pct": -0.31,
+          "ticker": "KRDMD",
+          "entry_price": 46.68,
+          "current_price": 46.68,
+          "return_pct": 0.0,
           "entry_date": "2026-09-23",
           "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-          "signal": "GÜÇLÜ_BİRİKİM",
+          "signal": "Birikim",
           "tags": [
             "zirveye_yakin",
             "karantina_1_3_gun"
           ],
           "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 0.31,
+          "false_positive_loss_pct": 0.0,
           "verdict": "neutral"
         },
         {
@@ -54549,26 +54569,6 @@
           "verdict": "neutral"
         },
         {
-          "layer": "transformation",
-          "label": "Donusum Radari",
-          "role": "discovery",
-          "metric": "captured_alpha_false_positive",
-          "ticker": "BIMAS",
-          "entry_price": 433.75,
-          "current_price": 433.75,
-          "return_pct": 0.0,
-          "entry_date": "2026-09-23",
-          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-          "signal": "Birikim",
-          "tags": [
-            "zirveye_yakin",
-            "karantina_1_3_gun"
-          ],
-          "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 0.0,
-          "verdict": "neutral"
-        },
-        {
           "layer": "quiet_accumulation",
           "label": "Sessiz Birikim",
           "role": "discovery",
@@ -54582,6 +54582,25 @@
           "signal": "Birikim",
           "tags": [],
           "captured_alpha_pct": 0.73,
+          "false_positive_loss_pct": 0.0,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "quiet_accumulation",
+          "label": "Sessiz Birikim",
+          "role": "discovery",
+          "metric": "captured_alpha_false_positive",
+          "ticker": "BIMAS",
+          "entry_price": 433.75,
+          "current_price": 433.75,
+          "return_pct": 0.0,
+          "entry_date": "2026-09-23",
+          "reason": "birikim + hacim artisi, henuz Top 10 degil",
+          "signal": "Birikim",
+          "tags": [
+            "zirveye_yakin"
+          ],
+          "captured_alpha_pct": 0.0,
           "false_positive_loss_pct": 0.0,
           "verdict": "neutral"
         },
@@ -54713,6 +54732,25 @@
           "label": "Tepe Riski",
           "role": "risk",
           "metric": "saved_loss_opportunity_cost",
+          "ticker": "EUPWR",
+          "entry_price": 64.15,
+          "current_price": 64.15,
+          "return_pct": 0.0,
+          "entry_date": "2026-09-23",
+          "reason": "guc var ama alim icin risk etiketi tasiyor",
+          "signal": "Nötr",
+          "tags": [
+            "ivme_yavasliyor"
+          ],
+          "saved_loss_pct": 0.0,
+          "opportunity_cost_pct": 0.0,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "peak_risks",
+          "label": "Tepe Riski",
+          "role": "risk",
+          "metric": "saved_loss_opportunity_cost",
           "ticker": "HALKB",
           "entry_price": 46.44,
           "current_price": 46.06,
@@ -54727,28 +54765,9 @@
           "saved_loss_pct": 0.82,
           "opportunity_cost_pct": 0.0,
           "verdict": "neutral"
-        },
-        {
-          "layer": "peak_risks",
-          "label": "Tepe Riski",
-          "role": "risk",
-          "metric": "saved_loss_opportunity_cost",
-          "ticker": "AYGAZ",
-          "entry_price": 309.0,
-          "current_price": 309.0,
-          "return_pct": 0.0,
-          "entry_date": "2026-09-23",
-          "reason": "guc var ama alim icin risk etiketi tasiyor",
-          "signal": "Nötr",
-          "tags": [
-            "ivme_yavasliyor"
-          ],
-          "saved_loss_pct": 0.0,
-          "opportunity_cost_pct": 0.0,
-          "verdict": "neutral"
         }
       ],
-      "last_generated_at": "2026-09-23T18:40:57"
+      "last_generated_at": "2026-09-24T10:08:40"
     }
   ]
 }
