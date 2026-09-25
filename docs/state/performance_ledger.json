@@ -1,6 +1,6 @@
 {
   "summary": {
-    "updated_at": "2026-09-24T18:40:50",
+    "updated_at": "2026-09-25T10:04:24",
     "tracked_days": 79,
     "latest_date": "2026-09-24",
     "latest_regime": "bear",
@@ -85,8 +85,8 @@
         "avg_return_pct": -21.42,
         "hit_rate_pct": 19.0,
         "captured_alpha_pct": 585.58,
-        "false_positive_loss_pct": 3177.84,
-        "net_discovery_pct": -2592.26,
+        "false_positive_loss_pct": 3177.31,
+        "net_discovery_pct": -2591.73,
         "hit_events": 17,
         "false_positive_events": 76
       },
@@ -197,8 +197,8 @@
         "role": "return",
         "regime": "bear",
         "n": 200,
-        "avg_return_pct": -36.95,
-        "hit_rate_pct": 14.5
+        "avg_return_pct": -36.94,
+        "hit_rate_pct": 14.0
       },
       {
         "layer": "F_top10",
@@ -287,12 +287,12 @@
         "role": "risk",
         "regime": "bear",
         "n": 160,
-        "avg_return_pct": -30.78,
+        "avg_return_pct": -30.74,
         "hit_rate_pct": 13.8,
-        "saved_loss_pct": 5096.0,
+        "saved_loss_pct": 5090.49,
         "opportunity_cost_pct": 171.34,
-        "net_saved_pct": 4924.66,
-        "saved_events": 130,
+        "net_saved_pct": 4919.15,
+        "saved_events": 129,
         "false_alarm_events": 16
       },
       {
@@ -54774,19 +54774,19 @@
       "generated_at": "2026-09-24T15:11:04",
       "regime": {
         "name": "bear",
-        "xu5": -1.8,
-        "xu21": -11.0
+        "xu5": -4.6,
+        "xu21": -11.8
       },
-      "source": "yahoo",
+      "source": "borsapy_fallback_from_yahoo",
       "events": [
         {
           "layer": "F_top10",
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
-          "ticker": "TRHOL",
-          "entry_price": 2155.0,
-          "current_price": 2155.0,
+          "ticker": "OZATD",
+          "entry_price": 2388.0,
+          "current_price": 2388.0,
           "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": null,
@@ -54799,9 +54799,9 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
-          "ticker": "OZATD",
-          "entry_price": 2388.0,
-          "current_price": 2388.0,
+          "ticker": "TRHOL",
+          "entry_price": 2155.0,
+          "current_price": 2155.0,
           "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": null,
@@ -54837,7 +54837,7 @@
           "reason": null,
           "signal": "TABAN KILIDI (10 g)",
           "tags": [],
-          "verdict": "loss"
+          "verdict": "flat"
         },
         {
           "layer": "F_top10",
@@ -54859,15 +54859,15 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
-          "ticker": "ASTOR",
-          "entry_price": 260.25,
-          "current_price": 260.5,
-          "return_pct": 0.1,
+          "ticker": "CVKMD",
+          "entry_price": 14.27,
+          "current_price": 14.27,
+          "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": null,
-          "signal": "DAĞITIM",
+          "signal": "Nötr",
           "tags": [],
-          "verdict": "hit"
+          "verdict": "flat"
         },
         {
           "layer": "F_top10",
@@ -54881,6 +54881,21 @@
           "entry_date": "2026-09-24",
           "reason": null,
           "signal": "TABAN KILIDI (7 g)",
+          "tags": [],
+          "verdict": "flat"
+        },
+        {
+          "layer": "F_top10",
+          "label": "F Top10",
+          "role": "return",
+          "metric": "forward_return_hit_rate",
+          "ticker": "ASTOR",
+          "entry_price": 260.25,
+          "current_price": 260.5,
+          "return_pct": 0.1,
+          "entry_date": "2026-09-24",
+          "reason": null,
+          "signal": "DAĞITIM",
           "tags": [],
           "verdict": "hit"
         },
@@ -54904,30 +54919,15 @@
           "label": "F Top10",
           "role": "return",
           "metric": "forward_return_hit_rate",
-          "ticker": "EUPWR",
-          "entry_price": 61.45,
-          "current_price": 60.3,
-          "return_pct": -1.87,
+          "ticker": "RYSAS",
+          "entry_price": 27.26,
+          "current_price": 27.26,
+          "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": null,
-          "signal": "Nötr",
+          "signal": "Birikim",
           "tags": [],
-          "verdict": "loss"
-        },
-        {
-          "layer": "F_top10",
-          "label": "F Top10",
-          "role": "return",
-          "metric": "forward_return_hit_rate",
-          "ticker": "TRALT",
-          "entry_price": 48.3,
-          "current_price": 48.4,
-          "return_pct": 0.21,
-          "entry_date": "2026-09-24",
-          "reason": null,
-          "signal": "DAĞITIM",
-          "tags": [],
-          "verdict": "hit"
+          "verdict": "flat"
         },
         {
           "layer": "transformation",
@@ -54953,26 +54953,6 @@
           "label": "Donusum Radari",
           "role": "discovery",
           "metric": "captured_alpha_false_positive",
-          "ticker": "HRKET",
-          "entry_price": 8.1,
-          "current_price": 8.08,
-          "return_pct": -0.25,
-          "entry_date": "2026-09-24",
-          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-          "signal": "Birikim",
-          "tags": [
-            "sektor_cap_dolu",
-            "karantina_1_3_gun"
-          ],
-          "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 0.25,
-          "verdict": "neutral"
-        },
-        {
-          "layer": "transformation",
-          "label": "Donusum Radari",
-          "role": "discovery",
-          "metric": "captured_alpha_false_positive",
           "ticker": "ENERY",
           "entry_price": 13.04,
           "current_price": 13.04,
@@ -54986,6 +54966,26 @@
           ],
           "captured_alpha_pct": 0.0,
           "false_positive_loss_pct": 0.0,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "transformation",
+          "label": "Donusum Radari",
+          "role": "discovery",
+          "metric": "captured_alpha_false_positive",
+          "ticker": "HRKET",
+          "entry_price": 8.1,
+          "current_price": 8.08,
+          "return_pct": -0.25,
+          "entry_date": "2026-09-24",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "signal": "Birikim",
+          "tags": [
+            "sektor_cap_dolu",
+            "karantina_1_3_gun"
+          ],
+          "captured_alpha_pct": 0.0,
+          "false_positive_loss_pct": 0.25,
           "verdict": "neutral"
         },
         {
@@ -55032,6 +55032,26 @@
           "label": "Donusum Radari",
           "role": "discovery",
           "metric": "captured_alpha_false_positive",
+          "ticker": "KRDMD",
+          "entry_price": 46.2,
+          "current_price": 46.2,
+          "return_pct": 0.0,
+          "entry_date": "2026-09-24",
+          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
+          "signal": "Üst_fitil_UYARI",
+          "tags": [
+            "ust_fitil_uyari",
+            "karantina_1_3_gun"
+          ],
+          "captured_alpha_pct": 0.0,
+          "false_positive_loss_pct": 0.0,
+          "verdict": "neutral"
+        },
+        {
+          "layer": "transformation",
+          "label": "Donusum Radari",
+          "role": "discovery",
+          "metric": "captured_alpha_false_positive",
           "ticker": "VAKBN",
           "entry_price": 34.0,
           "current_price": 33.78,
@@ -55044,25 +55064,6 @@
           ],
           "captured_alpha_pct": 0.0,
           "false_positive_loss_pct": 0.65,
-          "verdict": "neutral"
-        },
-        {
-          "layer": "transformation",
-          "label": "Donusum Radari",
-          "role": "discovery",
-          "metric": "captured_alpha_false_positive",
-          "ticker": "BIMAS",
-          "entry_price": 425.0,
-          "current_price": 422.75,
-          "return_pct": -0.53,
-          "entry_date": "2026-09-24",
-          "reason": "1Y orta/zayif, 1A-1H hizlaniyor",
-          "signal": "Nötr",
-          "tags": [
-            "karantina_1_3_gun"
-          ],
-          "captured_alpha_pct": 0.0,
-          "false_positive_loss_pct": 0.53,
           "verdict": "neutral"
         },
         {
@@ -55214,43 +55215,44 @@
           "label": "Tepe Riski",
           "role": "risk",
           "metric": "saved_loss_opportunity_cost",
-          "ticker": "CEMZY",
-          "entry_price": 9.07,
-          "current_price": 8.57,
-          "return_pct": -5.51,
+          "ticker": "TRALT",
+          "entry_price": 48.4,
+          "current_price": 48.4,
+          "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": "guc var ama alim icin risk etiketi tasiyor",
-          "signal": "Nötr",
+          "signal": "DAĞITIM",
           "tags": [
             "ivme_yavasliyor",
-            "sektor_cap_dolu",
-            "duseni_tutma_riski"
+            "dagitim_bilgi"
           ],
-          "saved_loss_pct": 5.51,
+          "saved_loss_pct": 0.0,
           "opportunity_cost_pct": 0.0,
-          "verdict": "saved_loss"
+          "verdict": "neutral"
         },
         {
           "layer": "peak_risks",
           "label": "Tepe Riski",
           "role": "risk",
           "metric": "saved_loss_opportunity_cost",
-          "ticker": "AKSEN",
-          "entry_price": 69.0,
-          "current_price": 69.0,
+          "ticker": "CCOLA",
+          "entry_price": 77.0,
+          "current_price": 77.0,
           "return_pct": 0.0,
           "entry_date": "2026-09-24",
           "reason": "guc var ama alim icin risk etiketi tasiyor",
-          "signal": "DAĞITIM",
+          "signal": "Üst_fitil_UYARI",
           "tags": [
-            "dagitim_bilgi"
+            "ivme_yavasliyor",
+            "ust_fitil_uyari",
+            "duseni_tutma_riski"
           ],
           "saved_loss_pct": 0.0,
           "opportunity_cost_pct": 0.0,
           "verdict": "neutral"
         }
       ],
-      "last_generated_at": "2026-09-24T18:40:50"
+      "last_generated_at": "2026-09-25T10:04:24"
     }
   ]
 }
